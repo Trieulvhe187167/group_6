@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Debug HMS Application",
+      "request": "launch",
+      "mainClass": "com.example.hms.HmsApplication",
+      "projectName": "HotelManagementSystem"
+    }
+  ]
+}

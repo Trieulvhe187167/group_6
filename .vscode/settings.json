@@ -1,0 +1,10 @@
+{
+  "java.project.referencedLibraries": [
+    "Web Pages/WEB-INF/lib/**/*.jar"
+  ],
+  "files.exclude": {
+    "**/target": true,
+    "**/.classpath": true
+  },
+  "java.configuration.updateBuildConfiguration": "interactive"
+}
