@@ -3,9 +3,9 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Debug HMS Application",
+      "name": "Launch HMS",
       "request": "launch",
-      "mainClass": "com.example.hms.HmsApplication",
+      "mainClass": "hms.HotelManagementSystemApplication",
       "projectName": "HotelManagementSystem"
     }
   ]
