@@ -12,9 +12,9 @@ import java.sql.SQLException;
  * @author ASUS
  */
 public class DBContext {
-    private static final String URL = "jdbc:sqlserver://LAPTOP-SVEKADBK\\HIEUHE187201:1433;databaseName=HotelManagement;encrypt=false";
+    private static final String URL = "jdbc:sqlserver://ZIG:1433;databaseName=HotelManagement;encrypt=false";
     private static final String USER = "sa";  // Thay bằng user SQL Server của bạn
-    private static final String PASSWORD = "qq123123";  // Thay bằng password của bạn
+    private static final String PASSWORD = "123";  // Thay bằng password của bạn
 
     public static Connection getConnection() throws SQLException {
         try {
