@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title><c:out value="${pageTitle != null ? pageTitle : 'EduChamp'}"/></title>
+  <title><c:out value="${pageTitle != null ? pageTitle : 'HotelManagementSystem'}"/></title>
   <base href="<c:url value='/'/>"/>
 
   <!-- CSS -->
@@ -51,7 +51,7 @@
               <option data-icon="flag flag-us">English US</option>
             </select>
           </li>
-          <li class="list-inline-item"><a href="login.html">Login</a></li>
+          <li class="list-inline-item"><a href="login.jsp">Login</a></li>
           <li class="list-inline-item"><a href="register.html">Register</a></li>
         </ul>
       </div>
@@ -79,7 +79,7 @@
           <ul class="nav navbar-nav">
             <li class="nav-item active"><a class="nav-link" href="index.jsp">Home</a></li>
             <li class="nav-item"><a class="nav-link" href="about-1.html">About</a></li>
-            <li class="nav-item"><a class="nav-link" href="courses.html">Courses</a></li>
+            <li class="nav-item"><a class="nav-link" href="roomList.jsp">List Room</a></li>
             <li class="nav-item"><a class="nav-link" href="contact-1.html">Contact</a></li>
           </ul>
           <div class="nav-social-link">

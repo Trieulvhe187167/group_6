@@ -1,6 +1,38 @@
-<%@ page pageEncoding="UTF-8" contentType="text/html; charset=UTF-8" %>
-<%@ include file="jsp/header.jsp" %>
-
+<%@ page pageEncoding="UTF-8" contentType="text/html; charset=UTF-8"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EduChamp : Education Template</title>
+    <link rel="icon" href="${pageContext.request.contextPath}/assets/images/favicon.ico" type="image/x-icon">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/assets.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/typography.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/shortcodes/shortcodes.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/color/color-1.css" class="skin">
+    <!-- Vendor CSS -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendors/revolution/css/layers.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendors/revolution/css/settings.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendors/revolution/css/navigation.css">
+    <style>
+        /* Simple loader style */
+        #loading-icon-bx {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body id="bg">
+      <%@ include file="jsp/header.jsp" %>
 <!-- Nội dung chính -->
 <div class="page-wraper">
   <!-- Slider (ví dụ Revolution) -->
@@ -402,7 +434,8 @@
 									<img src="assets/images/courses/pic1.jpg" alt="">
 									<a href="#" class="btn">Read More</a>
 								</div>
-								<div class="info-bx text-center">
+			
+                                                            <div class="info-bx text-center">
 									<h5><a href="#">Introduction EduChamp – LMS plugin</a></h5>
 									<span>Programming</span>
 								</div>
@@ -890,3 +923,5 @@ jQuery(document).ready(function() {
 	}
 });	
 </script>
+</body>
+</html>
