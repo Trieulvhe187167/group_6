@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>EduChamp : Education Template</title>
+    <title>LUXURY HOTEL</title>
     <link rel="icon" href="${pageContext.request.contextPath}/assets/images/favicon.ico" type="image/x-icon">
     <!-- Main CSS -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/assets.css">
