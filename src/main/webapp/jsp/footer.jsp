@@ -1,43 +1,42 @@
-<body>
-        <!-- Footer ==== -->
-            <footer>
-                <div class="footer-top">
-                    <div class="pt-exebar">
-                        <div class="container">
-                            <div class="d-flex align-items-stretch">
-                                <div class="pt-logo mr-auto">
-                                    <a href="index.html"><img src="${pageContext.request.contextPath}/WebContent/assets/images/logo-white.png" alt=""/></a>
-                                </div>
-                                <div class="pt-social-link">
-                                    <ul class="list-inline m-a0">
-                                        <li><a href="#" class="btn-link"><i class="fa fa-facebook"></i></a></li>
-                                        <li><a href="#" class="btn-link"><i class="fa fa-twitter"></i></a></li>
-                                        <li><a href="#" class="btn-link"><i class="fa fa-linkedin"></i></a></li>
-                                        <li><a href="#" class="btn-link"><i class="fa fa-google-plus"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="pt-btn-join">
-                                    <a href="#" class="btn ">Join Now</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-lg-4 col-md-12 col-sm-12 footer-col-4">
-                                <div class="widget">
-                                    <h5 class="footer-title">Sign Up For A Newsletter</h5>
-                                    <p class="text-capitalize m-b20">Weekly Breaking news analysis and cutting edge advices on job searching.</p>
-                                    <div class="subscribe-form m-b20">
-                                        <form class="subscription-form" action="http://educhamp.themetrades.com/demo/assets/script/mailchamp.php" method="post">
-                                            <div class="ajax-message"></div>
-                                            <div class="input-group">
-                                                <input name="email" required="required"  class="form-control" placeholder="Your Email Address" type="email">
-                                                <span class="input-group-btn">
-                                                    <button name="submit" value="Submit" type="submit" class="btn"><i class="fa fa-arrow-right"></i></button>
-                                                </span> 
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<footer class="footer">
+  <div class="section-area section-sp1 bg-black">
+    <div class="container">
+      <div class="row">
+
+        <!-- About -->
+        <div class="col-md-4">
+          <h5 class="text-white">About Luxury Hotel</h5>
+          <p class="text-white">
+            Luxury Hotel ? a place that offers a classy accommodation experience with perfect service and sophisticated space.
+          </p>
+        </div>
+
+        <!-- Contact -->
+        <div class="col-md-4">
+          <h5 class="text-white">Contact Us</h5>
+          <p class="text-white"><i class="fa fa-map-marker"></i> 123 Luxury St., Downtown, Hanoi</p>
+          <p class="text-white"><i class="fa fa-phone"></i> (+84)24 1234 5678</p>
+          <p class="text-white"><i class="fa fa-envelope"></i> <a href="mailto:info@luxuryhotel.com" class="text-white">info@luxuryhotel.com</a></p>
+        </div>
+
+        <!-- Social -->
+        <div class="col-md-4">
+          <h5 class="text-white">Follow Us</h5>
+          <ul class="list-inline">
+            <li class="list-inline-item"><a href="#" class="text-white"><i class="fa fa-facebook"></i></a></li>
+            <li class="list-inline-item"><a href="#" class="text-white"><i class="fa fa-twitter"></i></a></li>
+            <li class="list-inline-item"><a href="#" class="text-white"><i class="fa fa-instagram"></i></a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-black-f dbottom">
+    <div class="container text-center">
+      <p class="m-0 text-white">&copy; 2025 Luxury Hotel. All Rights Reserved.</p>
+    </div>
+  </div>
+</footer>

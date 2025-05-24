@@ -32,7 +32,7 @@
     </style>
 </head>
 <body id="bg">
-      <%@ include file="jsp/header.jsp" %>
+      <%@ include file="/jsp/header.jsp" %>
 <!-- Nội dung chính -->
 <div class="page-wraper">
   <!-- Slider (ví dụ Revolution) -->
@@ -800,13 +800,12 @@
         </div>
 		<!-- contact area END -->
     </div>
-  </section>
 
   <!-- Tương tự bạn thêm các section: Popular Courses, Upcoming Events, Testimonials, Recent News … -->
 
-</div>
 
-<%@ include file="jsp/footer.jsp" %>
+
+<%@ include file="/jsp/footer.jsp" %>
  <!-- ========== JS ========== -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/vendors/bootstrap/js/popper.min.js"></script>
