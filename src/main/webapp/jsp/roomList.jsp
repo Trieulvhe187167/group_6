@@ -29,8 +29,8 @@
         <meta name="format-detection" content="telephone=no">
 
         <!-- FAVICONS ICON ============================================= -->
-        <link rel="icon" href="${pageContext.request.contextPath}/WebContent/assets/images/favicon.ico" type="image/x-icon" />
-        <link rel="shortcut icon" type="image/x-icon" href="${pageContext.request.contextPath}/WebContent/assets/images/favicon.png" />
+        <link rel="icon" href="${pageContext.request.contextPath}/assets/images/favicon.ico" type="image/x-icon" />
+        <link rel="shortcut icon" type="image/x-icon" href="${pageContext.request.contextPath}/assets/images/favicon.png" />
 
         <!-- PAGE TITLE HERE ============================================= -->
         <title>EduChamp | List of Room </title>
@@ -44,17 +44,17 @@
         <![endif]-->
 
         <!-- All PLUGINS CSS ============================================= -->
-        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/WebContent/assets/css/assets.css">
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/assets.css">
 
         <!-- TYPOGRAPHY ============================================= -->
-        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/WebContent/assets/css/typography.css">
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/typography.css">
 
         <!-- SHORTCODES ============================================= -->
-        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/WebContent/assets/css/shortcodes/shortcodes.css">
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/shortcodes/shortcodes.css">
 
         <!-- STYLESHEETS ============================================= -->
-        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/WebContent/assets/css/style.css">
-        <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/WebContent/assets/css/color/color-1.css">
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/style.css">
+        <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/color/color-1.css">
     </head>
     <body id="bg">
         <div class="page-wraper">
@@ -67,7 +67,7 @@
             <!-- Content -->
             <div class="page-content bg-white">
                 <!-- inner page banner -->
-                <div class="page-banner ovbl-dark" style="background-image:url(${pageContext.request.contextPath}/WebContent/assets/images/banner/banner_roomList.jpg);">
+                <div class="page-banner ovbl-dark" style="background-image:url(${pageContext.request.contextPath}/assets/images/banner/banner_roomList.jpg);">
                     <div class="container">
                         <div class="page-banner-entry">
                             <h1 class="text-white">Room List</h1>
@@ -116,7 +116,7 @@
                                         <h5 class="widget-title style-1">Recent Courses</h5>
                                         <div class="widget-post-bx">
                                             <div class="widget-post clearfix">
-                                                <div class="ttr-post-media"> <img src="${pageContext.request.contextPath}/WebContent/assets/images/blog/recent-blog/pic1.jpg" width="200" height="143" alt=""> </div>
+                                                <div class="ttr-post-media"> <img src="${pageContext.request.contextPath}/assets/images/blog/recent-blog/pic1.jpg" width="200" height="143" alt=""> </div>
                                                 <div class="ttr-post-info">
                                                     <div class="ttr-post-header">
                                                         <h6 class="post-title"><a href="#">Introduction EduChamp</a></h6>
@@ -133,7 +133,7 @@
                                                 </div>
                                             </div>
                                             <div class="widget-post clearfix">
-                                                <div class="ttr-post-media"> <img src="${pageContext.request.contextPath}/WebContent/assets/images/blog/recent-blog/pic3.jpg" width="200" height="160" alt=""> </div>
+                                                <div class="ttr-post-media"> <img src="${pageContext.request.contextPath}/assets/images/blog/recent-blog/pic3.jpg" width="200" height="160" alt=""> </div>
                                                 <div class="ttr-post-info">
                                                     <div class="ttr-post-header">
                                                         <h6 class="post-title"><a href="#">English For Tommorow</a></h6>
@@ -242,20 +242,20 @@
             <button class="back-to-top fa fa-chevron-up" ></button>
         </div>
         <!-- External JavaScripts -->
-        <script src="${pageContext.request.contextPath}/WebContent/assets/js/jquery.min.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/vendors/bootstrap/js/popper.min.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/vendors/bootstrap/js/bootstrap.min.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/vendors/bootstrap-select/bootstrap-select.min.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/vendors/bootstrap-touchspin/jquery.bootstrap-touchspin.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/vendors/magnific-popup/magnific-popup.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/vendors/counter/waypoints-min.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/vendors/counter/counterup.min.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/vendors/imagesloaded/imagesloaded.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/vendors/masonry/masonry.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/vendors/masonry/filter.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/vendors/owl-carousel/owl.carousel.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/js/functions.js"></script>
-        <script src="${pageContext.request.contextPath}/WebContent/assets/js/contact.js"></script>
-        <script src='${pageContext.request.contextPath}/WebContent/assets/vendors/switcher/switcher.js'></script>
+        <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/popper.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/bootstrap.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap-select/bootstrap-select.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap-touchspin/jquery.bootstrap-touchspin.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/magnific-popup/magnific-popup.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/counter/waypoints-min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/counter/counterup.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/imagesloaded/imagesloaded.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/masonry/masonry.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/masonry/filter.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/owl-carousel/owl.carousel.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
+        <script src='${pageContext.request.contextPath}/assets/vendors/switcher/switcher.js'></script>
     </body>
 </html>

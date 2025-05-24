@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title><c:out value="${pageTitle != null ? pageTitle : 'EduChamp'}"/></title>
+  <title><c:out value="${pageTitle != null ? pageTitle : 'LUXURY HOTEL'}"/></title>
   <base href="<c:url value='/'/>"/>
 
   <!-- CSS -->
@@ -53,6 +53,7 @@
           </li>
           <li class="list-inline-item"><a href="login.html">Login</a></li>
           <li class="list-inline-item"><a href="jsp/Register.jsp">Register</a></li>
+
         </ul>
       </div>
     </div>
@@ -78,9 +79,9 @@
         <nav class="menu-links collapse navbar-collapse" id="menuDropdown">
           <ul class="nav navbar-nav">
             <li class="nav-item active"><a class="nav-link" href="index.jsp">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="about-1.html">About</a></li>
-            <li class="nav-item"><a class="nav-link" href="courses.html">Courses</a></li>
-            <li class="nav-item"><a class="nav-link" href="contact-1.html">Contact</a></li>
+            <li class="nav-item"><a class="nav-link" href="jsp/About.jsp">About</a></li>
+            <li class="nav-item"><a class="nav-link" href="RoomListServlet">List Room</a></li>
+            <li class="nav-item"><a class="nav-link" href="jsp/ManagerCustomer.jsp">Contact</a></li>
           </ul>
           <div class="nav-social-link">
             <a href="#"><i class="fa fa-facebook"></i></a>

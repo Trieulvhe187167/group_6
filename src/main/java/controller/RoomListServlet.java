@@ -85,7 +85,7 @@ public class RoomListServlet extends HttpServlet {
         
         
         request.setAttribute("roomTypes", roomTypes);
-        request.getRequestDispatcher("WebContent/jsp/roomList.jsp").forward(request, response);
+        request.getRequestDispatcher("jsp/roomList.jsp").forward(request, response);
     }
 
     /**
