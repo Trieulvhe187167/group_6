@@ -78,7 +78,7 @@
         <nav class="menu-links collapse navbar-collapse" id="menuDropdown">
           <ul class="nav navbar-nav">
             <li class="nav-item active"><a class="nav-link" href="index.jsp">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="about-1.html">About</a></li>
+            <li class="nav-item"><a class="nav-link" href="jsp/ManagerCustomer.jsp">management Customer</a></li>
             <li class="nav-item"><a class="nav-link" href="courses.html">Courses</a></li>
             <li class="nav-item"><a class="nav-link" href="contact-1.html">Contact</a></li>
           </ul>
