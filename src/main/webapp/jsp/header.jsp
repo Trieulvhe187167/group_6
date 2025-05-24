@@ -52,7 +52,7 @@
             </select>
           </li>
           <li class="list-inline-item"><a href="login.html">Login</a></li>
-          <li class="list-inline-item"><a href="register.html">Register</a></li>
+          <li class="list-inline-item"><a href="jsp/Register.jsp">Register</a></li>
         </ul>
       </div>
     </div>
