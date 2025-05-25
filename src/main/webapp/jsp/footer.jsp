@@ -17,7 +17,12 @@
           <h5 class="text-white">Contact Us</h5>
           <p class="text-white"><i class="fa fa-map-marker"></i> 123 Luxury St., Downtown, Hanoi</p>
           <p class="text-white"><i class="fa fa-phone"></i> (+84)24 1234 5678</p>
-          <p class="text-white"><i class="fa fa-envelope"></i> <a href="mailto:info@luxuryhotel.com" class="text-white">info@luxuryhotel.com</a></p>
+        
+  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=luxuryhotel999@gmail.com&su=Feedback%20from%20Website&body=Hello%20Luxury%20Hotel," target="_blank" rel="noopener">
+    <i class="fa fa-envelope-o"></i>
+    luxuryhotel999@gmail.com
+  </a>
+
         </div>
 
         <!-- Social -->

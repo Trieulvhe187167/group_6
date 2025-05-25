@@ -14,23 +14,28 @@
                 <li class="list-inline-item">
                     <a href="<c:url value='/faq-1.html'/>"><i class="fa fa-question-circle"></i>Ask a Question</a>
                 </li>
-                <li class="list-inline-item">
-                    <a href="mailto:info@luxuryhotel.com"><i class="fa fa-envelope-o"></i>info@luxuryhotel.com</a>
-                </li>
+  <li class="list-inline-item">
+  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=luxuryhotel999@gmail.com&su=Feedback%20from%20Website&body=Hello%20Luxury%20Hotel," target="_blank" rel="noopener">
+    <i class="fa fa-envelope-o"></i>
+    luxuryhotel999@gmail.com
+  </a>
+</li>
+
+
             </ul>
             <ul class="list-inline mb-0">
-<!--                <li class="list-inline-item">
-                    <select class="header-lang-bx">
-                        <option data-icon="flag flag-uk">English UK</option>
-                        <option data-icon="flag flag-us">English US</option>
-                    </select>
-                </li>-->
+                <!--                <li class="list-inline-item">
+                                    <select class="header-lang-bx">
+                                        <option data-icon="flag flag-uk">English UK</option>
+                                        <option data-icon="flag flag-us">English US</option>
+                                    </select>
+                                </li>-->
                 <c:choose>
                     <c:when test="${not empty sessionScope.user}">
                         <li class="list-inline-item"><a href="<c:url value='/LogoutServlet'/>">Logout</a></li>
                         </c:when>
                         <c:otherwise>
-                        <li class="list-inline-item"><a href="<c:url value='/jsp/Login.jsp'/>">Login</a></li>
+                        <li class="list-inline-item"><a href="<c:url value='/jsp/login.jsp'/>">Login</a></li>
                         <li class="list-inline-item"><a href="<c:url value='/jsp/Register.jsp'/>">Register</a></li>
                         </c:otherwise>
                     </c:choose>
