@@ -7,7 +7,7 @@
     <base href="${pageContext.request.contextPath}/" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>EduChamp : Education HTML Template</title>
+    <title>LUXURY HƠTEL</title>
 
     <!-- Favicon -->
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon" />

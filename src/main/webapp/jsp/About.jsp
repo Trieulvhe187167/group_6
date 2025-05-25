@@ -128,8 +128,8 @@
                                 </div>
                                 <div class="col-lg-7 col-md-12 heading-bx p-lr">
                                     <div class="video-bx">
-                                        <img src="${pageContext.request.contextPath}/assets/images/about/pic1.jpg" alt="Our Story" />
-                                        <a href="https://www.youtube.com/watch?v=x_sJzVe9P_8" class="popup-youtube video">
+                                        <img src="${pageContext.request.contextPath}/assets/images/slider/slide1.jpg" alt="Our Story" />
+                                        <a href="https://www.youtube.com/watch?v=cQfMOJ1yoGU" class="popup-youtube video">
                                             <i class="fa fa-play"></i>
                                         </a>
                                     </div>
