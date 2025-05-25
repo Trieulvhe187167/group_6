@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>EduChamp : Education HTML Template</title>
+    <title>LUXURY HƠTEL</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="../assets/images/favicon.ico" type="image/x-icon" />
     <link rel="shortcut icon" type="image/x-icon" href="../assets/images/favicon.png" />
@@ -19,7 +19,7 @@
     <div id="loading-icon-bx"></div>
     <div class="account-form">
         <div class="account-head" style="background-image:url(../assets/images/background/bg2.jpg);">
-            <a href="../index.html"><img src="../assets/images/logo-white-2.png" alt=""></a>
+            <a href="../index.jsp"><img src="../assets/images/logo-white-2.png" alt=""></a>
         </div>
         <div class="account-form-inner">
             <div class="account-container">

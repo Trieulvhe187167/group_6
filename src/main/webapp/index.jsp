@@ -1,6 +1,38 @@
-<%@ page pageEncoding="UTF-8" contentType="text/html; charset=UTF-8" %>
-<%@ include file="jsp/header.jsp" %>
-
+<%@ page pageEncoding="UTF-8" contentType="text/html; charset=UTF-8"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LUXURY HOTEL</title>
+    <link rel="icon" href="${pageContext.request.contextPath}/assets/images/favicon.ico" type="image/x-icon">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/assets.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/typography.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/shortcodes/shortcodes.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/color/color-1.css" class="skin">
+    <!-- Vendor CSS -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendors/revolution/css/layers.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendors/revolution/css/settings.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendors/revolution/css/navigation.css">
+    <style>
+        /* Simple loader style */
+        #loading-icon-bx {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body id="bg">
+      <%@ include file="/jsp/header.jsp" %>
 <!-- Nội dung chính -->
 <div class="page-wraper">
   <!-- Slider (ví dụ Revolution) -->
@@ -79,7 +111,7 @@
 								data-paddingbottom="[10,10,10,10]"
 								data-paddingleft="[0,0,0,0]"
 								style="z-index: 6; font-family:rubik; font-weight:700; text-align:center; white-space: normal;">
-									Welcome To University
+									Welcome To Luxury Hotel
 							</div>
 
 							<!-- LAYER NR. 3 -->
@@ -101,7 +133,7 @@
 								data-paddingbottom="[0,0,0,0]"
 								data-paddingleft="[0,0,0,0]"
 								style="z-index: 7; white-space: nowrap; color:#fff; font-family:rubik; font-size:18px; font-weight:400;">
-									Batter Education For A Better 
+								
 							</div>
 							
 							<!-- LAYER NR. 3 -->
@@ -123,7 +155,7 @@
 								data-paddingbottom="[0,0,0,0]"
 								data-paddingleft="[0,0,0,0]"
 								style="z-index: 7; text-transform:capitalize; white-space: unset; color:#fff; font-family:rubik; font-size:18px; line-height:28px; font-weight:400;">
-									 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the
+									 A place that offers a classy accommodation experience with perfect service and sophisticated space.
 							</div>
 							<!-- LAYER NR. 4 -->
 							<div class="tp-caption Newspaper-Button rev-btn " 
@@ -237,7 +269,7 @@
 								data-paddingbottom="[10,10,10,10]"
 								data-paddingleft="[0,0,0,0]"
 								style="z-index: 6; font-family:rubik; font-weight:700; text-align:center; white-space: normal;text-transform:uppercase;">
-									Welcome To University
+									Welcome To Luxury Hotel
 							</div>
 
 							<!-- LAYER NR. 3 -->
@@ -259,7 +291,7 @@
 								data-paddingbottom="[0,0,0,0]"
 								data-paddingleft="[0,0,0,0]"
 								style="z-index: 7; white-space: nowrap;text-transform:uppercase; color:#fff; font-family:rubik; font-size:18px; font-weight:400;">
-									Batter Education For A Better 
+									
 							</div>
 							
 							<!-- LAYER NR. 3 -->
@@ -281,7 +313,7 @@
 								data-paddingbottom="[0,0,0,0]"
 								data-paddingleft="[0,0,0,0]"
 								style="z-index: 7; text-transform:capitalize; white-space: unset; color:#fff; font-family:rubik; font-size:18px; line-height:28px; font-weight:400;">
-									 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the
+									 A place that offers a classy accommodation experience with perfect service and sophisticated space.
 							</div>
 							<!-- LAYER NR. 4 -->
 							<div class="tp-caption Newspaper-Button rev-btn " 
@@ -329,12 +361,16 @@
 			</div>  
 		</div>  
 
+  
+  <br/><!-- comment -->
+  <br/>
+  <br/>
   <!-- Ví dụ 1 section: Our Services -->
   <section class="service-info-bx section-sp2">
     	<div class="content-block">
             
 			<!-- Our Services -->
-			<div class="section-area content-inner service-info-bx">
+<!--			<div class="section-area content-inner service-info-bx">
                 <div class="container">
 					<div class="row">
 						<div class="col-lg-4 col-md-4 col-sm-6">
@@ -381,11 +417,13 @@
 						</div>
 					</div>
 				</div>
-            </div>
+            </div>-->
             <!-- Our Services END -->
 			
 			<!-- Popular Courses -->
-			<div class="section-area section-sp2 popular-courses-bx">
+                        
+                        
+		<div class="section-area section-sp2 popular-courses-bx">
                 <div class="container">
                     
 					<div class="row">
@@ -402,7 +440,8 @@
 									<img src="assets/images/courses/pic1.jpg" alt="">
 									<a href="#" class="btn">Read More</a>
 								</div>
-								<div class="info-bx text-center">
+			
+                                                            <div class="info-bx text-center">
 									<h5><a href="#">Introduction EduChamp – LMS plugin</a></h5>
 									<span>Programming</span>
 								</div>
@@ -767,13 +806,12 @@
         </div>
 		<!-- contact area END -->
     </div>
-  </section>
 
   <!-- Tương tự bạn thêm các section: Popular Courses, Upcoming Events, Testimonials, Recent News … -->
 
-</div>
 
-<%@ include file="jsp/footer.jsp" %>
+
+<%@ include file="/jsp/footer.jsp" %>
  <!-- ========== JS ========== -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/vendors/bootstrap/js/popper.min.js"></script>
@@ -890,3 +928,5 @@ jQuery(document).ready(function() {
 	}
 });	
 </script>
+</body>
+</html>

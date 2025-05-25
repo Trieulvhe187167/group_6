@@ -5,13 +5,13 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ page import="model.Room" %>
+<%@ page import="model.RoomType" %>
 <%@ page import="java.util.List" %>
 
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <!--        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">-->
         <!-- META ============================================= -->
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -29,8 +29,8 @@
         <meta name="format-detection" content="telephone=no">
 
         <!-- FAVICONS ICON ============================================= -->
-        <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon" />
-        <link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.png" />
+        <link rel="icon" href="${pageContext.request.contextPath}/assets/images/favicon.ico" type="image/x-icon" />
+        <link rel="shortcut icon" type="image/x-icon" href="${pageContext.request.contextPath}/assets/images/favicon.png" />
 
         <!-- PAGE TITLE HERE ============================================= -->
         <title>EduChamp | List of Room </title>
@@ -44,17 +44,17 @@
         <![endif]-->
 
         <!-- All PLUGINS CSS ============================================= -->
-        <link rel="stylesheet" type="text/css" href="assets/css/assets.css">
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/assets.css">
 
         <!-- TYPOGRAPHY ============================================= -->
-        <link rel="stylesheet" type="text/css" href="assets/css/typography.css">
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/typography.css">
 
         <!-- SHORTCODES ============================================= -->
-        <link rel="stylesheet" type="text/css" href="assets/css/shortcodes/shortcodes.css">
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/shortcodes/shortcodes.css">
 
         <!-- STYLESHEETS ============================================= -->
-        <link rel="stylesheet" type="text/css" href="assets/css/style.css">
-        <link class="skin" rel="stylesheet" type="text/css" href="assets/css/color/color-1.css">
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/style.css">
+        <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/color/color-1.css">
     </head>
     <body id="bg">
         <div class="page-wraper">
@@ -67,7 +67,7 @@
             <!-- Content -->
             <div class="page-content bg-white">
                 <!-- inner page banner -->
-                <div class="page-banner ovbl-dark" style="background-image:url(assets/images/banner/banner_roomList.jpg);">
+                <div class="page-banner ovbl-dark" style="background-image:url(${pageContext.request.contextPath}/assets/images/banner/banner_roomList.jpg);">
                     <div class="container">
                         <div class="page-banner-entry">
                             <h1 class="text-white">Room List</h1>
@@ -116,7 +116,7 @@
                                         <h5 class="widget-title style-1">Recent Courses</h5>
                                         <div class="widget-post-bx">
                                             <div class="widget-post clearfix">
-                                                <div class="ttr-post-media"> <img src="assets/images/blog/recent-blog/pic1.jpg" width="200" height="143" alt=""> </div>
+                                                <div class="ttr-post-media"> <img src="${pageContext.request.contextPath}/assets/images/blog/recent-blog/pic1.jpg" width="200" height="143" alt=""> </div>
                                                 <div class="ttr-post-info">
                                                     <div class="ttr-post-header">
                                                         <h6 class="post-title"><a href="#">Introduction EduChamp</a></h6>
@@ -133,7 +133,7 @@
                                                 </div>
                                             </div>
                                             <div class="widget-post clearfix">
-                                                <div class="ttr-post-media"> <img src="assets/images/blog/recent-blog/pic3.jpg" width="200" height="160" alt=""> </div>
+                                                <div class="ttr-post-media"> <img src="${pageContext.request.contextPath}/assets/images/blog/recent-blog/pic3.jpg" width="200" height="160" alt=""> </div>
                                                 <div class="ttr-post-info">
                                                     <div class="ttr-post-header">
                                                         <h6 class="post-title"><a href="#">English For Tommorow</a></h6>
@@ -151,20 +151,36 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
+
                                 <!-- List_of_Room START -->
                                 <div class="col-lg-9 col-md-8 col-sm-12">
                                     <div class="row">
-                                        
+
+                                        <%
+                                            // Tạo danh sách người dùng mẫu
+                                            List<RoomType> roomTypes = (List<RoomType>) request.getAttribute("roomTypes");
+                                            int currentPage = (Integer) request.getAttribute("currentPage");
+                                            int recordsPerPage = (Integer) request.getAttribute("recordsPerPage");
+                                            int totalRecords = roomTypes.size();
+
+                                            int startIndex = (currentPage - 1) * recordsPerPage;
+                                            int endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
+                                            
+                                            if (roomTypes != null) {
+                                                for (int i = startIndex; i < endIndex; i++) {
+                                                    RoomType type = roomTypes.get(i);
+                                        %>
+
                                         <div class="col-md-6 col-lg-4 col-sm-6 m-b30">
                                             <div class="cours-bx">
                                                 <div class="action-box">
-                                                    <img src="assets/images/courses/pic1.jpg" alt="Room1">
+                                                    <img src="${pageContext.request.contextPath}<%= type.getImageUrl() %>" alt="Room1">
                                                     <a href="#" class="btn">Read More</a>
                                                 </div>
                                                 <div class="info-bx text-center">
-                                                    <h5><a href="#">Introduction EduChamp – LMS plugin</a></h5>
-                                                    <span>Programming</span>
+                                                    <h5><a href="#"><%= type.getName() %></a></h5>
+                                                    <span><%= type.getDescription() %></span>
                                                 </div>
                                                 <div class="cours-more-info">
                                                     <div class="review">
@@ -179,41 +195,23 @@
                                                     </div>
                                                     <div class="price">
                                                         <del>$190</del>
-                                                        <h5>$120</h5>
+                                                        <h5>$<%= type.getBasePrice() %></h5>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6 col-lg-4 col-sm-6 m-b30">
-                                            <div class="cours-bx">
-                                                <div class="action-box">
-                                                    <img src="assets/images/courses/pic2.jpg" alt="">
-                                                    <a href="#" class="btn">Read More</a>
-                                                </div>
-                                                <div class="info-bx text-center">
-                                                    <h5><a href="#">Introduction EduChamp – LMS plugin</a></h5>
-                                                    <span>Programming</span>
-                                                </div>
-                                                <div class="cours-more-info">
-                                                    <div class="review">
-                                                        <span>3 Review</span>
-                                                        <ul class="cours-star">
-                                                            <li class="active"><i class="fa fa-star"></i></li>
-                                                            <li class="active"><i class="fa fa-star"></i></li>
-                                                            <li class="active"><i class="fa fa-star"></i></li>
-                                                            <li><i class="fa fa-star"></i></li>
-                                                            <li><i class="fa fa-star"></i></li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>$190</del>
-                                                        <h5>$120</h5>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        
+                                        <%
+                                                }
+                                            } else {
+                                        %>
+                                        <tr>
+                                            <td colspan="8">No data</td>
+                                        </tr>
+                                        <%
+                                            }
+                                        %>
+
+
                                         <div class="col-lg-12 m-b20">
                                             <div class="pagination-bx rounded-sm gray clearfix">
                                                 <ul class="pagination">
@@ -228,7 +226,7 @@
                                     </div>
                                 </div>
                                 <!-- List_of_Room END -->
-                                
+
                             </div>
                         </div>
                     </div>
@@ -244,20 +242,20 @@
             <button class="back-to-top fa fa-chevron-up" ></button>
         </div>
         <!-- External JavaScripts -->
-        <script src="assets/js/jquery.min.js"></script>
-        <script src="assets/vendors/bootstrap/js/popper.min.js"></script>
-        <script src="assets/vendors/bootstrap/js/bootstrap.min.js"></script>
-        <script src="assets/vendors/bootstrap-select/bootstrap-select.min.js"></script>
-        <script src="assets/vendors/bootstrap-touchspin/jquery.bootstrap-touchspin.js"></script>
-        <script src="assets/vendors/magnific-popup/magnific-popup.js"></script>
-        <script src="assets/vendors/counter/waypoints-min.js"></script>
-        <script src="assets/vendors/counter/counterup.min.js"></script>
-        <script src="assets/vendors/imagesloaded/imagesloaded.js"></script>
-        <script src="assets/vendors/masonry/masonry.js"></script>
-        <script src="assets/vendors/masonry/filter.js"></script>
-        <script src="assets/vendors/owl-carousel/owl.carousel.js"></script>
-        <script src="assets/js/functions.js"></script>
-        <script src="assets/js/contact.js"></script>
-        <script src='assets/vendors/switcher/switcher.js'></script>
+        <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/popper.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/bootstrap.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap-select/bootstrap-select.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap-touchspin/jquery.bootstrap-touchspin.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/magnific-popup/magnific-popup.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/counter/waypoints-min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/counter/counterup.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/imagesloaded/imagesloaded.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/masonry/masonry.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/masonry/filter.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/owl-carousel/owl.carousel.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
+        <script src='${pageContext.request.contextPath}/assets/vendors/switcher/switcher.js'></script>
     </body>
 </html>
