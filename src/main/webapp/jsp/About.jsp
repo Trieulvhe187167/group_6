@@ -61,15 +61,7 @@
                 </div>
 
                 <!-- Breadcrumb -->
-                <div class="breadcrumb-row">
-                    <div class="container">
-                        <ul class="list-inline">
-                            <li><a href="${pageContext.request.contextPath}/index.jsp">Home</a></li>
-                            <li>About Us</li>
-                        </ul>
-                    </div>
-                </div>
-
+          
                 <!-- Content Block -->
                 <div class="content-block">
                     <!-- Features -->

@@ -193,10 +193,30 @@
 	display:inline-block;
 	position:relative;
 }
+/* ================================
+   2. HEADER TOPBAR – override text màu vàng
+   ================================== */
+
+/* Các link trong top-bar thành vàng */
+.top-bar a,
 .topbar-left ul li a,
-.topbar-right ul li a{
-	color:#000;
+.topbar-right ul li a {
+    color: #FFD700 !important;  /* hoặc #EFBB20 tuỳ ý */
 }
+
+/* Các đoạn chia cột (“|”) cũng vàng rõ hơn */
+.topbar-left ul li:after,
+.topbar-right ul li:after,
+.search-btn:after {
+    background-color: #FFD700 !important;
+}
+
+/* Nếu có select (lang switch) mà bạn muốn chữ cũng vàng */
+.top-bar select,
+.top-bar option {
+    color: #FFD700 !important;
+}
+
 .topbar-left ul,
 .topbar-right ul{
 	margin:0;
@@ -422,10 +442,11 @@
 .menu-links .nav > li > a:focus {
     background-color: transparent;
 }
+/* Áp dụng cho mọi menu-item có class active */
 .menu-links .nav > li.active > a,
 .menu-links .nav > li.current-menu-item > a {
-    background-color: transparent;
-    color: #EFBB20;
+  background-color: transparent;
+  color: #EFBB20 !important;  /* vàng kim */
 }
 .menu-links .nav > li:hover > a {
     color: #EFBB20;
