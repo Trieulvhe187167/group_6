@@ -94,7 +94,7 @@
                                     <div class="widget courses-search-bx placeani">
                                         <div class="form-group">
                                             <div class="input-group">
-                                                <label>Search Courses</label>
+                                                <label>Search Rooms</label>
                                                 <input name="dzName" type="text" required class="form-control">
                                             </div>
                                         </div>
@@ -162,6 +162,7 @@
                                             List<RoomType> roomTypes = (List<RoomType>) request.getAttribute("roomTypes");
                                             int currentPage = (Integer) request.getAttribute("currentPage");
                                             int recordsPerPage = (Integer) request.getAttribute("recordsPerPage");
+                                            int totalPages = (Integer)request.getAttribute("totalPages");
                                             int totalRecords = roomTypes.size();
 
                                             int startIndex = (currentPage - 1) * recordsPerPage;
@@ -211,18 +212,34 @@
                                             }
                                         %>
 
-
+<!--Phân trang START-->
                                         <div class="col-lg-12 m-b20">
                                             <div class="pagination-bx rounded-sm gray clearfix">
                                                 <ul class="pagination">
-                                                    <li class="previous"><a href="#"><i class="ti-arrow-left"></i> Prev</a></li>
-                                                    <li class="active"><a href="#">1</a></li>
-                                                    <li><a href="#">2</a></li>
-                                                    <li><a href="#">3</a></li>
-                                                    <li class="next"><a href="#">Next <i class="ti-arrow-right"></i></a></li>
+                                                    <% if(currentPage == 1){ %>
+                                                        <li class="previous"><a href="#"><i class="ti-arrow-left"></i> Prev</a></li>
+                                                    <% } else { %>
+                                                        <li class="previous"><a href="RoomListServlet?page=<%= currentPage - 1 %>"><i class="ti-arrow-left"></i> Prev</a></li>
+                                                    <% } %>
+
+                                                    <% for(int i = 1; i <= (Integer)request.getAttribute("totalPages"); i++) { 
+                                                        if(i == currentPage) { %>
+                                                            <li class="active"><a href="#"><%= i %></a></li>
+                                                        <% } else { %>
+                                                            <li><a href="RoomListServlet?page=<%= i %>"><%= i %></a></li>
+                                                        <% } 
+                                                    } %>
+                                                            
+                                                    <% if(currentPage == totalPages){ %>
+                                                        <li class="next"><a href="#">Next <i class="ti-arrow-right"></i></a></li>
+                                                    <% } else { %>
+                                                        <li class="next"><a href="RoomListServlet?page=<%= currentPage + 1 %>">Next <i class="ti-arrow-right"></i></a></li>
+                                                    <% } %>
                                                 </ul>
                                             </div>
                                         </div>
+<!--Phân trang END-->
+
                                     </div>
                                 </div>
                                 <!-- List_of_Room END -->

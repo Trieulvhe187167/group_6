@@ -29,12 +29,12 @@ public class RoomTypeDAO {
                 rtype.setId(rs.getInt("Id"));
                 rtype.setName(rs.getString("Name"));
                 rtype.setDescription(rs.getString("Description"));
-
+                rtype.setImageUrl(rs.getString("image_url"));
                 rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
                 rtype.setCapacity(rs.getInt("Capacity"));
                 rtype.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 rtype.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
-                rtype.setImageUrl(rs.getString("image_url"));
+
                 listRoom.add(rtype);
             }
 
@@ -43,4 +43,33 @@ public class RoomTypeDAO {
         }
         return listRoom;
     }
+
+    public List<RoomType> getRoomsByCategory(String category) {
+        List<RoomType> listRoom = new ArrayList<>();
+        String sql = "SELECT * FROM Rooms WHERE category = ?";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, category);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                RoomType rtype = new RoomType(
+                        rs.getInt("Id"),
+                        rs.getString("Name"),
+                        rs.getString("Description"),
+                        rs.getString("image_url"),
+                        rs.getBigDecimal("BasePrice"),
+                        rs.getInt("Capacity"),
+                        rs.getTimestamp("CreatedAt"),
+                        rs.getTimestamp("UpdatedAt")
+                );
+                listRoom.add(rtype);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listRoom;
+    }
+
 }
