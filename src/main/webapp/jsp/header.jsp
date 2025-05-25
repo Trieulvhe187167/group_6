@@ -24,7 +24,7 @@
             <li class="list-inline-item"><a href="<c:url value='/LogoutServlet'/>">Logout</a></li>
           </c:when>
           <c:otherwise>
-            <li class="list-inline-item"><a href="<c:url value='/jsp/Login.jsp'/>">Login</a></li>
+            <li class="list-inline-item"><a href="<c:url value='/jsp/login.jsp'/>">Login</a></li>
             <li class="list-inline-item"><a href="<c:url value='/jsp/Register.jsp'/>">Register</a></li>
           </c:otherwise>
         </c:choose>
