@@ -6,6 +6,7 @@
 <!-- L?y URI hi?n t?i -->
 <c:set var="currentUrl" value="${pageContext.request.requestURI}" />
 <header class="header rs-nav header-transparent">
+
     <!-- Top bar -->
     <div class="top-bar">
         <div class="container d-flex justify-content-between">
@@ -35,6 +36,7 @@
                     </c:choose>
             </ul>
         </div>
+
     </div>
 
     <!-- Main nav -->
