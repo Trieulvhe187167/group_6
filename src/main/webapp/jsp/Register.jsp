@@ -25,7 +25,7 @@
             <div class="account-container">
                 <div class="heading-bx left">
                     <h2 class="title-head">Sign Up <span>Now</span></h2>
-                    <p>Already have an account? <a href="Login.jsp">Click here</a></p>
+                    <p>Already have an account? <a href="login.jsp">Click here</a></p>
                 </div>	
                 <form class="contact-bx" action="../RegisterServlet" method="post">
                     <div class="row placeani">
@@ -37,6 +37,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Thêm trường User Name -->
+                        <div class="col-lg-12">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input name="username" type="text" required class="form-control" placeholder="Enter your username">
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
@@ -64,13 +74,6 @@
                         <div class="col-lg-12 m-b30">
                             <button type="submit" class="btn button-md">Sign Up</button>
                         </div>
-                        <div class="col-lg-12">
-                            <h6>Sign Up with Social media</h6>
-                            <div class="d-flex">
-                                <a class="btn flex-fill m-r5 facebook" href="#"><i class="fa fa-facebook"></i>Facebook</a>
-                                <a class="btn flex-fill m-l5 google-plus" href="#"><i class="fa fa-google-plus"></i>Google Plus</a>
-                            </div>
-                        </div>
                     </div>
                 </form>
             </div>
@@ -96,3 +99,4 @@
 <script src="../assets/vendors/switcher/switcher.js"></script>
 </body>
 </html>
+
