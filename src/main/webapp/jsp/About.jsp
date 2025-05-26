@@ -143,7 +143,7 @@
                         <div class="container">
                             <h3 class="title-head">Contact Us</h3>
                             <p><i class="fa fa-envelope"></i> info@luxuryhotel.com</p>
-                            <p><i class="fa fa-phone"></i> +84 24 1234 5678</p>
+                            <p><i class="fa fa-phone"></i> (+84) 3 1234 5678</p>
                             <p><i class="fa fa-map-marker"></i> 123 Luxury St., Downtown, Hanoi, Vietnam</p>
                         </div>
                     </div>

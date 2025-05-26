@@ -1,4 +1,18 @@
-<%@ page pageEncoding="UTF-8" contentType="text/html; charset=UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+         import="java.util.List, dal.RoomTypeDAO, model.RoomType" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
+
+<%
+    // 1. Lấy dữ liệu từ DB
+    RoomTypeDAO dao = new RoomTypeDAO();
+    List<RoomType> roomTypes = dao.getAllRoomTypes();
+    // 2. Đưa xuống request để JSTL có thể đọc
+    request.setAttribute("roomTypes", roomTypes);
+%>
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -431,133 +445,82 @@
 
                     <!-- Popular Courses -->
 
-
                     <div class="section-area section-sp2 popular-courses-bx">
                         <div class="container">
 
                             <div class="row">
                                 <div class="col-md-12 heading-bx left">
-                                    <h2 class="title-head">Room <span>Luxury</span></h2>
-
+                                    <h2 class="title-head">Rooms <span>Available</span></h2>
                                 </div>
                             </div>
+
                             <div class="row">
                                 <div class="courses-carousel owl-carousel owl-btn-1 col-12 p-lr0">
-                                    <div class="item">
-                                        <div class="cours-bx">
-                                            <div class="action-box">
-                                                <img src="assets/images/courses/pic1.jpg" alt="">
-                                                <a href="#" class="btn">Read More</a>
-                                            </div>
 
-                                            <div class="info-bx text-center">
-                                                <h5><a href="#">Introduction EduChamp – LMS plugin</a></h5>
-                                                <span>Programming</span>
-                                            </div>
-                                            <div class="cours-more-info">
-                                                <div class="review">
-                                                    <span>3 Review</span>
-                                                    <ul class="cours-star">
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                    </ul>
+                                    <!-- Nếu không có loại phòng nào -->
+                                    <c:if test="${empty roomTypes}">
+                                        <p style="color:red">Chưa tìm thấy loại phòng nào. Vui lòng kiểm tra dữ liệu trong bảng RoomTypes!</p>
+                                    </c:if>
+
+                                    <!-- Lặp qua danh sách roomTypes -->
+                                    <c:forEach var="type" items="${roomTypes}">
+                                        <div class="item">
+                                            <div class="cours-bx">
+
+                                                <div class="action-box">
+                                                    <!-- Ảnh: giả sử bạn lưu file theo tên trong type.imageUrl -->
+
+                                                    <img
+                                                        src="${pageContext.request.contextPath}/assets/images/uploads/${type.imageUrl}"
+                                                        alt="${type.name}"
+                                                        class="img-fluid"
+                                                        />
+
+                                                    <a href="${pageContext.request.contextPath}/RoomTypeDetailServlet?typeId=${type.id}"
+                                                       class="btn">Booking Room</a>
                                                 </div>
-                                                <div class="price">
-                                                    <del>$190</del>
-                                                    <h5>$120</h5>
+
+                                                <div class="info-bx text-center">
+                                                    <h5>
+                                                        <a href="${pageContext.request.contextPath}/RoomTypeDetailServlet?typeId=${type.id}">
+                                                            RoomType: ${type.name}
+                                                        </a>
+                                                    </h5>
+                                                    <span>
+                                                        Capacity: ${type.capacity}
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                             fill="none"
+                                                             viewBox="0 0 24 24"
+                                                             stroke-width="1.5"
+                                                             stroke="currentColor"
+                                                             class="size-6"
+                                                             style="width:1.5em; height:1.5em; vertical-align:middle;">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+                                                        </svg>
+                                                    </span>
+
                                                 </div>
+
+                                                <!-- Thay thế cả block cours-more-info này -->
+                                                <div class="cours-more-info price-row">
+                                                    <!-- formatNumber như cũ -->
+                                                    <fmt:formatNumber 
+                                                        value="${type.basePrice}" 
+                                                        pattern="#,##0" 
+                                                        var="rawPrice"/>
+                                                    <!-- giá giờ thành 1 span inline -->
+                                                    <span class="price-text">${fn:replace(rawPrice, ',', ' ')}₫/Night</span>
+                                                </div>
+
+
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="item">
-                                        <div class="cours-bx">
-                                            <div class="action-box">
-                                                <img src="assets/images/courses/pic2.jpg" alt="">
-                                                <a href="#" class="btn">Read More</a>
-                                            </div>
-                                            <div class="info-bx text-center">
-                                                <h5><a href="#">Introduction EduChamp – LMS plugin</a></h5>
-                                                <span>Programming</span>
-                                            </div>
-                                            <div class="cours-more-info">
-                                                <div class="review">
-                                                    <span>3 Review</span>
-                                                    <ul class="cours-star">
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="price">
-                                                    <del>$190</del>
-                                                    <h5>$120</h5>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="item">
-                                        <div class="cours-bx">
-                                            <div class="action-box">
-                                                <img src="assets/images/courses/pic3.jpg" alt="">
-                                                <a href="#" class="btn">Read More</a>
-                                            </div>
-                                            <div class="info-bx text-center">
-                                                <h5><a href="#">Introduction EduChamp – LMS plugin</a></h5>
-                                                <span>Programming</span>
-                                            </div>
-                                            <div class="cours-more-info">
-                                                <div class="review">
-                                                    <span>3 Review</span>
-                                                    <ul class="cours-star">
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="price">
-                                                    <del>$190</del>
-                                                    <h5>$120</h5>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="item">
-                                        <div class="cours-bx">
-                                            <div class="action-box">
-                                                <img src="assets/images/courses/pic4.jpg" alt="">
-                                                <a href="#" class="btn">Read More</a>
-                                            </div>
-                                            <div class="info-bx text-center">
-                                                <h5><a href="#">Introduction EduChamp – LMS plugin</a></h5>
-                                                <span>Programming</span>
-                                            </div>
-                                            <div class="cours-more-info">
-                                                <div class="review">
-                                                    <span>3 Review</span>
-                                                    <ul class="cours-star">
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="price">
-                                                    <del>$190</del>
-                                                    <h5>$120</h5>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    </c:forEach>
+
                                 </div>
                             </div>
+
                         </div>
                     </div>
                     <!-- Popular Courses END -->
