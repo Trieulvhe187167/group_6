@@ -41,11 +41,40 @@ public class RoomTypeDAO {
         return listRoom;
     }
 
-    /**
-     * (Nếu cần) Lấy RoomType theo một tiêu chí cụ thể.
-     * Chỉ ví dụ, nên sửa lại query và params theo bảng RoomTypes.
-     */
-    public List<RoomType> getRoomTypesByCapacity(int minCapacity) {
+
+    public List<RoomType> searchRooms(String keyword) {
+        List<RoomType> list = new ArrayList<>();
+        String sql = "SELECT * FROM RoomTypes WHERE Name LIKE ? OR CAST(BasePrice AS VARCHAR) LIKE ? OR CAST(Capacity AS VARCHAR) LIKE ?";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql);) {
+
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                RoomType room = new RoomType(
+                        rs.getInt("Id"),
+                        rs.getString("Name"),
+                        rs.getString("Description"),
+                        rs.getString("image_url"),
+                        rs.getBigDecimal("BasePrice"),
+                        rs.getInt("Capacity"),
+                        rs.getTimestamp("CreatedAt"),
+                        rs.getTimestamp("UpdatedAt")
+                );
+                list.add(room);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<RoomType> getRoomsByCategory(String category) {
         List<RoomType> listRoom = new ArrayList<>();
         String sql = "SELECT Id, Name, Description, imageUrl, BasePrice, Capacity, CreatedAt, UpdatedAt "
                    + "FROM RoomTypes WHERE Capacity >= ?";

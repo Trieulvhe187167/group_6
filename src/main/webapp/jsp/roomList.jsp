@@ -93,10 +93,13 @@
                                 <div class="col-lg-3 col-md-4 col-sm-12 m-b30">
                                     <div class="widget courses-search-bx placeani">
                                         <div class="form-group">
-                                            <div class="input-group">
-                                                <label>Search Rooms</label>
-                                                <input name="dzName" type="text" required class="form-control">
-                                            </div>
+                                            <form action="RoomListServlet" method="get">
+                                                <div class="input-group">
+                                                    <label>Search Rooms</label>
+                                                    <input name="keyword" type="text" required class="form-control"><br><br>
+                                                    <button type="submit" class="btn ">Search</button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
                                     <div class="widget widget_archive">
@@ -213,33 +216,33 @@
                                             }
                                         %>
 
-<!--Phân trang START-->
+                                        <!--Phân trang START-->
                                         <div class="col-lg-12 m-b20">
                                             <div class="pagination-bx rounded-sm gray clearfix">
                                                 <ul class="pagination">
                                                     <% if(currentPage == 1){ %>
-                                                        <li class="previous"><a href="#"><i class="ti-arrow-left"></i> Prev</a></li>
-                                                    <% } else { %>
-                                                        <li class="previous"><a href="RoomListServlet?page=<%= currentPage - 1 %>"><i class="ti-arrow-left"></i> Prev</a></li>
-                                                    <% } %>
+                                                    <li class="previous"><a href="#"><i class="ti-arrow-left"></i> Prev</a></li>
+                                                        <% } else { %>
+                                                    <li class="previous"><a href="RoomListServlet?page=<%= currentPage - 1 %>"><i class="ti-arrow-left"></i> Prev</a></li>
+                                                        <% } %>
 
                                                     <% for(int i = 1; i <= (Integer)request.getAttribute("totalPages"); i++) { 
                                                         if(i == currentPage) { %>
-                                                            <li class="active"><a href="#"><%= i %></a></li>
+                                                    <li class="active"><a href="#"><%= i %></a></li>
                                                         <% } else { %>
-                                                            <li><a href="RoomListServlet?page=<%= i %>"><%= i %></a></li>
+                                                    <li><a href="RoomListServlet?page=<%= i %>"><%= i %></a></li>
                                                         <% } 
                                                     } %>
-                                                            
+
                                                     <% if(currentPage == totalPages){ %>
-                                                        <li class="next"><a href="#">Next <i class="ti-arrow-right"></i></a></li>
-                                                    <% } else { %>
-                                                        <li class="next"><a href="RoomListServlet?page=<%= currentPage + 1 %>">Next <i class="ti-arrow-right"></i></a></li>
-                                                    <% } %>
+                                                    <li class="next"><a href="#">Next <i class="ti-arrow-right"></i></a></li>
+                                                            <% } else { %>
+                                                    <li class="next"><a href="RoomListServlet?page=<%= currentPage + 1 %>">Next <i class="ti-arrow-right"></i></a></li>
+                                                            <% } %>
                                                 </ul>
                                             </div>
                                         </div>
-<!--Phân trang END-->
+                                        <!--Phân trang END-->
 
                                     </div>
                                 </div>

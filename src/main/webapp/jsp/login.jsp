@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="model.User" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -34,7 +35,19 @@
                     <p>Don't have an account? <a href="jsp/Register.jsp">Create one here</a></p>
                 </div>
 
-                <!-- Hiển thị lỗi đăng nhập -->
+                <!-- ✅ THÔNG BÁO ĐĂNG NHẬP THÀNH CÔNG -->
+                <%
+                    User user = (User) session.getAttribute("user");
+                    if (user != null) {
+                %>
+                    <div class="alert alert-success" style="color: green; font-weight: bold; margin-bottom: 15px;">
+                        Đăng nhập thành công! Xin chào <%= user.getFullName() %>!
+                    </div>
+                <%
+                    }
+                %>
+
+                <!-- ❌ THÔNG BÁO LỖI -->
                 <c:if test="${not empty errorMsg}">
                     <div class="alert alert-danger" style="color: red; font-weight: bold; margin-bottom: 15px;">
                         ${errorMsg}

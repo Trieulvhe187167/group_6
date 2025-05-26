@@ -63,7 +63,14 @@ public class RoomListServlet extends HttpServlet {
         //processRequest(request, response);
 
         RoomTypeDAO dao = new RoomTypeDAO();
-        List<RoomType> roomTypes = dao.getAllRoomTypes();
+        List<RoomType> roomTypes;
+        String keyword = request.getParameter("keyword");
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            roomTypes = dao.searchRooms(keyword.trim());
+        } else {
+            roomTypes = dao.getAllRoomTypes();
+        }
 
         //Phân trang
         int recordsPerPage = 6;
@@ -82,8 +89,7 @@ public class RoomListServlet extends HttpServlet {
         request.setAttribute("recordsPerPage", recordsPerPage);
         request.setAttribute("totalPages", totalPages);
         //Phân trang
-        
-        
+
         request.setAttribute("roomTypes", roomTypes);
         request.getRequestDispatcher("jsp/roomList.jsp").forward(request, response);
     }
@@ -111,7 +117,5 @@ public class RoomListServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-    
-    
-    
+
 }
