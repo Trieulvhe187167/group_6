@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package dal;
 
 import java.sql.Connection;
@@ -13,23 +9,24 @@ import java.util.List;
 import java.math.BigDecimal;
 import model.RoomType;
 
-/**
- *
- * @author ASUS
- */
 public class RoomTypeDAO {
 
+    /** Lấy tất cả RoomType từ bảng RoomTypes */
     public List<RoomType> getAllRoomTypes() {
         List<RoomType> listRoom = new ArrayList<>();
-        String sql = "SELECT * FROM RoomTypes";
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        String sql = "SELECT Id, Name, Description, imageUrl, BasePrice, Capacity, CreatedAt, UpdatedAt "
+                   + "FROM RoomTypes";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 RoomType rtype = new RoomType();
                 rtype.setId(rs.getInt("Id"));
                 rtype.setName(rs.getString("Name"));
                 rtype.setDescription(rs.getString("Description"));
-                rtype.setImageUrl(rs.getString("image_url"));
+                // Đổi tên cột cho khớp schema: imageUrl (không phải image_url)
+                rtype.setImageUrl(rs.getString("imageUrl"));
                 rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
                 rtype.setCapacity(rs.getInt("Capacity"));
                 rtype.setCreatedAt(rs.getTimestamp("CreatedAt"));
@@ -44,32 +41,39 @@ public class RoomTypeDAO {
         return listRoom;
     }
 
-    public List<RoomType> getRoomsByCategory(String category) {
+    /**
+     * (Nếu cần) Lấy RoomType theo một tiêu chí cụ thể.
+     * Chỉ ví dụ, nên sửa lại query và params theo bảng RoomTypes.
+     */
+    public List<RoomType> getRoomTypesByCapacity(int minCapacity) {
         List<RoomType> listRoom = new ArrayList<>();
-        String sql = "SELECT * FROM Rooms WHERE category = ?";
+        String sql = "SELECT Id, Name, Description, imageUrl, BasePrice, Capacity, CreatedAt, UpdatedAt "
+                   + "FROM RoomTypes WHERE Capacity >= ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, minCapacity);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    RoomType rtype = new RoomType();
+                    rtype.setId(rs.getInt("Id"));
+                    rtype.setName(rs.getString("Name"));
+                    rtype.setDescription(rs.getString("Description"));
+                    rtype.setImageUrl(rs.getString("imageUrl"));
+                    rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
+                    rtype.setCapacity(rs.getInt("Capacity"));
+                    rtype.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                    rtype.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
 
-            ps.setString(1, category);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                RoomType rtype = new RoomType(
-                        rs.getInt("Id"),
-                        rs.getString("Name"),
-                        rs.getString("Description"),
-                        rs.getString("image_url"),
-                        rs.getBigDecimal("BasePrice"),
-                        rs.getInt("Capacity"),
-                        rs.getTimestamp("CreatedAt"),
-                        rs.getTimestamp("UpdatedAt")
-                );
-                listRoom.add(rtype);
+                    listRoom.add(rtype);
+                }
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return listRoom;
     }
 
+    // Loại bỏ hoàn toàn phương thức getRoomsByCategory,
+    // vì nó đang query sai bảng (Rooms) mà ánh xạ vào RoomType.
 }

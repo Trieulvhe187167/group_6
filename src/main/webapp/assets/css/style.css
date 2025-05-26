@@ -3379,3 +3379,42 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#391800', end
 		margin-bottom: 5px;
 	}
 }
+/* ==== Ép tất cả ảnh carousel cùng 1 khung ==== */
+.section-area.popular-courses-bx 
+.courses-carousel .item .cours-bx .action-box {
+  height: 200px !important;    /* cao khung ảnh cố định */
+  overflow: hidden !important;  /* ẩn phần thừa */
+}
+.section-area.popular-courses-bx 
+.courses-carousel .item .cours-bx .action-box img {
+  width: 100%  !important;
+  height: 100% !important;
+  object-fit: cover !important;  /* crop & fill khung */
+  display: block !important;
+}
+/* Cho khung giá thành inline với chính nó (và với capacity nếu cùng hàng) */
+.price-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;       /* khoảng cách giữa số và text */
+  margin-left: 1rem; /* nếu bạn muốn đẩy sang phải so với capacity */
+}
+
+/* Tô đậm giá */
+.price-row .price-text {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+
+
+
+/* Nếu bạn chỉ muốn can thiệp riêng cho ảnh cụ thể trong About.jsp */
+img[alt="Our Story"] {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block;
+  margin: 0 auto;
+}
+
+
