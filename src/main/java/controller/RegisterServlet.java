@@ -85,7 +85,7 @@ public class RegisterServlet extends HttpServlet {
                     int rowsInserted = ps.executeUpdate();
 
                     if (rowsInserted > 0) {
-                        out.println("<script>alert('Registration successful!');window.location='Login.jsp';</script>");
+                        out.println("<script>alert('Registration successful!');window.location='login.jsp';</script>");
                     } else {
                         out.println("<script>alert('Registration failed.');history.back();</script>");
                     }

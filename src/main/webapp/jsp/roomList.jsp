@@ -78,7 +78,7 @@
                 <div class="breadcrumb-row">
                     <div class="container">
                         <ul class="list-inline">
-                            <li><a href="#">Home</a></li>
+                            <li><a href="index.jsp">Home</a></li>
                             <li>RoomList</li>
                         </ul>
                     </div>
@@ -179,7 +179,7 @@
                                         <div class="col-md-6 col-lg-4 col-sm-6 m-b30">
                                             <div class="cours-bx">
                                                 <div class="action-box">
-                                                    <img src="${pageContext.request.contextPath}<%= type.getImageUrl() %>" alt="Room1">
+                                                    <img  src="${pageContext.request.contextPath}/assets/images/uploads/<%= type.getImageUrl() %>" alt="Room1">
                                                     <a href="#" class="btn">Read More</a>
                                                 </div>
                                                 <div class="info-bx text-center">
@@ -209,9 +209,9 @@
                                             } else {
                                         %>
                                         
-                                        <tr
-                                            <td colspan="8">No data</td>
-                                        </tr>
+                                        <tr>
+                                            <td colspan="8">No data<td/>
+                                       <tr/>
                                         <%
                                             }
                                         %>

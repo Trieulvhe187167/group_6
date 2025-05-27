@@ -29,6 +29,8 @@
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendors/revolution/css/layers.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendors/revolution/css/settings.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendors/revolution/css/navigation.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"  />
+
         <style>
             /* Simple loader style */
             #loading-icon-bx {
@@ -385,62 +387,63 @@
             </div>  
 
 
-            <br/><!-- comment -->
-            <br/>
-            <br/>
+            
             <!-- Ví dụ 1 section: Our Services -->
-            <section class="service-info-bx section-sp2">
+            <section section class="our-services section-sp2">
                 <div class="content-block">
 
                     <!-- Our Services -->
-                    <!--			<div class="section-area content-inner service-info-bx">
-                                    <div class="container">
-                                                            <div class="row">
-                                                                    <div class="col-lg-4 col-md-4 col-sm-6">
-                                                                            <div class="service-bx">
-                                                                                    <div class="action-box">
-                                                                                            <img src="assets/images/our-services/pic1.jpg" alt="">
-                                                                                    </div>
-                                                                                    <div class="info-bx text-center">
-                                                                                            <div class="feature-box-sm radius bg-white">
-                                                                                                    <i class="fa fa-bank text-primary"></i>
-                                                                                            </div>
-                                                                                            <h4><a href="#">Best Industry Leaders</a></h4>
-                                                                                            <a href="#" class="btn radius-xl">View More</a>
-                                                                                    </div>
-                                                                            </div>
-                                                                    </div>
-                                                                    <div class="col-lg-4 col-md-4 col-sm-6">
-                                                                            <div class="service-bx">
-                                                                                    <div class="action-box">
-                                                                                            <img src="assets/images/our-services/pic2.jpg" alt="">
-                                                                                    </div>
-                                                                                    <div class="info-bx text-center">
-                                                                                            <div class="feature-box-sm radius bg-white">
-                                                                                                    <i class="fa fa-book text-primary"></i>
-                                                                                            </div>
-                                                                                            <h4><a href="#">Learn Courses Online</a></h4>
-                                                                                            <a href="#" class="btn radius-xl">View More</a>
-                                                                                    </div>
-                                                                            </div>
-                                                                    </div>
-                                                                    <div class="col-lg-4 col-md-4 col-sm-12">
-                                                                            <div class="service-bx m-b0">
-                                                                                    <div class="action-box">
-                                                                                            <img src="assets/images/our-services/pic3.jpg" alt="">
-                                                                                    </div>
-                                                                                    <div class="info-bx text-center">
-                                                                                            <div class="feature-box-sm radius bg-white">
-                                                                                                    <i class="fa fa-file-text-o text-primary"></i>
-                                                                                            </div>
-                                                                                            <h4><a href="#">Book Library & Store</a></h4>
-                                                                                            <a href="#" class="btn radius-xl">View More</a>
-                                                                                    </div>
-                                                                            </div>
-                                                                    </div>
-                                                            </div>
-                                                    </div>
-                                </div>-->
+                    <div class="section-area content-inner service-info-bx">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-lg-4 col-md-4 col-sm-6">
+                                    <div class="service-bx">
+                                        <div class="action-box">
+                                            <img src="assets/images/our-services/pic1.jpg" alt="">
+                                        </div>
+                                        <div class="info-bx text-center">
+                                            <div class="feature-box-sm radius bg-white">
+                                                <i class="fa fa-utensils text-primary"></i>
+                                            </div>
+                                            <h4><a href="#">Restaurant</a></h4>
+                                            <p>Enjoy world-class cuisine from a 5-star chef with exquisite Asian - European dishes, served 24/7 at our luxurious restaurant.</p>
+                                            <a href="#" class="btn radius-xl">View More</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-6">
+                                    <div class="service-bx">
+                                        <div class="action-box">
+                                            <img src="assets/images/our-services/pic2.jpg" alt="">
+                                        </div>
+                                        <div class="info-bx text-center">
+                                            <div class="feature-box-sm radius bg-white">
+                                                <i class="fa fa-spa text-primary"></i>
+                                            </div>
+                                            <h4><a href="#">Spa & Wellness</a></h4>
+                                            <p>Relax and rejuvenate with premium spa treatments, saunas, and professional massage services from leading brands.</p>
+                                            <a href="#" class="btn radius-xl">View More</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-12">
+                                    <div class="service-bx m-b0">
+                                        <div class="action-box">
+                                            <img src="assets/images/our-services/pic3.jpg" alt="">
+                                        </div>
+                                        <div class="info-bx text-center">
+                                            <div class="feature-box-sm radius bg-white">
+                                                <i class="fa fa-swimmer text-primary"></i>
+                                            </div>
+                                            <h4><a href="#">Infinity swimming pool</a></h4>
+                                            <p>Immerse yourself in the infinity pool with stunning panoramic views, where you can relax and enjoy premium drinks.</p>
+                                            <a href="#" class="btn radius-xl">View More</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Our Services END -->
 
                     <!-- Popular Courses -->
@@ -510,7 +513,7 @@
                                                         pattern="#,##0" 
                                                         var="rawPrice"/>
                                                     <!-- giá giờ thành 1 span inline -->
-                                                    <span class="price-text">${fn:replace(rawPrice, ',', ' ')}₫/Night</span>
+                                                    <span class="price-text">${fn:replace(rawPrice, ',', '.')}₫/Night</span>
                                                 </div>
 
 
@@ -525,7 +528,7 @@
                     </div>
                     <!-- Popular Courses END -->
 
-                    <!-- Form -->
+<!--                     Form 
                     <div class="section-area section-sp1 ovpr-dark bg-fix online-cours" style="background-image:url(assets/images/background/bg1.jpg);">
                         <div class="container">
                             <div class="row">
@@ -571,16 +574,15 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div>-->
                     <!-- Form END -->
-                    <div class="section-area section-sp2">
+                    <div class="upcoming-events section-sp2">
                         <div class="container">
                             <div class="row">
-                                <div class="col-md-12 text-center heading-bx">
-                                    <h2 class="title-head m-b0">HOTEL LUXURY <span>Events</span></h2>
-                                    <p class="m-b0">
-                                        Experience and use luxury services </p>
-                                </div>
+                                <div class="col-md-12 heading-bx left">
+                                    <h2 class="title-head m-b0">HOTEL LUXURY <span>Events </span></h2>
+                               <p class="m-b0">Experience and use luxury services </p>
+                                </div>                                
                             </div>
                             <div class="row">
                                 <div class="upcoming-event-carousel owl-carousel owl-btn-center-lr owl-btn-1 col-12 p-lr0  m-b30">
