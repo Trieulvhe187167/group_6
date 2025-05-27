@@ -1914,8 +1914,29 @@ button.back-to-top {
 	13. INNER CONTENT CSS
 =========================*/
 /* About Section */
-.service-info-bx{
-	margin-top: -215px;
+
+.our-services {
+  margin-top: -215px;
+}
+.service-info-bx .row {
+  display: flex;
+  flex-wrap: wrap;    /* Khi màn hình nhỏ, vẫn cho xuống hàng */
+  margin: 0 -15px;     /* Đối ứng với padding của .col-* */
+}
+.service-info-bx .service-bx .action-box {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+.service-info-bx .service-bx .action-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* 2. Mỗi cột trở thành flex item, và kéo dài full chiều cao */
+.service-info-bx .row > [class*="col-"] {
+  padding: 0 15px;
+  margin-bottom: 30px; /* Khoảng cách hàng khi wrap */
+  display: flex;
 }
 .service-bx{
 	box-shadow:0 0 25px 0 rgba(29,25,0,0.25);
@@ -1926,16 +1947,20 @@ button.back-to-top {
 	-o-transition:all 0.5s;
 	position:relative;
 	background-color:#fff;
+        
 }
+
 .service-bx [class*="feature-"]{
 	box-shadow: 0 0 25px 0 rgba(29,25,0,0.15);
 	margin-top: -30px;
 	position: relative;
 	top: -40px;
 	margin-bottom: -20px;
+        
 }
 .service-bx .info-bx{
 	padding:30px;
+        
 }
 .service-bx:hover{
 	transform:translateY(-15px);
@@ -1943,6 +1968,7 @@ button.back-to-top {
 	-webkit-transform:translateY(-15px);
 	-ms-transform:translateY(-15px);
 	-o-transform:translateY(-15px);
+        
 }
 /* Recent News */
 .recent-news{

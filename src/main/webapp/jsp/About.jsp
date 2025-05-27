@@ -61,7 +61,15 @@
                 </div>
 
                 <!-- Breadcrumb -->
-          
+               <!-- Breadcrumb row -->
+                <div class="breadcrumb-row">
+                    <div class="container">
+                        <ul class="list-inline">
+                            <li><a href="/index.jsp">Home</a></li>
+                            <li>About</li>
+                        </ul>
+                    </div>
+                </div>
                 <!-- Content Block -->
                 <div class="content-block">
                     <!-- Features -->
@@ -74,7 +82,7 @@
                                             <i class="fa fa-gem fa-2x"></i>
                                         </div>
                                         <div class="icon-content">
-                                            <h5 class="ttr-tilte">Our Philosophy</h5>
+                                            <h2 class="ttr-tilte">Our Philosophy</h2>
                                             <p>We blend timeless elegance with modern comfort for every guest.</p>
                                         </div>
                                     </div>

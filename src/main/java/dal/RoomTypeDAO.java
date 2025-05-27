@@ -74,7 +74,7 @@ public class RoomTypeDAO {
         return list;
     }
 
-    public List<RoomType> getRoomsByCategory(String category) {
+    public List<RoomType> getRoomsByCategory(int minCapacity) {
         List<RoomType> listRoom = new ArrayList<>();
         String sql = "SELECT Id, Name, Description, imageUrl, BasePrice, Capacity, CreatedAt, UpdatedAt "
                    + "FROM RoomTypes WHERE Capacity >= ?";
