@@ -3,14 +3,11 @@ package controller;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.sql.*;
-import java.util.regex.Pattern;
 import dal.DBContext;
-
 
 @WebServlet("/RegisterServlet")
 public class RegisterServlet extends HttpServlet {
@@ -44,6 +41,7 @@ public class RegisterServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
 
+        String username = request.getParameter("username");
         String fullName = request.getParameter("name");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
@@ -67,7 +65,6 @@ public class RegisterServlet extends HttpServlet {
             }
 
             String hashedPassword = hashPassword(password);
-            String username = email; // dùng email làm username
             String role = "GUEST";
 
             try (Connection conn = DBContext.getConnection()) {
@@ -90,13 +87,20 @@ public class RegisterServlet extends HttpServlet {
                         out.println("<script>alert('Registration failed.');history.back();</script>");
                     }
                 }
+
+            } catch (SQLException e) {
+                if (e.getMessage().contains("UNIQUE") || e.getMessage().contains("duplicate")) {
+                    out.println("<script>alert('Username or email already exists.');history.back();</script>");
+                } else {
+                    e.printStackTrace();
+                    out.println("<script>alert('Database error: " + e.getMessage() + "');history.back();</script>");
+                }
             }
 
-        } catch (SQLIntegrityConstraintViolationException e) {
-            response.getWriter().println("<script>alert('Username or email already exists.');history.back();</script>");
         } catch (Exception e) {
             e.printStackTrace();
-            response.getWriter().println("<script>alert('Error occurred: " + e.getMessage() + "');history.back();</script>");
+            response.getWriter().println("<script>alert('Unexpected error: " + e.getMessage() + "');history.back();</script>");
         }
     }
 }
+
