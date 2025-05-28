@@ -91,7 +91,7 @@
                         <a class="nav-link" href="${pageContext.request.contextPath}/RoomListServlet">LIST ROOM</a>
                     </li>
                     <li class="nav-item ${fn:endsWith(currentUrl,'/ManagerCustomer.jsp') ? 'active' : ''}">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/jsp/ManagerCustomer.jsp">CONTACT</a>
+                        <a class="nav-link" href="${pageContext.request.contextPath}/jsp/contact.jsp">CONTACT</a>
                     </li>
                 </ul>
             </nav>
