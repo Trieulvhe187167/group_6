@@ -33,7 +33,7 @@
         <link rel="shortcut icon" type="image/x-icon" href="${pageContext.request.contextPath}/assets/images/favicon.png" />
 
         <!-- PAGE TITLE HERE ============================================= -->
-        <title>EduChamp | List of Room </title>
+        <title>LuxuryHotel | List of Room </title>
 
         <!-- MOBILE SPECIFIC ============================================= -->
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -55,6 +55,8 @@
         <!-- STYLESHEETS ============================================= -->
         <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/style.css">
         <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/color/color-1.css">
+        
+
     </head>
     <body id="bg">
         <div class="page-wraper">
@@ -78,7 +80,7 @@
                 <div class="breadcrumb-row">
                     <div class="container">
                         <ul class="list-inline">
-                            <li><a href="index.jsp">Home</a></li>
+                            <li><a href="#">Home</a></li>
                             <li>RoomList</li>
                         </ul>
                     </div>
@@ -112,13 +114,14 @@
                                             <li><a href="#">Technology</a></li>
                                         </ul>
                                     </div>
+                                    
                                     <div class="widget">
                                         <a href="#"><img src="assets/images/adv/adv.jpg" alt=""/></a>
                                     </div>
                                     <div class="widget recent-posts-entry widget-courses">
                                         <h5 class="widget-title style-1">Recent Courses</h5>
                                         <div class="widget-post-bx">
-                                            <div class="widget-post clearfix"> 
+                                            <div class="widget-post clearfix">
                                                 <div class="ttr-post-media"> <img src="${pageContext.request.contextPath}/assets/images/blog/recent-blog/pic1.jpg" width="200" height="143" alt=""> </div>
                                                 <div class="ttr-post-info">
                                                     <div class="ttr-post-header">
@@ -179,11 +182,11 @@
                                         <div class="col-md-6 col-lg-4 col-sm-6 m-b30">
                                             <div class="cours-bx">
                                                 <div class="action-box">
-                                                    <img  src="${pageContext.request.contextPath}/assets/images/uploads/<%= type.getImageUrl() %>" alt="Room1">
-                                                    <a href="#" class="btn">Read More</a>
+                                                    <img src="${pageContext.request.contextPath}<%= type.getImageUrl() %>" alt="Room1">
+                                                    <a href="RoomDetailServlet?id=<%= type.getId() %>" class="btn">Read More</a>
                                                 </div>
                                                 <div class="info-bx text-center">
-                                                    <h5><a href="#"><%= type.getName() %></a></h5>
+                                                    <h5><a href="RoomDetailServlet?id=<%= type.getId() %>"><%= type.getName() %></a></h5>
                                                     <span><%= type.getDescription() %></span>
                                                 </div>
                                                 <div class="cours-more-info">
@@ -208,10 +211,9 @@
                                                 }
                                             } else {
                                         %>
-                                        
                                         <tr>
-                                            <td colspan="8">No data<td/>
-                                       <tr/>
+                                            <td colspan="8">No data</td>
+                                        </tr>
                                         <%
                                             }
                                         %>
@@ -262,7 +264,33 @@
             <!-- Footer END ==== -->
             <button class="back-to-top fa fa-chevron-up" ></button>
         </div>
-        <!-- External JavaScripts -->
+            
+            <script>
+                function toggleDropdown(el) {
+                    const li = el.closest("li");
+                    li.classList.toggle("open");
+
+                    // Đóng các dropdown khác nếu có
+                    document.querySelectorAll(".navbar-nav > li").forEach(item => {
+                        if (item !== li) item.classList.remove("open");
+                    });
+                }
+
+                function selectFilter(inputId, value) {
+                    document.getElementById(inputId).value = value;
+                    document.getElementById("filterForm").submit();
+                }
+
+                // Đóng dropdown nếu click ra ngoài
+                document.addEventListener('click', function (e) {
+                    if (!e.target.closest('.navbar-nav')) {
+                        document.querySelectorAll('.navbar-nav > li').forEach(li => li.classList.remove('open'));
+                    }
+                });
+            </script>
+
+
+            <!-- External JavaScripts -->
         <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
         <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/popper.min.js"></script>
         <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/bootstrap.min.js"></script>
