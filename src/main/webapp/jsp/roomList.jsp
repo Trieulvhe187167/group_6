@@ -69,7 +69,7 @@
             <!-- Content -->
             <div class="page-content bg-white">
                 <!-- inner page banner -->
-                <div class="page-banner ovbl-dark" style="background-image:url(${pageContext.request.contextPath}/assets/images/banner/banner_roomList.jpg);">
+                <div class="page-banner ovbl-dark" style="background-image:url('${pageContext.request.contextPath}/assets/images/banner/banner2.jpg');">
                     <div class="container">
                         <div class="page-banner-entry">
                             <h1 class="text-white">Room List</h1>
@@ -182,7 +182,7 @@
                                         <div class="col-md-6 col-lg-4 col-sm-6 m-b30">
                                             <div class="cours-bx">
                                                 <div class="action-box">
-                                                    <img src="${pageContext.request.contextPath}<%= type.getImageUrl() %>" alt="Room1">
+                                                    <img  src="${pageContext.request.contextPath}/assets/images/uploads/<%= type.getImageUrl() %>" alt="Room1">
                                                     <a href="RoomDetailServlet?id=<%= type.getId() %>" class="btn">Read More</a>
                                                 </div>
                                                 <div class="info-bx text-center">

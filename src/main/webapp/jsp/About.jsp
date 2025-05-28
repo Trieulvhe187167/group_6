@@ -48,8 +48,7 @@
 
         <div class="page-wraper">
             <!-- Include phần header (chỉ chứa nav/menu) -->
-            <%@ include file="header.jsp" %>
-
+                <jsp:include page="header.jsp" />
             <!-- Nội dung chính -->
             <div class="page-content">
                 <!-- Banner -->
