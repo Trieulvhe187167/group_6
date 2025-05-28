@@ -5,6 +5,7 @@
 <c:set var="currentUrl" value="${pageContext.request.requestURI}" />
 <!-- L?y URI hi?n t?i -->
 <c:set var="currentUrl" value="${pageContext.request.requestURI}" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <header class="header rs-nav header-transparent">
 
     <!-- Top bar -->
@@ -64,14 +65,14 @@
             </button>
 
             <!-- Secondary Menu -->
-<!--            <div class="secondary-menu">
+            <div class="secondary-menu">
                 <ul class="list-inline mb-0">
-                    <li class="list-inline-item"><a href="#" class="btn-link"><i class="fa fa-facebook"></i></a></li>
-                    <li class="list-inline-item"><a href="#" class="btn-link"><i class="fa fa-google-plus"></i></a></li>
-                    <li class="list-inline-item"><a href="#" class="btn-link"><i class="fa fa-linkedin"></i></a></li>
-                    <li class="list-inline-item search-btn"><button id="quik-search-btn" class="btn-link"><i class="fa fa-search"></i></button></li>
+                    <li class="list-inline-item"><a href="#" class="btn-link"><i class="fab fa-facebook-f"></i></a></li>
+                    <li class="list-inline-item"><a href="#" class="btn-link"><i class="fab fa-google-plus-g"></i></a></li>
+                    <li class="list-inline-item"><a href="#" class="btn-link"><i class="fab fa-linkedin-in"></i></a></li>
+<!--                    <li class="list-inline-item search-btn"><button id="quik-search-btn" class="btn-link"><i class="fa fa-search"></i></button></li>-->
                 </ul>
-            </div>-->
+            </div>
             <!-- Search Bar -->
             <div class="nav-search-bar">
                 <form action="#"><input type="text" placeholder="Type to search"/><span><i class="ti-search"></i></span></form>
