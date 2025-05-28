@@ -29,7 +29,7 @@ public class RoomTypeDAO {
                 rtype.setId(rs.getInt("Id"));
                 rtype.setName(rs.getString("Name"));
                 rtype.setDescription(rs.getString("Description"));
-                rtype.setImageUrl(rs.getString("image_url"));
+                rtype.setImageUrl(rs.getString("imageUrl"));
                 rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
                 rtype.setCapacity(rs.getInt("Capacity"));
                 rtype.setCreatedAt(rs.getTimestamp("CreatedAt"));
@@ -61,7 +61,7 @@ public class RoomTypeDAO {
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("image_url"),
+                        rs.getString("imageUrl"),
                         rs.getBigDecimal("BasePrice"),
                         rs.getInt("Capacity"),
                         rs.getTimestamp("CreatedAt"),
@@ -90,7 +90,7 @@ public class RoomTypeDAO {
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("image_url"),
+                        rs.getString("imageUrl"),
                         rs.getBigDecimal("BasePrice"),
                         rs.getInt("Capacity"),
                         rs.getTimestamp("CreatedAt"),
@@ -118,7 +118,7 @@ public class RoomTypeDAO {
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("image_url"),
+                        rs.getString("imageUrl"),
                         rs.getBigDecimal("BasePrice"),
                         rs.getInt("Capacity"),
                         rs.getTimestamp("CreatedAt"),

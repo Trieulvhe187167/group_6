@@ -64,14 +64,14 @@
             </button>
 
             <!-- Secondary Menu -->
-            <div class="secondary-menu">
+<!--            <div class="secondary-menu">
                 <ul class="list-inline mb-0">
                     <li class="list-inline-item"><a href="#" class="btn-link"><i class="fa fa-facebook"></i></a></li>
                     <li class="list-inline-item"><a href="#" class="btn-link"><i class="fa fa-google-plus"></i></a></li>
                     <li class="list-inline-item"><a href="#" class="btn-link"><i class="fa fa-linkedin"></i></a></li>
                     <li class="list-inline-item search-btn"><button id="quik-search-btn" class="btn-link"><i class="fa fa-search"></i></button></li>
                 </ul>
-            </div>
+            </div>-->
             <!-- Search Bar -->
             <div class="nav-search-bar">
                 <form action="#"><input type="text" placeholder="Type to search"/><span><i class="ti-search"></i></span></form>
@@ -90,7 +90,7 @@
                     <li class="nav-item ${fn:endsWith(currentUrl,'/roomList.jsp') ? 'active' : ''}">
                         <a class="nav-link" href="${pageContext.request.contextPath}/RoomListServlet">LIST ROOM</a>
                     </li>
-                    <li class="nav-item ${fn:endsWith(currentUrl,'/ManagerCustomer.jsp') ? 'active' : ''}">
+                    <li class="nav-item ${fn:endsWith(currentUrl,'/contact.jsp') ? 'active' : ''}">
                         <a class="nav-link" href="${pageContext.request.contextPath}/jsp/contact.jsp">CONTACT</a>
                     </li>
                 </ul>

@@ -479,13 +479,14 @@
                                                         class="img-fluid"
                                                         />
 
-                                                    <a href="${pageContext.request.contextPath}/RoomTypeDetailServlet?typeId=${type.id}"
+                                                    <a href="RoomDetailServlet?id=${type.id}""
                                                        class="btn">Booking Room</a>
                                                 </div>
 
                                                 <div class="info-bx text-center">
                                                     <h5>
-                                                        <a href="${pageContext.request.contextPath}/RoomTypeDetailServlet?typeId=${type.id}">
+                                                        
+                                                        <a href="RoomDetailServlet?id=${type.id}">
                                                             RoomType: ${type.name}
                                                         </a>
                                                     </h5>
