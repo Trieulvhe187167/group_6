@@ -18,7 +18,7 @@
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/shortcodes/shortcodes.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/color/color-1.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <!-- 1. jQuery chỉ import 1 lần ở đây -->
         <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
         <script>
@@ -48,7 +48,7 @@
 
         <div class="page-wraper">
             <!-- Include phần header (chỉ chứa nav/menu) -->
-                <jsp:include page="header.jsp" />
+            <jsp:include page="header.jsp" />
             <!-- Nội dung chính -->
             <div class="page-content">
                 <!-- Banner -->
@@ -164,7 +164,7 @@
                         <div class="container">
                             <h3 class="title-head">Contact Us</h3>
                             <a href="https://mail.google.com/mail/?view=cm&fs=1&to=luxuryhotel999@gmail.com&su=Feedback%20from%20Website&body=Hello%20Luxury%20Hotel," target="_blank" rel="noopener">
-                                <i class="fa fa-envelope-o"></i>
+                                <i class="fab fa-google"></i>
                                 luxuryhotel999@gmail.com
                             </a>
                             <p><i class="fa fa-phone"></i> (+84) 3 1234 5678</p>

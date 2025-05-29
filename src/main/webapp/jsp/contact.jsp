@@ -78,7 +78,7 @@
                             <li class="mb-2"><i class="ti-location-pin mr-2"></i> 123 Luxury St., Downtown, Hanoi</li>
                             <li class="mb-2"><i class="ti-mobile mr-2"></i>(+84) 3 1234 5678</li>     
   <li><a class="text-white" href="https://mail.google.com/mail/?view=cm&fs=1&to=luxuryhotel999@gmail.com&su=Feedback%20from%20Website&body=Hello%20Luxury%20Hotel," target="_blank" rel="noopener">
-    <i class="fa fa-envelope-o mr-2"></i>
+    <i class="fab fa-google text-white mr-2"></i>
     luxuryhotel999@gmail.com
 </a></li>                     </ul>
                         
@@ -135,11 +135,11 @@
         </div>
         <!-- End Page Content -->
 
-        <%-- Shared Footer --%>
-        <jsp:include page="/jsp/footer.jsp" flush="true" />
+  
 
     </div>
-
+      <%-- Shared Footer --%>
+        <jsp:include page="/jsp/footer.jsp" flush="true" />
     <!-- External JS -->
     <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
     <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/popper.min.js"></script>
