@@ -94,6 +94,9 @@
                     <li class="nav-item ${fn:endsWith(currentUrl,'/contact.jsp') ? 'active' : ''}">
                         <a class="nav-link" href="${pageContext.request.contextPath}/jsp/contact.jsp">CONTACT</a>
                     </li>
+                    <li class="nav-item ${fn:endsWith(currentUrl,'/blog.jsp') ? 'active' : ''}">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/jsp/blog.jsp">BLOG</a>
+                    </li>
                 </ul>
             </nav>
         </div>
