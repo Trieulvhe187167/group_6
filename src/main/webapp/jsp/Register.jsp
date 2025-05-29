@@ -32,7 +32,6 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <label>Your Name</label>
                                     <input name="name" type="text" required class="form-control">
                                 </div>
                             </div>
@@ -50,7 +49,6 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <label>Your Email Address</label>
                                     <input name="email" type="email" required class="form-control">
                                 </div>
                             </div>
@@ -58,7 +56,6 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group"> 
-                                    <label>Your Password</label>
                                     <input name="password" type="password" required class="form-control">
                                 </div>
                             </div>
@@ -66,7 +63,6 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <label>Your Phone Number</label>
                                     <input name="phone" type="text" required class="form-control">
                                 </div>
                             </div>
