@@ -12,6 +12,31 @@ public class User {
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
+    public User(int id, String username, String fullName, String email, String phone, String role, Timestamp createdAt, Timestamp updatedAt) {
+        this.id = id;
+        this.username = username;
+        this.fullName = fullName;
+        this.email = email;
+        this.phone = phone;
+        this.role = role;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public User(int id, String username, String fullName, String email, String phone, String role) {
+        this.id = id;
+        this.username = username;
+        this.fullName = fullName;
+        this.email = email;
+        this.phone = phone;
+        this.role = role;
+    }
+
+    public User() {
+    }
+    
+   
+
     // Getters and Setters
     public int getId() {
         return id;

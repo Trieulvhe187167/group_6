@@ -87,11 +87,14 @@
                     <li class="nav-item ${fn:endsWith(currentUrl,'/About.jsp') ? 'active' : ''}">
                         <a class="nav-link" href="${pageContext.request.contextPath}/jsp/About.jsp">ABOUT</a>
                     </li>
-                    <li class="nav-item ${fn:endsWith(currentUrl,'/roomList.jsp') ? 'active' : ''}">
+                    <li class="nav-item ${fn:endsWith(currentUrl,'/RoomListServlet') ? 'active' : ''}">
                         <a class="nav-link" href="${pageContext.request.contextPath}/RoomListServlet">LIST ROOM</a>
                     </li>
                     <li class="nav-item ${fn:endsWith(currentUrl,'/contact.jsp') ? 'active' : ''}">
                         <a class="nav-link" href="${pageContext.request.contextPath}/jsp/contact.jsp">CONTACT</a>
+                    </li>
+                    <li class="nav-item ${fn:endsWith(currentUrl,'/ManagerUserServlet') ? 'active' : ''}">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/ManagerUserServlet">ManagerCustomer</a>
                     </li>
                 </ul>
             </nav>
