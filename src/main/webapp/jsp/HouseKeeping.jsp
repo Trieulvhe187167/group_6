@@ -2,8 +2,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ page import="java.util.List" %>
-<%@ page import="model.Room" %>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -57,86 +55,7 @@
                     </div>
                 </div>
 <!-- code -->
-    <%List<Room> rooms = (List<Room>) request.getAttribute("rooms");
-    String search = request.getAttribute("search") != null ? (String) request.getAttribute("search") : "";
-    String status = request.getAttribute("status") != null ? (String) request.getAttribute("status") : "ALL";
-%>
-<html>
-<head>
-    <title>Housekeeping - Quản lý phòng</title>
-    <style>
-        body { font-family: Arial; padding: 20px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
-        select, input[type=text] { padding: 5px; }
-        form.inline { display: inline; }
-    </style>
-</head>
-<body>
-    <h2>Housekeeping - Quản lý trạng thái phòng</h2>
 
-    <!-- Form lọc và tìm kiếm phòng (gửi GET -> gọi doGet()) -->
-    <form method="get" action="housekeeping">
-        <label>Tìm theo số phòng:</label>
-        <input type="text" name="search" value="<%= search %>" placeholder="Nhập số phòng..." />
-
-        <label>Lọc theo trạng thái:</label>
-        <select name="status">
-            <option value="ALL" <%= "ALL".equals(status) ? "selected" : "" %>>Tất cả</option>
-            <option value="AVAILABLE" <%= "AVAILABLE".equals(status) ? "selected" : "" %>>AVAILABLE</option>
-            <option value="OCCUPIED" <%= "OCCUPIED".equals(status) ? "selected" : "" %>>OCCUPIED</option>
-            <option value="MAINTENANCE" <%= "MAINTENANCE".equals(status) ? "selected" : "" %>>MAINTENANCE</option>
-            <option value="DIRTY" <%= "DIRTY".equals(status) ? "selected" : "" %>>DIRTY</option>
-        </select>
-
-        <input type="submit" value="Lọc / Tìm" />
-    </form>
-
-    <!-- Bảng hiển thị danh sách phòng -->
-    <table>
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Số phòng</th>
-            <th>Trạng thái hiện tại</th>
-            <th>Thay đổi trạng thái</th>
-        </tr>
-        </thead>
-        <tbody>
-        <%
-            if (rooms != null && !rooms.isEmpty()) {
-                for (Room r : rooms) {
-        %>
-        <tr>
-            <td><%= r.getId() %></td>
-            <td><%= r.getRoomNumber() %></td>
-            <td><%= r.getStatus() %></td>
-            <td>
-                <!-- Form cập nhật trạng thái phòng (POST -> gọi doPost()) -->
-                <form method="post" action="housekeeping" class="inline">
-                    <input type="hidden" name="roomId" value="<%= r.getId() %>" />
-                    <select name="newStatus">
-                        <option value="AVAILABLE" <%= "AVAILABLE".equals(r.getStatus()) ? "selected" : "" %>>AVAILABLE</option>
-                        <option value="OCCUPIED" <%= "OCCUPIED".equals(r.getStatus()) ? "selected" : "" %>>OCCUPIED</option>
-                        <option value="MAINTENANCE" <%= "MAINTENANCE".equals(r.getStatus()) ? "selected" : "" %>>MAINTENANCE</option>
-                        <option value="DIRTY" <%= "DIRTY".equals(r.getStatus()) ? "selected" : "" %>>DIRTY</option>
-                    </select>
-                    <input type="submit" value="Cập nhật" />
-                </form>
-            </td>
-        </tr>
-        <%
-                }
-            } else {
-        %>
-        <tr><td colspan="4">Không tìm thấy phòng nào.</td></tr>
-        <%
-            }
-        %>
-        </tbody>
-    </table>
-</body>
-</html>
 
         </div>
                                    <%@ include file="footer.jsp" %>
