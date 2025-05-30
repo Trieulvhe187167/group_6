@@ -5,6 +5,7 @@
 
 package controller;
 
+import dal.DBContext;
 import dal.UserDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,6 +14,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 import model.User;
@@ -59,19 +61,10 @@ public class ManagerUserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        String search = request.getParameter("search");
-        String role = request.getParameter("role");
-        String sort = request.getParameter("sort");
-        int page = Integer.parseInt(Optional.ofNullable(request.getParameter("page")).orElse("1"));
-        int pageSize = 5;
+        UserDAO userDAO = new UserDAO();
+        List<User> users = userDAO.getAllUsers();
 
-        UserDAO dao = new UserDAO();
-        List<User> userList = dao.getFilteredUsers(search, role, sort, page, pageSize);
-        int totalRecords = dao.countFilteredUsers(search, role);
-        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
-
-        request.setAttribute("userList", userList);
-        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("users", users);
         request.getRequestDispatcher("/jsp/ManagerCustomer.jsp").forward(request, response);
     } 
 
@@ -85,17 +78,30 @@ public class ManagerUserServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        String action = request.getParameter("action");
-        int id = Integer.parseInt(request.getParameter("id"));
-        UserDAO dao = new UserDAO();
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String fullName = request.getParameter("fullName");
+        String email = request.getParameter("email");
+        String phone = request.getParameter("phone");
+        String role = request.getParameter("role");
 
-        if ("delete".equals(action)) {
-            dao.deleteUser(id);
-        } else if ("reject".equals(action)) {
-            dao.rejectUser(id);
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setFullName(fullName);
+        user.setEmail(email);
+        user.setPhone(phone);
+        user.setRole(role);
+
+        UserDAO userDAO = new UserDAO();
+        boolean success = userDAO.createUser(user);
+
+        if (success) {
+            request.getRequestDispatcher("/ManagerUserServlet").forward(request, response); // về trang danh sách
+        } else {
+            request.setAttribute("error", "Không thể tạo user");
+            request.getRequestDispatcher("/jsp/create_user.jsp").forward(request, response);
         }
-
-        response.sendRedirect("ManagerUserServlet");
     
     }
 

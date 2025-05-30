@@ -14,8 +14,7 @@ public class UserDAO {
 
     public User login(String username, String password) {
         String sql = "SELECT * FROM Users WHERE Username = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
@@ -47,7 +46,6 @@ public class UserDAO {
         }
         return null;
     }
-    
 
     // Hàm mã hóa SHA-256
     private String hashPassword(String password) throws Exception {
@@ -59,7 +57,8 @@ public class UserDAO {
         }
         return sb.toString();
     }
-public List<User> getFilteredUsers(String search, String role, String sort, int page, int pageSize) {
+
+    public List<User> getFilteredUsers(String search, String role, String sort, int page, int pageSize) {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM Users WHERE 1=1";
 
@@ -76,8 +75,7 @@ public List<User> getFilteredUsers(String search, String role, String sort, int 
         }
         sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             int idx = 1;
             if (search != null && !search.isEmpty()) {
@@ -92,14 +90,14 @@ public List<User> getFilteredUsers(String search, String role, String sort, int 
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                list.add(new User(
-                    rs.getInt("Id"),
-                    rs.getString("Username"),
-                    rs.getString("FullName"),
-                    rs.getString("Email"),
-                    rs.getString("Phone"),
-                    rs.getString("Role")
-                ));
+//                list.add(new User(
+//                    rs.getInt("Id"),
+//                    rs.getString("Username"),
+//                    rs.getString("FullName"),
+//                    rs.getString("Email"),
+//                    rs.getString("Phone"),
+//                    rs.getString("Role")
+//                ));
             }
 
         } catch (Exception e) {
@@ -117,8 +115,7 @@ public List<User> getFilteredUsers(String search, String role, String sort, int 
             sql += " AND Role = ?";
         }
 
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             int idx = 1;
             if (search != null && !search.isEmpty()) {
@@ -130,7 +127,9 @@ public List<User> getFilteredUsers(String search, String role, String sort, int 
             }
 
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1);
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -138,21 +137,9 @@ public List<User> getFilteredUsers(String search, String role, String sort, int 
         return 0;
     }
 
-    public void deleteUser(int id) {
-        String sql = "DELETE FROM Users WHERE Id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public void rejectUser(int id) {
         String sql = "UPDATE Users SET Role = 'REJECTED' WHERE Id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
         } catch (Exception e) {
@@ -160,7 +147,60 @@ public List<User> getFilteredUsers(String search, String role, String sort, int 
         }
     }
 
+    public List<User> getAllUsers() {
+        List<User> userList = new ArrayList<>();
+        String sql = "SELECT * FROM Users";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                User user = new User();
+                user.setId(rs.getInt("Id"));
+                user.setUsername(rs.getString("Username"));
+                user.setPassword(rs.getString("PasswordHash"));
+                user.setFullName(rs.getString("FullName"));
+                user.setEmail(rs.getString("Email"));
+                user.setPhone(rs.getString("Phone"));
+                user.setRole(rs.getString("Role"));
+                user.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                user.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+
+                userList.add(user);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return userList;
+    }
+
+    public boolean createUser(User user) {
+        String sql = "INSERT INTO users (username, passwordhash, fullname, email, phone, role, createdat, updatedat) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, user.getPassword());
+            stmt.setString(3, user.getFullName());
+            stmt.setString(4, user.getEmail());
+            stmt.setString(5, user.getPhone());
+            stmt.setString(6, user.getRole());
+
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     
+    // Xóa user theo ID
+    public boolean deleteUser(int id) {
+        String sql = "DELETE FROM users WHERE id = ?";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }
-
-

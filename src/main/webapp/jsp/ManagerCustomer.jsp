@@ -1,53 +1,128 @@
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="model.User" %>
-<jsp:include page="header.jsp" />
+<html>
+    <head>
+        <!--        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">-->
+        <!-- META ============================================= -->
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="keywords" content="" />
+        <meta name="author" content="" />
+        <meta name="robots" content="" />
 
-<h2>Quản lý khách hàng</h2>
+        <!-- DESCRIPTION -->
+        <meta name="description" content="EduChamp : Education HTML Template" />
 
-<form method="get" action="ManagerUserServlet">
-    <input type="text" name="search" placeholder="Tìm theo tên/email..." value="${param.search}" />
-    <select name="role">
-        <option value="">Tất cả vai trò</option>
-        <option value="GUEST" ${param.role == 'GUEST' ? 'selected' : ''}>Guest</option>
-        <option value="RECEPTIONIST" ${param.role == 'RECEPTIONIST' ? 'selected' : ''}>Receptionist</option>
-    </select>
-    <button type="submit">Lọc</button>
-</form>
+        <!-- OG -->
+        <meta property="og:title" content="EduChamp : Education HTML Template" />
+        <meta property="og:description" content="EduChamp : Education HTML Template" />
+        <meta property="og:image" content="" />
+        <meta name="format-detection" content="telephone=no">
 
-<table border="1">
-    <thead>
-        <tr>
-            <th><a href="?sort=id">ID</a></th>
-            <th><a href="?sort=fullName">Tên</a></th>
-            <th><a href="?sort=email">Email</a></th>
-            <th>Vai trò</th>
-            <th>Hành động</th>
-        </tr>
-    </thead>
-    <tbody>
-        <c:forEach var="u" items="${userList}">
+        <!-- FAVICONS ICON ============================================= -->
+        <link rel="icon" href="${pageContext.request.contextPath}/assets/images/favicon.ico" type="image/x-icon" />
+        <link rel="shortcut icon" type="image/x-icon" href="${pageContext.request.contextPath}/assets/images/favicon.png" />
+
+        <!-- PAGE TITLE HERE ============================================= -->
+        <title>LuxuryHotel | List of Customer </title>
+
+        <!-- MOBILE SPECIFIC ============================================= -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!--[if lt IE 9]>
+        <script src="assets/js/html5shiv.min.js"></script>
+        <script src="assets/js/respond.min.js"></script>
+        <![endif]-->
+
+        <!-- All PLUGINS CSS ============================================= -->
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/assets.css">
+
+        <!-- TYPOGRAPHY ============================================= -->
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/typography.css">
+
+        <!-- SHORTCODES ============================================= -->
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/shortcodes/shortcodes.css">
+
+        <!-- STYLESHEETS ============================================= -->
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/style.css">
+        <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/color/color-1.css">
+    </head>
+    <body>
+        <jsp:include page="header.jsp" />
+        
+        <!-- Content -->
+        <div class="page-content bg-white">
+            <!-- inner page banner -->
+                <div class="page-banner ovbl-dark" style="background-image:url('${pageContext.request.contextPath}/assets/images/banner/banner2.jpg');">
+                    <div class="container">
+                        <div class="page-banner-entry">
+                            <h1 class="text-white">Room List</h1>
+                        </div>
+                    </div>
+                </div>
+                <!-- Breadcrumb row -->
+                <div class="breadcrumb-row">
+                    <div class="container">
+                        <ul class="list-inline">
+                            <li><a href="index.jsp">Home</a></li>
+                            <li>UserList</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Breadcrumb row END -->
+        <a href="jsp/create_user.jsp">Create New User</a>
+        
+        <h2>Danh sách người dùng</h2>
+        <table border="1">
             <tr>
-                <td>${u.id}</td>
-                <td>${u.fullName}</td>
-                <td>${u.email}</td>
-                <td>${u.role}</td>
-                <td>
-                    <form action="ManagerUserServlet" method="post" style="display:inline">
-                        <input type="hidden" name="id" value="${u.id}" />
-                        <button name="action" value="delete" onclick="return confirm('Xác nhận xóa?')">Xóa</button>
-                        <button name="action" value="reject" onclick="return confirm('Từ chối user này?')">Từ chối</button>
-                    </form>
-                </td>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Created At</th>
+                <th>Updated At</th>
             </tr>
-        </c:forEach>
-    </tbody>
-</table>
+            <%
+                List<User> users = (List<User>) request.getAttribute("users");
+                for (User user : users) {
+            %>
+            <tr>
+                <td><%= user.getId() %></td>
+                <td><%= user.getUsername() %></td>
+                <td><%= user.getFullName() %></td>
+                <td><%= user.getEmail() %></td>
+                <td><%= user.getPhone() %></td>
+                <td><%= user.getRole() %></td>
+                <td><%= user.getCreatedAt() %></td>
+                <td><%= user.getUpdatedAt() %></td>
+            </tr>
+            <%
+                }
+            %>
+        </table>
+        </div>
+        
+        <jsp:include page="footer.jsp" />
+        
+        <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/popper.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/bootstrap.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap-select/bootstrap-select.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap-touchspin/jquery.bootstrap-touchspin.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/magnific-popup/magnific-popup.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/counter/waypoints-min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/counter/counterup.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/imagesloaded/imagesloaded.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/masonry/masonry.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/masonry/filter.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/vendors/owl-carousel/owl.carousel.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
+        <script src='${pageContext.request.contextPath}/assets/vendors/switcher/switcher.js'></script>
+    </body>
+</html>
 
-<div>
-    <c:forEach begin="1" end="${totalPages}" var="i">
-        <a href="?page=${i}">${i}</a>
-    </c:forEach>
-</div>
 
-<jsp:include page="footer.jsp" />
