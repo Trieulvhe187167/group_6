@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.math.BigDecimal;
+import java.security.Timestamp;
 import model.RoomType;
 
 /**
@@ -29,7 +30,7 @@ public class RoomTypeDAO {
                 rtype.setId(rs.getInt("Id"));
                 rtype.setName(rs.getString("Name"));
                 rtype.setDescription(rs.getString("Description"));
-                rtype.setImageUrl(rs.getString("imageUrl"));
+                rtype.setImageUrl(rs.getString("image_url"));
                 rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
                 rtype.setCapacity(rs.getInt("Capacity"));
                 rtype.setCreatedAt(rs.getTimestamp("CreatedAt"));
@@ -54,14 +55,14 @@ public class RoomTypeDAO {
             ps.setString(1, searchPattern);
             ps.setString(2, searchPattern);
             ps.setString(3, searchPattern);
-            
+
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 RoomType room = new RoomType(
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("imageUrl"),
+                        rs.getString("image_url"),
                         rs.getBigDecimal("BasePrice"),
                         rs.getInt("Capacity"),
                         rs.getTimestamp("CreatedAt"),
@@ -90,7 +91,7 @@ public class RoomTypeDAO {
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("imageUrl"),
+                        rs.getString("image_url"),
                         rs.getBigDecimal("BasePrice"),
                         rs.getInt("Capacity"),
                         rs.getTimestamp("CreatedAt"),
@@ -103,7 +104,7 @@ public class RoomTypeDAO {
         }
         return listRoom;
     }
-    
+
     public RoomType getRoomsById(String id) {
         List<RoomType> listRoom = new ArrayList<>();
         String sql = "SELECT * FROM RoomTypes WHERE id = ?";
@@ -118,18 +119,37 @@ public class RoomTypeDAO {
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("imageUrl"),
+                        rs.getString("image_url"),
                         rs.getBigDecimal("BasePrice"),
                         rs.getInt("Capacity"),
                         rs.getTimestamp("CreatedAt"),
                         rs.getTimestamp("UpdatedAt")
                 );
-                
+
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void insert(RoomType roomType) throws SQLException {
+        String sql = "INSERT INTO RoomType (name, description, imageUrl, basePrice, capacity, createdAt, updatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, roomType.getName());
+            ps.setString(2, roomType.getDescription());
+            ps.setString(3, roomType.getImageUrl());
+            ps.setBigDecimal(4, roomType.getBasePrice());
+            ps.setInt(5, roomType.getCapacity());
+            ps.setObject(6, roomType.getCreatedAt());
+            ps.setObject(7, roomType.getUpdatedAt());
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("Lỗi khi insert RoomType: " + e.getMessage());
+            throw e;
+        }
+
     }
 
 }
