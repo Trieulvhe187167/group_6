@@ -14,6 +14,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  *
@@ -105,7 +107,42 @@ public class RoomListServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        //processRequest(request, response);
+        String action = request.getParameter("action");
+
+        if (action != null && action.equals("create")) {
+            // Xử lý tạo mới RoomType
+            request.setCharacterEncoding("UTF-8");
+
+            String name = request.getParameter("name");
+            String description = request.getParameter("description");
+            String imageUrl = request.getParameter("imageUrl");
+            String basePriceStr = request.getParameter("basePrice");
+            String capacityStr = request.getParameter("capacity");
+
+            try {
+                BigDecimal basePrice = new BigDecimal(basePriceStr);
+                int capacity = Integer.parseInt(capacityStr);
+
+                RoomType roomType = new RoomType();
+                roomType.setName(name);
+                roomType.setDescription(description);
+                roomType.setImageUrl(imageUrl);
+                roomType.setBasePrice(basePrice);
+                roomType.setCapacity(capacity);
+                roomType.setCreatedAt(new Date());
+                roomType.setUpdatedAt(new Date());
+
+                RoomTypeDAO dao = new RoomTypeDAO();
+                dao.insert(roomType);
+
+                response.sendRedirect("roomtype?action=list");
+            } catch (Exception e) {
+                request.setAttribute("error", "Lỗi tạo RoomType: " + e.getMessage());
+                request.getRequestDispatcher("/admin/create-roomtype.jsp").forward(request, response);
+            }
+        }
+
     }
 
     /**
