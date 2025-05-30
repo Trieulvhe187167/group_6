@@ -74,4 +74,29 @@ public class BlogDAO {
         }
         return null;
     }
+      // Lấy chi tiết Blog theo ID
+    public Blog getBlogById(String id) {
+        String sql = "SELECT * FROM Blogs WHERE Id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, Integer.parseInt(id));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Blog b = new Blog();
+                    b.setId(rs.getInt("Id"));
+                    b.setTitle(rs.getString("Title"));
+                    b.setSlug(rs.getString("Slug"));
+                    b.setContent(rs.getString("Content"));
+                    b.setAuthorId(rs.getInt("AuthorId"));
+                    b.setCreatedAt(rs.getTimestamp( "CreatedAt"));
+                    b.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+                    return b;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 } 

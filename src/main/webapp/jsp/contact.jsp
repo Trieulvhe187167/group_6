@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/shortcodes/shortcodes.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <link class="skin" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/color/color-1.css">
+    
 </head>
 <body id="bg">
     <div class="page-wraper">
@@ -85,10 +86,10 @@
                     </div>
                     <h5 class="mb-3">Follow Us</h5>
                     <ul class="contact-social-bx list-inline mb-0">
-                        <li class="list-inline-item mr-2"><a href="#" class="btn outline radius-xl"><i class="fa fa-facebook"></i></a></li>
-                        <li class="list-inline-item mr-2"><a href="#" class="btn outline radius-xl"><i class="fa fa-twitter"></i></a></li>
-                        <li class="list-inline-item mr-2"><a href="#" class="btn outline radius-xl"><i class="fa fa-linkedin"></i></a></li>
-                        <li class="list-inline-item"><a href="#" class="btn outline radius-xl"><i class="fa fa-google-plus"></i></a></li>
+                        <li class="list-inline-item mr-2"><a href="#" class="btn outline radius-xl"> <i class="fab fa-facebook-f"></i></a></li>
+                        <li class="list-inline-item mr-2"><a href="#" class="btn outline radius-xl"> <i class="fab fa-google-plus-g"></i></a></li>
+                        <li class="list-inline-item mr-2"><a href="#" class="btn outline radius-xl">  <i class="fab fa-linkedin-in"></i></a></li>
+            
                     </ul>
                 </div>
             </div>
