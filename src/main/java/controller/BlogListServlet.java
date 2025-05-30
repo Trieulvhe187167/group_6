@@ -1,16 +1,15 @@
 package controller;
 
-
 import dal.BlogDAO;
 import model.Blog;
-import jakarta.servlet.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name="BlogServlet", urlPatterns={"/blog"})
-public class BlogServlet extends HttpServlet {
+@WebServlet(name = "BlogListServlet", urlPatterns = {"/BlogListServlet"})
+public class BlogListServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {

@@ -2,29 +2,24 @@ package controller;
 
 import dal.BlogDAO;
 import model.Blog;
-import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+import java.io.IOException;
 
-@WebServlet(name="BlogDetailServlet", urlPatterns={"/BlogDetailServlet"})
+@WebServlet(name = "BlogDetailServlet", urlPatterns = {"/BlogDetailServlet"})
 public class BlogDetailServlet extends HttpServlet {
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String slug = req.getParameter("slug");
-        if (slug == null || slug.isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing slug");
-            return;
-        }
-        Blog b = new BlogDAO().getBlogBySlug(slug);
-        if (b == null) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Blog not found");
-            return;
-        }
-        req.setAttribute("blog", b);
-        // Nếu cần recent posts sidebar
-        req.setAttribute("recentPosts", new BlogDAO().getPublishedBlogs().subList(0, 5));
-        req.getRequestDispatcher("/jsp/blogDetail.jsp").forward(req, resp);
+
+        String id = request.getParameter("id");
+        BlogDAO dao = new BlogDAO();
+        Blog blog = dao.getBlogById(id);
+
+        request.setAttribute("blog", blog);
+        // Forward đến JSP chi tiết
+        request.getRequestDispatcher("/jsp/blogDetail.jsp")
+       .forward(request, response);
     }
 }
