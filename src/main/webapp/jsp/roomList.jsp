@@ -93,6 +93,7 @@
                         <div class="container">
                             <div class="row">
                                 <div class="col-lg-3 col-md-4 col-sm-12 m-b30">
+                                    <a href="jsp/create-roomtype.jsp" class="btn ">Create Type</a>
                                     <div class="widget courses-search-bx placeani">
                                         <div class="form-group">
                                             <form action="RoomListServlet" method="get">
@@ -116,6 +117,7 @@
                                     </div>
                                     
                                     <div class="widget">
+                                        
                                         <a href="#"><img src="assets/images/adv/adv.jpg" alt=""/></a>
                                     </div>
                                     <div class="widget recent-posts-entry widget-courses">
@@ -180,9 +182,9 @@
                                                         
                                                     String description = type.getDescription();
                                                     String features[] = description.split(",");
-                                                    String firstFeature = "";
-                                                    if (features.length > 0) {
-                                                        firstFeature = features[0].trim();
+                                                    String secondFeature = "";
+                                                    if (features.length > 1) {
+                                                        secondFeature = features[1].trim();
                                                     }
                                         %>
 
@@ -194,7 +196,7 @@
                                                 </div>
                                                 <div class="info-bx text-center">
                                                     <h5><a href="RoomDetailServlet?id=<%= type.getId() %>"><%= type.getName() %></a></h5>
-                                                    <span><%= firstFeature %></span>
+                                                    <span><%= secondFeature %></span>
                                                 </div>
                                                 <div class="cours-more-info">
                                                     <div class="review">
@@ -212,15 +214,17 @@
                                                         <h5>$<%= type.getBasePrice() %></h5>
                                                     </div>
                                                 </div>
+                                                    
                                             </div>
+                                                    <div style="text-align: center; margin-top: 10px;">
+                                                        <a href="RoomListServlet?action=delete&id=<%= type.getId() %>&status=inactive" class="btn">Delete</a>
+                                                    </div>
                                         </div>
                                         <%
                                                 }
                                             } else {
                                         %>
-                                        <tr>
-                                            <td colspan="8">No data</td>
-                                        </tr>
+                                        <p>No data.</p>
                                         <%
                                             }
                                         %>

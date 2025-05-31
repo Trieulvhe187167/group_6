@@ -30,7 +30,7 @@ public class RoomTypeDAO {
                 rtype.setId(rs.getInt("Id"));
                 rtype.setName(rs.getString("Name"));
                 rtype.setDescription(rs.getString("Description"));
-                rtype.setImageUrl(rs.getString("image_url"));
+                rtype.setImageUrl(rs.getString("imageUrl"));
                 rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
                 rtype.setCapacity(rs.getInt("Capacity"));
                 rtype.setCreatedAt(rs.getTimestamp("CreatedAt"));
@@ -62,9 +62,10 @@ public class RoomTypeDAO {
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("image_url"),
+                        rs.getString("imageUrl"),
                         rs.getBigDecimal("BasePrice"),
                         rs.getInt("Capacity"),
+                        rs.getString("Status"),
                         rs.getTimestamp("CreatedAt"),
                         rs.getTimestamp("UpdatedAt")
                 );
@@ -91,9 +92,10 @@ public class RoomTypeDAO {
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("image_url"),
+                        rs.getString("imageUrl"),
                         rs.getBigDecimal("BasePrice"),
                         rs.getInt("Capacity"),
+                        rs.getString("Status"),
                         rs.getTimestamp("CreatedAt"),
                         rs.getTimestamp("UpdatedAt")
                 );
@@ -106,7 +108,6 @@ public class RoomTypeDAO {
     }
 
     public RoomType getRoomsById(String id) {
-        List<RoomType> listRoom = new ArrayList<>();
         String sql = "SELECT * FROM RoomTypes WHERE id = ?";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -119,9 +120,10 @@ public class RoomTypeDAO {
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("image_url"),
+                        rs.getString("imageUrl"),
                         rs.getBigDecimal("BasePrice"),
                         rs.getInt("Capacity"),
+                        rs.getString("Status"),
                         rs.getTimestamp("CreatedAt"),
                         rs.getTimestamp("UpdatedAt")
                 );
@@ -132,24 +134,55 @@ public class RoomTypeDAO {
         }
         return null;
     }
+    
+    public List<RoomType> getAvailableRoomTypes() {
+        List<RoomType> list = new ArrayList<>();
+        String sql = "SELECT * FROM RoomType WHERE status = 'active'";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                RoomType rtype = new RoomType();
+                rtype.setName(rs.getString("Name"));
+                rtype.setDescription(rs.getString("Description"));
+                rtype.setImageUrl(rs.getString("imageUrl"));
+                rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
+                rtype.setCapacity(rs.getInt("Capacity"));
+                list.add(rtype);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 
     public void insert(RoomType roomType) throws SQLException {
-        String sql = "INSERT INTO RoomType (name, description, imageUrl, basePrice, capacity, createdAt, updatedAt) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO RoomTypes (name, description, imageUrl, basePrice, capacity, status, createdAt, updatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, roomType.getName());
             ps.setString(2, roomType.getDescription());
             ps.setString(3, roomType.getImageUrl());
             ps.setBigDecimal(4, roomType.getBasePrice());
             ps.setInt(5, roomType.getCapacity());
-            ps.setObject(6, roomType.getCreatedAt());
-            ps.setObject(7, roomType.getUpdatedAt());
+            ps.setString(6, "active");
+            ps.setObject(7, roomType.getCreatedAt());
+            ps.setObject(8, roomType.getUpdatedAt());
             ps.executeUpdate();
         } catch (Exception e) {
             System.err.println("Lỗi khi insert RoomType: " + e.getMessage());
             throw e;
         }
 
+    }
+
+    public void updateRoomTypeStatus(int id, String newStatus) {
+        String sql = "UPDATE RoomTypes SET status = ? WHERE id = ?";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newStatus);
+            ps.setInt(2, id);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

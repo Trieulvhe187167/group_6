@@ -354,42 +354,46 @@
                             <div class="wc-title">
                                 <h4>Add listing</h4>
                             </div>
+                            <div class="error" style="text-align: center;">
+                                   <p style="color: red;"> ${message != null ? message : ""} </p>
+                            </div>
                             <div class="widget-inner">
-                                <form class="edit-profile m-b30">
+                                <form class="edit-profile m-b30" action="${pageContext.request.contextPath}/RoomListServlet?action=create" method="post">
                                     <div class="row">
                                         <div class="col-12">
                                             <div class="ml-auto">
                                                 <h3>1. Basic info</h3>
                                             </div>
                                         </div>
+                                        
                                         <div class="form-group col-6">
-                                            <label class="col-form-label">Course title</label>
+                                            <label class="col-form-label">Room Type</label>
                                             <div>
-                                                <input class="form-control" type="text" value="">
+                                                <input class="form-control" type="text" id="name" name="name" required>
                                             </div>
                                         </div>
                                         <div class="form-group col-6">
-                                            <label class="col-form-label">Course title</label>
+                                            <label class="col-form-label">Base Price</label>
                                             <div>
-                                                <input class="form-control" type="text" value="">
+                                                <input class="form-control" type="number" id="basePrice" name="basePrice" required>
                                             </div>
                                         </div>
                                         <div class="form-group col-6">
-                                            <label class="col-form-label">Course start</label>
+                                            <label class="col-form-label">Capacity</label>
                                             <div>
-                                                <input class="form-control" type="text" value="">
+                                                <input class="form-control" type="number" id="capacity" name="capacity" required>
                                             </div>
                                         </div>
                                         <div class="form-group col-6">
-                                            <label class="col-form-label">Course expire</label>
+                                            <label class="col-form-label">Bed Type</label>
                                             <div>
-                                                <input class="form-control" type="text" value="">
+                                                <input class="form-control" type="text" id="bed" name="bed" required>
                                             </div>
                                         </div>
                                         <div class="form-group col-6">
-                                            <label class="col-form-label">Teacher name</label>
+                                            <label class="col-form-label">Images Url</label>
                                             <div>
-                                                <input class="form-control" type="text" value="">
+                                                <input class="form-control" type="text" id="imageUrl" name="imageUrl" required>
                                             </div>
                                         </div>
                                         <div class="seperator"></div>
@@ -400,53 +404,22 @@
                                             </div>
                                         </div>
                                         <div class="form-group col-12">
-                                            <label class="col-form-label">Course description</label>
+                                            <label class="col-form-label">Room Type description</label>
                                             <div>
-                                                <textarea class="form-control"> </textarea>
+                                                <textarea class="form-control" id="description" name="description" required> </textarea>
                                             </div>
                                         </div>
-                                        <div class="col-12 m-t20">
-                                            <div class="ml-auto">
-                                                <h3 class="m-form__section">3. Add Item</h3>
+                                        <div class="form-group col-12">
+                                            <label class="col-form-label">Special description</label>
+                                            <div>
+                                                <textarea class="form-control" id="special" name="special"> </textarea>
                                             </div>
                                         </div>
+                                        
+                                        
                                         <div class="col-12">
-                                            <table id="item-add" style="width:100%;">
-                                                <tr class="list-item">
-                                                    <td>
-                                                        <div class="row">
-                                                            <div class="col-md-4">
-                                                                <label class="col-form-label">Course Name</label>
-                                                                <div>
-                                                                    <input class="form-control" type="text" value="">
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-3">
-                                                                <label class="col-form-label">Course Category</label>
-                                                                <div>
-                                                                    <input class="form-control" type="text" value="">
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-3">
-                                                                <label class="col-form-label">Course Category</label>
-                                                                <div>
-                                                                    <input class="form-control" type="text" value="">
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-2">
-                                                                <label class="col-form-label">Close</label>
-                                                                <div class="form-group">
-                                                                    <a class="delete" href="#"><i class="fa fa-close"></i></a>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </div>
-                                        <div class="col-12">
-                                            <button type="button" class="btn-secondry add-item m-r5"><i class="fa fa-fw fa-plus-circle"></i>Add Item</button>
-                                            <button type="reset" class="btn">Save changes</button>
+                                            <button type="submit" class="btn-secondry add-item m-r5"><i class="fa fa-fw fa-plus-circle"></i>Add Item</button>
+                                            <button type="reset" class="btn">Reset</button>
                                         </div>
                                     </div>
                                 </form>
