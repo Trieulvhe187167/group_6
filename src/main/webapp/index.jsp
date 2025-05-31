@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-         import="java.util.List, dal.RoomTypeDAO, model.RoomType" %>
+         import="java.util.List, dal.RoomTypeDAO, model.RoomType, dal.EventDAO, model.Event" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
@@ -11,6 +11,10 @@
     List<RoomType> roomTypes = dao.getAllRoomTypes();
     // 2. Đưa xuống request để JSTL có thể đọc
     request.setAttribute("roomTypes", roomTypes);
+    
+// 1. Lấy dữ liệu event ngay khi render index.jsp
+    List<Event> events = new EventDAO().getAllEvents();
+    request.setAttribute("events", events);
 %>
 
 <!DOCTYPE html>
@@ -578,91 +582,62 @@
                     </div>-->
                     <!-- Form END -->
                     <div class="upcoming-events section-sp2">
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-md-12 heading-bx left">
-                                    <h2 class="title-head m-b0">HOTEL LUXURY <span>Events </span></h2>
-                               <p class="m-b0">Experience and use luxury services </p>
-                                </div>                                
-                            </div>
-                            <div class="row">
-                                <div class="upcoming-event-carousel owl-carousel owl-btn-center-lr owl-btn-1 col-12 p-lr0  m-b30">
-                                    <div class="item">
-                                        <div class="event-bx">
-                                            <div class="action-box">
-                                                <img src="assets/images/event/pic4.jpg" alt="">
-                                            </div>
-                                            <div class="info-bx d-flex">
-                                                <div>
-                                                    <div class="event-time">
-                                                        <div class="event-date">29</div>
-                                                        <div class="event-month">October</div>
-                                                    </div>
-                                                </div>
-                                                <div class="event-info">
-                                                    <h4 class="event-title"><a href="#">Education Autumn Tour 2019</a></h4>
-                                                    <ul class="media-post">
-                                                        <li><a href="#"><i class="fa fa-clock-o"></i> 7:00am 8:00am</a></li>
-                                                        <li><a href="#"><i class="fa fa-map-marker"></i> Berlin, Germany</a></li>
-                                                    </ul>
-                                                    <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the..</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="item">
-                                        <div class="event-bx">
-                                            <div class="action-box">
-                                                <img src="assets/images/event/pic3.jpg" alt="">
-                                            </div>
-                                            <div class="info-bx d-flex">
-                                                <div>
-                                                    <div class="event-time">
-                                                        <div class="event-date">29</div>
-                                                        <div class="event-month">October</div>
-                                                    </div>
-                                                </div>
-                                                <div class="event-info">
-                                                    <h4 class="event-title"><a href="#">Education Autumn Tour 2019</a></h4>
-                                                    <ul class="media-post">
-                                                        <li><a href="#"><i class="fa fa-clock-o"></i> 7:00am 8:00am</a></li>
-                                                        <li><a href="#"><i class="fa fa-map-marker"></i> Berlin, Germany</a></li>
-                                                    </ul>
-                                                    <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the..</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="item">
-                                        <div class="event-bx">
-                                            <div class="action-box">
-                                                <img src="assets/images/event/pic2.jpg" alt="">
-                                            </div>
-                                            <div class="info-bx d-flex">
-                                                <div>
-                                                    <div class="event-time">
-                                                        <div class="event-date">29</div>
-                                                        <div class="event-month">October</div>
-                                                    </div>
-                                                </div>
-                                                <div class="event-info">
-                                                    <h4 class="event-title"><a href="#">Education Autumn Tour 2019</a></h4>
-                                                    <ul class="media-post">
-                                                        <li><a href="#"><i class="fa fa-clock-o"></i> 7:00am 8:00am</a></li>
-                                                        <li><a href="#"><i class="fa fa-map-marker"></i> Berlin, Germany</a></li>
-                                                    </ul>
-                                                    <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the..</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-center">
-                                <a href="#" class="btn">View All Event</a>
-                            </div>
-                        </div>
+  <div class="container">
+    <!-- heading -->
+    <div class="row">
+       <div class="col-md-12 heading-bx left">
+          <h2 class="title-head m-b0">HOTEL LUXURY <span>Events </span></h2>
+          <p class="m-b0">Experience and use luxury services </p>
+        </div>
+      </div>
+      <!-- carousel động -->
+      <div class="row">
+        <div class="upcoming-event-carousel owl-carousel owl-btn-center-lr owl-btn-1 col-12 p-lr0 m-b30">
+          <c:forEach var="e" items="${events}">
+            <div class="item">
+              <div class="event-bx">
+                <div class="action-box">
+                  <img src="${pageContext.request.contextPath}/uploads/events/${e.imageUrl}"
+                       alt="${e.title}" />
+                </div>
+                <div class="info-bx d-flex">
+                  <div>
+                    <div class="event-time">
+                      <div class="event-date">
+                        <fmt:formatDate value="${e.startAt}" pattern="dd" />
+                      </div>
+                      <div class="event-month">
+                        <fmt:formatDate value="${e.startAt}" pattern="MMMM" />
+                      </div>
                     </div>
+                  </div>
+                  <div class="event-info">
+                    <h4 class="event-title"><a href="#">${e.title}</a></h4>
+                    <ul class="media-post">
+                      <li>
+                        <a href="#"><i class="fa fa-clock-o"></i>
+                          <fmt:formatDate value="${e.startAt}" pattern="h:mma" />
+                          –
+                          <fmt:formatDate value="${e.endAt}" pattern="h:mma" />
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#"><i class="fa fa-map-marker"></i> ${e.location}</a>
+                      </li>
+                    </ul>
+                    <p>${e.description}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </c:forEach>
+        </div>
+      </div>
+      <div class="text-center">
+        <a href="#" class="btn">View All Event</a>
+      </div>
+  </div>
+</div>
 
                     <!-- Testimonials -->
                     <div class="section-area section-sp2 bg-fix ovbl-dark" style="background-image:url(assets/images/background/bg1.jpg);">

@@ -47,7 +47,7 @@
                 <div class="breadcrumb-row">
                     <div class="container">
                         <ul class="list-inline">
-                            <li><a href="index.jsp">Home</a></li>
+                            <li><a href="/index.jsp">Home</a></li>
                             <li><a href="${pageContext.request.contextPath}/jsp/blog.jsp">Blog</a></li>
                             <li>Blog Detail</li>
                         </ul>
