@@ -67,9 +67,9 @@
             <% RoomType roomTypes = (RoomType) request.getAttribute("roomTypes"); 
                 String description = roomTypes.getDescription();
                 String features[] = description.split(",");
-                String secondFeature = "";
-                if (features.length > 1) {
-                    secondFeature = features[1].trim();
+                String firstFeature = "";
+                if (features.length > 0) {
+                    firstFeature = features[0].trim();
                 }
             %>
             <!-- Content -->
@@ -172,7 +172,7 @@
                                             <div class="col-md-12 col-lg-4">
                                                 <ul class="course-features">
                                                     <li><i class="ti-user"></i> <span class="label">Capacity:</span> <span class="value"><%= roomTypes.getCapacity() %></span></li>
-                                                    <li><i class="ti-help-alt"></i> <span class="label">Beds</span> <span class="value"><%= secondFeature %></span></li>
+                                                    <li><i class="ti-help-alt"></i> <span class="label">Beds</span> <span class="value"><%= firstFeature %></span></li>
                                                     <li><i class="ti-time"></i> <span class="label">Check in</span> <span class="value">8h00-23h59</span></li>
                                                     <li><i class="ti-time"></i> <span class="label">Check out TO</span> <span class="value">14h00</span></li>
                                                     <li><i class="ti-stats-up"></i> <span class="label">Parking</span> <span class="value">$5/day</span></li>

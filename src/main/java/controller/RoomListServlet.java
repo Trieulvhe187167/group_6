@@ -67,11 +67,18 @@ public class RoomListServlet extends HttpServlet {
         RoomTypeDAO dao = new RoomTypeDAO();
         List<RoomType> roomTypes;
         String keyword = request.getParameter("keyword");
+        String action = request.getParameter("action");
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             roomTypes = dao.searchRooms(keyword.trim());
         } else {
             roomTypes = dao.getAllRoomTypes();
+        }
+        //Delete
+        if (action.equalsIgnoreCase("delete")){
+            int id = Integer.parseInt(request.getParameter("id"));
+            String status = request.getParameter("status");
+            dao.updateRoomTypeStatus(id, status);
         }
 
         //Phân trang
@@ -115,10 +122,12 @@ public class RoomListServlet extends HttpServlet {
             request.setCharacterEncoding("UTF-8");
 
             String name = request.getParameter("name");
-            String description = request.getParameter("description");
-            String imageUrl = request.getParameter("imageUrl");
             String basePriceStr = request.getParameter("basePrice");
             String capacityStr = request.getParameter("capacity");
+            String bed = request.getParameter("bed");
+            String description = request.getParameter("description");
+            String special = request.getParameter("special");
+            String imageUrl = request.getParameter("imageUrl");
 
             try {
                 BigDecimal basePrice = new BigDecimal(basePriceStr);
@@ -126,7 +135,7 @@ public class RoomListServlet extends HttpServlet {
 
                 RoomType roomType = new RoomType();
                 roomType.setName(name);
-                roomType.setDescription(description);
+                roomType.setDescription(description + "," + bed + "," + special);
                 roomType.setImageUrl(imageUrl);
                 roomType.setBasePrice(basePrice);
                 roomType.setCapacity(capacity);
@@ -136,10 +145,10 @@ public class RoomListServlet extends HttpServlet {
                 RoomTypeDAO dao = new RoomTypeDAO();
                 dao.insert(roomType);
 
-                response.sendRedirect("roomtype?action=list");
+                response.sendRedirect("RoomListServlet");
             } catch (Exception e) {
-                request.setAttribute("error", "Lỗi tạo RoomType: " + e.getMessage());
-                request.getRequestDispatcher("/admin/create-roomtype.jsp").forward(request, response);
+                request.setAttribute("message", "Lỗi tạo RoomType: " + e.getMessage());
+                request.getRequestDispatcher("/jsp/create-roomtype.jsp").forward(request, response);
             }
         }
 
