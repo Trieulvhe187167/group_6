@@ -59,15 +59,13 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <label>Username</label>
-                                    <input name="username" type="text" required class="form-control">
+                                    <input name="username or email" type="text" required class="form-control">
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <label>Password</label>
                                     <input name="password" type="password" required class="form-control">
                                 </div>
                             </div>
