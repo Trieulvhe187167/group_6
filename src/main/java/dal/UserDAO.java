@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 public class UserDAO {
 
     public User login(String username, String password) {
-        String sql = "SELECT * FROM Users WHERE Username = ?";
+        String sql = "SELECT * FROM Users WHERE Username = ? OR Email = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
