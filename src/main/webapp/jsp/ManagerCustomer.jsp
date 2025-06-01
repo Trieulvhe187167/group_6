@@ -1,109 +1,110 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="model.User" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
+<%@ page import="model.User" %>
 <html>
-    <head>
-        <!--        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">-->
-        <!-- META ============================================= -->
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="keywords" content="" />
-        <meta name="author" content="" />
-        <meta name="robots" content="" />
+<head>
+    <meta charset="UTF-8">
+    <title>Manager Customer</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <style>
+        .container {
+            width: 90%;
+            margin: auto;
+        }
+        .create-button {
+            margin: 20px 0;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .user-card {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #eee;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        .user-info {
+            flex-grow: 1;
+        }
+        .user-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-update {
+            background-color: #2196F3;
+            color: white;
+        }
+        .btn-delete {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="jsp/create_user.jsp">
+            <button class="create-button">Create User</button>
+        </a>
 
-        <!-- DESCRIPTION -->
-        <meta name="description" content="EduChamp : Education HTML Template" />
-
-        <!-- OG -->
-        <meta property="og:title" content="EduChamp : Education HTML Template" />
-        <meta property="og:description" content="EduChamp : Education HTML Template" />
-        <meta property="og:image" content="" />
-        <meta name="format-detection" content="telephone=no">
-
-        <!-- FAVICONS ICON ============================================= -->
-        <link rel="icon" href="${pageContext.request.contextPath}/assets/images/favicon.ico" type="image/x-icon" />
-        <link rel="shortcut icon" type="image/x-icon" href="${pageContext.request.contextPath}/assets/images/favicon.png" />
-
-        <!-- PAGE TITLE HERE ============================================= -->
-        <title>LuxuryHotel | List of Customer </title>
-
-        <!-- MOBILE SPECIFIC ============================================= -->
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-
-        <!--[if lt IE 9]>
-        <script src="assets/js/html5shiv.min.js"></script>
-        <script src="assets/js/respond.min.js"></script>
-        <![endif]-->
-
-        <!-- All PLUGINS CSS ============================================= -->
-        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/assets.css">
-
-        <!-- TYPOGRAPHY ============================================= -->
-        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/typography.css">
-
-        <!-- SHORTCODES ============================================= -->
-        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/shortcodes/shortcodes.css">
-
-        <!-- STYLESHEETS ============================================= -->
-        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/style.css">
-        <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/color/color-1.css">
-    </head>
-    <body>
-        <jsp:include page="header.jsp" />
-        
-        <!-- Content -->
-        <div class="page-content bg-white">
-            <!-- inner page banner -->
-                <div class="page-banner ovbl-dark" style="background-image:url('${pageContext.request.contextPath}/assets/images/banner/banner2.jpg');">
-                    <div class="container">
-                        <div class="page-banner-entry">
-                            <h1 class="text-white">Room List</h1>
-                        </div>
-                    </div>
-                </div>
-                <!-- Breadcrumb row -->
-                <div class="breadcrumb-row">
-                    <div class="container">
-                        <ul class="list-inline">
-                            <li><a href="index.jsp">Home</a></li>
-                            <li>UserList</li>
-                        </ul>
-                    </div>
-                </div>
-                <!-- Breadcrumb row END -->
-        <a href="jsp/create_user.jsp">Create New User</a>
-        
-        <h2>Danh sách người dùng</h2>
-        <table border="1">
-            <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Role</th>
-                <th>Created At</th>
-                <th>Updated At</th>
-            </tr>
-            <%
-                List<User> users = (List<User>) request.getAttribute("users");
+        <%
+            List<User> users = (List<User>) request.getAttribute("users");
+            if (users != null && !users.isEmpty()) {
                 for (User user : users) {
-            %>
-            <tr>
-                <td><%= user.getId() %></td>
-                <td><%= user.getUsername() %></td>
-                <td><%= user.getFullName() %></td>
-                <td><%= user.getEmail() %></td>
-                <td><%= user.getPhone() %></td>
-                <td><%= user.getRole() %></td>
-                <td><%= user.getCreatedAt() %></td>
-                <td><%= user.getUpdatedAt() %></td>
-            </tr>
-            <%
-                }
-            %>
-        </table>
+        %>
+        <div class="user-card">
+            <div class="avatar"></div>
+            <div class="user-info">
+                <h3><%= user.getFullName() %></h3>
+                <p>Username: <%= user.getUsername() %></p>
+                <p>Email: <%= user.getEmail() %></p>
+                <p>Phone: <%= user.getPhone() %></p>
+                <p>Role: <%= user.getRole() %></p>
+            </div>
+            <div class="user-actions">
+                <form method="get" action="update_user.jsp">
+                    <input type="hidden" name="id" value="<%= user.getId() %>">
+                    <button type="submit" class="btn btn-update">Update</button>
+                </form>
+                <form method="post" action="deleteUser">
+                    <input type="hidden" name="id" value="<%= user.getId() %>">
+                    <button type="submit" class="btn btn-delete">Delete</button>
+                </form>
+            </div>
         </div>
+        <%
+                }
+            } else {
+        %>
+            <p>No users found.</p>
+        <%
+            }
+        %>
+    </div>
+
+
         
         <jsp:include page="footer.jsp" />
         
