@@ -40,7 +40,7 @@
                 <div class="page-banner ovbl-dark" style="background-image:url(${pageContext.request.contextPath}/assets/images/banner/banner2.jpg);">
                     <div class="container">
                         <div class="page-banner-entry">
-                            <h1 class="text-white">Blog</h1>
+                            <h1 class="text-white">Blog - Detail</h1>
                         </div>
                     </div>
                 </div>
@@ -218,6 +218,6 @@
 <script src="${pageContext.request.contextPath}/assets/vendors/owl-carousel/owl.carousel.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
-<script src="${pageContext.request.contextPath}/assets/vendors/switcher/switcher.js"></script>
+
  </body>
  </html>
