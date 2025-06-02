@@ -449,7 +449,7 @@
         <script src="assets/js/functions.js"></script>
         <script src="assets/vendors/chart/chart.min.js"></script>
         <script src="assets/js/admin.js"></script>
-        <script src='assets/vendors/switcher/switcher.js'></script>
+       
         <script>
             // Pricing add
             function newMenuItem() {
