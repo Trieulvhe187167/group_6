@@ -32,7 +32,7 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <input name="name" type="text" required class="form-control">
+                                    <input name="name" type="text" required class="form-control" placeholder="name"> 
                                 </div>
                             </div>
                         </div>
@@ -49,21 +49,21 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <input name="email" type="email" required class="form-control">
+                                    <input name="email" type="email" required class="form-control" placeholder="Enter your email">
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group"> 
-                                    <input name="password" type="password" required class="form-control">
+                                    <input name="password" type="password" required class="form-control" placeholder="Enter your Password">
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <input name="phone" type="text" required class="form-control">
+                                    <input name="phone" type="text" required class="form-control" placeholder="Enter your Phone number">
                                 </div>
                             </div>
                         </div>
