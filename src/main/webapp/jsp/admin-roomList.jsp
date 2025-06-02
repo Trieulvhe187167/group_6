@@ -5,6 +5,9 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page import="model.RoomType" %>
+<%@ page import="java.util.List" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -77,28 +80,49 @@
                                 <h4>Your Courses</h4>
                             </div>
                             <div class="widget-inner">
+
+                                <%
+                                    // Tạo danh sách người dùng mẫu
+                                    List<RoomType> roomTypes = (List<RoomType>) request.getAttribute("roomTypes");
+                                    int currentPage = (Integer) request.getAttribute("currentPage");
+                                    int recordsPerPage = (Integer) request.getAttribute("recordsPerPage");
+                                    int totalPages = (Integer)request.getAttribute("totalPages");
+                                    int totalRecords = roomTypes.size();
+
+                                    int startIndex = (currentPage - 1) * recordsPerPage;
+                                    int endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
+                                    
+                                    if (roomTypes != null) {
+                                        for (int i = startIndex; i < endIndex; i++) {
+                                                    RoomType type = roomTypes.get(i);
+                                                        
+                                                    String description = type.getDescription();
+                                                    String features[] = description.split(",");
+                                                    String secondFeature = "";
+                                                    if (features.length > 1) {
+                                                        secondFeature = features[1].trim();
+                                                    }
+                                %>
                                 <div class="card-courses-list admin-courses">
                                     <div class="card-courses-media">
-                                        <img src="${pageContext.request.contextPath}/admin/assets/images/courses/pic1.jpg" alt=""/>
+                                        <img src="${pageContext.request.contextPath}<%= type.getImageUrl() %>" alt="RoomType"/>
                                     </div>
                                     <div class="card-courses-full-dec">
                                         <div class="card-courses-title">
-                                            <h4>Become a PHP Master and Make Money</h4>
+                                            <h4><a href="RoomDetailServlet?id=<%= type.getId() %>"><%= type.getName() %></a></h4>
                                         </div>
                                         <div class="card-courses-list-bx">
                                             <ul class="card-courses-view">
                                                 <li class="card-courses-user">
-                                                    <div class="card-courses-user-pic">
-                                                        <img src="${pageContext.request.contextPath}/admin/assets/images/testimonials/pic3.jpg" alt=""/>
-                                                    </div>
+                                                    
                                                     <div class="card-courses-user-info">
-                                                        <h5>Teacher</h5>
-                                                        <h4>Keny White</h4>
+                                                        <h5>ID</h5>
+                                                        <h4><%= type.getId() %></h4>
                                                     </div>
                                                 </li>
                                                 <li class="card-courses-categories">
-                                                    <h5>3 Categories</h5>
-                                                    <h4>Backend</h4>
+                                                    <h5>Capacity</h5>
+                                                    <h4><%= type.getCapacity() %></h4>
                                                 </li>
                                                 <li class="card-courses-review">
                                                     <h5>3 Review</h5>
@@ -111,18 +135,26 @@
                                                     </ul>
                                                 </li>
                                                 <li class="card-courses-stats">
-                                                    <a href="#" class="btn button-sm green radius-xl">Pending</a>
+                                                    <%
+                                                        String color = "red";
+                                                        if ("active".equals(type.getStatus())) {
+                                                            color = "white";
+                                                        }
+                                                    %>
+                                                    <a class="btn button-sm green radius-xl" style="color: <%= color %>;">
+                                                        <%= type.getStatus() %>
+                                                    </a>
                                                 </li>
                                                 <li class="card-courses-price">
                                                     <del>$190</del>
-                                                    <h5 class="text-primary">$120</h5>
+                                                    <h5 class="text-primary">$<%= type.getBasePrice() %></h5>
                                                 </li>
                                             </ul>
                                         </div>
                                         <div class="row card-courses-dec">
                                             <div class="col-md-12">
                                                 <h6 class="m-b10">Course Description</h6>
-                                                <p>Lorem ipsum dolor sit amet, est ei idque voluptua copiosae, pro detracto disputando reformidans at, ex vel suas eripuit. Vel alii zril maiorum ex, mea id sale eirmod epicurei. Sit te possit senserit, eam alia veritus maluisset ei, id cibo vocent ocurreret per. Te qui doming doctus referrentur, usu debet tamquam et. Sea ut nullam aperiam, mei cu tollit salutatus delicatissimi. </p>	
+                                                <p><%= type.getDescription() %></p>	
                                             </div>
                                             <div class="col-md-12">
                                                 <a href="#" class="btn green radius-xl outline">Approve</a>
@@ -132,171 +164,16 @@
 
                                     </div>
                                 </div>
-                                <div class="card-courses-list admin-courses">
-                                    <div class="card-courses-media">
-                                        <img src="${pageContext.request.contextPath}/admin/assets/images/courses/pic2.jpg" alt=""/>
-                                    </div>
-                                    <div class="card-courses-full-dec">
-                                        <div class="card-courses-title">
-                                            <h4>Become a PHP Master and Make Money</h4>
-                                        </div>
-                                        <div class="card-courses-list-bx">
-                                            <ul class="card-courses-view">
-                                                <li class="card-courses-user">
-                                                    <div class="card-courses-user-pic">
-                                                        <img src="${pageContext.request.contextPath}/admin/assets/images/testimonials/pic3.jpg" alt=""/>
-                                                    </div>
-                                                    <div class="card-courses-user-info">
-                                                        <h5>Teacher</h5>
-                                                        <h4>Keny White</h4>
-                                                    </div>
-                                                </li>
-                                                <li class="card-courses-categories">
-                                                    <h5>3 Categories</h5>
-                                                    <h4>Backend</h4>
-                                                </li>
-                                                <li class="card-courses-review">
-                                                    <h5>3 Review</h5>
-                                                    <ul class="cours-star">
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="card-courses-stats">
-                                                    <a href="#" class="btn button-sm green radius-xl">Pending</a>
-                                                </li>
-                                                <li class="card-courses-price">
-                                                    <del>$190</del>
-                                                    <h5 class="text-primary">$120</h5>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <div class="row card-courses-dec">
-                                            <div class="col-md-12">
-                                                <h6 class="m-b10">Course Description</h6>
-                                                <p>Lorem ipsum dolor sit amet, est ei idque voluptua copiosae, pro detracto disputando reformidans at, ex vel suas eripuit. Vel alii zril maiorum ex, mea id sale eirmod epicurei. Sit te possit senserit, eam alia veritus maluisset ei, id cibo vocent ocurreret per. Te qui doming doctus referrentur, usu debet tamquam et. Sea ut nullam aperiam, mei cu tollit salutatus delicatissimi. </p>	
-                                            </div>
-                                            <div class="col-md-12">
-                                                <a href="#" class="btn green radius-xl outline">Approve</a>
-                                                <a href="#" class="btn red outline radius-xl ">Cancel</a>
-                                            </div>
-                                        </div>
 
-                                    </div>
-                                </div>
-                                <div class="card-courses-list admin-courses">
-                                    <div class="card-courses-media">
-                                        <img src="${pageContext.request.contextPath}/admin/assets/images/courses/pic3.jpg" alt=""/>
-                                    </div>
-                                    <div class="card-courses-full-dec">
-                                        <div class="card-courses-title">
-                                            <h4>Become a PHP Master and Make Money</h4>
-                                        </div>
-                                        <div class="card-courses-list-bx">
-                                            <ul class="card-courses-view">
-                                                <li class="card-courses-user">
-                                                    <div class="card-courses-user-pic">
-                                                        <img src="${pageContext.request.contextPath}/admin/assets/images/testimonials/pic3.jpg" alt=""/>
-                                                    </div>
-                                                    <div class="card-courses-user-info">
-                                                        <h5>Teacher</h5>
-                                                        <h4>Keny White</h4>
-                                                    </div>
-                                                </li>
-                                                <li class="card-courses-categories">
-                                                    <h5>3 Categories</h5>
-                                                    <h4>Backend</h4>
-                                                </li>
-                                                <li class="card-courses-review">
-                                                    <h5>3 Review</h5>
-                                                    <ul class="cours-star">
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="card-courses-stats">
-                                                    <a href="#" class="btn button-sm green radius-xl">Pending</a>
-                                                </li>
-                                                <li class="card-courses-price">
-                                                    <del>$190</del>
-                                                    <h5 class="text-primary">$120</h5>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <div class="row card-courses-dec">
-                                            <div class="col-md-12">
-                                                <h6 class="m-b10">Course Description</h6>
-                                                <p>Lorem ipsum dolor sit amet, est ei idque voluptua copiosae, pro detracto disputando reformidans at, ex vel suas eripuit. Vel alii zril maiorum ex, mea id sale eirmod epicurei. Sit te possit senserit, eam alia veritus maluisset ei, id cibo vocent ocurreret per. Te qui doming doctus referrentur, usu debet tamquam et. Sea ut nullam aperiam, mei cu tollit salutatus delicatissimi. </p>	
-                                            </div>
-                                            <div class="col-md-12">
-                                                <a href="#" class="btn green radius-xl outline">Approve</a>
-                                                <a href="#" class="btn red outline radius-xl ">Cancel</a>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-                                <div class="card-courses-list admin-courses">
-                                    <div class="card-courses-media">
-                                        <img src="${pageContext.request.contextPath}/admin/assets/images/courses/pic4.jpg" alt=""/>
-                                    </div>
-                                    <div class="card-courses-full-dec">
-                                        <div class="card-courses-title">
-                                            <h4>Become a PHP Master and Make Money</h4>
-                                        </div>
-                                        <div class="card-courses-list-bx">
-                                            <ul class="card-courses-view">
-                                                <li class="card-courses-user">
-                                                    <div class="card-courses-user-pic">
-                                                        <img src="${pageContext.request.contextPath}/admin/assets/images/testimonials/pic3.jpg" alt=""/>
-                                                    </div>
-                                                    <div class="card-courses-user-info">
-                                                        <h5>Teacher</h5>
-                                                        <h4>Keny White</h4>
-                                                    </div>
-                                                </li>
-                                                <li class="card-courses-categories">
-                                                    <h5>3 Categories</h5>
-                                                    <h4>Backend</h4>
-                                                </li>
-                                                <li class="card-courses-review">
-                                                    <h5>3 Review</h5>
-                                                    <ul class="cours-star">
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li class="active"><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                        <li><i class="fa fa-star"></i></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="card-courses-stats">
-                                                    <a href="#" class="btn button-sm green radius-xl">Pending</a>
-                                                </li>
-                                                <li class="card-courses-price">
-                                                    <del>$190</del>
-                                                    <h5 class="text-primary">$120</h5>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <div class="row card-courses-dec">
-                                            <div class="col-md-12">
-                                                <h6 class="m-b10">Course Description</h6>
-                                                <p>Lorem ipsum dolor sit amet, est ei idque voluptua copiosae, pro detracto disputando reformidans at, ex vel suas eripuit. Vel alii zril maiorum ex, mea id sale eirmod epicurei. Sit te possit senserit, eam alia veritus maluisset ei, id cibo vocent ocurreret per. Te qui doming doctus referrentur, usu debet tamquam et. Sea ut nullam aperiam, mei cu tollit salutatus delicatissimi. </p>	
-                                            </div>
-                                            <div class="col-md-12">
-                                                <a href="#" class="btn green radius-xl outline">Approve</a>
-                                                <a href="#" class="btn red outline radius-xl ">Cancel</a>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
+                                <%
+                                                }
+                                            } else {
+                                %>
+                                <p>No data.</p>
+                                <%
+                                    }
+                                %>
+                                
                             </div>
                         </div>
                     </div>
