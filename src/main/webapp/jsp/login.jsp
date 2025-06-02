@@ -59,14 +59,16 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <input name="username or email" type="text" required class="form-control">
+                                    
+                                    <input name="username or email" type="text" required class="form-control" placeholder="Enter your username or email">
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <input name="password" type="password" required class="form-control">
+                                    
+                                    <input name="password" type="password" required class="form-control" placeholder="Enter your Password">
                                 </div>
                             </div>
                         </div>
@@ -76,7 +78,7 @@
                                     <input type="checkbox" class="custom-control-input" id="rememberMe">
                                     <label class="custom-control-label" for="rememberMe">Remember me</label>
                                 </div>
-                                <a href="forget-password.html" class="ml-auto">Forgot Password?</a>
+                                <a href="jsp/forgot-password.jsp" class="ml-auto">Forgot Password?</a>
                             </div>
                         </div>
                         <div class="col-lg-12 m-b30">
@@ -104,7 +106,7 @@
 <script src="assets/vendors/owl-carousel/owl.carousel.js"></script>
 <script src="assets/js/functions.js"></script>
 <script src="assets/js/contact.js"></script>
-<script src='assets/vendors/switcher/switcher.js'></script>
+
 
 </body>
 </html>

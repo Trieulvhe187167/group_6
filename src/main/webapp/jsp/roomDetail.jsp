@@ -427,6 +427,6 @@
         <script src="${pageContext.request.contextPath}/assets/js/jquery.scroller.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/vendors/switcher/switcher.js"></script>
+  
     </body>
 </html>
