@@ -355,8 +355,9 @@
                                     <div class="item">
                                         <div class="event-bx">
                                             <div class="action-box">
-                                                <img src="${pageContext.request.contextPath}/uploads/events/${e.imageUrl}"
-                                                     alt="${e.title}" />
+                                                <img src="${pageContext.request.contextPath}/assets/images/uploads/events/${e.imageUrl}"
+                                                     alt="${e.title}" 
+                                                        class="img-fluid" />
                                             </div>
                                             <div class="info-bx d-flex">
                                                 <div>
@@ -386,7 +387,7 @@
                                                     <p>${e.description}</p>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div>  
                                     </div>
                                 </c:forEach>
                             </div>
