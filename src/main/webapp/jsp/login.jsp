@@ -34,8 +34,6 @@
                     <h2 class="title-head">Login to your <span>Account</span></h2>
                     <p>Don't have an account? <a href="jsp/Register.jsp">Create one here</a></p>
                 </div>
-
-                <!-- ✅ THÔNG BÁO ĐĂNG NHẬP THÀNH CÔNG -->
                 <%
                     User user = (User) session.getAttribute("user");
                     if (user != null) {
@@ -47,7 +45,6 @@
                     }
                 %>
 
-                <!-- ❌ THÔNG BÁO LỖI -->
                 <c:if test="${not empty errorMsg}">
                     <div class="alert alert-danger" style="color: red; font-weight: bold; margin-bottom: 15px;">
                         ${errorMsg}
@@ -60,7 +57,7 @@
                             <div class="form-group">
                                 <div class="input-group">
                                     
-                                    <input name="username or email" type="text" required class="form-control" placeholder="Enter your username or email">
+                                    <input name="username" type="text" required class="form-control" placeholder="Enter your username or email">
                                 </div>
                             </div>
                         </div>
