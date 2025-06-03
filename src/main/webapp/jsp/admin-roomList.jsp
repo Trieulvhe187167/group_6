@@ -8,6 +8,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="model.RoomType" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Arrays" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -73,6 +74,23 @@
                     </ul>
                 </div>	
                 <div class="row">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <a href="jsp/create-roomtype.jsp" class="btn button-sm green radius-xl" style="height: 40px; line-height: 40px; color: white; font-size: 15px; padding: 0 20px; background-color: green;">
+                            Create New Type
+                        </a>
+                        <div class="widget courses-search-bx placeani">
+                            <div class="form-group">
+                                <form action="RoomListServlet" method="get">
+                                    <div class="input-group">
+                                        <label style="margin: 0;">Search Rooms</label>
+                                        <input name="keyword" type="text" class="form-control" style="height: 36px; padding: 5px 10px; font-size: 14px;">
+                                        <button type="submit" class="btn" style="height: 36px; padding: 0 15px; background-color: green; color: white;">Search</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Your Profile Views Chart -->
                     <div class="col-lg-12 m-b30">
                         <div class="widget-box">
@@ -98,9 +116,11 @@
                                                         
                                                     String description = type.getDescription();
                                                     String features[] = description.split(",");
-                                                    String secondFeature = "";
+                                                    String bed = "";
+                                                    String shortDescrip = "";
                                                     if (features.length > 1) {
-                                                        secondFeature = features[1].trim();
+                                                        bed = features[0].trim();
+                                                        shortDescrip = features[1].trim();
                                                     }
                                 %>
                                 <div class="card-courses-list admin-courses">
@@ -153,12 +173,28 @@
                                         </div>
                                         <div class="row card-courses-dec">
                                             <div class="col-md-12">
+                                                <h6 class="m-b10">Room Type Description</h6>
+                                                <p>Short Description: <%= shortDescrip %>
+                                                    <br> Bed: <%= bed %>
+                                                    <br> Amenities:
+                                                    <%
+                                                        for(int j = 2; j < features.length; j++){
+                                                    %>
+                                                            <span style="display:inline-block; width:10px;"></span><%= j-1 %>.<%= features[j] %>
+                                                    <%
+                                                        }
+                                                    %>
+                                                    <br> Create At: <%= type.getCreatedAt() %>
+                                                    <br> Update At: <%= type.getUpdatedAt() %>
+                                                </p>
+                                                <p></p>
+                                                <p></p>
                                                 <h6 class="m-b10">Course Description</h6>
-                                                <p><%= type.getDescription() %></p>	
+                                                <p><%= type.getDescription() %></p>
                                             </div>
                                             <div class="col-md-12">
                                                 <a href="#" class="btn green radius-xl outline">Approve</a>
-                                                <a href="#" class="btn red outline radius-xl ">Cancel</a>
+                                                <a href="RoomListServlet?action=delete&id=<%= type.getId() %>&status=inactive" class="btn red outline radius-xl ">Cancel</a>
                                             </div>
                                         </div>
 
