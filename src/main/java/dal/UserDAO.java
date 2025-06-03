@@ -44,7 +44,6 @@ public class UserDAO {
         return null;
     }
 
-    // Hàm mã hóa SHA-256
    public static String hashPassword(String password) {
     try {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
