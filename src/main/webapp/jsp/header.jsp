@@ -100,6 +100,11 @@
                     <li class="nav-item ${fn:endsWith(currentUrl,'/HouseKeeping') ? 'active' : ''}">
                         <a class="nav-link" href="${pageContext.request.contextPath}/jsp/HouseKeeping.jsp">House Keeping</a>
                     </li>
+                    <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/customers">
+                                MANAGE CUSTOMERS
+                            </a>
+                        </li>
                 </ul>
             </nav>
         </div>
