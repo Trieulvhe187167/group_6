@@ -22,6 +22,14 @@
         <link rel="shortcut icon" type="image/x-icon" href="${pageContext.request.contextPath}/assets/images/favicon.png" />
         <title>House Keeping</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
+        select, input[type=text] { padding: 5px; }
+        form.inline { display: inline; }
+    </style>
         <!-- CSS -->
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/assets.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/typography.css">
@@ -61,18 +69,6 @@
     String search = request.getAttribute("search") != null ? (String) request.getAttribute("search") : "";
     String status = request.getAttribute("status") != null ? (String) request.getAttribute("status") : "ALL";
 %>
-<html>
-<head>
-    <title>Housekeeping - Quản lý phòng</title>
-    <style>
-        body { font-family: Arial; padding: 20px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
-        select, input[type=text] { padding: 5px; }
-        form.inline { display: inline; }
-    </style>
-</head>
-<body>
     <h2>Housekeeping - Quản lý trạng thái phòng</h2>
 
     <!-- Form lọc và tìm kiếm phòng (gửi GET -> gọi doGet()) -->
@@ -135,9 +131,6 @@
         %>
         </tbody>
     </table>
-</body>
-</html>
-
         </div>
                                    <%@ include file="footer.jsp" %>
  </div>
