@@ -7,11 +7,11 @@ import java.sql.SQLException;
 public class DBContext {
 
     // Cách 1: tắt SSL
-    // private static final String URL = "jdbc:sqlserver://LAPTOP-Q4D6UCM6\\MSSQLSERVER01:1433;"
+    // private static final String URL = "jdbc:sqlserver://ZIG\\MSSQLSERVER01:1433;"
     //         + "databaseName=HotelManagement;encrypt=false;";
 
     // Cách 2: giữ mã hoá nhưng tin cậy chứng chỉ tự ký
-    private static final String URL = "jdbc:sqlserver://LAPTOP-Q4D6UCM6\\MSSQLSERVER01:1433;"
+    private static final String URL = "jdbc:sqlserver://ZIG:1433;"
             + "databaseName=HotelManagement;"
             + "encrypt=true;"
             + "trustServerCertificate=true;";
