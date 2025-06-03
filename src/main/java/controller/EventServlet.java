@@ -12,14 +12,16 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.UUID;
-
-import dal.UserDAO;
-import model.User;
-import util.MailUtil;
-
-@WebServlet(name="ForgetPasswordServlet", urlPatterns={"/ForgetPasswordServlet"})
-public class ForgetPasswordServlet extends HttpServlet {
+import dal.EventDAO;
+import model.Event;
+import java.io.IOException;
+import java.util.List;
+/**
+ *
+ * @author dmx
+ */
+@WebServlet(name="EventServlet", urlPatterns={"/EventServlet"})
+public class EventServlet extends HttpServlet {
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -36,10 +38,10 @@ public class ForgetPasswordServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet ForgetPasswordServlet</title>");  
+            out.println("<title>Servlet EventServlet</title>");  
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet ForgetPasswordServlet at " + request.getContextPath () + "</h1>");
+            out.println("<h1>Servlet EventServlet at " + request.getContextPath () + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -54,11 +56,11 @@ public class ForgetPasswordServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
-    } 
-
+      protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        List<Event> events = new EventDAO().getAllEvents();
+        req.setAttribute("events", events);
+        req.getRequestDispatcher("/index.jsp").forward(req, resp);
+    }
     /** 
      * Handles the HTTP <code>POST</code> method.
      * @param request servlet request
@@ -69,41 +71,7 @@ public class ForgetPasswordServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        //processRequest(request, response);
-        String email = request.getParameter("email");
-        UserDAO userDAO = new UserDAO();
-        User user = userDAO.getUserByEmail(email);
-
-        if (user == null) {
-            request.setAttribute("error", "Email không tồn tại!");
-            request.getRequestDispatcher("forgot_password.jsp").forward(request, response);
-            return;
-        }
-
-        // Tạo token reset ngẫu nhiên
-        String token = UUID.randomUUID().toString();
-
-        // Cập nhật token vào DB
-        boolean updated = userDAO.updateResetToken(user.getId(), token);
-
-        if (updated) {
-            // Gửi mail với đường link reset
-            String link = "http://localhost:8080/YourProject/reset-password?token=" + token;
-            String subject = "Khôi phục mật khẩu";
-            String content = "Click vào liên kết sau để đặt lại mật khẩu:\n" + link;
-
-            boolean sent = MailUtil.sendMail(email, subject, content);
-
-            if (sent) {
-                request.setAttribute("message", "Email đã được gửi! Hãy kiểm tra hộp thư.");
-            } else {
-                request.setAttribute("error", "Gửi email thất bại.");
-            }
-        } else {
-            request.setAttribute("error", "Lỗi khi tạo token.");
-        }
-
-        request.getRequestDispatcher("forgot_password.jsp").forward(request, response);
+        processRequest(request, response);
     }
 
     /** 

@@ -14,6 +14,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  *
@@ -63,7 +65,21 @@ public class RoomListServlet extends HttpServlet {
         //processRequest(request, response);
 
         RoomTypeDAO dao = new RoomTypeDAO();
-        List<RoomType> roomTypes = dao.getAllRoomTypes();
+        List<RoomType> roomTypes;
+        String keyword = request.getParameter("keyword");
+        String action = request.getParameter("action");
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            roomTypes = dao.searchRooms(keyword.trim());
+        } else {
+            roomTypes = dao.getAllRoomTypes();
+        }
+        //Delete
+        if (action.equalsIgnoreCase("delete")){
+            int id = Integer.parseInt(request.getParameter("id"));
+            String status = request.getParameter("status");
+            dao.updateRoomTypeStatus(id, status);
+        }
 
         //Phân trang
         int recordsPerPage = 6;
@@ -82,8 +98,7 @@ public class RoomListServlet extends HttpServlet {
         request.setAttribute("recordsPerPage", recordsPerPage);
         request.setAttribute("totalPages", totalPages);
         //Phân trang
-        
-        
+
         request.setAttribute("roomTypes", roomTypes);
         request.getRequestDispatcher("jsp/roomList.jsp").forward(request, response);
     }
@@ -99,7 +114,44 @@ public class RoomListServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        //processRequest(request, response);
+        String action = request.getParameter("action");
+
+        if (action != null && action.equals("create")) {
+            // Xử lý tạo mới RoomType
+            request.setCharacterEncoding("UTF-8");
+
+            String name = request.getParameter("name");
+            String basePriceStr = request.getParameter("basePrice");
+            String capacityStr = request.getParameter("capacity");
+            String bed = request.getParameter("bed");
+            String description = request.getParameter("description");
+            String special = request.getParameter("special");
+            String imageUrl = request.getParameter("imageUrl");
+
+            try {
+                BigDecimal basePrice = new BigDecimal(basePriceStr);
+                int capacity = Integer.parseInt(capacityStr);
+
+                RoomType roomType = new RoomType();
+                roomType.setName(name);
+                roomType.setDescription(description + "," + bed + "," + special);
+                roomType.setImageUrl(imageUrl);
+                roomType.setBasePrice(basePrice);
+                roomType.setCapacity(capacity);
+                roomType.setCreatedAt(new Date());
+                roomType.setUpdatedAt(new Date());
+
+                RoomTypeDAO dao = new RoomTypeDAO();
+                dao.insert(roomType);
+
+                response.sendRedirect("RoomListServlet");
+            } catch (Exception e) {
+                request.setAttribute("message", "Lỗi tạo RoomType: " + e.getMessage());
+                request.getRequestDispatcher("/jsp/create-roomtype.jsp").forward(request, response);
+            }
+        }
+
     }
 
     /**

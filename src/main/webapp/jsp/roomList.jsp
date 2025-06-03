@@ -33,7 +33,7 @@
         <link rel="shortcut icon" type="image/x-icon" href="${pageContext.request.contextPath}/assets/images/favicon.png" />
 
         <!-- PAGE TITLE HERE ============================================= -->
-        <title>EduChamp | List of Room </title>
+        <title>LuxuryHotel | List of Room </title>
 
         <!-- MOBILE SPECIFIC ============================================= -->
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -55,6 +55,8 @@
         <!-- STYLESHEETS ============================================= -->
         <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/style.css">
         <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/color/color-1.css">
+        
+
     </head>
     <body id="bg">
         <div class="page-wraper">
@@ -91,12 +93,16 @@
                         <div class="container">
                             <div class="row">
                                 <div class="col-lg-3 col-md-4 col-sm-12 m-b30">
+                                    <a href="jsp/create-roomtype.jsp" class="btn ">Create Type</a>
                                     <div class="widget courses-search-bx placeani">
                                         <div class="form-group">
-                                            <div class="input-group">
-                                                <label>Search Courses</label>
-                                                <input name="dzName" type="text" required class="form-control">
-                                            </div>
+                                            <form action="RoomListServlet" method="get">
+                                                <div class="input-group">
+                                                    <label>Search Rooms</label>
+                                                    <input name="keyword" type="text" required class="form-control"><br><br>
+                                                    <button type="submit" class="btn ">Search</button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
                                     <div class="widget widget_archive">
@@ -109,7 +115,9 @@
                                             <li><a href="#">Technology</a></li>
                                         </ul>
                                     </div>
+                                    
                                     <div class="widget">
+                                        
                                         <a href="#"><img src="assets/images/adv/adv.jpg" alt=""/></a>
                                     </div>
                                     <div class="widget recent-posts-entry widget-courses">
@@ -162,6 +170,7 @@
                                             List<RoomType> roomTypes = (List<RoomType>) request.getAttribute("roomTypes");
                                             int currentPage = (Integer) request.getAttribute("currentPage");
                                             int recordsPerPage = (Integer) request.getAttribute("recordsPerPage");
+                                            int totalPages = (Integer)request.getAttribute("totalPages");
                                             int totalRecords = roomTypes.size();
 
                                             int startIndex = (currentPage - 1) * recordsPerPage;
@@ -170,17 +179,24 @@
                                             if (roomTypes != null) {
                                                 for (int i = startIndex; i < endIndex; i++) {
                                                     RoomType type = roomTypes.get(i);
+                                                        
+                                                    String description = type.getDescription();
+                                                    String features[] = description.split(",");
+                                                    String secondFeature = "";
+                                                    if (features.length > 1) {
+                                                        secondFeature = features[1].trim();
+                                                    }
                                         %>
 
                                         <div class="col-md-6 col-lg-4 col-sm-6 m-b30">
                                             <div class="cours-bx">
                                                 <div class="action-box">
                                                     <img src="${pageContext.request.contextPath}<%= type.getImageUrl() %>" alt="Room1">
-                                                    <a href="#" class="btn">Read More</a>
+                                                    <a href="RoomDetailServlet?id=<%= type.getId() %>" class="btn">Read More</a>
                                                 </div>
                                                 <div class="info-bx text-center">
-                                                    <h5><a href="#"><%= type.getName() %></a></h5>
-                                                    <span><%= type.getDescription() %></span>
+                                                    <h5><a href="RoomDetailServlet?id=<%= type.getId() %>"><%= type.getName() %></a></h5>
+                                                    <span><%= secondFeature %></span>
                                                 </div>
                                                 <div class="cours-more-info">
                                                     <div class="review">
@@ -198,31 +214,49 @@
                                                         <h5>$<%= type.getBasePrice() %></h5>
                                                     </div>
                                                 </div>
+                                                    
                                             </div>
+                                                    <div style="text-align: center; margin-top: 10px;">
+                                                        <a href="RoomListServlet?action=delete&id=<%= type.getId() %>&status=inactive" class="btn">Delete</a>
+                                                    </div>
                                         </div>
                                         <%
                                                 }
                                             } else {
                                         %>
-                                        <tr>
-                                            <td colspan="8">No data</td>
-                                        </tr>
+                                        <p>No data.</p>
                                         <%
                                             }
                                         %>
 
-
+                                        <!--Phân trang START-->
                                         <div class="col-lg-12 m-b20">
                                             <div class="pagination-bx rounded-sm gray clearfix">
                                                 <ul class="pagination">
+                                                    <% if(currentPage == 1){ %>
                                                     <li class="previous"><a href="#"><i class="ti-arrow-left"></i> Prev</a></li>
-                                                    <li class="active"><a href="#">1</a></li>
-                                                    <li><a href="#">2</a></li>
-                                                    <li><a href="#">3</a></li>
+                                                        <% } else { %>
+                                                    <li class="previous"><a href="RoomListServlet?page=<%= currentPage - 1 %>"><i class="ti-arrow-left"></i> Prev</a></li>
+                                                        <% } %>
+
+                                                    <% for(int i = 1; i <= (Integer)request.getAttribute("totalPages"); i++) { 
+                                                        if(i == currentPage) { %>
+                                                    <li class="active"><a href="#"><%= i %></a></li>
+                                                        <% } else { %>
+                                                    <li><a href="RoomListServlet?page=<%= i %>"><%= i %></a></li>
+                                                        <% } 
+                                                    } %>
+
+                                                    <% if(currentPage == totalPages){ %>
                                                     <li class="next"><a href="#">Next <i class="ti-arrow-right"></i></a></li>
+                                                            <% } else { %>
+                                                    <li class="next"><a href="RoomListServlet?page=<%= currentPage + 1 %>">Next <i class="ti-arrow-right"></i></a></li>
+                                                            <% } %>
                                                 </ul>
                                             </div>
                                         </div>
+                                        <!--Phân trang END-->
+
                                     </div>
                                 </div>
                                 <!-- List_of_Room END -->
@@ -241,7 +275,33 @@
             <!-- Footer END ==== -->
             <button class="back-to-top fa fa-chevron-up" ></button>
         </div>
-        <!-- External JavaScripts -->
+            
+            <script>
+                function toggleDropdown(el) {
+                    const li = el.closest("li");
+                    li.classList.toggle("open");
+
+                    // Đóng các dropdown khác nếu có
+                    document.querySelectorAll(".navbar-nav > li").forEach(item => {
+                        if (item !== li) item.classList.remove("open");
+                    });
+                }
+
+                function selectFilter(inputId, value) {
+                    document.getElementById(inputId).value = value;
+                    document.getElementById("filterForm").submit();
+                }
+
+                // Đóng dropdown nếu click ra ngoài
+                document.addEventListener('click', function (e) {
+                    if (!e.target.closest('.navbar-nav')) {
+                        document.querySelectorAll('.navbar-nav > li').forEach(li => li.classList.remove('open'));
+                    }
+                });
+            </script>
+
+
+            <!-- External JavaScripts -->
         <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
         <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/popper.min.js"></script>
         <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/bootstrap.min.js"></script>
