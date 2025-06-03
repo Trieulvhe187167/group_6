@@ -14,15 +14,13 @@ public class UserDAO {
         String sql = "SELECT * FROM Users WHERE Username = ? OR Email = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, username);
+                ps.setString(1, username);
+                ps.setString(2, username);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
                 String storedHash = rs.getString("PasswordHash");
-                String inputHash = hashPassword(password);
-
-                // Debug (tạm thời): In ra để kiểm tra giá trị hash
+                String inputHash = hashPassword(password.trim());
                 System.out.println("Stored Hash: " + storedHash);
                 System.out.println("Input  Hash: " + inputHash);
 
@@ -47,14 +45,21 @@ public class UserDAO {
     }
 
     // Hàm mã hóa SHA-256
-    private String hashPassword(String password) throws Exception {
+   public static String hashPassword(String password) {
+    try {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hashBytes) {
-            sb.append(String.format("%02x", b));
+        byte[] hash = md.digest(password.getBytes(StandardCharsets.UTF_8));
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            hexString.append(String.format("%02x", b));
         }
-        return sb.toString();
+        return hexString.toString();
+    } catch (Exception e) {
+        e.printStackTrace();
+        return null;
     }
+}
+
+
 }
 
