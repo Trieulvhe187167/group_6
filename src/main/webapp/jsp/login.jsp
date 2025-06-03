@@ -34,8 +34,6 @@
                     <h2 class="title-head">Login to your <span>Account</span></h2>
                     <p>Don't have an account? <a href="jsp/Register.jsp">Create one here</a></p>
                 </div>
-
-                <!-- ✅ THÔNG BÁO ĐĂNG NHẬP THÀNH CÔNG -->
                 <%
                     User user = (User) session.getAttribute("user");
                     if (user != null) {
@@ -46,8 +44,6 @@
                 <%
                     }
                 %>
-
-                <!-- ❌ THÔNG BÁO LỖI -->
                 <c:if test="${not empty errorMsg}">
                     <div class="alert alert-danger" style="color: red; font-weight: bold; margin-bottom: 15px;">
                         ${errorMsg}
@@ -59,16 +55,16 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <label>Username</label>
-                                    <input name="username" type="text" required class="form-control">
+                                    
+                                    <input name="username" type="text" required class="form-control" placeholder="Enter your username or email">
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <label>Password</label>
-                                    <input name="password" type="password" required class="form-control">
+                                    
+                                    <input name="password" type="password" required class="form-control" placeholder="Enter your Password">
                                 </div>
                             </div>
                         </div>
@@ -78,7 +74,7 @@
                                     <input type="checkbox" class="custom-control-input" id="rememberMe">
                                     <label class="custom-control-label" for="rememberMe">Remember me</label>
                                 </div>
-                                <a href="forget-password.html" class="ml-auto">Forgot Password?</a>
+                                <a href="jsp/forgot-password.jsp" class="ml-auto">Forgot Password?</a>
                             </div>
                         </div>
                         <div class="col-lg-12 m-b30">
@@ -106,7 +102,7 @@
 <script src="assets/vendors/owl-carousel/owl.carousel.js"></script>
 <script src="assets/js/functions.js"></script>
 <script src="assets/js/contact.js"></script>
-<script src='assets/vendors/switcher/switcher.js'></script>
+
 
 </body>
 </html>

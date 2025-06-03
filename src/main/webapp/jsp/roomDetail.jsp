@@ -64,7 +64,14 @@
             <!-- header END ==== -->
 
 
-            <% RoomType roomTypes = (RoomType) request.getAttribute("roomTypes"); %>
+            <% RoomType roomTypes = (RoomType) request.getAttribute("roomTypes"); 
+                String description = roomTypes.getDescription();
+                String features[] = description.split(",");
+                String firstFeature = "";
+                if (features.length > 0) {
+                    firstFeature = features[0].trim();
+                }
+            %>
             <!-- Content -->
             <div class="page-content bg-white">
                 <!-- inner page banner -->
@@ -155,7 +162,7 @@
                                                 <h2 class="post-title"><%= roomTypes.getName() %></h2>
                                             </div>
                                             <div class="ttr-post-text">
-                                                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+                                                <p></p>
                                             </div>
                                         </div>
                                     </div>
@@ -164,26 +171,32 @@
                                         <div class="row">
                                             <div class="col-md-12 col-lg-4">
                                                 <ul class="course-features">
-                                                    <li><i class="ti-book"></i> <span class="label">Lectures</span> <span class="value">8</span></li>
-                                                    <li><i class="ti-help-alt"></i> <span class="label">Quizzes</span> <span class="value">1</span></li>
-                                                    <li><i class="ti-time"></i> <span class="label">Duration</span> <span class="value">60 hours</span></li>
-                                                    <li><i class="ti-stats-up"></i> <span class="label">Skill level</span> <span class="value">Beginner</span></li>
+                                                    <li><i class="ti-user"></i> <span class="label">Capacity:</span> <span class="value"><%= roomTypes.getCapacity() %></span></li>
+                                                    <li><i class="ti-help-alt"></i> <span class="label">Beds</span> <span class="value"><%= firstFeature %></span></li>
+                                                    <li><i class="ti-time"></i> <span class="label">Check in</span> <span class="value">8h00-23h59</span></li>
+                                                    <li><i class="ti-time"></i> <span class="label">Check out TO</span> <span class="value">14h00</span></li>
+                                                    <li><i class="ti-stats-up"></i> <span class="label">Parking</span> <span class="value">$5/day</span></li>
                                                     <li><i class="ti-smallcap"></i> <span class="label">Language</span> <span class="value">English</span></li>
-                                                    <li><i class="ti-user"></i> <span class="label">Students</span> <span class="value">32</span></li>
-                                                    <li><i class="ti-check-box"></i> <span class="label">Assessments</span> <span class="value">Yes</span></li>
+                                                    <li><i class="ti-comments"></i> <span class="label">Events</span> <span class="value">Year-round</span></li>
                                                 </ul>
                                             </div>
                                             <div class="col-md-12 col-lg-8">
-                                                <h5 class="m-b5">Course Description</h5>
-                                                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry’s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.</p>
-                                                <h5 class="m-b5">Certification</h5>
-                                                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry’s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.</p>
-                                                <h5 class="m-b5">Learning Outcomes</h5>
+                                                <h5 class="m-b5">Amenities</h5>
                                                 <ul class="list-checked primary">
-                                                    <li>Over 37 lectures and 55.5 hours of content!</li>
-                                                    <li>LIVE PROJECT End to End Software Testing Training Included.</li>
-                                                    <li>Learn Software Testing and Automation basics from a professional trainer from your own desk.</li>
-                                                    <li>Information packed practical training starting from basics to advanced testing techniques.</li>
+                                                <%
+                                                    if (features.length > 2) {
+                                                        for(int i = 2; i < features.length; i++){
+                                                %>
+                                                            <li><%= features[i] %></li>
+                                                <%
+                                                        }
+                                                    }
+                                                %>
+                                                
+                                                    <li>Clean the room daily.</li>
+                                                    <li>Security [24h].</li>
+                                                    <li>Close to shopping centers, restaurants and crowded entertainment venues.</li>
+                                                    <li>Has fire exits, systems and full fire fighting equipment.</li>
                                                     <li>Best suitable for beginners to advanced level users and who learn faster when demonstrated.</li>
                                                     <li>Course content designed by considering current software testing technology and the job market.</li>
                                                     <li>Practical assignments at the end of every session.</li>
@@ -414,6 +427,6 @@
         <script src="${pageContext.request.contextPath}/assets/js/jquery.scroller.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/vendors/switcher/switcher.js"></script>
+  
     </body>
 </html>

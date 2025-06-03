@@ -18,19 +18,29 @@ public class RoomType {
     private String imageUrl;
     private BigDecimal basePrice;
     private int capacity;
+    private String status;
     private Date createdAt;
     private Date updatedAt;
 
     public RoomType() {
     }
 
-    public RoomType(int id, String name, String description, String imageUrl, BigDecimal basePrice, int capacity, Date createdAt, Date updatedAt) {
+    public RoomType(String name, String description, String imageUrl, BigDecimal basePrice, int capacity) {
+        this.name = name;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.basePrice = basePrice;
+        this.capacity = capacity;
+    }
+
+    public RoomType(int id, String name, String description, String imageUrl, BigDecimal basePrice, int capacity, String status, Date createdAt, Date updatedAt) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.imageUrl = imageUrl;
         this.basePrice = basePrice;
         this.capacity = capacity;
+        this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -81,6 +91,14 @@ public class RoomType {
 
     public void setCapacity(int capacity) {
         this.capacity = capacity;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Date getCreatedAt() {

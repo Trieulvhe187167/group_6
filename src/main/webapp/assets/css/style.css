@@ -3444,3 +3444,19 @@ img[alt="Our Story"] {
 }
 
 
+/* Chuyển blog grid sang dùng CSS Grid để auto căn đều và space */
+.ttr-blog-grid-3 {
+  display: grid !important;
+  /* tạo khoảng 3 cột, mỗi cột ít nhất 300px, tối đa tự động giãn */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+  /* khoảng cách giữa các cột và hàng */
+  grid-gap: 30px !important;
+  /* mặc định items sẽ bắt đầu từ trái (start) */
+  justify-content: start !important;
+}
+
+/* Cho mỗi post auto rộng đầy cell */
+.ttr-blog-grid-3 .post {
+  width: 100%;
+}
+
