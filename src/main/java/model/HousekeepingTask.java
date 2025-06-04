@@ -4,6 +4,8 @@
  */
 package model;
 
+import java.sql.Timestamp;
+
 /**
  *
  * @author admin
@@ -12,20 +14,20 @@ public class HousekeepingTask {
     String roomNum;//RoomsId
     String status;//Housekeepingtask
     String Notes;//Housekeepingtask
-    String UserName;//users   
+    String AssignedcToID;//users
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 
-    public HousekeepingTask(String roomNum, String status, String Notes, String UserName) {
-        this.roomNum = roomNum;
-        this.status = status;
-        this.Notes = Notes;
-        this.UserName = UserName;
-    }
-    
-    
-    
     public HousekeepingTask() {
     }
 
+    public HousekeepingTask(String roomNum, String status, String Notes, String AssignedcToID) {
+        this.roomNum = roomNum;
+        this.status = status;
+        this.Notes = Notes;
+        this.AssignedcToID = AssignedcToID;
+    }
+    
     public String getRoomNum() {
         return roomNum;
     }
@@ -50,13 +52,28 @@ public class HousekeepingTask {
         this.Notes = Notes;
     }
 
-    public String getUserName() {
-        return UserName;
+    public String getAssignedcToID() {
+        return AssignedcToID;
     }
 
-    public void setUserName(String UserName) {
-        this.UserName = UserName;
+    public void setAssignedcToID(String AssignedcToID) {
+        this.AssignedcToID = AssignedcToID;
     }
 
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
     
 }
