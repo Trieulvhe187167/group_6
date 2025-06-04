@@ -226,4 +226,6 @@ public class CustomerManagerServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/customers?error=delete");
         }
     }
+    
+    
 }

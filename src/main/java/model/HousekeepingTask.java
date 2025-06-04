@@ -11,6 +11,7 @@ import java.sql.Timestamp;
  * @author admin
  */
 public class HousekeepingTask {
+    int id;
     String roomNum;//RoomsId
     String status;//Housekeepingtask
     String Notes;//Housekeepingtask
@@ -21,12 +22,24 @@ public class HousekeepingTask {
     public HousekeepingTask() {
     }
 
-    public HousekeepingTask(String roomNum, String status, String Notes, String AssignedcToID) {
+    public HousekeepingTask(int id, String roomNum, String status, String Notes, String AssignedcToID, Timestamp createdAt, Timestamp updatedAt) {
+        this.id = id;
         this.roomNum = roomNum;
         this.status = status;
         this.Notes = Notes;
         this.AssignedcToID = AssignedcToID;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     
     public String getRoomNum() {
         return roomNum;
