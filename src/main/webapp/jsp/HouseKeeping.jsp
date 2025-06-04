@@ -1,9 +1,6 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" import="java.util.List, dal.BlogDAO, model.Blog" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ page import="java.util.List" %>
-<%@ page import="model.Room" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -64,74 +61,108 @@
                         </ul>
                     </div>
                 </div>
+
+       </div>
 <!-- code -->
-    <%List<Room> rooms = (List<Room>) request.getAttribute("rooms");
-    String search = request.getAttribute("search") != null ? (String) request.getAttribute("search") : "";
-    String status = request.getAttribute("status") != null ? (String) request.getAttribute("status") : "ALL";
-%>
-    <h2>Housekeeping - Quản lý trạng thái phòng</h2>
+            <!-- Main Content -->
+<div class="section-area section-sp1">
+    <div class="container">
 
-    <!-- Form lọc và tìm kiếm phòng (gửi GET -> gọi doGet()) -->
-    <form method="get" action="housekeeping">
-        <label>Tìm theo số phòng:</label>
-        <input type="text" name="search" value="<%= search %>" placeholder="Nhập số phòng..." />
+        <!-- Success/Error Messages -->
+        <c:if test="${param.success eq 'added'}">
+            <div class="alert alert-success">Task added successfully!</div>
+        </c:if>
+        <c:if test="${param.success eq 'updated'}">
+            <div class="alert alert-success">Task updated successfully!</div>
+        </c:if>
+        <c:if test="${param.success eq 'deleted'}">
+            <div class="alert alert-success">Task deleted successfully!</div>
+        </c:if>
+        <c:if test="${param.error eq 'delete'}">
+            <div class="alert alert-danger">Failed to delete task!</div>
+        </c:if>
 
-        <label>Lọc theo trạng thái:</label>
-        <select name="status">
-            <option value="ALL" <%= "ALL".equals(status) ? "selected" : "" %>>Tất cả</option>
-            <option value="AVAILABLE" <%= "AVAILABLE".equals(status) ? "selected" : "" %>>AVAILABLE</option>
-            <option value="OCCUPIED" <%= "OCCUPIED".equals(status) ? "selected" : "" %>>OCCUPIED</option>
-            <option value="MAINTENANCE" <%= "MAINTENANCE".equals(status) ? "selected" : "" %>>MAINTENANCE</option>
-            <option value="DIRTY" <%= "DIRTY".equals(status) ? "selected" : "" %>>DIRTY</option>
-        </select>
-
-        <input type="submit" value="Lọc / Tìm" />
-    </form>
-
-    <!-- Bảng hiển thị danh sách phòng -->
-    <table>
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Số phòng</th>
-            <th>Trạng thái hiện tại</th>
-            <th>Thay đổi trạng thái</th>
-        </tr>
-        </thead>
-        <tbody>
-        <%
-            if (rooms != null && !rooms.isEmpty()) {
-                for (Room r : rooms) {
-        %>
-        <tr>
-            <td><%= r.getId() %></td>
-            <td><%= r.getRoomNumber() %></td>
-            <td><%= r.getStatus() %></td>
-            <td>
-                <!-- Form cập nhật trạng thái phòng (POST -> gọi doPost()) -->
-                <form method="post" action="housekeeping" class="inline">
-                    <input type="hidden" name="roomId" value="<%= r.getId() %>" />
-                    <select name="newStatus">
-                        <option value="AVAILABLE" <%= "AVAILABLE".equals(r.getStatus()) ? "selected" : "" %>>AVAILABLE</option>
-                        <option value="OCCUPIED" <%= "OCCUPIED".equals(r.getStatus()) ? "selected" : "" %>>OCCUPIED</option>
-                        <option value="MAINTENANCE" <%= "MAINTENANCE".equals(r.getStatus()) ? "selected" : "" %>>MAINTENANCE</option>
-                        <option value="DIRTY" <%= "DIRTY".equals(r.getStatus()) ? "selected" : "" %>>DIRTY</option>
-                    </select>
-                    <input type="submit" value="Cập nhật" />
+        <!-- Search and Add Button -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <form action="${pageContext.request.contextPath}/admin/housetkeeping" method="get" class="form-inline">
+                    <input type="hidden" name="action" value="search">
+                    <div class="input-group">
+                        <input type="text" name="status" class="form-control"
+                               placeholder="Search by status (exact match)..."
+                               value="${searchStatus}" style="width: 300px;">
+                        <div class="input-group-append" style="margin-left: 10px;">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
                 </form>
-            </td>
-        </tr>
-        <%
-                }
-            } else {
-        %>
-        <tr><td colspan="4">Không tìm thấy phòng nào.</td></tr>
-        <%
-            }
-        %>
-        </tbody>
-    </table>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="${pageContext.request.contextPath}/admin/housetkeeping?action=add"
+                   class="btn btn-success">
+                    <i class="fa fa-plus"></i> Add Task
+                </a>
+            </div>
         </div>
+
+        <!-- Task Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Room Number</th>
+                        <th>Status</th>
+                        <th>Assigned To</th>
+                        <th>Updated At</th>
+                        
+                        <th style="width: 150px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="task" items="${tasks}">
+                        <tr>
+                            <td>${task.id}</td>
+                            <td>${task.roomNum}</td>
+                            <td>${task.status}</td>
+                            <td>${task.assignedcToID}</td>
+                            <td><fmt:formatDate value="${task.updatedAt}" pattern="dd/MM/yyyy HH:mm"/></td>
+                            <td class="text-center">
+                                <a href="${pageContext.request.contextPath}/admin/housetkeeping?action=detail&id=${task.id}"
+                                   class="btn btn-sm btn-info" title="View">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                                <a href="${pageContext.request.contextPath}/admin/housetkeeping?action=edit&id=${task.id}"
+                                   class="btn btn-sm btn-warning" title="Edit">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                                <form action="${pageContext.request.contextPath}/admin/housetkeeping" method="post" style="display:inline;">
+                                    <input type="hidden" name="action" value="delete"/>
+                                    <input type="hidden" name="taskId" value="${task.id}"/>
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete"
+                                            onclick="return confirm('Are you sure you want to delete this task?');">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </c:forEach>
+
+                    <c:if test="${empty tasks}">
+                        <tr>
+                            <td colspan="6" class="text-center">No housekeeping tasks found.</td>
+                        </tr>
+                    </c:if>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- endcode -->
+
+
                                    <%@ include file="footer.jsp" %>
  </div>
 
