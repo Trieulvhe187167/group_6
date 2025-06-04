@@ -53,7 +53,7 @@ public class HouseKeepingServlet extends HttpServlet {
 
         try {
             switch (action) {
-                case "update":
+                case "edit":
                     updateTaskStatus(request, response);
                     break;
                 case "delete":
@@ -101,12 +101,8 @@ public class HouseKeepingServlet extends HttpServlet {
 
         boolean updated = housekeepingDAO.updateTaskStatusById(taskId, newStatus);
 
-        if (updated) {
-            response.sendRedirect(request.getContextPath() + "/admin/housekeeping?success=updated");
-        } else {
-            request.setAttribute("error", "Failed to update task status.");
-            listTasks(request, response); // reload page with error
-        }
+            listTasks(request, response);
+
     }
 
     private void deleteTask(HttpServletRequest request, HttpServletResponse response)
@@ -115,12 +111,7 @@ public class HouseKeepingServlet extends HttpServlet {
         int taskId = Integer.parseInt(request.getParameter("taskId"));
 
         boolean deleted = housekeepingDAO.deleteTaskById(taskId);
-
-        if (deleted) {
-            response.sendRedirect(request.getContextPath() + "/admin/housekeeping?success=deleted");
-        } else {
-            request.setAttribute("error", "Failed to delete task.");
             listTasks(request, response);
-        }
+        
     }
 }
