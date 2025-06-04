@@ -62,6 +62,113 @@
     <body class="ttr-opened-sidebar ttr-pinned-sidebar">
 
         <jsp:include page="admin-header.jsp" />
+        
+        <!-- Left sidebar menu start -->
+        <div class="ttr-sidebar">
+            <div class="ttr-sidebar-wrapper content-scroll">
+                <!-- side menu logo start -->
+                <div class="ttr-sidebar-logo">
+                    <a href="#"><img alt="" src="${pageContext.request.contextPath}/admin/assets/images/logo.png" width="122" height="27"></a>
+                    <!-- <div class="ttr-sidebar-pin-button" title="Pin/Unpin Menu">
+                            <i class="material-icons ttr-fixed-icon">gps_fixed</i>
+                            <i class="material-icons ttr-not-fixed-icon">gps_not_fixed</i>
+                    </div> -->
+                    <div class="ttr-sidebar-toggle-button">
+                        <i class="ti-arrow-left"></i>
+                    </div>
+                </div>
+                <!-- side menu logo end -->
+                <!-- sidebar menu start -->
+                <nav class="ttr-sidebar-navi">
+                    <ul>
+                        <li>
+                            <a href="index.html" class="ttr-material-button">
+                                <span class="ttr-icon"><i class="ti-home"></i></span>
+                                <span class="ttr-label">Dashborad</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="courses.html" class="ttr-material-button">
+                                <span class="ttr-icon"><i class="ti-book"></i></span>
+                                <span class="ttr-label">Courses</span>
+                            </a>
+                        </li>
+                        <form action="roomtype-filter" method="get">
+                            <li>
+                                <a href="#" class="ttr-material-button">
+                                    <span class="ttr-icon"><i class="ti-email"></i></span>
+                                    <span class="ttr-label">Mailbox</span>
+                                    <span class="ttr-arrow-icon"><i class="fa fa-angle-down"></i></span>
+                                </a>
+                                <ul>
+                                    <li>
+                                        <a href="mailbox.html" class="ttr-material-button"><span class="ttr-label">Mail Box</span></a>
+                                    </li>
+                                    <li>
+                                        <a href="mailbox-compose.html" class="ttr-material-button"><span class="ttr-label">Compose</span></a>
+                                    </li>
+                                    <li>
+                                        <a href="mailbox-read.html" class="ttr-material-button"><span class="ttr-label">Mail Read</span></a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </form>
+                        <li>
+                            <a href="#" class="ttr-material-button">
+                                <span class="ttr-icon"><i class="ti-calendar"></i></span>
+                                <span class="ttr-label">Calendar</span>
+                                <span class="ttr-arrow-icon"><i class="fa fa-angle-down"></i></span>
+                            </a>
+                            <ul>
+                                <li>
+                                    <a href="basic-calendar.html" class="ttr-material-button"><span class="ttr-label">Basic Calendar</span></a>
+                                </li>
+                                <li>
+                                    <a href="list-view-calendar.html" class="ttr-material-button"><span class="ttr-label">List View</span></a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="bookmark.html" class="ttr-material-button">
+                                <span class="ttr-icon"><i class="ti-bookmark-alt"></i></span>
+                                <span class="ttr-label">Bookmarks</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="review.html" class="ttr-material-button">
+                                <span class="ttr-icon"><i class="ti-comments"></i></span>
+                                <span class="ttr-label">Review</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="add-listing.html" class="ttr-material-button">
+                                <span class="ttr-icon"><i class="ti-layout-accordion-list"></i></span>
+                                <span class="ttr-label">Add listing</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="ttr-material-button">
+                                <span class="ttr-icon"><i class="ti-user"></i></span>
+                                <span class="ttr-label">My Profile</span>
+                                <span class="ttr-arrow-icon"><i class="fa fa-angle-down"></i></span>
+                            </a>
+                            <ul>
+                                <li>
+                                    <a href="user-profile.html" class="ttr-material-button"><span class="ttr-label">User Profile</span></a>
+                                </li>
+                                <li>
+                                    <a href="teacher-profile.html" class="ttr-material-button"><span class="ttr-label">Teacher Profile</span></a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="ttr-seperate"></li>
+                    </ul>
+                    <!-- sidebar menu end -->
+                </nav>
+                <!-- sidebar menu end -->
+            </div>
+        </div>
+        <!-- Left sidebar menu end -->
 
         <!--Main container start -->
         <main class="ttr-wrapper">
@@ -194,7 +301,7 @@
                                             </div>
                                             <div class="col-md-12">
                                                 <a href="#" class="btn green radius-xl outline">Approve</a>
-                                                <a href="RoomListServlet?action=delete&id=<%= type.getId() %>&status=inactive" class="btn red outline radius-xl ">Cancel</a>
+                                                <button type="button" onclick="submitDelete(<%= type.getId() %>, 'inactive');" class="btn red outline radius-xl">Cancel</button>
                                             </div>
                                         </div>
 
@@ -218,6 +325,20 @@
             </div>
         </main>
         <div class="ttr-overlay"></div>
+        
+        
+        <form id="deleteForm" action="RoomListServlet" method="post" style="display:none;">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="id" id="deleteId">
+            <input type="hidden" name="status" id="deleteStatus">
+        </form>
+        <script>
+            function submitDelete(id, status) {
+                document.getElementById('deleteId').value = id;
+                document.getElementById('deleteStatus').value = status;
+                document.getElementById('deleteForm').submit();
+            }
+        </script>
 
         <!-- External JavaScripts -->
         <script src="${pageContext.request.contextPath}/admin/assets/js/jquery.min.js"></script>
