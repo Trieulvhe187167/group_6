@@ -7,6 +7,8 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="model.RoomType" %>
+<%@ page import="model.Room" %>
+<%@ page import="dal.RoomTypeDAO" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Arrays" %>
 <!DOCTYPE html>
@@ -63,6 +65,8 @@
 
         <jsp:include page="admin-header.jsp" />
 
+        
+
         <!--Main container start -->
         <main class="ttr-wrapper">
             <div class="container-fluid">
@@ -75,16 +79,39 @@
                 </div>	
                 <div class="row">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <a href="jsp/create-roomtype.jsp" class="btn button-sm green radius-xl" style="height: 40px; line-height: 40px; color: white; font-size: 15px; padding: 0 20px; background-color: green;">
+                        <a href="jsp/create-roomtype.jsp" class="btn button-sm radius-xl" style="height: 40px; line-height: 40px; font-size: 15px; padding: 0 20px;">
                             Create New Type
                         </a>
+                        <form action="RoomListServlet" method="get" style="display: flex; gap: 10px; align-items: center;">
+                            <select name="price" class="form-select" style="height: 40px;">
+                                <option value="">-- Filter by Price --</option>
+                                <option value="1" ${selectedCapacity == '1' ? 'selected' : ''}>Under 500k</option>
+                                <option value="2" ${selectedCapacity == '1' ? 'selected' : ''}>500k - 1M</option>
+                                <option value="3" ${selectedCapacity == '1' ? 'selected' : ''}>Over 1M</option>
+                            </select>
+
+                            <select name="capacity" class="form-select" style="height: 40px;">
+                                <option value="">-- Filter by Capacity --</option>
+                                <option value="1" ${selectedCapacity == '1' ? 'selected' : ''}>1 Person</option>
+                                <option value="2" ${selectedCapacity == '2' ? 'selected' : ''}>2 People</option>
+                                <option value="3" ${selectedCapacity == '3' ? 'selected' : ''}>3 or more</option>
+                            </select>
+
+                            <select name="status" class="form-select" style="height: 40px;">
+                                <option value="">-- Filter by Status --</option>
+                                <option value="active" ${selectedStatus == 'active' ? 'selected' : ''}>Available</option>
+                                <option value="inactive" ${selectedStatus == 'inactive' ? 'selected' : ''}>Unavailable</option>
+                            </select>
+
+                            <button type="submit" class="btn btn-primary" style="height: 40px;">Filter</button>
+                        </form>
                         <div class="widget courses-search-bx placeani">
                             <div class="form-group">
                                 <form action="RoomListServlet" method="get">
                                     <div class="input-group">
                                         <label style="margin: 0;">Search Rooms</label>
-                                        <input name="keyword" type="text" class="form-control" style="height: 36px; padding: 5px 10px; font-size: 14px;">
-                                        <button type="submit" class="btn" style="height: 36px; padding: 0 15px; background-color: green; color: white;">Search</button>
+                                        <input name="keyword" type="text" value="${keyword}" class="form-control" style="height: 36px; padding: 5px 10px; font-size: 14px;">
+                                        <button type="submit" class="btn" style="height: 36px; padding: 0 15px;">Search</button>
                                     </div>
                                 </form>
                             </div>
@@ -102,6 +129,7 @@
                                 <%
                                     // Tạo danh sách người dùng mẫu
                                     List<RoomType> roomTypes = (List<RoomType>) request.getAttribute("roomTypes");
+                                    RoomTypeDAO dao = new RoomTypeDAO();
                                     int currentPage = (Integer) request.getAttribute("currentPage");
                                     int recordsPerPage = (Integer) request.getAttribute("recordsPerPage");
                                     int totalPages = (Integer)request.getAttribute("totalPages");
@@ -134,7 +162,7 @@
                                         <div class="card-courses-list-bx">
                                             <ul class="card-courses-view">
                                                 <li class="card-courses-user">
-                                                    
+
                                                     <div class="card-courses-user-info">
                                                         <h5>ID</h5>
                                                         <h4><%= type.getId() %></h4>
@@ -180,7 +208,7 @@
                                                     <%
                                                         for(int j = 2; j < features.length; j++){
                                                     %>
-                                                            <span style="display:inline-block; width:10px;"></span><%= j-1 %>.<%= features[j] %>
+                                                    <span style="display:inline-block; width:10px;"></span><%= j-1 %>.<%= features[j] %>
                                                     <%
                                                         }
                                                     %>
@@ -189,12 +217,27 @@
                                                 </p>
                                                 <p></p>
                                                 <p></p>
-                                                <h6 class="m-b10">Course Description</h6>
+                                                <h6 class="m-b10">Room Description</h6>
                                                 <p><%= type.getDescription() %></p>
+
+
+                                                <h6 class="m-b10">Rooms</h6>
+                                                <ul style="list-style-type: none; padding-left: 0;">
+                                                    <%
+                                                        List<Room> roomList = dao.getRoomsByType(type.getId());
+                                                        for(int x = 0; x < roomList.size(); x++){ 
+                                                    %>
+                                                    <li style="border-bottom: 1px solid rgba(0, 0, 0, 0.1); padding: 8px 0;">
+                                                        ID of Room: <%=  roomList.get(x).getId() %> - Room Number: <%=  roomList.get(x).getRoomNumber() %> - Room Status: <%=  roomList.get(x).getStatus() %>
+                                                    </li>
+                                                    <%
+                                                        }
+                                                    %>
+                                                </ul>
                                             </div>
                                             <div class="col-md-12">
                                                 <a href="#" class="btn green radius-xl outline">Approve</a>
-                                                <a href="RoomListServlet?action=delete&id=<%= type.getId() %>&status=inactive" class="btn red outline radius-xl ">Cancel</a>
+                                                <button type="button" onclick="submitDelete(<%= type.getId() %>, 'inactive');" class="btn red outline radius-xl">Cancel</button>
                                             </div>
                                         </div>
 
@@ -209,15 +252,58 @@
                                 <%
                                     }
                                 %>
-                                
+
                             </div>
                         </div>
                     </div>
                     <!-- Your Profile Views Chart END-->
+
+                    <!--Phân trang START-->
+                    <div class="col-lg-12 m-b20">
+                        <div class="pagination-bx rounded-sm gray clearfix">
+                            <ul class="pagination">
+                                <% if(currentPage == 1){ %>
+                                <li class="previous"><a href="#"><i class="ti-arrow-left"></i> Prev</a></li>
+                                    <% } else { %>
+                                <li class="previous"><a href="RoomListServlet?page=<%= currentPage - 1 %>"><i class="ti-arrow-left"></i> Prev</a></li>
+                                    <% } %>
+
+                                <% for(int i = 1; i <= (Integer)request.getAttribute("totalPages"); i++) { 
+                                                        if(i == currentPage) { %>
+                                <li class="active"><a href="#"><%= i %></a></li>
+                                    <% } else { %>
+                                <li><a href="RoomListServlet?page=<%= i %>"><%= i %></a></li>
+                                    <% } 
+                                                    } %>
+
+                                <% if(currentPage == totalPages){ %>
+                                <li class="next"><a href="#">Next <i class="ti-arrow-right"></i></a></li>
+                                        <% } else { %>
+                                <li class="next"><a href="RoomListServlet?page=<%= currentPage + 1 %>">Next <i class="ti-arrow-right"></i></a></li>
+                                        <% } %>
+                            </ul>
+                        </div>
+                    </div>
+                    <!--Phân trang END-->
+
                 </div>
             </div>
         </main>
         <div class="ttr-overlay"></div>
+
+
+        <form id="deleteForm" action="RoomListServlet" method="post" style="display:none;">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="id" id="deleteId">
+            <input type="hidden" name="status" id="deleteStatus">
+        </form>
+        <script>
+            function submitDelete(id, status) {
+                document.getElementById('deleteId').value = id;
+                document.getElementById('deleteStatus').value = status;
+                document.getElementById('deleteForm').submit();
+            }
+        </script>
 
         <!-- External JavaScripts -->
         <script src="${pageContext.request.contextPath}/admin/assets/js/jquery.min.js"></script>

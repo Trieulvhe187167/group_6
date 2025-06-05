@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.math.BigDecimal;
 import java.security.Timestamp;
+import model.Room;
 import model.RoomType;
 
 /**
@@ -30,9 +31,10 @@ public class RoomTypeDAO {
                 rtype.setId(rs.getInt("Id"));
                 rtype.setName(rs.getString("Name"));
                 rtype.setDescription(rs.getString("Description"));
-                rtype.setImageUrl(rs.getString("imageUrl"));
                 rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
+                rtype.setImageUrl(rs.getString("imageUrl"));
                 rtype.setCapacity(rs.getInt("Capacity"));
+                rtype.setStatus(rs.getString("Status"));
                 rtype.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 rtype.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
 
@@ -62,8 +64,8 @@ public class RoomTypeDAO {
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("imageUrl"),
                         rs.getBigDecimal("BasePrice"),
+                        rs.getString("imageUrl"),
                         rs.getInt("Capacity"),
                         rs.getString("Status"),
                         rs.getTimestamp("CreatedAt"),
@@ -92,8 +94,8 @@ public class RoomTypeDAO {
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("imageUrl"),
                         rs.getBigDecimal("BasePrice"),
+                        rs.getString("imageUrl"),
                         rs.getInt("Capacity"),
                         rs.getString("Status"),
                         rs.getTimestamp("CreatedAt"),
@@ -120,8 +122,8 @@ public class RoomTypeDAO {
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getString("imageUrl"),
                         rs.getBigDecimal("BasePrice"),
+                        rs.getString("imageUrl"),
                         rs.getInt("Capacity"),
                         rs.getString("Status"),
                         rs.getTimestamp("CreatedAt"),
@@ -134,7 +136,7 @@ public class RoomTypeDAO {
         }
         return null;
     }
-    
+
     public List<RoomType> getAvailableRoomTypes() {
         List<RoomType> list = new ArrayList<>();
         String sql = "SELECT * FROM RoomType WHERE status = 'active'";
@@ -143,8 +145,8 @@ public class RoomTypeDAO {
                 RoomType rtype = new RoomType();
                 rtype.setName(rs.getString("Name"));
                 rtype.setDescription(rs.getString("Description"));
-                rtype.setImageUrl(rs.getString("imageUrl"));
                 rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
+                rtype.setImageUrl(rs.getString("imageUrl"));
                 rtype.setCapacity(rs.getInt("Capacity"));
                 list.add(rtype);
             }
@@ -155,13 +157,13 @@ public class RoomTypeDAO {
     }
 
     public void insert(RoomType roomType) throws SQLException {
-        String sql = "INSERT INTO RoomTypes (name, description, imageUrl, basePrice, capacity, status, createdAt, updatedAt) "
+        String sql = "INSERT INTO RoomTypes (name, description, basePrice, imageUrl, capacity, status, createdAt, updatedAt) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, roomType.getName());
             ps.setString(2, roomType.getDescription());
-            ps.setString(3, roomType.getImageUrl());
-            ps.setBigDecimal(4, roomType.getBasePrice());
+            ps.setBigDecimal(3, roomType.getBasePrice());
+            ps.setString(4, roomType.getImageUrl());
             ps.setInt(5, roomType.getCapacity());
             ps.setString(6, "active");
             ps.setObject(7, roomType.getCreatedAt());
@@ -183,6 +185,132 @@ public class RoomTypeDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public List<Room> getRoomsByType(int roomTypeId) {
+        List<Room> list = new ArrayList<>();
+        String sql = "SELECT * FROM Rooms WHERE RoomTypeId = ?";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, roomTypeId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Room room = new Room();
+                room.setId(rs.getInt("Id"));
+                room.setRoomNumber(rs.getString("RoomNumber"));
+                room.setRoomTypeId(rs.getInt("RoomTypeId"));
+                room.setStatus(rs.getString("Status"));
+                list.add(room);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    
+    public List<Room> getAvailableRoomsByType(int roomTypeId) {
+        List<Room> list = new ArrayList<>();
+        String sql = "SELECT * FROM Rooms WHERE room_type_id = ? AND is_available = 1";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, roomTypeId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Room room = new Room();
+                room.setId(rs.getInt("Id"));
+                room.setRoomNumber(rs.getString("RoomNumber"));
+                room.setRoomTypeId(rs.getInt("RoomTypeId"));
+                room.setStatus(rs.getString("Status"));
+                list.add(room);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<RoomType> filterRoomTypes(String priceRange, String capacityValue, String statusValue) {
+        List<RoomType> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM RoomTypes WHERE 1=1");
+
+        // Danh sách parameter để set vào PreparedStatement
+        List<Object> params = new ArrayList<>();
+
+        // Lọc theo price
+        if (priceRange != null && !priceRange.isEmpty()) {
+            switch (priceRange) {
+                case "1":
+                    sql.append(" AND price < ?");
+                    params.add(500000);
+                    break;
+                case "2":
+                    sql.append(" AND price BETWEEN ? AND ?");
+                    params.add(500000);
+                    params.add(1000000);
+                    break;
+                case "3":
+                    sql.append(" AND price > ?");
+                    params.add(1000000);
+                    break;
+            }
+        }
+
+        // Lọc theo capacity
+        if (capacityValue != null && !capacityValue.isEmpty()) {
+            switch (capacityValue) {
+                case "1":
+                    sql.append(" AND capacity = ?");
+                    params.add(1);
+                    break;
+                case "2":
+                    sql.append(" AND capacity = ?");
+                    params.add(2);
+                    break;
+                case "3":
+                    sql.append(" AND capacity >= ?");
+                    params.add(3);
+                    break;
+            }
+        }
+
+        // Lọc theo status
+        if (statusValue != null && !statusValue.isEmpty()) {
+            sql.append(" AND status = ?");
+            params.add(statusValue);
+        }
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            // Gán các giá trị vào PreparedStatement
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                RoomType rtype = new RoomType(
+                        rs.getInt("Id"),
+                        rs.getString("Name"),
+                        rs.getString("Description"),
+                        rs.getBigDecimal("BasePrice"),
+                        rs.getString("imageUrl"),
+                        rs.getInt("Capacity"),
+                        rs.getString("Status"),
+                        rs.getTimestamp("CreatedAt"),
+                        rs.getTimestamp("UpdatedAt")
+                );
+                list.add(rtype);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
 }
