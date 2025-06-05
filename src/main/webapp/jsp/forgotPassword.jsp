@@ -39,7 +39,7 @@
                 <div class="account-container">
                     <div class="heading-bx left">
                         <h2 class="title-head">Forget <span>Password</span></h2>
-                        <p>Login Your Account <a href="login.jsp">Click here</a></p>
+                        <p>Login Your Account <a href="jsp/login.jsp">Click here</a></p>
                     </div>
 
                     <!-- THÔNG BÁO -->
@@ -53,7 +53,7 @@
                     %>
 
                     <!-- FORM GỬI EMAIL -->
-                    <form class="contact-bx" action="ForgotPasswordServlet" method="post">
+                        <form class="contact-bx" action="${pageContext.request.contextPath}/forgot-password" method="post">
                         <div class="row placeani">
                             <div class="col-lg-12">
                                 <div class="form-group">
