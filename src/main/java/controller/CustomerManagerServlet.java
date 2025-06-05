@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet(name = "CustomerManagerServlet", urlPatterns = {"/admin/customers"})
@@ -15,6 +16,7 @@ public class CustomerManagerServlet extends HttpServlet {
     
     private UserDAO userDAO = new UserDAO();
     private static final String CUSTOMER_ROLE = "GUEST";
+    private static final int RECORDS_PER_PAGE = 5; // Changed from 10 to 5
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -86,20 +88,47 @@ public class CustomerManagerServlet extends HttpServlet {
             throws ServletException, IOException {
         
         int page = 1;
-        int recordsPerPage = 10;
         
-        if (request.getParameter("page") != null) {
-            page = Integer.parseInt(request.getParameter("page"));
+        // Get page parameter
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                // Validate page number
+                if (page < 1) {
+                    page = 1;
+                }
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
         }
         
-        List<User> customers = userDAO.getUsersByRolePaginated(CUSTOMER_ROLE, page, recordsPerPage);
-        int totalRecords = userDAO.getTotalUsersByRole(CUSTOMER_ROLE);
-        int totalPages = (int) Math.ceil(totalRecords * 1.0 / recordsPerPage);
+        // Get paginated customers
+        List<User> customers = userDAO.getUsersByRolePaginated(CUSTOMER_ROLE, page, RECORDS_PER_PAGE);
         
+        // Get total records and calculate total pages
+        int totalRecords = userDAO.getTotalUsersByRole(CUSTOMER_ROLE);
+        int totalPages = (int) Math.ceil((double) totalRecords / RECORDS_PER_PAGE);
+        
+        // Validate current page doesn't exceed total pages
+        if (page > totalPages && totalPages > 0) {
+            page = totalPages;
+            // Re-fetch customers for the corrected page
+            customers = userDAO.getUsersByRolePaginated(CUSTOMER_ROLE, page, RECORDS_PER_PAGE);
+        }
+        
+        // Calculate start and end record numbers for display
+        int startRecord = (page - 1) * RECORDS_PER_PAGE + 1;
+        int endRecord = Math.min(page * RECORDS_PER_PAGE, totalRecords);
+        
+        // Set attributes for JSP
         request.setAttribute("customers", customers);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalRecords", totalRecords);
+        request.setAttribute("recordsPerPage", RECORDS_PER_PAGE);
+        request.setAttribute("startRecord", startRecord);
+        request.setAttribute("endRecord", endRecord);
         
         request.getRequestDispatcher("/jsp/customer-list.jsp").forward(request, response);
     }
@@ -108,11 +137,53 @@ public class CustomerManagerServlet extends HttpServlet {
             throws ServletException, IOException {
         
         String keyword = request.getParameter("keyword");
+        
+        // Implement pagination for search
+        int page = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) {
+                    page = 1;
+                }
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        // Use paginated search if UserDAO supports it
+        // If not, we'll use the existing method and paginate manually
         List<User> customers = userDAO.searchUsersByRole(keyword, CUSTOMER_ROLE);
         
-        request.setAttribute("customers", customers);
+        // Calculate pagination manually
+        int totalRecords = customers.size();
+        int totalPages = (int) Math.ceil((double) totalRecords / RECORDS_PER_PAGE);
+        
+        // Validate current page
+        if (page > totalPages && totalPages > 0) {
+            page = totalPages;
+        }
+        
+        // Get sublist for current page
+        int fromIndex = (page - 1) * RECORDS_PER_PAGE;
+        int toIndex = Math.min(fromIndex + RECORDS_PER_PAGE, totalRecords);
+        
+        List<User> paginatedCustomers = totalRecords > 0 ? 
+            customers.subList(fromIndex, toIndex) : new ArrayList<>();
+        
+        // Calculate display info
+        int startRecord = totalRecords > 0 ? fromIndex + 1 : 0;
+        int endRecord = toIndex;
+        
+        request.setAttribute("customers", paginatedCustomers);
         request.setAttribute("keyword", keyword);
         request.setAttribute("isSearch", true);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalRecords", totalRecords);
+        request.setAttribute("startRecord", startRecord);
+        request.setAttribute("endRecord", endRecord);
         
         request.getRequestDispatcher("/jsp/customer-list.jsp").forward(request, response);
     }
@@ -144,6 +215,7 @@ public class CustomerManagerServlet extends HttpServlet {
         User customer = userDAO.getUserById(id);
         
         if (customer != null && CUSTOMER_ROLE.equals(customer.getRole())) {
+            // You might want to get additional details like booking history
             request.setAttribute("customer", customer);
             request.getRequestDispatcher("/jsp/customer-detail.jsp").forward(request, response);
         } else {
@@ -299,8 +371,42 @@ public class CustomerManagerServlet extends HttpServlet {
     private void showDeletedCustomers(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        // Implement pagination for deleted customers
+        int page = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) {
+                    page = 1;
+                }
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
         List<User> deletedCustomers = userDAO.getDeletedUsersByRole(CUSTOMER_ROLE);
-        request.setAttribute("deletedCustomers", deletedCustomers);
+        
+        // Calculate pagination
+        int totalRecords = deletedCustomers.size();
+        int totalPages = (int) Math.ceil((double) totalRecords / RECORDS_PER_PAGE);
+        
+        if (page > totalPages && totalPages > 0) {
+            page = totalPages;
+        }
+        
+        // Get sublist for current page
+        int fromIndex = (page - 1) * RECORDS_PER_PAGE;
+        int toIndex = Math.min(fromIndex + RECORDS_PER_PAGE, totalRecords);
+        
+        List<User> paginatedDeletedCustomers = totalRecords > 0 ? 
+            deletedCustomers.subList(fromIndex, toIndex) : new ArrayList<>();
+        
+        request.setAttribute("deletedCustomers", paginatedDeletedCustomers);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalRecords", totalRecords);
+        
         request.getRequestDispatcher("/jsp/deleted-customers.jsp").forward(request, response);
     }
     

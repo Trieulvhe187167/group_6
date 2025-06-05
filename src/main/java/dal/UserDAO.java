@@ -113,6 +113,66 @@ public class UserDAO {
         return users;
     }
     
+    // Tìm kiếm users theo role với phân trang
+    public List<User> searchUsersByRolePaginated(String keyword, String role, int page, int recordsPerPage) {
+        List<User> users = new ArrayList<>();
+        int offset = (page - 1) * recordsPerPage;
+        
+        String sql = "SELECT u.*, " +
+                    "(SELECT COUNT(*) FROM Reservations r WHERE r.UserId = u.Id) as TotalBookings " +
+                    "FROM Users u WHERE u.Role = ? AND u.Status = 1 AND " +
+                    "(u.FullName LIKE ? OR u.Email LIKE ? OR u.Phone LIKE ? OR u.Username LIKE ?) " +
+                    "ORDER BY u.CreatedAt DESC " +
+                    "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, role);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
+            ps.setString(4, searchPattern);
+            ps.setString(5, searchPattern);
+            ps.setInt(6, offset);
+            ps.setInt(7, recordsPerPage);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User user = mapResultSetToUser(rs);
+                users.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+    
+    // Đếm tổng số users tìm kiếm theo role
+    public int getTotalSearchUsersByRole(String keyword, String role) {
+        String sql = "SELECT COUNT(*) FROM Users u WHERE u.Role = ? AND u.Status = 1 AND " +
+                    "(u.FullName LIKE ? OR u.Email LIKE ? OR u.Phone LIKE ? OR u.Username LIKE ?)";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, role);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
+            ps.setString(4, searchPattern);
+            ps.setString(5, searchPattern);
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
     // Lấy user theo ID
     public User getUserById(int id) {
         String sql = "SELECT u.*, " +
@@ -228,6 +288,54 @@ public class UserDAO {
             e.printStackTrace();
         }
         return users;
+    }
+    
+    // Lấy danh sách users đã xóa theo role với phân trang
+    public List<User> getDeletedUsersByRolePaginated(String role, int page, int recordsPerPage) {
+        List<User> users = new ArrayList<>();
+        int offset = (page - 1) * recordsPerPage;
+        
+        String sql = "SELECT u.*, " +
+                    "(SELECT COUNT(*) FROM Reservations r WHERE r.UserId = u.Id) as TotalBookings " +
+                    "FROM Users u WHERE u.Role = ? AND u.Status = 0 " +
+                    "ORDER BY u.UpdatedAt DESC " +
+                    "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, role);
+            ps.setInt(2, offset);
+            ps.setInt(3, recordsPerPage);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User user = mapResultSetToUser(rs);
+                users.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+    
+    // Đếm tổng số users đã xóa theo role
+    public int getTotalDeletedUsersByRole(String role) {
+        String sql = "SELECT COUNT(*) FROM Users WHERE Role = ? AND Status = 0";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, role);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
     
     // Kiểm tra email tồn tại
