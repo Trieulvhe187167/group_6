@@ -19,7 +19,7 @@ public class CustomerManagerServlet extends HttpServlet {
     private static final int RECORDS_PER_PAGE = 5; // Changed from 10 to 5
     
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest   request, HttpServletResponse response)
             throws ServletException, IOException {
         
         String action = request.getParameter("action");
