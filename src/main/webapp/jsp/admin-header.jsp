@@ -55,6 +55,7 @@
                     <ul class="ttr-header-navigation">
                         <li>
                             <a href="#" class="ttr-material-button ttr-search-toggle"><i class="fa fa-search"></i></a>
+                            
                         </li>
                         <li>
                             <a href="#" class="ttr-material-button ttr-submenu-toggle"><i class="fa fa-bell"></i></a>
@@ -188,6 +189,7 @@
             </div>
         </header>
         <!-- header end -->
+        
         <!-- Left sidebar menu start -->
         <div class="ttr-sidebar">
             <div class="ttr-sidebar-wrapper content-scroll">
@@ -209,7 +211,7 @@
                         <li>
                             <a href="index.html" class="ttr-material-button">
                                 <span class="ttr-icon"><i class="ti-home"></i></span>
-                                <span class="ttr-label">Dashborad</span>
+                                <span class="ttr-label">Dashboard</span>
                             </a>
                         </li>
                         <li>
@@ -218,6 +220,7 @@
                                 <span class="ttr-label">Courses</span>
                             </a>
                         </li>
+
                         <li>
                             <a href="#" class="ttr-material-button">
                                 <span class="ttr-icon"><i class="ti-email"></i></span>
@@ -236,6 +239,7 @@
                                 </li>
                             </ul>
                         </li>
+
                         <li>
                             <a href="#" class="ttr-material-button">
                                 <span class="ttr-icon"><i class="ti-calendar"></i></span>
@@ -292,5 +296,6 @@
             </div>
         </div>
         <!-- Left sidebar menu end -->
+        
     </body>
 </html>
