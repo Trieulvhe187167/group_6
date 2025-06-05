@@ -68,17 +68,22 @@ public class RoomListServlet extends HttpServlet {
         List<RoomType> roomTypes;
         String keyword = request.getParameter("keyword");
         String action = request.getParameter("action");
+        String price = request.getParameter("price");
+        String capacity = request.getParameter("capacity");
+        String status = request.getParameter("status");
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             roomTypes = dao.searchRooms(keyword.trim());
+            request.setAttribute("keyword", keyword);
+        } else if ((price != null && !price.isEmpty())
+                || (capacity != null && !capacity.isEmpty())
+                || (status != null && !status.isEmpty())) {
+            roomTypes = dao.filterRoomTypes(price, capacity, status);
+            request.setAttribute("selectedPrice", price);
+            request.setAttribute("selectedCapacity", capacity);
+            request.setAttribute("selectedStatus", status);
         } else {
             roomTypes = dao.getAllRoomTypes();
-        }
-        //Delete
-        if (action.equalsIgnoreCase("delete")){
-            int id = Integer.parseInt(request.getParameter("id"));
-            String status = request.getParameter("status");
-            dao.updateRoomTypeStatus(id, status);
         }
 
         //Phân trang
@@ -100,7 +105,7 @@ public class RoomListServlet extends HttpServlet {
         //Phân trang
 
         request.setAttribute("roomTypes", roomTypes);
-        request.getRequestDispatcher("jsp/roomList.jsp").forward(request, response);
+        request.getRequestDispatcher("jsp/admin-roomList.jsp").forward(request, response);
     }
 
     /**
@@ -115,6 +120,7 @@ public class RoomListServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         //processRequest(request, response);
+        RoomTypeDAO dao = new RoomTypeDAO();
         String action = request.getParameter("action");
 
         if (action != null && action.equals("create")) {
@@ -142,7 +148,6 @@ public class RoomListServlet extends HttpServlet {
                 roomType.setCreatedAt(new Date());
                 roomType.setUpdatedAt(new Date());
 
-                RoomTypeDAO dao = new RoomTypeDAO();
                 dao.insert(roomType);
 
                 response.sendRedirect("RoomListServlet");
@@ -150,6 +155,22 @@ public class RoomListServlet extends HttpServlet {
                 request.setAttribute("message", "Lỗi tạo RoomType: " + e.getMessage());
                 request.getRequestDispatcher("/jsp/create-roomtype.jsp").forward(request, response);
             }
+        } else if (action != null && action.equalsIgnoreCase("delete")) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            String status = request.getParameter("status");
+
+            dao.updateRoomTypeStatus(id, status);
+            response.sendRedirect("RoomListServlet");
+
+        } else if (action != null && action.equalsIgnoreCase("filter")) {
+            String price = request.getParameter("price");
+            String capacity = request.getParameter("capacity");
+            String status = request.getParameter("status");
+
+            List<RoomType> roomTypes = dao.filterRoomTypes(price, capacity, status);
+
+            request.setAttribute("roomTypes", roomTypes);
+            request.getRequestDispatcher("jsp/admin-roomList.jsp").forward(request, response);
         }
 
     }
