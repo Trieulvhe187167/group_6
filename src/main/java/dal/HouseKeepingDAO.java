@@ -43,20 +43,20 @@ public class HouseKeepingDAO {
 
     
     //tim task theo trang thai
-    public List<HousekeepingTask> searchTasksByStatus(String status) {
+public List<HousekeepingTask> searchTasksByStatus(String status) {
     List<HousekeepingTask> tasks = new ArrayList<>();
 
     String sql = "SELECT r.RoomNumber, h.Status, h.Notes, u.Username AS AssignedTo, h.CreatedAt, h.UpdatedAt " +
                  "FROM HousekeepingTasks h " +
                  "JOIN Rooms r ON h.RoomId = r.Id " +
                  "LEFT JOIN Users u ON h.AssignedTo = u.Id " +
-                 "WHERE h.Status = ? " +
+                 "WHERE LOWER(h.Status) LIKE ? " +  // Chuyển về lowercase để so sánh
                  "ORDER BY h.CreatedAt DESC";
 
     try (Connection conn = DBContext.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        ps.setString(1, status);  // Tìm kiếm chính xác
+        ps.setString(1, "%" + status.toLowerCase() + "%");  // Cũng chuyển về lowercase
 
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
@@ -77,6 +77,7 @@ public class HouseKeepingDAO {
 
     return tasks;
 }
+
     
    //Hàm sửa trạng thái theo id Task
     public boolean updateTaskStatusById(int taskId, String newStatus) {

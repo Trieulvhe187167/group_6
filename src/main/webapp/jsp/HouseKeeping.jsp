@@ -100,7 +100,7 @@
                 </form>
             </div>
             <div class="col-md-6 text-end">
-                <a href="${pageContext.request.contextPath}/admin/housekeeping?action=add"
+                <a href="${pageContext.request.contextPath}/jsp/HouseKeepingAssTask.jsp"
                    class="btn btn-success">
                     <i class="fa fa-plus"></i> Add Task
                 </a>

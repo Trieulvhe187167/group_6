@@ -187,6 +187,10 @@
                     <li class="nav-item ${fn:endsWith(currentUrl,'/blog.jsp') ? 'active' : ''}">
                         <a class="nav-link" href="${pageContext.request.contextPath}/BlogListServlet">BLOG</a>
                     </li>
+                    <li class="nav-item ${fn:endsWith(currentUrl,'/HouseKeeping.jsp') ? 'active' : ''}">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/housekeeping?action=list">Housekeeping</a>
+                    </li>
+
                     
                     <!-- Show menu items based on user role -->
                     <c:if test="${not empty sessionScope.user}">
@@ -200,7 +204,7 @@
                             </c:when>
                             <c:when test="${sessionScope.user.role eq 'HOUSEKEEPER'}">
                                 <li class="nav-item ${fn:endsWith(currentUrl,'/HouseKeeping.jsp') ? 'active' : ''}">
-                                    <a class="nav-link" href="${pageContext.request.contextPath}/jsp/HouseKeeping.jsp">
+                                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/housekeeping?action=list">
                                         HOUSEKEEPING
                                     </a>
                                 </li>
