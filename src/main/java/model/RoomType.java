@@ -15,8 +15,9 @@ public class RoomType {
     private int id;
     private String name;
     private String description;
-    private String imageUrl;
     private BigDecimal basePrice;
+    private String imageUrl;
+    
     private int capacity;
     private String status;
     private Date createdAt;

@@ -5,7 +5,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Manage Customers - Luxury Hotel</title>
+    <title>Manage Users - Luxury Hotel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <!-- CSS -->
@@ -52,6 +52,22 @@
             color: #fff;
             background-color: #17a2b8;
         }
+        .badge-danger {
+            color: #fff;
+            background-color: #dc3545;
+        }
+        .badge-primary {
+            color: #fff;
+            background-color: #007bff;
+        }
+        .badge-success {
+            color: #fff;
+            background-color: #28a745;
+        }
+        .badge-secondary {
+            color: #fff;
+            background-color: #6c757d;
+        }
     </style>
 </head>
 <body id="bg">
@@ -65,7 +81,7 @@
             <div class="page-banner ovbl-dark" style="background-image:url(${pageContext.request.contextPath}/assets/images/banner/banner2.jpg);">
                 <div class="container">
                     <div class="page-banner-entry">
-                        <h1 class="text-white">Manage Customers</h1>
+                        <h1 class="text-white">Manage Customer</h1>
                     </div>
                 </div>
             </div>
@@ -76,7 +92,7 @@
                     <ul class="list-inline">
                         <li><a href="${pageContext.request.contextPath}/index.jsp">Home</a></li>
                         <li><a href="#">Admin</a></li>
-                        <li>Manage Customers</li>
+                        <li>Manage Customer</li>
                     </ul>
                 </div>
             </div>
@@ -86,16 +102,16 @@
                 <div class="container">
                     <!-- Success/Error Messages -->
                     <c:if test="${param.success eq 'added'}">
-                        <div class="alert alert-success">Customer added successfully!</div>
+                        <div class="alert alert-success">User added successfully!</div>
                     </c:if>
                     <c:if test="${param.success eq 'updated'}">
-                        <div class="alert alert-success">Customer updated successfully!</div>
+                        <div class="alert alert-success">User updated successfully!</div>
                     </c:if>
                     <c:if test="${param.success eq 'deleted'}">
-                        <div class="alert alert-success">Customer deleted successfully!</div>
+                        <div class="alert alert-success">User deleted successfully!</div>
                     </c:if>
                     <c:if test="${param.error eq 'delete'}">
-                        <div class="alert alert-danger">Failed to delete customer!</div>
+                        <div class="alert alert-danger">Failed to delete user!</div>
                     </c:if>
                     
                     <!-- Search and Add Button -->
@@ -105,7 +121,7 @@
                                 <input type="hidden" name="action" value="search">
                                 <div class="input-group">
                                     <input type="text" name="keyword" class="form-control" 
-                                           placeholder="Search by name, email, phone..." 
+                                           placeholder="Search by name, email, phone, role..." 
                                            value="${keyword}" style="width: 300px;">
                                     <div class="input-group-append" style="margin-left: 10px;">
                                         <button type="submit" class="btn btn-primary">
@@ -118,12 +134,12 @@
                         <div class="col-md-6 text-right">
                             <a href="${pageContext.request.contextPath}/admin/customers?action=add" 
                                class="btn btn-success">
-                                <i class="fa fa-plus"></i> Add New Customer
+                                <i class="fa fa-plus"></i> Add New User
                             </a>
                         </div>
                     </div>
                     
-                    <!-- Customer Table -->
+                    <!-- User Table -->
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered">
                             <thead style="background-color: #f8f9fa;">
@@ -133,7 +149,9 @@
                                     <th>Full Name</th>
                                     <th>Email</th>
                                     <th>Phone</th>
-                                    <th>Total Bookings</th>
+<!--                                    <th>Role</th>-->
+                                    <th>Status</th>
+                                    <th>Bookings</th>
                                     <th>Joined Date</th>
                                     <th style="width: 150px;">Actions</th>
                                 </tr>
@@ -148,6 +166,16 @@
                                             <a href="mailto:${customer.email}">${customer.email}</a>
                                         </td>
                                         <td>${customer.phone}</td>
+<!--                                        <td>
+                                            <span class="badge ${customer.roleBadgeClass}">
+                                                ${customer.roleDisplayName}
+                                            </span>
+                                        </td>-->
+                                        <td>
+                                            <span class="badge ${customer.statusBadgeClass}">
+                                                ${customer.statusDisplayName}
+                                            </span>
+                                        </td>
                                         <td class="text-center">
                                             <span class="badge badge-info">${customer.totalBookings}</span>
                                         </td>
@@ -174,8 +202,8 @@
                                 
                                 <c:if test="${empty customers}">
                                     <tr>
-                                        <td colspan="8" class="text-center">
-                                            <p style="margin: 20px 0;">No customers found.</p>
+                                        <td colspan="10" class="text-center">
+                                            <p style="margin: 20px 0;">No users found.</p>
                                         </td>
                                     </tr>
                                 </c:if>
@@ -217,7 +245,7 @@
                     <!-- Summary -->
                     <c:if test="${not empty totalRecords}">
                         <div class="text-center mt-3">
-                            <p>Total customers: <strong>${totalRecords}</strong></p>
+                            <p>Total users: <strong>${totalRecords}</strong></p>
                         </div>
                     </c:if>
                 </div>
@@ -242,7 +270,7 @@
     
     <script>
         function confirmDelete(id) {
-            if (confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
+            if (confirm('Are you sure you want to delete this user? This will mark the user as inactive.')) {
                 document.getElementById('deleteId').value = id;
                 document.getElementById('deleteForm').submit();
             }

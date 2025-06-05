@@ -22,7 +22,6 @@
     }
     request.setAttribute("recentBlogs", recentBlogs);
 %>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -339,7 +338,7 @@
                     </div>
                 </div>
 
-                <!-- Upcoming Events -->
+                 <!-- Upcoming Events -->
                 <div class="upcoming-events section-sp2">
                     <div class="container">
                         <div class="row">
@@ -355,9 +354,18 @@
                                     <div class="item">
                                         <div class="event-bx">
                                             <div class="action-box">
-                                                <img src="${pageContext.request.contextPath}/assets/images/uploads/events/${e.imageUrl}"
-                                                     alt="${e.title}" 
-                                                        class="img-fluid" />
+                                                <c:choose>
+                                                    <c:when test="${not empty e.imageUrl}">
+                                                        <img src="${pageContext.request.contextPath}/assets/images/uploads/events/${e.imageUrl}"
+                                                             alt="${e.title}" 
+                                                             class="img-fluid" />
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <img src="${pageContext.request.contextPath}/assets/images/uploads/events/default-event.jpg"
+                                                             alt="${e.title}" 
+                                                             class="img-fluid" />
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </div>
                                             <div class="info-bx d-flex">
                                                 <div>
@@ -394,12 +402,12 @@
                         </div>
                         
                         <div class="text-center">
-                            <a href="#" class="btn">View All Event</a>
+                            <a href="${pageContext.request.contextPath}/EventServlet" class="btn">View All Event</a>
                         </div>
                     </div>
                 </div>
 
-                <!-- Testimonials -->
+             <!-- Testimonials -->
                 <div class="section-area section-sp2 bg-fix ovbl-dark" style="background-image:url(assets/images/background/bg1.jpg);">
                     <div class="container">
                         <div class="row">
@@ -534,7 +542,7 @@
                         </div>
                         
                         <div class="text-center mt-4">
-                            <a href="${pageContext.request.contextPath}/jsp/blog.jsp" class="btn">View All News</a>
+                            <a href="${pageContext.request.contextPath}/BlogListServlet" class="btn">View All News</a>
                         </div>
                     </div>
                 </div>

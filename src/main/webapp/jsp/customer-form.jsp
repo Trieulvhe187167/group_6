@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>${isEdit ? 'Edit' : 'Add'} Customer - Luxury Hotel</title>
+    <title>${isEdit ? 'Edit' : 'Add'} User - Luxury Hotel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <!-- CSS -->
@@ -42,7 +42,7 @@
             <div class="page-banner ovbl-dark" style="background-image:url(${pageContext.request.contextPath}/assets/images/banner/banner2.jpg);">
                 <div class="container">
                     <div class="page-banner-entry">
-                        <h1 class="text-white">${isEdit ? 'Edit' : 'Add'} Customer</h1>
+                        <h1 class="text-white">${isEdit ? 'Edit' : 'Add'} User</h1>
                     </div>
                 </div>
             </div>
@@ -52,8 +52,8 @@
                 <div class="container">
                     <ul class="list-inline">
                         <li><a href="${pageContext.request.contextPath}/index.jsp">Home</a></li>
-                        <li><a href="${pageContext.request.contextPath}/admin/customers">Customers</a></li>
-                        <li>${isEdit ? 'Edit' : 'Add'} Customer</li>
+                        <li><a href="${pageContext.request.contextPath}/admin/customers">Users</a></li>
+                        <li>${isEdit ? 'Edit' : 'Add'} User</li>
                     </ul>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                                     </c:if>
                                     
                                     <div class="heading-bx left mb-4">
-                                        <h2 class="title-head">${isEdit ? 'Edit' : 'Add New'} <span>Customer</span></h2>
+                                        <h2 class="title-head">${isEdit ? 'Edit' : 'Add New'} <span>User</span></h2>
                                     </div>
                                     
                                     <c:if test="${not isEdit}">
@@ -88,7 +88,12 @@
                                                     <input name="username" type="text" required 
                                                            class="form-control" 
                                                            placeholder="Enter username"
+                                                           pattern="[a-zA-Z0-9_]{3,20}"
+                                                           title="Username must be 3-20 characters long and contain only letters, numbers, and underscores"
                                                            value="${customer.username}">
+                                                    <small class="form-text text-muted">
+                                                        3-20 characters, letters, numbers and underscore only
+                                                    </small>
                                                 </div>
                                             </div>
                                             <div class="col-lg-6">
@@ -96,7 +101,19 @@
                                                     <label>Password <span class="text-danger">*</span></label>
                                                     <input name="password" type="password" required 
                                                            class="form-control"
-                                                           placeholder="Enter password">
+                                                           placeholder="Enter password"
+                                                           pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!]).{8,}$"
+                                                           title="Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@#$%^&+=!)">
+                                                    <small class="form-text text-muted">
+                                                        Password must contain:
+                                                        <ul style="margin-left: 20px; font-size: 12px;">
+                                                            <li>At least 8 characters</li>
+                                                            <li>At least one uppercase letter (A-Z)</li>
+                                                            <li>At least one lowercase letter (a-z)</li>
+                                                            <li>At least one digit (0-9)</li>
+                                                            <li>At least one special character (@#$%^&+=!)</li>
+                                                        </ul>
+                                                    </small>
                                                 </div>
                                             </div>
                                         </div>
@@ -121,6 +138,8 @@
                                                 <input name="email" type="email" required 
                                                        class="form-control" 
                                                        placeholder="Enter email address"
+                                                       pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                                                       title="Please enter a valid email address"
                                                        value="${customer.email}">
                                             </div>
                                         </div>
@@ -129,10 +148,44 @@
                                                 <label>Phone <span class="text-danger">*</span></label>
                                                 <input name="phone" type="text" required 
                                                        class="form-control" 
-                                                       placeholder="Enter phone number"
-                                                       pattern="[0-9]{10,11}"
-                                                       title="Phone number should be 10-11 digits"
+                                                       placeholder="Enter phone number (10 digits)"
+                                                       pattern="[0-9]{10}"
+                                                       maxlength="10"
+                                                       title="Phone number must be exactly 10 digits"
                                                        value="${customer.phone}">
+                                                <small class="form-text text-muted">
+                                                    Phone number must be exactly 10 digits (e.g., 0123456789)
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div class="form-group">
+                                                <label>Role <span class="text-danger">*</span></label>
+                                                <select name="role" class="form-control" required>
+<!--                                                    <option value="">Select Role</option>-->
+<!--                                                    <option value="ADMIN" 
+                                                            <c:if test="${customer.role eq 'ADMIN'}">selected</c:if>>
+                                                        Administrator
+                                                    </option>
+                                                    <option value="RECEPTIONIST" 
+                                                            <c:if test="${customer.role eq 'RECEPTIONIST'}">selected</c:if>>
+                                                        Receptionist
+                                                    </option>
+                                                    <option value="HOUSEKEEPER" 
+                                                            <c:if test="${customer.role eq 'HOUSEKEEPER'}">selected</c:if>>
+                                                        Housekeeper
+                                                    </option>-->
+                                                    <option value="GUEST" 
+                                                            <c:if test="${customer.role eq 'GUEST' or empty customer.role}">selected</c:if>>
+                                                        Guest
+                                                    </option>
+                                                </select>
+                                                <small class="form-text text-muted">
+                                                    Note: Users can be deactivated by deleting them (sets Status = 0)
+                                                </small>
                                             </div>
                                         </div>
                                     </div>
@@ -140,7 +193,7 @@
                                     <div class="row">
                                         <div class="col-lg-12">
                                             <button type="submit" class="btn button-md">
-                                                ${isEdit ? 'Update' : 'Add'} Customer
+                                                ${isEdit ? 'Update' : 'Add'} User
                                             </button>
                                             <a href="${pageContext.request.contextPath}/admin/customers" 
                                                class="btn btn-secondary button-md">
@@ -165,5 +218,35 @@
     <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/popper.min.js"></script>
     <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/bootstrap.min.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
+    
+    <script>
+        // Only allow numbers in phone input
+        document.querySelector('input[name="phone"]').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+        
+        // Password strength indicator
+        <c:if test="${not isEdit}">
+        document.querySelector('input[name="password"]').addEventListener('input', function(e) {
+            const password = this.value;
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumbers = /\d/.test(password);
+            const hasSpecialChar = /[@#$%^&+=!]/.test(password);
+            const isLongEnough = password.length >= 8;
+            
+            // Update visual feedback
+            const requirements = this.parentElement.querySelector('ul');
+            if (requirements) {
+                const items = requirements.getElementsByTagName('li');
+                items[0].style.color = isLongEnough ? 'green' : 'inherit';
+                items[1].style.color = hasUpperCase ? 'green' : 'inherit';
+                items[2].style.color = hasLowerCase ? 'green' : 'inherit';
+                items[3].style.color = hasNumbers ? 'green' : 'inherit';
+                items[4].style.color = hasSpecialChar ? 'green' : 'inherit';
+            }
+        });
+        </c:if>
+    </script>
 </body>
 </html>
