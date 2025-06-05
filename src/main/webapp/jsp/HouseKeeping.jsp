@@ -85,7 +85,7 @@
         <!-- Search and Add Button -->
         <div class="row mb-4">
             <div class="col-md-6">
-                <form action="${pageContext.request.contextPath}/admin/housetkeeping" method="get" class="form-inline">
+                <form action="${pageContext.request.contextPath}/admin/housekeeping" method="get" class="form-inline">
                     <input type="hidden" name="action" value="search">
                     <div class="input-group">
                         <input type="text" name="status" class="form-control"
@@ -100,7 +100,7 @@
                 </form>
             </div>
             <div class="col-md-6 text-end">
-                <a href="${pageContext.request.contextPath}/admin/housetkeeping?action=add"
+                <a href="${pageContext.request.contextPath}/admin/housekeeping?action=add"
                    class="btn btn-success">
                     <i class="fa fa-plus"></i> Add Task
                 </a>
@@ -116,6 +116,7 @@
                         <th>Room Number</th>
                         <th>Status</th>
                         <th>Assigned To</th>
+                        <th>Task</th>
                         <th>Updated At</th>
                         
                         <th style="width: 150px;">Actions</th>
@@ -128,17 +129,24 @@
                             <td>${task.roomNum}</td>
                             <td>${task.status}</td>
                             <td>${task.assignedcToID}</td>
+                            <td>${task.notes}</td>
                             <td><fmt:formatDate value="${task.updatedAt}" pattern="dd/MM/yyyy HH:mm"/></td>
                             <td class="text-center">
-                                <a href="${pageContext.request.contextPath}/admin/housetkeeping?action=detail&id=${task.id}"
-                                   class="btn btn-sm btn-info" title="View">
-                                    <i class="fa fa-eye"></i>
-                                </a>
-                                <a href="${pageContext.request.contextPath}/admin/housetkeeping?action=edit&id=${task.id}"
-                                   class="btn btn-sm btn-warning" title="Edit">
-                                    <i class="fa fa-edit"></i>
-                                </a>
-                                <form action="${pageContext.request.contextPath}/admin/housetkeeping" method="post" style="display:inline;">
+                                <form action="${pageContext.request.contextPath}/admin/housekeeping" method="post" style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="hidden" name="action" value="edit" />
+                                    <input type="hidden" name="taskId" value="${task.id}" />
+
+                                    <select name="newStatus" class="form-select form-select-sm" style="width: auto;">
+                                        <option value="PENDING" ${task.status == 'PENDING' ? 'selected' : ''}>PENDING</option>
+                                        <option value="IN_PROGRESS" ${task.status == 'IN_PROGRESS' ? 'selected' : ''}>IN_PROGRESS</option>
+                                        <option value="DONE" ${task.status == 'DONE' ? 'selected' : ''}>DONE</option>
+                                    </select>
+
+                                    <button type="submit" class="btn btn-sm btn-warning" title="Edit">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                </form>
+                                <form action="${pageContext.request.contextPath}/admin/housekeeping" method="post" style="display:inline;">
                                     <input type="hidden" name="action" value="delete"/>
                                     <input type="hidden" name="taskId" value="${task.id}"/>
                                     <button type="submit" class="btn btn-sm btn-danger" title="Delete"
@@ -160,6 +168,7 @@
         </div>
     </div>
 </div>
+                   
 <!-- endcode -->
 
 
