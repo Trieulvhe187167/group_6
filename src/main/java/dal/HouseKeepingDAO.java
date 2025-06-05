@@ -114,23 +114,18 @@ public class HouseKeepingDAO {
 }
 
 
-    public static void main(String[] args) {
+public static void main(String[] args) {
     HouseKeepingDAO dao = new HouseKeepingDAO();
-    List<HousekeepingTask> tasks = dao.getAllTasks();
 
-    for (HousekeepingTask task : tasks) {
-        System.out.println("ID: " + task.getId());
-        System.out.println("Room: " + task.getRoomNum());
-        System.out.println("Status: " + task.getStatus());
-        System.out.println("Notes: " + task.getNotes());
-        System.out.println("Assigned To: " + task.getAssignedcToID());
-        System.out.println("Created At: " + task.getCreatedAt());
-        System.out.println("Updated At: " + task.getUpdatedAt());
-        System.out.println("--------------------------------------------------");
-    }
+    int taskIdToUpdate = 22; // ID task cần sửa
+    String newStatus = "DONE";
 
-    if (tasks.isEmpty()) {
-        System.out.println("No housekeeping tasks found.");
+    boolean success = dao.updateTaskStatusById(taskIdToUpdate, newStatus);
+
+    if (success) {
+        System.out.println("Status cập nhật thành công!");
+    } else {
+        System.out.println("Cập nhật thất bại. Kiểm tra ID hoặc lỗi kết nối.");
     }
 }
 
