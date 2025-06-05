@@ -93,6 +93,7 @@ public class User {
         this.status = status;
     }
 
+    
     public Timestamp getCreatedAt() {
         return createdAt;
     }

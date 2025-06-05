@@ -87,7 +87,7 @@
                                             <div class="dropdown-divider"></div>
                                         </c:when>
                                         <c:when test="${sessionScope.user.role eq 'HOUSEKEEPER'}">
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/housekeeping/tasks">
+                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/housekeeping">
                                                 <i class="fa fa-tasks"></i> My Tasks
                                             </a>
                                             <a class="dropdown-item" href="${pageContext.request.contextPath}/housekeeping/rooms">
@@ -110,7 +110,7 @@
                                     </c:choose>
                                     
                                     <!-- Common items for all users -->
-                                    <a class="dropdown-item" href="${pageContext.request.contextPath}/user/change-password">
+                                    <a class="dropdown-item" href="${pageContext.request.contextPath}/reset-password">
                                         <i class="fa fa-key"></i> Change Password
                                     </a>
                                     <a class="dropdown-item" href="${pageContext.request.contextPath}/LogoutServlet">

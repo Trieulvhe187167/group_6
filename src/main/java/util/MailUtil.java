@@ -36,4 +36,3 @@ public class MailUtil {
         Transport.send(message);
     }
 }
-

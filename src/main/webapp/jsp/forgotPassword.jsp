@@ -39,7 +39,7 @@
                 <div class="account-container">
                     <div class="heading-bx left">
                         <h2 class="title-head">Forget <span>Password</span></h2>
-                        <p>Login Your Account <a href="jsp/login.jsp">Click here</a></p>
+                        <p>Login Your Account <a href="/jsp/login.jsp">Click here</a></p>
                     </div>
 
                     <!-- THÔNG BÁO -->

@@ -68,6 +68,75 @@
             color: #fff;
             background-color: #6c757d;
         }
+        
+        /* Enhanced pagination styles */
+        .pagination-bx {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .pagination {
+            display: inline-flex;
+            padding-left: 0;
+            list-style: none;
+            border-radius: 0.25rem;
+        }
+        
+        .pagination li {
+            margin: 0 2px;
+        }
+        
+        .pagination li a {
+            position: relative;
+            display: block;
+            padding: 0.5rem 0.75rem;
+            margin-left: -1px;
+            line-height: 1.25;
+            color: #007bff;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination li a:hover {
+            z-index: 2;
+            color: #0056b3;
+            text-decoration: none;
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+        }
+        
+        .pagination li.active a {
+            z-index: 3;
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        
+        .pagination li.disabled a {
+            color: #6c757d;
+            pointer-events: none;
+            cursor: auto;
+            background-color: #fff;
+            border-color: #dee2e6;
+        }
+        
+        .pagination li.previous a,
+        .pagination li.next a {
+            padding: 0.5rem 1rem;
+        }
+        
+        /* Page info styling */
+        .page-info {
+            text-align: center;
+            margin-top: 20px;
+            color: #6c757d;
+        }
+        
+        .page-info strong {
+            color: #333;
+        }
     </style>
 </head>
 <body id="bg">
@@ -149,7 +218,6 @@
                                     <th>Full Name</th>
                                     <th>Email</th>
                                     <th>Phone</th>
-<!--                                    <th>Role</th>-->
                                     <th>Status</th>
                                     <th>Bookings</th>
                                     <th>Joined Date</th>
@@ -166,11 +234,6 @@
                                             <a href="mailto:${customer.email}">${customer.email}</a>
                                         </td>
                                         <td>${customer.phone}</td>
-<!--                                        <td>
-                                            <span class="badge ${customer.roleBadgeClass}">
-                                                ${customer.roleDisplayName}
-                                            </span>
-                                        </td>-->
                                         <td>
                                             <span class="badge ${customer.statusBadgeClass}">
                                                 ${customer.statusDisplayName}
@@ -202,7 +265,7 @@
                                 
                                 <c:if test="${empty customers}">
                                     <tr>
-                                        <td colspan="10" class="text-center">
+                                        <td colspan="9" class="text-center">
                                             <p style="margin: 20px 0;">No users found.</p>
                                         </td>
                                     </tr>
@@ -211,41 +274,123 @@
                         </table>
                     </div>
                     
-                    <!-- Pagination -->
+                    <!-- Enhanced Pagination -->
                     <c:if test="${not isSearch and totalPages > 1}">
                         <div class="pagination-bx rounded-sm gray clearfix">
                             <ul class="pagination">
-                                <c:if test="${currentPage > 1}">
-                                    <li class="previous">
-                                        <a href="${pageContext.request.contextPath}/admin/customers?page=${currentPage - 1}">
-                                            <i class="ti-arrow-left"></i> Prev
-                                        </a>
-                                    </li>
-                                </c:if>
+                                <!-- Previous Button -->
+                                <c:choose>
+                                    <c:when test="${currentPage > 1}">
+                                        <li class="previous">
+                                            <a href="${pageContext.request.contextPath}/admin/customers?page=${currentPage - 1}">
+                                                <i class="ti-arrow-left"></i> Previous
+                                            </a>
+                                        </li>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <li class="previous disabled">
+                                            <a href="#"><i class="ti-arrow-left"></i> Previous</a>
+                                        </li>
+                                    </c:otherwise>
+                                </c:choose>
                                 
-                                <c:forEach begin="1" end="${totalPages}" var="page">
-                                    <li class="${page == currentPage ? 'active' : ''}">
-                                        <a href="${pageContext.request.contextPath}/admin/customers?page=${page}">
-                                            ${page}
-                                        </a>
-                                    </li>
-                                </c:forEach>
+                                <!-- Page Numbers -->
+                                <c:choose>
+                                    <c:when test="${totalPages <= 7}">
+                                        <!-- Show all pages if total pages <= 7 -->
+                                        <c:forEach begin="1" end="${totalPages}" var="page">
+                                            <li class="${page == currentPage ? 'active' : ''}">
+                                                <a href="${pageContext.request.contextPath}/admin/customers?page=${page}">
+                                                    ${page}
+                                                </a>
+                                            </li>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <!-- Smart pagination for many pages -->
+                                        <c:choose>
+                                            <c:when test="${currentPage <= 4}">
+                                                <!-- Near beginning -->
+                                                <c:forEach begin="1" end="5" var="page">
+                                                    <li class="${page == currentPage ? 'active' : ''}">
+                                                        <a href="${pageContext.request.contextPath}/admin/customers?page=${page}">
+                                                            ${page}
+                                                        </a>
+                                                    </li>
+                                                </c:forEach>
+                                                <li class="disabled"><a href="#">...</a></li>
+                                                <li>
+                                                    <a href="${pageContext.request.contextPath}/admin/customers?page=${totalPages}">
+                                                        ${totalPages}
+                                                    </a>
+                                                </li>
+                                            </c:when>
+                                            <c:when test="${currentPage >= totalPages - 3}">
+                                                <!-- Near end -->
+                                                <li>
+                                                    <a href="${pageContext.request.contextPath}/admin/customers?page=1">1</a>
+                                                </li>
+                                                <li class="disabled"><a href="#">...</a></li>
+                                                <c:forEach begin="${totalPages - 4}" end="${totalPages}" var="page">
+                                                    <li class="${page == currentPage ? 'active' : ''}">
+                                                        <a href="${pageContext.request.contextPath}/admin/customers?page=${page}">
+                                                            ${page}
+                                                        </a>
+                                                    </li>
+                                                </c:forEach>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <!-- In middle -->
+                                                <li>
+                                                    <a href="${pageContext.request.contextPath}/admin/customers?page=1">1</a>
+                                                </li>
+                                                <li class="disabled"><a href="#">...</a></li>
+                                                <c:forEach begin="${currentPage - 1}" end="${currentPage + 1}" var="page">
+                                                    <li class="${page == currentPage ? 'active' : ''}">
+                                                        <a href="${pageContext.request.contextPath}/admin/customers?page=${page}">
+                                                            ${page}
+                                                        </a>
+                                                    </li>
+                                                </c:forEach>
+                                                <li class="disabled"><a href="#">...</a></li>
+                                                <li>
+                                                    <a href="${pageContext.request.contextPath}/admin/customers?page=${totalPages}">
+                                                        ${totalPages}
+                                                    </a>
+                                                </li>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:otherwise>
+                                </c:choose>
                                 
-                                <c:if test="${currentPage < totalPages}">
-                                    <li class="next">
-                                        <a href="${pageContext.request.contextPath}/admin/customers?page=${currentPage + 1}">
-                                            Next <i class="ti-arrow-right"></i>
-                                        </a>
-                                    </li>
-                                </c:if>
+                                <!-- Next Button -->
+                                <c:choose>
+                                    <c:when test="${currentPage < totalPages}">
+                                        <li class="next">
+                                            <a href="${pageContext.request.contextPath}/admin/customers?page=${currentPage + 1}">
+                                                Next <i class="ti-arrow-right"></i>
+                                            </a>
+                                        </li>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <li class="next disabled">
+                                            <a href="#">Next <i class="ti-arrow-right"></i></a>
+                                        </li>
+                                    </c:otherwise>
+                                </c:choose>
                             </ul>
                         </div>
                     </c:if>
                     
-                    <!-- Summary -->
+                    <!-- Page Info -->
                     <c:if test="${not empty totalRecords}">
-                        <div class="text-center mt-3">
-                            <p>Total users: <strong>${totalRecords}</strong></p>
+                        <div class="page-info">
+                            <c:set var="startRecord" value="${(currentPage - 1) * 5 + 1}" />
+                            <c:set var="endRecord" value="${currentPage * 5}" />
+                            <c:if test="${endRecord > totalRecords}">
+                                <c:set var="endRecord" value="${totalRecords}" />
+                            </c:if>
+                            <p>Showing <strong>${startRecord}-${endRecord}</strong> of <strong>${totalRecords}</strong> users</p>
                         </div>
                     </c:if>
                 </div>
