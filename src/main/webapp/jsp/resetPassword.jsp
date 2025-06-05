@@ -9,7 +9,6 @@
     <meta name="author" content="" />
     <meta name="robots" content="" />
 
-    <!-- DESCRIPTION -->
     <meta name="description" content="LuxuryHotel : Hotel HTML Template" />
     <meta property="og:title" content="LuxuryHotel : Hotel HTML Template" />
     <meta property="og:description" content="LuxuryHotel : Hotel HTML Template" />
@@ -38,8 +37,8 @@
             <div class="account-form-inner">
                 <div class="account-container">
                     <div class="heading-bx left">
-                        <h2 class="title-head">Forget <span>Password</span></h2>
-                        <p>Login Your Account <a href="jsp/login.jsp">Click here</a></p>
+                        <h2 class="title-head">Reset <span>Password</span></h2>
+                        <p>Back to <a href="login.jsp">Login</a></p>
                     </div>
 
                     <!-- THÔNG BÁO -->
@@ -52,19 +51,32 @@
                         }
                     %>
 
-                    <!-- FORM GỬI EMAIL -->
-                        <form class="contact-bx" action="${pageContext.request.contextPath}/forgot-password" method="post">
+                    <!-- FORM ĐẶT LẠI MẬT KHẨU -->
+                    <form class="contact-bx" action="${pageContext.request.contextPath}/reset-password" method="post">
+                        <!-- Token ẩn để định danh yêu cầu -->
+                        <input type="hidden" name="token" value="<%= request.getParameter("token") %>">
+
                         <div class="row placeani">
                             <div class="col-lg-12">
                                 <div class="form-group">
                                     <div class="input-group">
-                                        <label>Your Email Address</label>
-                                        <input name="email" type="email" required class="form-control">
+                                        <label>New Password</label>
+                                        <input name="password" type="password" required class="form-control" placeholder="Enter new password">
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <label>Confirm Password</label>
+                                        <input name="confirmPassword" type="password" required class="form-control" placeholder="Confirm new password">
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="col-lg-12 m-b30">
-                                <button name="submit" type="submit" value="Submit" class="btn button-md">Submit</button>
+                                <button name="submit" type="submit" value="Submit" class="btn button-md">Reset Password</button>
                             </div>
                         </div>
                     </form>
