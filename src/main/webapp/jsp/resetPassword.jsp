@@ -52,7 +52,7 @@
                     %>
 
                     <!-- FORM ĐẶT LẠI MẬT KHẨU -->
-                    <form class="contact-bx" action="ResetPasswordServlet" method="post">
+                    <form class="contact-bx" action="${pageContext.request.contextPath}/reset-password" method="post">
                         <!-- Token ẩn để định danh yêu cầu -->
                         <input type="hidden" name="token" value="<%= request.getParameter("token") %>">
 
