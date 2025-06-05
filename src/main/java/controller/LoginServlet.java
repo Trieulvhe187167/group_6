@@ -37,7 +37,7 @@ public class LoginServlet extends HttpServlet {
                     response.sendRedirect("housekeeping.jsp");
                     break;
                 case "GUEST":
-                    response.sendRedirect("jsp/home.jsp");
+                    response.sendRedirect("/index.jsp");
                     break;
                 default:
                     request.setAttribute("errorMsg", "Vai trò không hợp lệ!");

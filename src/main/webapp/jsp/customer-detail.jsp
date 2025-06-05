@@ -5,7 +5,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Customer Detail - Luxury Hotel</title>
+    <title>User Detail - Luxury Hotel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <!-- CSS -->
@@ -31,9 +31,8 @@
         .profile-bx {
             padding: 30px;
         }
-        .badge-info {
-            color: #fff;
-            background-color: #17a2b8;
+        .badge {
+            display: inline-block;
             padding: .25em .4em;
             font-size: 75%;
             font-weight: 700;
@@ -42,6 +41,26 @@
             white-space: nowrap;
             vertical-align: baseline;
             border-radius: .25rem;
+        }
+        .badge-info {
+            color: #fff;
+            background-color: #17a2b8;
+        }
+        .badge-danger {
+            color: #fff;
+            background-color: #dc3545;
+        }
+        .badge-primary {
+            color: #fff;
+            background-color: #007bff;
+        }
+        .badge-success {
+            color: #fff;
+            background-color: #28a745;
+        }
+        .badge-secondary {
+            color: #fff;
+            background-color: #6c757d;
         }
         .form-group label {
             font-weight: 600;
@@ -65,7 +84,7 @@
             <div class="page-banner ovbl-dark" style="background-image:url(${pageContext.request.contextPath}/assets/images/banner/banner2.jpg);">
                 <div class="container">
                     <div class="page-banner-entry">
-                        <h1 class="text-white">Customer Detail</h1>
+                        <h1 class="text-white">User Detail</h1>
                     </div>
                 </div>
             </div>
@@ -75,8 +94,8 @@
                 <div class="container">
                     <ul class="list-inline">
                         <li><a href="${pageContext.request.contextPath}/index.jsp">Home</a></li>
-                        <li><a href="${pageContext.request.contextPath}/admin/customers">Customers</a></li>
-                        <li>Customer Detail</li>
+                        <li><a href="${pageContext.request.contextPath}/admin/customers">Users</a></li>
+                        <li>User Detail</li>
                     </ul>
                 </div>
             </div>
@@ -88,14 +107,14 @@
                         <div class="col-lg-8 col-md-8 col-sm-12 m-auto">
                             <div class="profile-content-bx">
                                 <div class="profile-head">
-                                    <h3>Customer Information</h3>
+                                    <h3>User Information</h3>
                                 </div>
                                 
                                 <div class="profile-bx">
                                     <div class="row">
                                         <div class="col-lg-6">
                                             <div class="form-group">
-                                                <label>Customer ID</label>
+                                                <label>User ID</label>
                                                 <p class="form-control-static">#${customer.id}</p>
                                             </div>
                                         </div>
@@ -140,7 +159,27 @@
                                     </div>
                                     
                                     <div class="row">
-                                        <div class="col-lg-6">
+                                        <div class="col-lg-4">
+                                            <div class="form-group">
+                                                <label>Role</label>
+                                                <p class="form-control-static">
+                                                    <span class="badge ${customer.roleBadgeClass}">
+                                                        ${customer.roleDisplayName}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <div class="form-group">
+                                                <label>Status</label>
+                                                <p class="form-control-static">
+                                                    <span class="badge ${customer.statusBadgeClass}">
+                                                        ${customer.statusDisplayName}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4">
                                             <div class="form-group">
                                                 <label>Total Bookings</label>
                                                 <p class="form-control-static">
@@ -148,6 +187,9 @@
                                                 </p>
                                             </div>
                                         </div>
+                                    </div>
+                                    
+                                    <div class="row">
                                         <div class="col-lg-6">
                                             <div class="form-group">
                                                 <label>Member Since</label>
@@ -158,10 +200,7 @@
                                                 </p>
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-lg-12">
+                                        <div class="col-lg-6">
                                             <div class="form-group">
                                                 <label>Last Updated</label>
                                                 <p class="form-control-static">
@@ -179,7 +218,7 @@
                                         <div class="col-lg-12">
                                             <a href="${pageContext.request.contextPath}/admin/customers?action=edit&id=${customer.id}" 
                                                class="btn btn-warning">
-                                                <i class="fa fa-edit"></i> Edit Customer
+                                                <i class="fa fa-edit"></i> Edit User
                                             </a>
                                             <a href="${pageContext.request.contextPath}/admin/customers" 
                                                class="btn btn-secondary">

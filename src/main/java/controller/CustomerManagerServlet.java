@@ -1,7 +1,7 @@
 package controller;
 
-import dal.CustomerDAO;
-import model.Customer;
+import dal.UserDAO;
+import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,7 +13,8 @@ import java.util.List;
 @WebServlet(name = "CustomerManagerServlet", urlPatterns = {"/admin/customers"})
 public class CustomerManagerServlet extends HttpServlet {
     
-    private CustomerDAO customerDAO = new CustomerDAO();
+    private UserDAO userDAO = new UserDAO();
+    private static final String CUSTOMER_ROLE = "GUEST";
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -42,6 +43,9 @@ public class CustomerManagerServlet extends HttpServlet {
                 case "search":
                     searchCustomers(request, response);
                     break;
+                case "deleted":
+                    showDeletedCustomers(request, response);
+                    break;
                 default:
                     listCustomers(request, response);
                     break;
@@ -69,6 +73,9 @@ public class CustomerManagerServlet extends HttpServlet {
             case "delete":
                 deleteCustomer(request, response);
                 break;
+            case "restore":
+                restoreCustomer(request, response);
+                break;
             default:
                 response.sendRedirect(request.getContextPath() + "/admin/customers");
                 break;
@@ -85,17 +92,14 @@ public class CustomerManagerServlet extends HttpServlet {
             page = Integer.parseInt(request.getParameter("page"));
         }
         
-        List<Customer> customers = customerDAO.getCustomersPaginated(page, recordsPerPage);
-        int totalRecords = customerDAO.getTotalCustomers();
+        List<User> customers = userDAO.getUsersByRolePaginated(CUSTOMER_ROLE, page, recordsPerPage);
+        int totalRecords = userDAO.getTotalUsersByRole(CUSTOMER_ROLE);
         int totalPages = (int) Math.ceil(totalRecords * 1.0 / recordsPerPage);
         
         request.setAttribute("customers", customers);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalRecords", totalRecords);
-        
-        // Debug path
-        System.out.println("Forwarding to: /jsp/customer-list.jsp");
         
         request.getRequestDispatcher("/jsp/customer-list.jsp").forward(request, response);
     }
@@ -104,7 +108,7 @@ public class CustomerManagerServlet extends HttpServlet {
             throws ServletException, IOException {
         
         String keyword = request.getParameter("keyword");
-        List<Customer> customers = customerDAO.searchCustomers(keyword);
+        List<User> customers = userDAO.searchUsersByRole(keyword, CUSTOMER_ROLE);
         
         request.setAttribute("customers", customers);
         request.setAttribute("keyword", keyword);
@@ -122,9 +126,9 @@ public class CustomerManagerServlet extends HttpServlet {
             throws ServletException, IOException {
         
         int id = Integer.parseInt(request.getParameter("id"));
-        Customer customer = customerDAO.getCustomerById(id);
+        User customer = userDAO.getUserById(id);
         
-        if (customer != null) {
+        if (customer != null && CUSTOMER_ROLE.equals(customer.getRole())) {
             request.setAttribute("customer", customer);
             request.setAttribute("isEdit", true);
             request.getRequestDispatcher("/jsp/customer-form.jsp").forward(request, response);
@@ -137,9 +141,9 @@ public class CustomerManagerServlet extends HttpServlet {
             throws ServletException, IOException {
         
         int id = Integer.parseInt(request.getParameter("id"));
-        Customer customer = customerDAO.getCustomerById(id);
+        User customer = userDAO.getUserById(id);
         
-        if (customer != null) {
+        if (customer != null && CUSTOMER_ROLE.equals(customer.getRole())) {
             request.setAttribute("customer", customer);
             request.getRequestDispatcher("/jsp/customer-detail.jsp").forward(request, response);
         } else {
@@ -156,24 +160,69 @@ public class CustomerManagerServlet extends HttpServlet {
         String email = request.getParameter("email");
         String phone = request.getParameter("phone");
         
-        // Validate email
-        if (customerDAO.isEmailExists(email, null)) {
-            request.setAttribute("error", "Email already exists!");
-            request.setAttribute("username", username);
-            request.setAttribute("fullName", fullName);
-            request.setAttribute("email", email);
-            request.setAttribute("phone", phone);
+        // Create temporary user object for form data preservation
+        User tempUser = new User();
+        tempUser.setUsername(username);
+        tempUser.setFullName(fullName);
+        tempUser.setEmail(email);
+        tempUser.setPhone(phone);
+        tempUser.setRole(CUSTOMER_ROLE);
+        
+        // Validate username format
+        if (!isValidUsername(username)) {
+            request.setAttribute("error", "Username must be 3-20 characters long and contain only letters, numbers, and underscores!");
+            request.setAttribute("customer", tempUser);
             request.getRequestDispatcher("/jsp/customer-form.jsp").forward(request, response);
             return;
         }
         
-        Customer customer = new Customer(username, password, fullName, email, phone);
+        // Validate password strength
+        if (!isStrongPassword(password)) {
+            request.setAttribute("error", "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@#$%^&+=!)");
+            request.setAttribute("customer", tempUser);
+            request.getRequestDispatcher("/jsp/customer-form.jsp").forward(request, response);
+            return;
+        }
         
-        if (customerDAO.addCustomer(customer)) {
+        // Validate email format
+        if (!isValidEmail(email)) {
+            request.setAttribute("error", "Invalid email format!");
+            request.setAttribute("customer", tempUser);
+            request.getRequestDispatcher("/jsp/customer-form.jsp").forward(request, response);
+            return;
+        }
+        
+        // Validate phone number
+        if (!isValidPhone(phone)) {
+            request.setAttribute("error", "Phone number must be exactly 10 digits!");
+            request.setAttribute("customer", tempUser);
+            request.getRequestDispatcher("/jsp/customer-form.jsp").forward(request, response);
+            return;
+        }
+        
+        // Validate email exists
+        if (userDAO.isEmailExists(email, null)) {
+            request.setAttribute("error", "Email already exists!");
+            request.setAttribute("customer", tempUser);
+            request.getRequestDispatcher("/jsp/customer-form.jsp").forward(request, response);
+            return;
+        }
+        
+        // Validate username exists
+        if (userDAO.isUsernameExists(username, null)) {
+            request.setAttribute("error", "Username already exists!");
+            request.setAttribute("customer", tempUser);
+            request.getRequestDispatcher("/jsp/customer-form.jsp").forward(request, response);
+            return;
+        }
+        
+        User customer = new User(username, password, fullName, email, phone, CUSTOMER_ROLE);
+        
+        if (userDAO.addUser(customer)) {
             response.sendRedirect(request.getContextPath() + "/admin/customers?success=added");
         } else {
             request.setAttribute("error", "Failed to add customer!");
-            request.setAttribute("customer", customer);
+            request.setAttribute("customer", tempUser);
             request.getRequestDispatcher("/jsp/customer-form.jsp").forward(request, response);
         }
     }
@@ -186,26 +235,46 @@ public class CustomerManagerServlet extends HttpServlet {
         String email = request.getParameter("email");
         String phone = request.getParameter("phone");
         
-        // Validate email
-        if (customerDAO.isEmailExists(email, id)) {
-            request.setAttribute("error", "Email already exists!");
-            Customer customer = customerDAO.getCustomerById(id);
-            customer.setFullName(fullName);
-            customer.setEmail(email);
-            customer.setPhone(phone);
+        // Get current customer for data preservation
+        User customer = userDAO.getUserById(id);
+        if (customer == null || !CUSTOMER_ROLE.equals(customer.getRole())) {
+            response.sendRedirect(request.getContextPath() + "/admin/customers?error=notfound");
+            return;
+        }
+        
+        // Update with new values
+        customer.setFullName(fullName);
+        customer.setEmail(email);
+        customer.setPhone(phone);
+        
+        // Validate email format
+        if (!isValidEmail(email)) {
+            request.setAttribute("error", "Invalid email format!");
             request.setAttribute("customer", customer);
             request.setAttribute("isEdit", true);
             request.getRequestDispatcher("/jsp/customer-form.jsp").forward(request, response);
             return;
         }
         
-        Customer customer = new Customer();
-        customer.setId(id);
-        customer.setFullName(fullName);
-        customer.setEmail(email);
-        customer.setPhone(phone);
+        // Validate phone number
+        if (!isValidPhone(phone)) {
+            request.setAttribute("error", "Phone number must be exactly 10 digits!");
+            request.setAttribute("customer", customer);
+            request.setAttribute("isEdit", true);
+            request.getRequestDispatcher("/jsp/customer-form.jsp").forward(request, response);
+            return;
+        }
         
-        if (customerDAO.updateCustomer(customer)) {
+        // Validate email exists
+        if (userDAO.isEmailExists(email, id)) {
+            request.setAttribute("error", "Email already exists!");
+            request.setAttribute("customer", customer);
+            request.setAttribute("isEdit", true);
+            request.getRequestDispatcher("/jsp/customer-form.jsp").forward(request, response);
+            return;
+        }
+        
+        if (userDAO.updateUser(customer)) {
             response.sendRedirect(request.getContextPath() + "/admin/customers?success=updated");
         } else {
             request.setAttribute("error", "Failed to update customer!");
@@ -220,12 +289,47 @@ public class CustomerManagerServlet extends HttpServlet {
         
         int id = Integer.parseInt(request.getParameter("id"));
         
-        if (customerDAO.deleteCustomer(id)) {
+        if (userDAO.deleteUser(id)) {
             response.sendRedirect(request.getContextPath() + "/admin/customers?success=deleted");
         } else {
             response.sendRedirect(request.getContextPath() + "/admin/customers?error=delete");
         }
     }
     
+    private void showDeletedCustomers(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        List<User> deletedCustomers = userDAO.getDeletedUsersByRole(CUSTOMER_ROLE);
+        request.setAttribute("deletedCustomers", deletedCustomers);
+        request.getRequestDispatcher("/jsp/deleted-customers.jsp").forward(request, response);
+    }
     
+    private void restoreCustomer(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        int id = Integer.parseInt(request.getParameter("id"));
+        
+        if (userDAO.restoreUser(id)) {
+            response.sendRedirect(request.getContextPath() + "/admin/customers?action=deleted&success=restored");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/admin/customers?action=deleted&error=restore");
+        }
+    }
+    
+    // Validation methods
+    private boolean isStrongPassword(String password) {
+        return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$");
+    }
+    
+    private boolean isValidEmail(String email) {
+        return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    }
+    
+    private boolean isValidPhone(String phone) {
+        return phone != null && phone.matches("^\\d{10}$");
+    }
+    
+    private boolean isValidUsername(String username) {
+        return username != null && username.matches("^[a-zA-Z0-9_]{3,20}$");
+    }
 }
