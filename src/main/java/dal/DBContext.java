@@ -11,13 +11,13 @@ public class DBContext {
     //         + "databaseName=HotelManagement;encrypt=false;";
 
     // Cách 2: giữ mã hoá nhưng tin cậy chứng chỉ tự ký
-    private static final String URL = "jdbc:sqlserver://localhost:1433;"
+    private static final String URL = "jdbc:sqlserver://ZIG:1433;"
             + "databaseName=HotelManagement;"
             + "encrypt=true;"
             + "trustServerCertificate=true;";
 
     private static final String USER = "sa";
-    private static final String PASSWORD = "1";
+    private static final String PASSWORD = "123";
 
     public static Connection getConnection() throws SQLException {
         try {

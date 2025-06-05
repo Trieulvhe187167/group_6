@@ -1,117 +1,71 @@
 package controller;
+// HouseKeepingServlet.java
 
-import dal.HouseKeepingDAO;
-import model.HousekeepingTask;
 
+import dal.RoomDAO;
+import model.Room;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
+import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "HouseKeepingServlet", urlPatterns = {"/admin/housetkeeping"})
+@WebServlet(name = "HouseKeepingServlet", urlPatterns = {"/HouseKeeping", "/housekeeping"})
 public class HouseKeepingServlet extends HttpServlet {
-
-    private HouseKeepingDAO housekeepingDAO = new HouseKeepingDAO();
-
+    
+    private RoomDAO roomDAO = new RoomDAO();
+    
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        String action = request.getParameter("action");
-        if (action == null) {
-            action = "list";
-        }
-
-        try {
-            switch (action) {
-                case "list":
-                    listTasks(request, response);
-                    break;
-                case "search":
-                    searchTasksByStatus(request, response);
-                    break;
-                default:
-                    listTasks(request, response);
-                    break;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
+protected void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    
+    String search = request.getParameter("search");
+    String status = request.getParameter("status");
+    
+    List<Room> rooms;
+    
+    if (search != null && !search.trim().isEmpty()) {
+        rooms = roomDAO.searchRoomsByNumber(search.trim());
+    } else if (status != null && !status.equals("ALL")) {
+        rooms = roomDAO.getRoomsWithFilter(status);
+    } else {    
+        rooms = roomDAO.getRoomsWithFilter("ALL");
     }
-
+    
+    request.setAttribute("rooms", rooms);
+    request.setAttribute("search", search);
+    request.setAttribute("status", status);
+    
+    // Set template attributes
+    request.setAttribute("pageTitle", "Housekeeping");
+    request.setAttribute("activePage", "housekeeping");
+    request.setAttribute("contentPage", "/jsp/housekeeping-content.jsp");
+    
+    request.getRequestDispatcher("/jsp/admin-template.jsp").forward(request, response);
+}
+    
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        request.setCharacterEncoding("UTF-8");
-        String action = request.getParameter("action");
-
-        try {
-            switch (action) {
-                case "edit":
-                    updateTaskStatus(request, response);
-                    break;
-                case "delete":
-                    deleteTask(request, response);
-                    break;
-                case "search":
-                    searchTasksByStatus(request, response);
-                    break;
-                default:
-                    response.sendRedirect(request.getContextPath() + "/admin/housekeeping");
-                    break;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void listTasks(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        List<HousekeepingTask> tasks = housekeepingDAO.getAllTasks();
-        request.setAttribute("tasks", tasks);
-        request.getRequestDispatcher("/jsp/HouseKeeping.jsp").forward(request, response);
-    }
-
-    private void searchTasksByStatus(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        String status = request.getParameter("status");
-
-        List<HousekeepingTask> tasks = housekeepingDAO.searchTasksByStatus(status);
-        request.setAttribute("tasks", tasks);
-        request.setAttribute("searchStatus", status);
-        request.setAttribute("isSearch", true);
-
-        request.getRequestDispatcher("/jsp/HouseKeeping.jsp").forward(request, response);
-    }
-
-    private void updateTaskStatus(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
-
-        int taskId = Integer.parseInt(request.getParameter("taskId"));
-        String newStatus = request.getParameter("newStatus");
-
-        boolean updated = housekeepingDAO.updateTaskStatusById(taskId, newStatus);
-
-            listTasks(request, response);
-
-    }
-
-    private void deleteTask(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
-
-        int taskId = Integer.parseInt(request.getParameter("taskId"));
-
-        boolean deleted = housekeepingDAO.deleteTaskById(taskId);
-            listTasks(request, response);
         
+        String roomIdStr = request.getParameter("roomId");
+        String newStatus = request.getParameter("newStatus");
+        
+        if (roomIdStr != null && newStatus != null) {
+            try {
+                int roomId = Integer.parseInt(roomIdStr);
+                boolean updated = roomDAO.updateRoomStatus(roomId, newStatus);
+                
+                if (updated) {
+                    request.getSession().setAttribute("message", "Room status updated successfully!");
+                } else {
+                    request.getSession().setAttribute("error", "Failed to update room status!");
+                }
+            } catch (NumberFormatException e) {
+                request.getSession().setAttribute("error", "Invalid room ID!");
+            }
+        }
+        
+        response.sendRedirect(request.getContextPath() + "/HouseKeeping");
     }
 }

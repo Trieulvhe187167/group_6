@@ -28,16 +28,16 @@ public class LoginServlet extends HttpServlet {
 
             switch (user.getRole()) {
                 case "ADMIN":
-                    response.sendRedirect("admin-dashboard.jsp");
+                    response.sendRedirect(request.getContextPath() + "/admin-dashboard");
                     break;
                 case "RECEPTIONIST":
-                    response.sendRedirect("reception-dashboard.jsp");
+                    response.sendRedirect(request.getContextPath() + "/reception-dashboard");
                     break;
                 case "HOUSEKEEPER":
-                    response.sendRedirect("housekeeping.jsp");
+                    response.sendRedirect(request.getContextPath() + "/HouseKeeping");
                     break;
                 case "GUEST":
-                    response.sendRedirect("jsp/home.jsp");
+                    response.sendRedirect(request.getContextPath() + "/index.jsp");
                     break;
                 default:
                     request.setAttribute("errorMsg", "Vai trò không hợp lệ!");
@@ -55,4 +55,3 @@ public class LoginServlet extends HttpServlet {
         response.sendRedirect("jsp/login.jsp");
     }
 }
-

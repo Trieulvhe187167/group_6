@@ -1,16 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
-/**
- *
- * @author ASUS
- */
 public class RoomType {
     private int id;
     private String name;
@@ -22,9 +14,11 @@ public class RoomType {
     private Date createdAt;
     private Date updatedAt;
 
+    // Constructor mặc định
     public RoomType() {
     }
 
+    // Constructor với các tham số cơ bản
     public RoomType(String name, String description, String imageUrl, BigDecimal basePrice, int capacity) {
         this.name = name;
         this.description = description;
@@ -33,7 +27,9 @@ public class RoomType {
         this.capacity = capacity;
     }
 
-    public RoomType(int id, String name, String description, String imageUrl, BigDecimal basePrice, int capacity, String status, Date createdAt, Date updatedAt) {
+    // Constructor đầy đủ
+    public RoomType(int id, String name, String description, String imageUrl, BigDecimal basePrice, 
+                    int capacity, String status, Date createdAt, Date updatedAt) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -45,6 +41,7 @@ public class RoomType {
         this.updatedAt = updatedAt;
     }
 
+    // Getters and Setters
     public int getId() {
         return id;
     }
@@ -116,10 +113,4 @@ public class RoomType {
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
-
-    
-
-    
-    
-    
 }
