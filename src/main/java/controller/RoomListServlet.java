@@ -105,7 +105,7 @@ public class RoomListServlet extends HttpServlet {
         //Phân trang
 
         request.setAttribute("roomTypes", roomTypes);
-        request.getRequestDispatcher("jsp/admin-roomList.jsp").forward(request, response);
+        request.getRequestDispatcher("jsp/roomList.jsp").forward(request, response);
     }
 
     /**
@@ -170,7 +170,7 @@ public class RoomListServlet extends HttpServlet {
             List<RoomType> roomTypes = dao.filterRoomTypes(price, capacity, status);
 
             request.setAttribute("roomTypes", roomTypes);
-            request.getRequestDispatcher("jsp/admin-roomList.jsp").forward(request, response);
+            request.getRequestDispatcher("jsp/roomList.jsp").forward(request, response);
         }
 
     }

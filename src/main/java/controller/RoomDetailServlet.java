@@ -65,7 +65,8 @@ public class RoomDetailServlet extends HttpServlet {
         String id = request.getParameter("id");
         RoomTypeDAO dao = new RoomTypeDAO();
         RoomType roomTypes = dao.getRoomsById(id);
-
+        
+        request.setAttribute("id", id);
         request.setAttribute("roomTypes", roomTypes);
         request.getRequestDispatcher("jsp/roomDetail.jsp").forward(request, response);
     }

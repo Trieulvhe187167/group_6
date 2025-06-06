@@ -55,7 +55,7 @@
         <!-- STYLESHEETS ============================================= -->
         <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/style.css">
         <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/color/color-1.css">
-        
+
 
     </head>
     <body id="bg">
@@ -107,17 +107,33 @@
                                     </div>
                                     <div class="widget widget_archive">
                                         <h5 class="widget-title style-1">All Courses</h5>
-                                        <ul>
-                                            <li class="active"><a href="#">General</a></li>
-                                            <li><a href="#">IT & Software</a></li>
-                                            <li><a href="#">Photography</a></li>
-                                            <li><a href="#">Programming Language</a></li>
-                                            <li><a href="#">Technology</a></li>
-                                        </ul>
+                                        <form action="RoomListServlet" method="get" style="display: flex; flex-direction: column; gap: 10px;">
+                                            <select name="price" class="form-select" style="height: 40px;">
+                                                <option value="">-- Filter by Price --</option>
+                                                <option value="1" ${selectedCapacity == '1' ? 'selected' : ''}>Under 500k</option>
+                                                <option value="2" ${selectedCapacity == '1' ? 'selected' : ''}>500k - 1M</option>
+                                                <option value="3" ${selectedCapacity == '1' ? 'selected' : ''}>Over 1M</option>
+                                            </select>
+
+                                            <select name="capacity" class="form-select" style="height: 40px;">
+                                                <option value="">-- Filter by Capacity --</option>
+                                                <option value="1" ${selectedCapacity == '1' ? 'selected' : ''}>1 Person</option>
+                                                <option value="2" ${selectedCapacity == '2' ? 'selected' : ''}>2 People</option>
+                                                <option value="3" ${selectedCapacity == '3' ? 'selected' : ''}>3 or more</option>
+                                            </select>
+
+                                            <select name="status" class="form-select" style="height: 40px;">
+                                                <option value="">-- Filter by Status --</option>
+                                                <option value="active" ${selectedStatus == 'active' ? 'selected' : ''}>Available</option>
+                                                <option value="inactive" ${selectedStatus == 'inactive' ? 'selected' : ''}>Unavailable</option>
+                                            </select>
+
+                                            <button type="submit" class="btn btn-primary" style="height: 40px;">Filter</button>
+                                        </form>
                                     </div>
-                                    
+
                                     <div class="widget">
-                                        
+
                                         <a href="#"><img src="assets/images/adv/adv.jpg" alt=""/></a>
                                     </div>
                                     <div class="widget recent-posts-entry widget-courses">
@@ -214,11 +230,11 @@
                                                         <h5>$<%= type.getBasePrice() %></h5>
                                                     </div>
                                                 </div>
-                                                    
+
                                             </div>
-                                                    <div style="text-align: center; margin-top: 10px;">
-                                                        <a href="RoomListServlet?action=delete&id=<%= type.getId() %>&status=inactive" class="btn">Delete</a>
-                                                    </div>
+                                            <div style="text-align: center; margin-top: 10px;">
+                                                <a href="RoomListServlet?action=delete&id=<%= type.getId() %>&status=inactive" class="btn">Delete</a>
+                                            </div>
                                         </div>
                                         <%
                                                 }
@@ -275,33 +291,34 @@
             <!-- Footer END ==== -->
             <button class="back-to-top fa fa-chevron-up" ></button>
         </div>
-            
-            <script>
-                function toggleDropdown(el) {
-                    const li = el.closest("li");
-                    li.classList.toggle("open");
 
-                    // Đóng các dropdown khác nếu có
-                    document.querySelectorAll(".navbar-nav > li").forEach(item => {
-                        if (item !== li) item.classList.remove("open");
-                    });
-                }
+        <script>
+            function toggleDropdown(el) {
+                const li = el.closest("li");
+                li.classList.toggle("open");
 
-                function selectFilter(inputId, value) {
-                    document.getElementById(inputId).value = value;
-                    document.getElementById("filterForm").submit();
-                }
-
-                // Đóng dropdown nếu click ra ngoài
-                document.addEventListener('click', function (e) {
-                    if (!e.target.closest('.navbar-nav')) {
-                        document.querySelectorAll('.navbar-nav > li').forEach(li => li.classList.remove('open'));
-                    }
+                // Đóng các dropdown khác nếu có
+                document.querySelectorAll(".navbar-nav > li").forEach(item => {
+                    if (item !== li)
+                        item.classList.remove("open");
                 });
-            </script>
+            }
+
+            function selectFilter(inputId, value) {
+                document.getElementById(inputId).value = value;
+                document.getElementById("filterForm").submit();
+            }
+
+            // Đóng dropdown nếu click ra ngoài
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.navbar-nav')) {
+                    document.querySelectorAll('.navbar-nav > li').forEach(li => li.classList.remove('open'));
+                }
+            });
+        </script>
 
 
-            <!-- External JavaScripts -->
+        <!-- External JavaScripts -->
         <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
         <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/popper.min.js"></script>
         <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/bootstrap.min.js"></script>
