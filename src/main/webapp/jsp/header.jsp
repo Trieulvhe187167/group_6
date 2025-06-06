@@ -75,6 +75,10 @@
                                             <a class="dropdown-item" href="${pageContext.request.contextPath}/admin/customers">
                                                 <i class="fa fa-users"></i> Manage Customers
                                             </a>
+                                                <a class="dropdown-item" href="${pageContext.request.contextPath}/admin/housekeeping">
+                                                <i class="fa fa-users"></i> Manage Housekeeping
+                                            </a>
+                                                
                                             <div class="dropdown-divider"></div>
                                         </c:when>
                                         <c:when test="${sessionScope.user.role eq 'RECEPTIONIST'}">
@@ -200,8 +204,16 @@
                                     <a class="nav-link" href="${pageContext.request.contextPath}/admin/customers">
                                         MANAGE CUSTOMERS
                                     </a>
+                                        
+                                </li>
+                                
+                                  <li class="nav-item ${fn:endsWith(currentUrl,'/HouseKeeping.jsp') ? 'active' : ''}">
+                                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/housekeeping">
+                                       Manager HOUSEKEEPING
+                                    </a>
                                 </li>
                             </c:when>
+                                
                             <c:when test="${sessionScope.user.role eq 'HOUSEKEEPER'}">
                                 <li class="nav-item ${fn:endsWith(currentUrl,'/HouseKeeping.jsp') ? 'active' : ''}">
                                     <a class="nav-link" href="${pageContext.request.contextPath}/admin/housekeeping?action=list">
