@@ -61,29 +61,31 @@
         <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/admin/assets/css/dashboard.css">
         <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/admin/assets/css/color/color-1.css">
     </head>
-      <jsp:include page="header.jsp" />
-
+   
+  <jsp:include page="header.jsp" />
     <body class="ttr-opened-sidebar ttr-pinned-sidebar">
 
-   
-        
-  <!-- inner page banner -->
-                <div class="page-banner ovbl-dark" style="background-image:url('${pageContext.request.contextPath}/assets/images/banner/banner2.jpg');">
-                    <div class="container">
-                        <div class="page-banner-entry">
-                            <h1 class="text-white">Room List</h1>
-                        </div>
+    
+          <!-- inner page banner -->
+               <!-- Banner & Breadcrumb -->
+            <div class="page-banner ovbl-dark" style="background-image:url(${pageContext.request.contextPath}/assets/images/banner/banner2.jpg);">
+                <div class="container">
+                    <div class="page-banner-entry">
+                        <h1 class="text-white">Room List</h1>
                     </div>
                 </div>
+            </div>
              
+
         <!--Main container start -->
         <main class="ttr-wrapper">
+            
             <div class="container-fluid">
                 <div class="db-breadcrumb">
-                    <h4 class="breadcrumb-title">Courses</h4>
+              
                     <ul class="db-breadcrumb-list">
-                        <li><a href="#"><i class="fa fa-home"></i>Home</a></li>
-                        <li>Courses</li>
+                        <li><a href="index.jsp"><i class="fa fa-home"></i>Home</a></li>
+                        <li>Room List</li>
                     </ul>
                 </div>	
                 <div class="row">
@@ -331,6 +333,6 @@
         <script src="${pageContext.request.contextPath}/admin/assets/js/functions.js"></script>
         <script src="${pageContext.request.contextPath}/admin/assets/vendors/chart/chart.min.js"></script>
         <script src="${pageContext.request.contextPath}/admin/assets/js/admin.js"></script>
-        <script src='${pageContext.request.contextPath}/admin/assets/vendors/switcher/switcher.js'></script>
+    
     </body>
 </html>

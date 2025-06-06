@@ -91,9 +91,10 @@
                                             <div class="dropdown-divider"></div>
                                         </c:when>
                                         <c:when test="${sessionScope.user.role eq 'HOUSEKEEPER'}">
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/housekeeping">
+                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/admin/housekeeping?action=list">
                                                 <i class="fa fa-tasks"></i> My Tasks
                                             </a>
+                        
                                             <a class="dropdown-item" href="${pageContext.request.contextPath}/housekeeping/rooms">
                                                 <i class="fa fa-bed"></i> Room Status
                                             </a>
@@ -191,10 +192,7 @@
                     <li class="nav-item ${fn:endsWith(currentUrl,'/blog.jsp') ? 'active' : ''}">
                         <a class="nav-link" href="${pageContext.request.contextPath}/BlogListServlet">BLOG</a>
                     </li>
-                    <li class="nav-item ${fn:endsWith(currentUrl,'/HouseKeeping.jsp') ? 'active' : ''}">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/housekeeping?action=list">Housekeeping</a>
-                    </li>
-
+                   
                     
                     <!-- Show menu items based on user role -->
                     <c:if test="${not empty sessionScope.user}">
@@ -202,24 +200,22 @@
                             <c:when test="${sessionScope.user.role eq 'ADMIN'}">
                                 <li class="nav-item ${fn:contains(currentUrl,'/admin/') ? 'active' : ''}">
                                     <a class="nav-link" href="${pageContext.request.contextPath}/admin/customers">
-                                        MANAGE CUSTOMERS
+                                        MANAGER CUSTOMERS
                                     </a>
                                         
                                 </li>
                                 
-                                  <li class="nav-item ${fn:endsWith(currentUrl,'/HouseKeeping.jsp') ? 'active' : ''}">
-                                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/housekeeping">
-                                       Manager HOUSEKEEPING
-                                    </a>
-                                </li>
+                               <li class="nav-item ${fn:endsWith(currentUrl,'/HouseKeeping.jsp') ? 'active' : ''}">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/housekeeping?action=list">Manager Housekeeping</a>
+                    </li>
+
                             </c:when>
                                 
                             <c:when test="${sessionScope.user.role eq 'HOUSEKEEPER'}">
-                                <li class="nav-item ${fn:endsWith(currentUrl,'/HouseKeeping.jsp') ? 'active' : ''}">
-                                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/housekeeping?action=list">
-                                        HOUSEKEEPING
-                                    </a>
-                                </li>
+                             <li class="nav-item ${fn:endsWith(currentUrl,'/HouseKeeping.jsp') ? 'active' : ''}">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/housekeeping?action=list">Manager Housekeeping</a>
+                    </li>
+
                             </c:when>
                             <c:when test="${sessionScope.user.role eq 'RECEPTIONIST'}">
                                 <li class="nav-item ${fn:contains(currentUrl,'/receptionist/') ? 'active' : ''}">
