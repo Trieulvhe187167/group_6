@@ -61,12 +61,21 @@
         <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/admin/assets/css/dashboard.css">
         <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/admin/assets/css/color/color-1.css">
     </head>
+      <jsp:include page="header.jsp" />
+
     <body class="ttr-opened-sidebar ttr-pinned-sidebar">
 
-        <jsp:include page="admin-header.jsp" />
-
+   
         
-
+  <!-- inner page banner -->
+                <div class="page-banner ovbl-dark" style="background-image:url('${pageContext.request.contextPath}/assets/images/banner/banner2.jpg');">
+                    <div class="container">
+                        <div class="page-banner-entry">
+                            <h1 class="text-white">Room List</h1>
+                        </div>
+                    </div>
+                </div>
+             
         <!--Main container start -->
         <main class="ttr-wrapper">
             <div class="container-fluid">
@@ -153,7 +162,7 @@
                                 %>
                                 <div class="card-courses-list admin-courses">
                                     <div class="card-courses-media">
-                                        <img src="${pageContext.request.contextPath}<%= type.getImageUrl() %>" alt="RoomType"/>
+                                        <img src="${pageContext.request.contextPath}/assets/images/uploads/<%= type.getImageUrl() %>" alt="RoomType"/>
                                     </div>
                                     <div class="card-courses-full-dec">
                                         <div class="card-courses-title">
@@ -304,7 +313,7 @@
                 document.getElementById('deleteForm').submit();
             }
         </script>
-
+     <jsp:include page="footer.jsp" />
         <!-- External JavaScripts -->
         <script src="${pageContext.request.contextPath}/admin/assets/js/jquery.min.js"></script>
         <script src="${pageContext.request.contextPath}/admin/assets/vendors/bootstrap/js/popper.min.js"></script>
