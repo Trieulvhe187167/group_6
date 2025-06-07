@@ -7,7 +7,7 @@
 <%
     // Load RoomTypes
     RoomTypeDAO dao = new RoomTypeDAO();
-    List<RoomType> roomTypes = dao.getAllRoomTypes();
+    List<RoomType> roomTypes = dao.getAllRoomTypesActive();
     request.setAttribute("roomTypes", roomTypes);
     
     // Load Events
