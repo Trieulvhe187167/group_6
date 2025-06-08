@@ -8,6 +8,7 @@
 <%@ page import="model.RoomType" %>
 <%@ page import="java.util.List" %>
 
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -64,8 +65,8 @@
 
             <!-- Header Top ==== -->
             <jsp:include page="header.jsp" />
-
             <!-- header END ==== -->
+            
             <!-- Content -->
             <div class="page-content bg-white">
                 <!-- inner page banner -->
@@ -110,9 +111,9 @@
                                         <form action="RoomListServlet" method="get" style="display: flex; flex-direction: column; gap: 10px;">
                                             <select name="price" class="form-select" style="height: 40px;">
                                                 <option value="">-- Filter by Price --</option>
-                                                <option value="1" ${selectedCapacity == '1' ? 'selected' : ''}>Under 500k</option>
-                                                <option value="2" ${selectedCapacity == '1' ? 'selected' : ''}>500k - 1M</option>
-                                                <option value="3" ${selectedCapacity == '1' ? 'selected' : ''}>Over 1M</option>
+                                                <option value="1" ${selectedPrice == '1' ? 'selected' : ''}>Under 500k</option>
+                                                <option value="2" ${selectedPrice == '1' ? 'selected' : ''}>500k - 1M</option>
+                                                <option value="3" ${selectedPrice == '1' ? 'selected' : ''}>Over 1M</option>
                                             </select>
 
                                             <select name="capacity" class="form-select" style="height: 40px;">

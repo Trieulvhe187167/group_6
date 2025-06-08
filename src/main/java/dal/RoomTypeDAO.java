@@ -46,32 +46,6 @@ public class RoomTypeDAO {
         }
         return listRoom;
     }
-    
-     public List<RoomType> getAllRoomTypesActive() {
-        List<RoomType> listRoom = new ArrayList<>();
-        String sql = "SELECT * FROM RoomTypes WHERE status = 'active' ";
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                RoomType rtype = new RoomType();
-                rtype.setId(rs.getInt("Id"));
-                rtype.setName(rs.getString("Name"));
-                rtype.setDescription(rs.getString("Description"));
-                rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
-                rtype.setImageUrl(rs.getString("imageUrl"));
-                rtype.setCapacity(rs.getInt("Capacity"));
-                rtype.setStatus(rs.getString("Status"));
-                rtype.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                rtype.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
-
-                listRoom.add(rtype);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return listRoom;
-    }
 
     public List<RoomType> searchRooms(String keyword) {
         List<RoomType> list = new ArrayList<>();

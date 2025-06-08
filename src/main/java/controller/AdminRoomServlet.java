@@ -103,7 +103,7 @@ public class AdminRoomServlet extends HttpServlet {
         //Phân trang
 
         request.setAttribute("roomTypes", roomTypes);
-        request.getRequestDispatcher("jsp/roomList.jsp").forward(request, response);
+        request.getRequestDispatcher("jsp/admin-roomList.jsp").forward(request, response);
     }
 
 
@@ -159,7 +159,7 @@ public class AdminRoomServlet extends HttpServlet {
             String status = request.getParameter("status");
 
             dao.updateRoomTypeStatus(id, status);
-            response.sendRedirect("RoomListServlet");
+            response.sendRedirect("AdminRoomServlet");
 
         } 
     }
