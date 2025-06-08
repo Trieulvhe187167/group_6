@@ -60,7 +60,6 @@
                             <div class="col-lg-12">
                                 <div class="form-group">
                                     <div class="input-group">
-                                        <label>New Password</label>
                                         <input name="password" type="password" required class="form-control" placeholder="Enter new password">
                                     </div>
                                 </div>
@@ -69,7 +68,6 @@
                             <div class="col-lg-12">
                                 <div class="form-group">
                                     <div class="input-group">
-                                        <label>Confirm Password</label>
                                         <input name="confirmPassword" type="password" required class="form-control" placeholder="Confirm new password">
                                     </div>
                                 </div>

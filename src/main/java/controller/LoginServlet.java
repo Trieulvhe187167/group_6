@@ -28,7 +28,7 @@ public class LoginServlet extends HttpServlet {
 
             switch (user.getRole()) {
                 case "ADMIN":
-                    response.sendRedirect("/index.jsp");
+                    response.sendRedirect("/admin-dashboard");
                     break;
                 case "RECEPTIONIST":
                     response.sendRedirect("reception-dashboard.jsp");
