@@ -194,7 +194,9 @@
                     </li>
                    
                     
-                    <!-- Show menu items based on user role 
+                    <!-- Show menu items based on user role  
+                    
+                    <%--
                     <c:if test="${not empty sessionScope.user}">
                         <c:choose>
                             <c:when test="${sessionScope.user.role eq 'ADMIN'}">
@@ -225,8 +227,9 @@
                                 </li>
                             </c:when>
                         </c:choose>
-                    </c:if>   -->
-                    
+                    </c:if>  
+                    --%>
+                    -->
                 </ul>
             </nav>
         </div>
