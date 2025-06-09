@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet(name = "HousekeepingServlet", urlPatterns = {"/HouseKeeping"})
-public class HousekeepingServlet extends HttpServlet {
+public class HouseKeepingServlet extends HttpServlet {
     
     private HousekeepingTaskDAO taskDAO = new HousekeepingTaskDAO();
     private RoomDAO roomDAO = new RoomDAO();
