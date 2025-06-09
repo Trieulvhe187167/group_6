@@ -71,8 +71,7 @@
                         <div class="col-lg-12">
                             <div class="form-group form-forget">
                                 <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" id="rememberMe">
-                                    <label class="custom-control-label" for="rememberMe">Remember me</label>
+                                  
                                 </div>
                                 <a href="jsp/forgotPassword.jsp" class="ml-auto">Forgot Password?</a>
                             </div>
