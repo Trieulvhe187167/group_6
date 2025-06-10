@@ -94,7 +94,7 @@
                         <div class="container">
                             <div class="row">
                                 <div class="col-lg-3 col-md-4 col-sm-12 m-b30">
-                                    <a href="jsp/create-roomtype.jsp" class="btn ">Create Type</a>
+
                                     <div class="widget courses-search-bx placeani">
                                         <div class="form-group">
                                             <form action="RoomListServlet" method="get">
@@ -123,19 +123,13 @@
                                                 <option value="3" ${selectedCapacity == '3' ? 'selected' : ''}>3 or more</option>
                                             </select>
 
-                                            <select name="status" class="form-select" style="height: 40px;">
-                                                <option value="">-- Filter by Status --</option>
-                                                <option value="active" ${selectedStatus == 'active' ? 'selected' : ''}>Available</option>
-                                                <option value="inactive" ${selectedStatus == 'inactive' ? 'selected' : ''}>Unavailable</option>
-                                            </select>
-
                                             <button type="submit" class="btn btn-primary" style="height: 40px;">Filter</button>
                                         </form>
                                     </div>
 
                                     <div class="widget">
 
-                                        <a href="#"><img src="assets/images/adv/adv.jpg" alt=""/></a>
+<!--                                        <a href="#"><img src="assets/images/adv/adv.jpg" alt=""/></a>-->
                                     </div>
                                     <div class="widget recent-posts-entry widget-courses">
                                         <h5 class="widget-title style-1">Recent Courses</h5>
@@ -218,7 +212,7 @@
                                                 <div class="cours-more-info">
                                                     <div class="review">
                                                         <span>3 Review</span>
-                                                        <ul class="cours-star">
+                                                        <ul class="cours-star" style="white-space: nowrap;">
                                                             <li class="active"><i class="fa fa-star"></i></li>
                                                             <li class="active"><i class="fa fa-star"></i></li>
                                                             <li class="active"><i class="fa fa-star"></i></li>
@@ -228,14 +222,12 @@
                                                     </div>
                                                     <div class="price">
                                                         <del>$190</del>
-                                                        <h5><%= type.getBasePrice().stripTrailingZeros().toPlainString() %>₫/day</h5>
+                                                        <h5 style="white-space: nowrap; margin-left: -5px;"><%= type.getBasePrice().stripTrailingZeros().toPlainString() %>₫/☀️</h5>
                                                     </div>
                                                 </div>
 
                                             </div>
-                                            <div style="text-align: center; margin-top: 10px;">
-                                                <a href="RoomListServlet?action=delete&id=<%= type.getId() %>&status=inactive" class="btn">Delete</a>
-                                            </div>
+
                                         </div>
                                         <%
                                                 }
