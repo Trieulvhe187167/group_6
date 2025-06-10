@@ -62,9 +62,9 @@ public class RoomDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         //processRequest(request, response);
 
-        String id = request.getParameter("id");
+        int id = Integer.parseInt(request.getParameter("id"));
         RoomTypeDAO dao = new RoomTypeDAO();
-        RoomType roomTypes = dao.getRoomsById(id);
+        RoomType roomTypes = dao.getRoomTypesById(id);
         
         request.setAttribute("id", id);
         request.setAttribute("roomTypes", roomTypes);

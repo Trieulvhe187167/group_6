@@ -36,7 +36,7 @@
         <link rel="shortcut icon" type="image/x-icon" href="${pageContext.request.contextPath}/admin/assets/images/favicon.png" />
 
         <!-- PAGE TITLE HERE ============================================= -->
-        <title>EduChamp : Education HTML Template </title>
+        <title>Luxury Hotel | List of Room </title>
 
         <!-- MOBILE SPECIFIC ============================================= -->
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -61,31 +61,29 @@
         <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/admin/assets/css/dashboard.css">
         <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/admin/assets/css/color/color-1.css">
     </head>
-   
-  <jsp:include page="header.jsp" />
+      <jsp:include page="header.jsp" />
+
     <body class="ttr-opened-sidebar ttr-pinned-sidebar">
 
-    
-          <!-- inner page banner -->
-               <!-- Banner & Breadcrumb -->
-            <div class="page-banner ovbl-dark" style="background-image:url(${pageContext.request.contextPath}/assets/images/banner/banner2.jpg);">
-                <div class="container">
-                    <div class="page-banner-entry">
-                        <h1 class="text-white">Room List</h1>
+   
+        
+  <!-- inner page banner -->
+                <div class="page-banner ovbl-dark" style="background-image:url('${pageContext.request.contextPath}/assets/images/banner/banner2.jpg');">
+                    <div class="container">
+                        <div class="page-banner-entry">
+                            <h1 class="text-white">Room List</h1>
+                        </div>
                     </div>
                 </div>
-            </div>
              
-
         <!--Main container start -->
         <main class="ttr-wrapper">
-            
             <div class="container-fluid">
                 <div class="db-breadcrumb">
-              
+                    <h4 class="breadcrumb-title">Courses</h4>
                     <ul class="db-breadcrumb-list">
-                        <li><a href="index.jsp"><i class="fa fa-home"></i>Home</a></li>
-                        <li>Room List</li>
+                        <li><a href="#"><i class="fa fa-home"></i>Home</a></li>
+                        <li>Courses</li>
                     </ul>
                 </div>	
                 <div class="row">
@@ -93,12 +91,12 @@
                         <a href="jsp/create-roomtype.jsp" class="btn button-sm radius-xl" style="height: 40px; line-height: 40px; font-size: 15px; padding: 0 20px;">
                             Create New Type
                         </a>
-                        <form action="RoomListServlet" method="get" style="display: flex; gap: 10px; align-items: center;">
+                        <form action="AdminRoomServlet" method="get" style="display: flex; gap: 10px; align-items: center;">
                             <select name="price" class="form-select" style="height: 40px;">
                                 <option value="">-- Filter by Price --</option>
-                                <option value="1" ${selectedCapacity == '1' ? 'selected' : ''}>Under 500k</option>
-                                <option value="2" ${selectedCapacity == '1' ? 'selected' : ''}>500k - 1M</option>
-                                <option value="3" ${selectedCapacity == '1' ? 'selected' : ''}>Over 1M</option>
+                                <option value="1" ${selectedPrice == '1' ? 'selected' : ''}>Under 500k</option>
+                                <option value="2" ${selectedPrice == '2' ? 'selected' : ''}>500k - 1M</option>
+                                <option value="3" ${selectedPrice == '3' ? 'selected' : ''}>Over 1M</option>
                             </select>
 
                             <select name="capacity" class="form-select" style="height: 40px;">
@@ -118,7 +116,7 @@
                         </form>
                         <div class="widget courses-search-bx placeani">
                             <div class="form-group">
-                                <form action="RoomListServlet" method="get">
+                                <form action="AdminRoomServlet" method="get">
                                     <div class="input-group">
                                         <label style="margin: 0;">Search Rooms</label>
                                         <input name="keyword" type="text" value="${keyword}" class="form-control" style="height: 36px; padding: 5px 10px; font-size: 14px;">
@@ -206,7 +204,7 @@
                                                 </li>
                                                 <li class="card-courses-price">
                                                     <del>$190</del>
-                                                    <h5 class="text-primary">$<%= type.getBasePrice() %></h5>
+                                                    <h5 class="text-primary"><%= type.getBasePrice().stripTrailingZeros().toPlainString() %>₫/day</h5>
                                                 </li>
                                             </ul>
                                         </div>
@@ -247,8 +245,8 @@
                                                 </ul>
                                             </div>
                                             <div class="col-md-12">
-                                                <a href="#" class="btn green radius-xl outline">Approve</a>
-                                                <button type="button" onclick="submitDelete(<%= type.getId() %>, 'inactive');" class="btn red outline radius-xl">Cancel</button>
+                                                <a href="AdminRoomServlet?action=update&id=<%= type.getId() %>" class="btn green radius-xl outline">Update</a>
+                                                <button type="button" onclick="submitDelete(<%= type.getId() %>, 'inactive');" class="btn red outline radius-xl">Delete</button>
                                             </div>
                                         </div>
 
@@ -269,6 +267,20 @@
                     </div>
                     <!-- Your Profile Views Chart END-->
 
+                    
+                    <%! 
+                        public String buildQuery(HttpServletRequest request) throws java.io.UnsupportedEncodingException {
+                            StringBuilder sb = new StringBuilder("");
+                            String[] keys = {"keyword", "price", "capacity", "status"};
+                            for (String key : keys) {
+                                String value = request.getParameter(key);
+                                if (value != null && !value.trim().isEmpty()) {
+                                    sb.append("&").append(key).append("=").append(java.net.URLEncoder.encode(value, "UTF-8"));
+                                }
+                            }
+                            return sb.toString();
+                        }
+                    %>
                     <!--Phân trang START-->
                     <div class="col-lg-12 m-b20">
                         <div class="pagination-bx rounded-sm gray clearfix">
@@ -276,21 +288,21 @@
                                 <% if(currentPage == 1){ %>
                                 <li class="previous"><a href="#"><i class="ti-arrow-left"></i> Prev</a></li>
                                     <% } else { %>
-                                <li class="previous"><a href="RoomListServlet?page=<%= currentPage - 1 %>"><i class="ti-arrow-left"></i> Prev</a></li>
+                                <li class="previous"><a href="AdminRoomServlet?page=<%= currentPage - 1 %><%= buildQuery(request) %>"><i class="ti-arrow-left"></i> Prev</a></li>
                                     <% } %>
 
                                 <% for(int i = 1; i <= (Integer)request.getAttribute("totalPages"); i++) { 
                                                         if(i == currentPage) { %>
                                 <li class="active"><a href="#"><%= i %></a></li>
                                     <% } else { %>
-                                <li><a href="RoomListServlet?page=<%= i %>"><%= i %></a></li>
+                                <li><a href="AdminRoomServlet?page=<%= i %><%= buildQuery(request) %>"><%= i %></a></li>
                                     <% } 
                                                     } %>
 
                                 <% if(currentPage == totalPages){ %>
                                 <li class="next"><a href="#">Next <i class="ti-arrow-right"></i></a></li>
                                         <% } else { %>
-                                <li class="next"><a href="RoomListServlet?page=<%= currentPage + 1 %>">Next <i class="ti-arrow-right"></i></a></li>
+                                <li class="next"><a href="AdminRoomServlet?page=<%= currentPage + 1 %><%= buildQuery(request) %>">Next <i class="ti-arrow-right"></i></a></li>
                                         <% } %>
                             </ul>
                         </div>
@@ -333,6 +345,6 @@
         <script src="${pageContext.request.contextPath}/admin/assets/js/functions.js"></script>
         <script src="${pageContext.request.contextPath}/admin/assets/vendors/chart/chart.min.js"></script>
         <script src="${pageContext.request.contextPath}/admin/assets/js/admin.js"></script>
-    
+        <script src='${pageContext.request.contextPath}/admin/assets/vendors/switcher/switcher.js'></script>
     </body>
 </html>

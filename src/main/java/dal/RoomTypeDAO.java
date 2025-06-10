@@ -46,33 +46,8 @@ public class RoomTypeDAO {
         }
         return listRoom;
     }
-    
-     public List<RoomType> getAllRoomTypesActive() {
-        List<RoomType> listRoom = new ArrayList<>();
-        String sql = "SELECT * FROM RoomTypes WHERE status = 'active' ";
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
-            while (rs.next()) {
-                RoomType rtype = new RoomType();
-                rtype.setId(rs.getInt("Id"));
-                rtype.setName(rs.getString("Name"));
-                rtype.setDescription(rs.getString("Description"));
-                rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
-                rtype.setImageUrl(rs.getString("imageUrl"));
-                rtype.setCapacity(rs.getInt("Capacity"));
-                rtype.setStatus(rs.getString("Status"));
-                rtype.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                rtype.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
-
-                listRoom.add(rtype);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return listRoom;
-    }
-
+//Tìm kiếm
     public List<RoomType> searchRooms(String keyword) {
         List<RoomType> list = new ArrayList<>();
         String sql = "SELECT * FROM RoomTypes WHERE Name LIKE ? OR CAST(BasePrice AS VARCHAR) LIKE ? OR CAST(Capacity AS VARCHAR) LIKE ?";
@@ -135,12 +110,12 @@ public class RoomTypeDAO {
         return listRoom;
     }
 
-    public RoomType getRoomsById(String id) {
+    public RoomType getRoomTypesById(int id) {
         String sql = "SELECT * FROM RoomTypes WHERE id = ?";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, id);
+            ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
@@ -182,6 +157,7 @@ public class RoomTypeDAO {
         return list;
     }
 
+//Thêm, tạo
     public void insert(RoomType roomType) throws SQLException {
         String sql = "INSERT INTO RoomTypes (name, description, basePrice, imageUrl, capacity, status, createdAt, updatedAt) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -202,6 +178,7 @@ public class RoomTypeDAO {
 
     }
 
+//Sửa
     public void updateRoomTypeStatus(int id, String newStatus) {
         String sql = "UPDATE RoomTypes SET status = ? WHERE id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -212,7 +189,25 @@ public class RoomTypeDAO {
             e.printStackTrace();
         }
     }
-    
+
+    public void updateRoomType(RoomType roomType) {
+        String sql = "UPDATE RoomTypes SET name = ?, description = ?, basePrice = ?, imageUrl = ?, capacity = ?, status = ?, updatedAt = GETDATE() WHERE id = ?";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, roomType.getName());
+            ps.setString(2, roomType.getDescription());
+            ps.setBigDecimal(3, roomType.getBasePrice());
+            ps.setString(4, roomType.getImageUrl());
+            ps.setInt(5, roomType.getCapacity());
+            ps.setString(6, roomType.getStatus());
+            ps.setInt(7, roomType.getId());
+
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public List<Room> getRoomsByType(int roomTypeId) {
         List<Room> list = new ArrayList<>();
         String sql = "SELECT * FROM Rooms WHERE RoomTypeId = ?";
@@ -236,7 +231,7 @@ public class RoomTypeDAO {
         }
         return list;
     }
-    
+
     public List<Room> getAvailableRoomsByType(int roomTypeId) {
         List<Room> list = new ArrayList<>();
         String sql = "SELECT * FROM Rooms WHERE room_type_id = ? AND is_available = 1";
@@ -261,6 +256,7 @@ public class RoomTypeDAO {
         return list;
     }
 
+//Lọc
     public List<RoomType> filterRoomTypes(String priceRange, String capacityValue, String statusValue) {
         List<RoomType> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM RoomTypes WHERE 1=1");
@@ -268,7 +264,6 @@ public class RoomTypeDAO {
         // Danh sách parameter để set vào PreparedStatement
         List<Object> params = new ArrayList<>();
 
-        // Lọc theo price
         if (priceRange != null && !priceRange.isEmpty()) {
             switch (priceRange) {
                 case "1":
@@ -287,7 +282,6 @@ public class RoomTypeDAO {
             }
         }
 
-        // Lọc theo capacity
         if (capacityValue != null && !capacityValue.isEmpty()) {
             switch (capacityValue) {
                 case "1":
@@ -305,7 +299,6 @@ public class RoomTypeDAO {
             }
         }
 
-        // Lọc theo status
         if (statusValue != null && !statusValue.isEmpty()) {
             sql.append(" AND status = ?");
             params.add(statusValue);
