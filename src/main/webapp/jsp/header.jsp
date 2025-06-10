@@ -69,13 +69,13 @@
                                     <!-- Show different options based on role -->
                                     <c:choose>
                                         <c:when test="${sessionScope.user.role eq 'ADMIN'}">
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/admin/dashboard">
+                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/admin-dashboard">
                                                 <i class="fa fa-tachometer-alt"></i> Dashboard
                                             </a>
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/admin/customers">
-                                                <i class="fa fa-users"></i> Manage Customers
+                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/admin/users">
+                                                <i class="fa fa-users"></i> Manage Users
                                             </a>
-                                                <a class="dropdown-item" href="${pageContext.request.contextPath}/admin/housekeeping">
+                                                <a class="dropdown-item" href="${pageContext.request.contextPath}/HouseKeeping">
                                                 <i class="fa fa-users"></i> Manage Housekeeping
                                             </a>
                                                 
@@ -91,11 +91,11 @@
                                             <div class="dropdown-divider"></div>
                                         </c:when>
                                         <c:when test="${sessionScope.user.role eq 'HOUSEKEEPER'}">
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/admin/housekeeping?action=list">
+                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/housekeeper/tasks">
                                                 <i class="fa fa-tasks"></i> My Tasks
                                             </a>
                         
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/housekeeping/rooms">
+                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/housekeeper/task-detail">
                                                 <i class="fa fa-bed"></i> Room Status
                                             </a>
                                             <div class="dropdown-divider"></div>

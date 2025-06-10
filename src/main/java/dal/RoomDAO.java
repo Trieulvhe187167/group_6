@@ -423,4 +423,30 @@ public class RoomDAO {
         
         return room;
     }
+    
+       
+    // Get available rooms by room type
+    public List<Room> getAvailableRoomsByType(int roomTypeId) {
+        List<Room> rooms = new ArrayList<>();
+        String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, " +
+                    "rt.Capacity, rt.Description, rt.imageUrl " +
+                    "FROM Rooms r " +
+                    "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
+                    "WHERE r.RoomTypeId = ? AND r.Status = 'AVAILABLE' " +
+                    "ORDER BY r.RoomNumber";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, roomTypeId);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                rooms.add(mapResultSetToRoom(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return rooms;
+    }
 }

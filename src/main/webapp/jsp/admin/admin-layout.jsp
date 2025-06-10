@@ -48,8 +48,7 @@
         }
         
         .logo img {
-            height: 40px;
-            background: white;
+            height: 60px;
             padding: 5px;
             border-radius: 5px;
         }
@@ -182,7 +181,7 @@
                 <i class="fas fa-bars"></i>
             </button>
             <a href="${pageContext.request.contextPath}/admin-dashboard" class="logo">
-                <img src="${pageContext.request.contextPath}/assets/images/logo.png" alt="Logo">
+                <img src="${pageContext.request.contextPath}/assets/images/logo-white.png" alt="Logo">
                 <span class="logo-text">Luxury Hotel</span>
             </a>
         </div>

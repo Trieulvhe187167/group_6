@@ -466,7 +466,8 @@
                                         <div class="item">
                                             <div class="recent-news">
                                                 <div class="action-box">
-                                                    <c:choose>
+                                                    
+                                                    <%--  <c:choose>
                                                         <c:when test="${not empty blog.imageUrl}">
                                                             <img src="${pageContext.request.contextPath}/assets/images/blog/${blog.imageUrl}" 
                                                                  alt="${blog.title}" />
@@ -475,7 +476,8 @@
                                                             <img src="${pageContext.request.contextPath}/assets/images/blog/default-blog.jpg" 
                                                                  alt="${blog.title}" />
                                                         </c:otherwise>
-                                                    </c:choose>
+                                                    </c:choose> --%>
+                                                    
                                                 </div>
                                                 <div class="info-bx">
                                                     <ul class="media-post">

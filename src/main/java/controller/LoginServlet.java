@@ -34,7 +34,7 @@ public class LoginServlet extends HttpServlet {
                     response.sendRedirect("reception-dashboard.jsp");
                     break;
                 case "HOUSEKEEPER":
-                    response.sendRedirect("housekeeping.jsp");
+                    response.sendRedirect("/housekeeper-dashboard");
                     break;
                 case "GUEST":
                     response.sendRedirect("/index.jsp");
