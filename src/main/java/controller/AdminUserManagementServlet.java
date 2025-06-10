@@ -117,7 +117,7 @@ public class AdminUserManagementServlet extends HttpServlet {
         }
         
         // Default values
-        if (roleFilter == null || roleFilter.isEmpty()) roleFilter = "All";
+        if (roleFilter == null || roleFilter.isEmpty()) roleFilter = "ALL";
         if (searchKeyword == null) searchKeyword = "";
         if (sortBy == null) sortBy = "createdAt";
         
