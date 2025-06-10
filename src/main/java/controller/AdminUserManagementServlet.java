@@ -92,7 +92,7 @@ public class AdminUserManagementServlet extends HttpServlet {
                     response.sendRedirect("users");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace( );
             request.setAttribute("error", "An error occurred: " + e.getMessage());
             showUserForm(request, response);
         }
@@ -125,7 +125,7 @@ public class AdminUserManagementServlet extends HttpServlet {
         int totalRecords;
         
         // Get users based on filters
-        if (!searchKeyword.isEmpty()) {
+        if (!searchKeyword.isEmpty())  {   
             if ("ALL".equals(roleFilter)) {
                 // Search all users - pass "ALL" as role parameter
                 users = userDAO.searchUsersByRolePaginated(searchKeyword, "ALL", page, RECORDS_PER_PAGE);
