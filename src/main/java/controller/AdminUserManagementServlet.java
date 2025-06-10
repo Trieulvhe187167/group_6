@@ -73,7 +73,7 @@ public class AdminUserManagementServlet extends HttpServlet {
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
         if (currentUser == null || !"ADMIN".equals(currentUser.getRole())) {
-              response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
             return;
         }
         
