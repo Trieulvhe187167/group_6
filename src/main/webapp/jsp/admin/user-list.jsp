@@ -11,28 +11,6 @@
         </ol>
     </nav>
     
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">${isTrashView ? 'Deleted Users' : 'User Management'}</h1>
-        <div>
-            <c:if test="${!isTrashView}">
-                <a href="${pageContext.request.contextPath}/admin/users?action=trash" class="btn btn-secondary">
-                    <i class="fas fa-trash"></i> View Trash
-                </a>
-            </c:if>
-            <c:if test="${isTrashView}">
-                <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-primary">
-                    <i class="fas fa-arrow-left"></i> Back to Users
-                </a>
-            </c:if>
-            <c:if test="${!isTrashView}">
-                <a href="${pageContext.request.contextPath}/admin/users?action=form" class="btn btn-success">
-                    <i class="fas fa-plus"></i> Add New User
-                </a>
-            </c:if>
-        </div>
-    </div>
-    
     <!-- Alert Messages -->
     <c:if test="${not empty sessionScope.success}">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -66,39 +44,58 @@
     <!-- Filters and Search -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="get" action="${pageContext.request.contextPath}/admin/users" class="form-inline">
-                <c:if test="${isTrashView}">
-                    <input type="hidden" name="action" value="trash">
-                </c:if>
-                
-                <!-- Role Filter -->
-                <div class="form-group mr-3">
-                    <label class="mr-2">Role:</label>
-                    <select name="role" class="form-control" onchange="this.form.submit()">
-                        <option value="ALL" ${roleFilter == 'ALL' ? 'selected' : ''}>All Roles</option>
-                        <option value="ADMIN" ${roleFilter == 'ADMIN' ? 'selected' : ''}>Admin</option>
-                        <option value="RECEPTIONIST" ${roleFilter == 'RECEPTIONIST' ? 'selected' : ''}>Receptionist</option>
-                        <option value="HOUSEKEEPER" ${roleFilter == 'HOUSEKEEPER' ? 'selected' : ''}>Housekeeper</option>
-                        <option value="GUEST" ${roleFilter == 'GUEST' ? 'selected' : ''}>Guest</option>
-                    </select>
-                </div>
-                
-                <!-- Search -->
-                <c:if test="${!isTrashView}">
+            <form method="get" action="${pageContext.request.contextPath}/admin/users" class="form-inline" style="width:100%; display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; width:100%;">
+                    <c:if test="${isTrashView}">
+                        <input type="hidden" name="action" value="trash">
+                    </c:if>
+                    
+                    <!-- Role Filter -->
                     <div class="form-group mr-3">
-                        <label class="mr-2">Search:</label>
-                        <input type="text" name="search" class="form-control" 
-                               placeholder="Name, email, phone..." value="${searchKeyword}">
+                        <label class="mr-2">Role:</label>
+                        <select name="role" class="form-control" onchange="this.form.submit()">
+                            <option value="ALL" ${roleFilter == 'ALL' ? 'selected' : ''}>All Roles</option>
+                            <option value="ADMIN" ${roleFilter == 'ADMIN' ? 'selected' : ''}>Admin</option>
+                            <option value="RECEPTIONIST" ${roleFilter == 'RECEPTIONIST' ? 'selected' : ''}>Receptionist</option>
+                            <option value="HOUSEKEEPER" ${roleFilter == 'HOUSEKEEPER' ? 'selected' : ''}>Housekeeper</option>
+                            <option value="GUEST" ${roleFilter == 'GUEST' ? 'selected' : ''}>Guest</option>
+                        </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Search
-                    </button>
-                    <c:if test="${not empty searchKeyword}">
-                        <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-secondary ml-2">
-                            <i class="fas fa-times"></i> Clear
+                    
+                    <!-- Search -->
+                    <c:if test="${!isTrashView}">
+                        <div class="form-group mr-3">
+                            <label class="mr-2">Search:</label>
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Name, email, phone..." value="${searchKeyword}">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <c:if test="${not empty searchKeyword}">
+                            <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-secondary ml-2">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        </c:if>
+                    </c:if>
+                    
+                    <!-- Các nút thao tác -->
+                    <c:if test="${!isTrashView}">
+                        <a href="${pageContext.request.contextPath}/admin/users?action=trash" class="btn btn-secondary">
+                            <i class="fas fa-trash"></i> View Trash
                         </a>
                     </c:if>
-                </c:if>
+                    <c:if test="${isTrashView}">
+                        <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i> Back to Users
+                        </a>
+                    </c:if>
+                    <c:if test="${!isTrashView}">
+                        <a href="${pageContext.request.contextPath}/admin/users?action=form" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Add New User
+                        </a>
+                    </c:if>
+                </div>
             </form>
         </div>
     </div>
@@ -154,20 +151,22 @@
                                 </td>
                                 <td>
                                     <c:if test="${!isTrashView}">
-                                        <a href="${pageContext.request.contextPath}/admin/users?action=view&id=${user.id}" 
-                                           class="btn btn-sm btn-info" title="View">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="${pageContext.request.contextPath}/admin/users?action=form&id=${user.id}" 
-                                           class="btn btn-sm btn-warning" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <c:if test="${user.id != sessionScope.user.id}">
-                                            <button onclick="confirmDelete(${user.id}, '${user.fullName}')" 
-                                                    class="btn btn-sm btn-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </c:if>
+                                        <div class="btn-group" role="group">
+                                            <a href="${pageContext.request.contextPath}/admin/users?action=view&id=${user.id}" 
+                                               class="btn btn-sm btn-info" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="${pageContext.request.contextPath}/admin/users?action=form&id=${user.id}" 
+                                               class="btn btn-sm btn-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <c:if test="${user.id != sessionScope.user.id}">
+                                                <button onclick="confirmDelete(${user.id}, '${user.fullName}')" 
+                                                        class="btn btn-sm btn-danger" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </c:if>
+                                        </div>
                                     </c:if>
                                     <c:if test="${isTrashView}">
                                         <button onclick="confirmRestore(${user.id}, '${user.fullName}')" 

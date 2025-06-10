@@ -10,17 +10,8 @@
             <li class="breadcrumb-item active">Housekeeping Tasks</li>
         </ol>
     </nav>
-    
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">Housekeeping Tasks</h1>
-        <c:if test="${currentUser.role == 'ADMIN' || currentUser.role == 'RECEPTIONIST'}">
-            <a href="${pageContext.request.contextPath}/HouseKeeping?action=form" class="btn btn-success">
-                <i class="fas fa-plus"></i> Create Task
-            </a>
-        </c:if>
-    </div>
-    
+
+
     <!-- Alert Messages -->
     <c:if test="${not empty sessionScope.success}">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -31,7 +22,7 @@
         </div>
         <c:remove var="success" scope="session"/>
     </c:if>
-    
+
     <c:if test="${not empty sessionScope.error}">
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             ${sessionScope.error}
@@ -41,7 +32,7 @@
         </div>
         <c:remove var="error" scope="session"/>
     </c:if>
-    
+
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-4">
@@ -84,39 +75,57 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Filter Form -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" action="${pageContext.request.contextPath}/HouseKeeping" class="form-inline">
-                <div class="form-group mr-3">
-                    <label class="mr-2">Search:</label>
-                    <input type="text" name="search" value="${search}" 
-                           placeholder="Room number, notes..." class="form-control">
-                </div>
-                
-                <div class="form-group mr-3">
-                    <label class="mr-2">Status:</label>
-                    <select name="status" class="form-control">
-                        <option value="ALL" ${status == 'ALL' ? 'selected' : ''}>All Status</option>
-                        <option value="PENDING" ${status == 'PENDING' ? 'selected' : ''}>Pending</option>
-                        <option value="IN_PROGRESS" ${status == 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
-                        <option value="DONE" ${status == 'DONE' ? 'selected' : ''}>Completed</option>
-                    </select>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-filter"></i> Filter
-                </button>
-                <c:if test="${not empty search || status != 'ALL'}">
-                    <a href="${pageContext.request.contextPath}/HouseKeeping" class="btn btn-secondary ml-2">
-                        <i class="fas fa-times"></i> Clear
-                    </a>
-                </c:if>
-            </form>
-        </div>
+ <!-- Filter Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <!-- form-inline => display:flex -->
+        <form method="get"
+              action="${pageContext.request.contextPath}/HouseKeeping"
+              class="form-inline w-100">
+
+            <!-- CỤM TÌM & LỌC (bên trái) -->
+            <div class="form-group mr-3">
+                <label class="mr-2">Search:</label>
+                <input type="text" name="search" value="${search}"
+                       placeholder="Room number, notes..." class="form-control">
+            </div>
+
+            <div class="form-group mr-3">
+                <label class="mr-2">Status:</label>
+                <select name="status" class="form-control">
+                    <option value="ALL"        ${status == 'ALL'        ? 'selected' : ''}>All Status</option>
+                    <option value="PENDING"    ${status == 'PENDING'    ? 'selected' : ''}>Pending</option>
+                    <option value="IN_PROGRESS"${status == 'IN_PROGRESS'? 'selected' : ''}>In Progress</option>
+                    <option value="DONE"       ${status == 'DONE'       ? 'selected' : ''}>Completed</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-filter"></i> Filter
+            </button>
+
+            <c:if test="${not empty search || status != 'ALL'}">
+                <a href="${pageContext.request.contextPath}/HouseKeeping"
+                   class="btn btn-secondary ml-2">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </c:if>
+
+            <!-- NÚT TẠO MỚI (bên phải) -->
+            <c:if test="${currentUser.role == 'ADMIN' || currentUser.role == 'RECEPTIONIST'}">
+                <!-- ml-auto đẩy phần tử này sát mép phải -->
+                <a href="${pageContext.request.contextPath}/HouseKeeping?action=form"
+                   class="btn btn-success ml-auto">
+                    <i class="fas fa-plus"></i> Create Task
+                </a>
+            </c:if>
+        </form>
     </div>
-    
+</div>
+
+
     <!-- Tasks Table -->
     <div class="table-container">
         <c:choose>
@@ -189,13 +198,13 @@
                                            class="btn btn-sm btn-info" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        
+
                                         <c:if test="${currentUser.role == 'ADMIN' || currentUser.role == 'RECEPTIONIST'}">
                                             <a href="${pageContext.request.contextPath}/HouseKeeping?action=form&id=${task.id}" 
                                                class="btn btn-sm btn-warning" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            
+
                                             <c:if test="${task.assignedTo == 0}">
                                                 <button onclick="showAssignModal(${task.id}, '${task.roomNumber}')" 
                                                         class="btn btn-sm btn-primary" title="Assign">
@@ -203,7 +212,7 @@
                                                 </button>
                                             </c:if>
                                         </c:if>
-                                        
+
                                         <!-- Quick status update for assigned housekeeper or admin -->
                                         <c:if test="${task.status != 'DONE' && (currentUser.id == task.assignedTo || currentUser.role == 'ADMIN')}">
                                             <div class="btn-group" role="group">
@@ -227,7 +236,7 @@
                                                 </div>
                                             </div>
                                         </c:if>
-                                        
+
                                         <c:if test="${currentUser.role == 'ADMIN'}">
                                             <button onclick="confirmDelete(${task.id})" 
                                                     class="btn btn-sm btn-danger" title="Delete">
@@ -254,7 +263,7 @@
             </c:otherwise>
         </c:choose>
     </div>
-    
+
     <!-- Pagination -->
     <c:if test="${totalPages > 1}">
         <nav aria-label="Page navigation" class="mt-4">
@@ -264,7 +273,7 @@
                         Previous
                     </a>
                 </li>
-                
+
                 <c:forEach begin="1" end="${totalPages}" var="i">
                     <c:if test="${i == 1 || i == totalPages || (i >= currentPage - 2 && i <= currentPage + 2)}">
                         <li class="page-item ${i == currentPage ? 'active' : ''}">
@@ -279,7 +288,7 @@
                         </li>
                     </c:if>
                 </c:forEach>
-                
+
                 <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
                     <a class="page-link" href="?page=${currentPage + 1}&status=${status}&search=${search}">
                         Next
@@ -287,7 +296,7 @@
                 </li>
             </ul>
         </nav>
-        
+
         <div class="text-center text-muted">
             <small>
                 Showing ${(currentPage - 1) * 5 + 1} - 
@@ -305,7 +314,7 @@
             <form method="post" action="${pageContext.request.contextPath}/HouseKeeping">
                 <input type="hidden" name="action" value="assign">
                 <input type="hidden" name="taskId" id="assignTaskId">
-                
+
                 <div class="modal-header">
                     <h5 class="modal-title">Assign Task</h5>
                     <button type="button" class="close" data-dismiss="modal">
@@ -365,22 +374,22 @@
 </form>
 
 <script>
-function showAssignModal(taskId, roomNumber) {
-    document.getElementById('assignTaskId').value = taskId;
-    document.getElementById('assignRoomNumber').textContent = roomNumber;
-    $('#assignModal').modal('show');
-}
-
-function confirmDelete(taskId) {
-    document.getElementById('deleteTaskId').value = taskId;
-    $('#deleteModal').modal('show');
-}
-
-function updateStatus(taskId, newStatus) {
-    if (confirm('Are you sure you want to update the task status?')) {
-        document.getElementById('statusTaskId').value = taskId;
-        document.getElementById('statusValue').value = newStatus;
-        document.getElementById('statusUpdateForm').submit();
+    function showAssignModal(taskId, roomNumber) {
+        document.getElementById('assignTaskId').value = taskId;
+        document.getElementById('assignRoomNumber').textContent = roomNumber;
+        $('#assignModal').modal('show');
     }
-}
+
+    function confirmDelete(taskId) {
+        document.getElementById('deleteTaskId').value = taskId;
+        $('#deleteModal').modal('show');
+    }
+
+    function updateStatus(taskId, newStatus) {
+        if (confirm('Are you sure you want to update the task status?')) {
+            document.getElementById('statusTaskId').value = taskId;
+            document.getElementById('statusValue').value = newStatus;
+            document.getElementById('statusUpdateForm').submit();
+        }
+    }
 </script>
