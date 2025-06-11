@@ -33,7 +33,7 @@ public class AdminUserManagementServlet extends HttpServlet {
         }
         
         String action = request.getParameter("action");
-        if (action == null) action = "list";
+        if (action == null) action  = "list";
         
         try {
             switch (action) {
