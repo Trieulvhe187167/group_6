@@ -67,7 +67,7 @@ public class AdminUserManagementServlet extends HttpServlet {
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException,   IOException {
+            throws ServletException, IOException {
         
         // Check admin authorization
         HttpSession session = request.getSession();
