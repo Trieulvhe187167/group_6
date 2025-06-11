@@ -15,8 +15,8 @@ public class RoomType {
     private int id;
     private String name;
     private String description;
-    private String imageUrl;
     private BigDecimal basePrice;
+    private String imageUrl;
     private int capacity;
     private String status;
     private Date createdAt;
@@ -25,20 +25,20 @@ public class RoomType {
     public RoomType() {
     }
 
-    public RoomType(String name, String description, String imageUrl, BigDecimal basePrice, int capacity) {
+    public RoomType(String name, String description, BigDecimal basePrice, String imageUrl, int capacity) {
         this.name = name;
         this.description = description;
-        this.imageUrl = imageUrl;
         this.basePrice = basePrice;
+        this.imageUrl = imageUrl;
         this.capacity = capacity;
     }
 
-    public RoomType(int id, String name, String description, String imageUrl, BigDecimal basePrice, int capacity, String status, Date createdAt, Date updatedAt) {
+    public RoomType(int id, String name, String description, BigDecimal basePrice, String imageUrl, int capacity, String status, Date createdAt, Date updatedAt) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.imageUrl = imageUrl;
         this.basePrice = basePrice;
+        this.imageUrl = imageUrl;
         this.capacity = capacity;
         this.status = status;
         this.createdAt = createdAt;

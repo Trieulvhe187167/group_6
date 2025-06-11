@@ -73,7 +73,7 @@
                                 <div class="custom-control custom-checkbox">
                                   
                                 </div>
-                                <a href="jsp/forgot-password.jsp" class="ml-auto">Forgot Password?</a>
+                                <a href="jsp/forgotPassword.jsp" class="ml-auto">Forgot Password?</a>
                             </div>
                         </div>
                         <div class="col-lg-12 m-b30">

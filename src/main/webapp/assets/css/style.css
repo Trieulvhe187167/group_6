@@ -3460,3 +3460,13 @@ img[alt="Our Story"] {
   width: 100%;
 }
 
+.upcoming-event-carousel .event-bx .action-box {
+    height: 250px !important;
+    overflow: hidden !important;
+}
+
+.upcoming-event-carousel .event-bx .action-box img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}

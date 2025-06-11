@@ -6,6 +6,10 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ page import="model.RoomType" %>
+<%@ page import="model.Room" %>
+<%@ page import="dal.RoomTypeDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Arrays" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -64,7 +68,11 @@
             <!-- header END ==== -->
 
 
-            <% RoomType roomTypes = (RoomType) request.getAttribute("roomTypes"); 
+            <%
+                RoomTypeDAO dao = new RoomTypeDAO();
+                String idStr = (String) request.getAttribute("id");
+                int id = Integer.parseInt(idStr);
+                RoomType roomTypes = (RoomType) request.getAttribute("roomTypes"); 
                 String description = roomTypes.getDescription();
                 String features[] = description.split(",");
                 String firstFeature = "";
@@ -206,71 +214,27 @@
                                         </div>
                                     </div>
                                     <div class="m-b30" id="curriculum">
-                                        <h4>Curriculum</h4>
+                                        <h4>Room List</h4>
                                         <ul class="curriculum-list">
                                             <li>
                                                 <h5>First Level</h5>
                                                 <ul>
+                                                    <%
+                                                        List<Room> roomList = dao.getRoomsByType(id);
+                                                        for(int x = 0; x < roomList.size(); x++){ 
+                                                    %>
                                                     <li>
                                                         <div class="curriculum-list-box">
-                                                            <span>Lesson 1.</span> Introduction to UI Design
+                                                            <span>ID of Room: <%=  roomList.get(x).getId() %></span>  - Room Number: <%=  roomList.get(x).getRoomNumber() %>
                                                         </div>
-                                                        <span>120 minutes</span>
+                                                        <span>Room Status: <%=  roomList.get(x).getStatus() %></span>
                                                     </li>
-                                                    <li>
-                                                        <div class="curriculum-list-box">
-                                                            <span>Lesson 2.</span> User Research and Design
-                                                        </div>
-                                                        <span>60 minutes</span>
-                                                    </li>
-                                                    <li>
-                                                        <div class="curriculum-list-box">
-                                                            <span>Lesson 3.</span> Evaluating User Interfaces Part 1
-                                                        </div>
-                                                        <span>85 minutes</span>
-                                                    </li>
+                                                    <%
+                                                        }
+                                                    %>
                                                 </ul>
                                             </li>
-                                            <li>
-                                                <h5>Second Level</h5>
-                                                <ul>
-                                                    <li>
-                                                        <div class="curriculum-list-box">
-                                                            <span>Lesson 1.</span> Prototyping and Design
-                                                        </div>
-                                                        <span>110 minutes</span>
-                                                    </li>
-                                                    <li>
-                                                        <div class="curriculum-list-box">
-                                                            <span>Lesson 2.</span> UI Design Capstone
-                                                        </div>
-                                                        <span>120 minutes</span>
-                                                    </li>
-                                                    <li>
-                                                        <div class="curriculum-list-box">
-                                                            <span>Lesson 3.</span> Evaluating User Interfaces Part 2
-                                                        </div>
-                                                        <span>120 minutes</span>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                            <li>
-                                                <h5>Final</h5>
-                                                <ul>
-                                                    <li>
-                                                        <div class="curriculum-list-box">
-                                                            <span>Part 1.</span> Final Test
-                                                        </div>
-                                                        <span>120 minutes</span>
-                                                    </li>
-                                                    <li>
-                                                        <div class="curriculum-list-box">
-                                                            <span>Part 2.</span> Online Test
-                                                        </div>
-                                                        <span>120 minutes</span>
-                                                    </li>
-                                                </ul>
-                                            </li>
+                                            
                                         </ul>
                                     </div>
                                     <div class="" id="instructor">
@@ -427,6 +391,6 @@
         <script src="${pageContext.request.contextPath}/assets/js/jquery.scroller.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
-  
+        <script src="${pageContext.request.contextPath}/assets/vendors/switcher/switcher.js"></script>
     </body>
 </html>
