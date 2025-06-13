@@ -60,7 +60,7 @@
             <h4 class="mb-3">Quick Actions</h4>
         </div>
         <div class="col-lg-3 col-md-6">
-            <a href="${pageContext.request.contextPath}/receptionist/quick-booking" class="quick-action-card">
+            <a href="${pageContext.request.contextPath}/receptionist/booking" class="quick-action-card">
                 <div class="quick-action-icon text-primary">
                     <i class="fas fa-plus-circle"></i>
                 </div>

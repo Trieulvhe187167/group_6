@@ -237,6 +237,10 @@
                class="nav-item ${activePage == 'dashboard' ? 'active' : ''}">
                 <i class="fas fa-tachometer-alt"></i> Dashboard
             </a>
+                 <a href="${pageContext.request.contextPath}/receptionist/booking" 
+               class="nav-item ${activePage == 'booking' ? 'active' : ''}">
+                <i class="fas fa-calendar-check"></i> Booking
+            </a>
             <a href="${pageContext.request.contextPath}/receptionist/reservations" 
                class="nav-item ${activePage == 'reservations' ? 'active' : ''}">
                 <i class="fas fa-calendar-check"></i> Reservations
