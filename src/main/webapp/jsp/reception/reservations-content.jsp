@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
@@ -21,7 +21,7 @@
             </button>
         </div>
     </div>
-    
+
     <!-- Filter Section -->
     <div class="table-container mb-4">
         <h5 class="mb-3">Filter Reservations</h5>
@@ -31,32 +31,32 @@
                     <label>Status</label>
                     <select class="form-control" name="status" id="statusFilter">
                         <option value="">All Status</option>
-                        <option value="PENDING" ${param.status == 'PENDING' ? 'selected' : ''}>Pending</option>
-                        <option value="CONFIRMED" ${param.status == 'CONFIRMED' ? 'selected' : ''}>Confirmed</option>
-                        <option value="CANCELLED" ${param.status == 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
-                        <option value="COMPLETED" ${param.status == 'COMPLETED' ? 'selected' : ''}>Completed</option>
+                        <option value="PENDING" ${filterStatus == 'PENDING' ? 'selected' : ''}>Pending</option>
+                        <option value="CONFIRMED" ${filterStatus == 'CONFIRMED' ? 'selected' : ''}>Confirmed</option>
+                        <option value="CANCELLED" ${filterStatus == 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                        <option value="COMPLETED" ${filterStatus == 'COMPLETED' ? 'selected' : ''}>Completed</option>
                     </select>
                 </div>
             </div>
             <div class="col-md-2">
                 <div class="form-group">
                     <label>Check-in Date</label>
-                    <input type="date" class="form-control" name="checkInDate" id="checkInDate" 
-                           value="${param.checkInDate}">
+                    <input type="date" class="form-control" name="checkInDate" id="checkInDate"
+                           value="${filterCheckInDate != null ? filterCheckInDate : ''}" />
                 </div>
             </div>
             <div class="col-md-2">
                 <div class="form-group">
                     <label>Check-out Date</label>
-                    <input type="date" class="form-control" name="checkOutDate" id="checkOutDate" 
-                           value="${param.checkOutDate}">
+                    <input type="date" class="form-control" name="checkOutDate" id="checkOutDate"
+                           value="${filterCheckOutDate != null ? filterCheckOutDate : ''}" />
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="form-group">
                     <label>Search</label>
                     <input type="text" class="form-control" name="search" id="searchInput" 
-                           placeholder="Guest name, room, booking ID..." value="${param.search}">
+                           placeholder="Guest name, room, booking ID..." value="${filterSearch != null ? filterSearch : ''}">
                 </div>
             </div>
             <div class="col-md-3">
@@ -74,39 +74,39 @@
             </div>
         </form>
     </div>
-    
+
     <!-- Quick Stats -->
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="stat-card">
                 <i class="fas fa-calendar-plus stat-icon text-info"></i>
-                <div class="stat-number">${totalReservations}</div>
+                <div class="stat-number">${totalReservations != null ? totalReservations : 0}</div>
                 <div class="stat-label">Total Reservations</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card">
                 <i class="fas fa-clock stat-icon text-warning"></i>
-                <div class="stat-number">${pendingReservations}</div>
+                <div class="stat-number">${pendingReservations != null ? pendingReservations : 0}</div>
                 <div class="stat-label">Pending</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card">
                 <i class="fas fa-check-circle stat-icon text-success"></i>
-                <div class="stat-number">${confirmedReservations}</div>
+                <div class="stat-number">${confirmedReservations != null ? confirmedReservations : 0}</div>
                 <div class="stat-label">Confirmed</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card">
                 <i class="fas fa-sign-in-alt stat-icon text-primary"></i>
-                <div class="stat-number">${todayCheckIns}</div>
+                <div class="stat-number">${todayCheckIns != null ? todayCheckIns : 0}</div>
                 <div class="stat-label">Today's Check-ins</div>
             </div>
         </div>
     </div>
-    
+
     <!-- Reservations Table -->
     <div class="table-container">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -115,7 +115,7 @@
                 Showing ${not empty reservations ? reservations.size() : 0} reservations
             </small>
         </div>
-        
+
         <div class="table-responsive">
             <table class="table table-hover" id="reservationsTable">
                 <thead>
@@ -163,9 +163,7 @@
                                         </small>
                                     </td>
                                     <td>
-                                        <c:set var="checkInTime" value="${reservation.checkIn.time}" />
-                                        <c:set var="checkOutTime" value="${reservation.checkOut.time}" />
-                                        <c:set var="nights" value="${(checkOutTime - checkInTime) / (1000 * 60 * 60 * 24)}" />
+                                        <fmt:parseNumber var="nights" value="${(reservation.checkOut.time - reservation.checkIn.time) / (1000 * 60 * 60 * 24)}" integerOnly="true"/>
                                         <span class="badge badge-secondary">${nights} nights</span>
                                     </td>
                                     <td>
@@ -276,7 +274,7 @@
                                     </c:forEach>
                                 </select>
                             </div>
-                            
+
                             <!-- New Guest Fields (hidden by default) -->
                             <div id="newGuestFields" style="display: none;">
                                 <div class="form-group">
@@ -296,7 +294,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Check-in Date <span class="text-danger">*</span></label>
@@ -325,7 +323,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -342,7 +340,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="alert alert-info">
                         <div class="row">
                             <div class="col-md-6">
@@ -399,7 +397,7 @@
             <form id="editReservationForm">
                 <div class="modal-body">
                     <input type="hidden" id="editReservationId">
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -422,7 +420,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -442,12 +440,12 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>Special Requests</label>
                         <textarea class="form-control" id="editSpecialRequests" rows="3"></textarea>
                     </div>
-                    
+
                     <div class="alert alert-info">
                         <div class="row">
                             <div class="col-md-6">
@@ -469,398 +467,450 @@
 </div>
 
 <script>
-$(document).ready(function() {
-    // Guest select change
-    $('#guestSelect').change(function() {
-        if ($(this).val() === 'new') {
-            $('#newGuestFields').show();
-            $('#guestName, #guestPhone').attr('required', true);
-        } else {
-            $('#newGuestFields').hide();
-            $('#guestName, #guestPhone').attr('required', false);
-        }
-    });
-    
-    // Room type change - load available rooms
-    $('#roomTypeSelect').change(function() {
-        const roomTypeId = $(this).val();
-        if (roomTypeId) {
-            loadAvailableRooms(roomTypeId);
-            calculateTotal();
-        }
-    });
-    
-    // Date change - recalculate total
-    $('#newCheckIn, #newCheckOut, #editCheckIn, #editCheckOut').change(function() {
-        calculateTotal();
-    });
-    
-    // Form submissions
-    $('#newReservationForm').submit(function(e) {
-        e.preventDefault();
-        createReservation();
-    });
-    
-    $('#editReservationForm').submit(function(e) {
-        e.preventDefault();
-        updateReservation();
-    });
-    
-    $('#filterForm').submit(function(e) {
-        e.preventDefault();
-        filterReservations();
-    });
-    
-    // Set minimum date to today
-    const today = new Date().toISOString().split('T')[0];
-    $('#newCheckIn, #editCheckIn').attr('min', today);
-});
-
-function loadAvailableRooms(roomTypeId) {
-    const checkIn = $('#newCheckIn').val();
-    const checkOut = $('#newCheckOut').val();
-    
-    if (!checkIn || !checkOut) {
-        $('#roomSelect').prop('disabled', true).html('<option value="">Select dates first</option>');
-        return;
-    }
-    
-    $.ajax({
-        url: '${pageContext.request.contextPath}/receptionist/reservations',
-        type: 'POST',
-        data: {
-            action: 'getAvailableRooms',
-            roomTypeId: roomTypeId,
-            checkIn: checkIn,
-            checkOut: checkOut
-        },
-        success: function(rooms) {
-            $('#roomSelect').prop('disabled', false).empty();
-            $('#roomSelect').append('<option value="">Select a room</option>');
-            rooms.forEach(room => {
-                $('#roomSelect').append(`<option value="${room.id}">Room ${room.roomNumber}</option>`);
-            });
-        },
-        error: function() {
-            alert('Error loading available rooms');
-        }
-    });
-}
-
-function calculateTotal() {
-    // For new reservation
-    const checkIn = new Date($('#newCheckIn').val());
-    const checkOut = new Date($('#newCheckOut').val());
-    const roomType = $('#roomTypeSelect option:selected');
-    
-    if (checkIn && checkOut && roomType.val() && checkOut > checkIn) {
-        const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-        const pricePerNight = parseFloat(roomType.data('price')) || 0;
-        const total = nights * pricePerNight;
-        
-        $('#nightsDisplay').text(nights);
-        $('#totalAmountDisplay').text(formatCurrency(total));
-    } else {
-        $('#nightsDisplay').text('0');
-        $('#totalAmountDisplay').text('0₫');
-    }
-    
-    // For edit reservation
-    const editCheckIn = new Date($('#editCheckIn').val());
-    const editCheckOut = new Date($('#editCheckOut').val());
-    
-    if (editCheckIn && editCheckOut && editCheckOut > editCheckIn) {
-        const editNights = Math.ceil((editCheckOut - editCheckIn) / (1000 * 60 * 60 * 24));
-        $('#editNightsDisplay').text(editNights);
-        // You can add price calculation for edit modal if needed
-    }
-}
-
-function createReservation() {
-    const formData = {
-        guestId: $('#guestSelect').val() !== 'new' ? $('#guestSelect').val() : null,
-        newGuest: $('#guestSelect').val() === 'new' ? {
-            fullName: $('#guestName').val(),
-            email: $('#guestEmail').val(),
-            phone: $('#guestPhone').val()
-        } : null,
-        roomId: $('#roomSelect').val(),
-        checkIn: $('#newCheckIn').val(),
-        checkOut: $('#newCheckOut').val(),
-        numberOfGuests: $('#numberOfGuests').val(),
-        specialRequests: $('#specialRequests').val()
-    };
-    
-    if (!formData.roomId) {
-        alert('Please select a room');
-        return;
-    }
-    
-    $.ajax({
-        url: '${pageContext.request.contextPath}/receptionist/reservations',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            action: 'createReservation',
-            ...formData
-        }),
-        success: function(response) {
-            if (response.success) {
-                alert('Reservation created successfully!');
-                $('#newReservationModal').modal('hide');
-                location.reload();
+    $(document).ready(function () {
+        // Guest select change
+        $('#guestSelect').change(function () {
+            if ($(this).val() === 'new') {
+                $('#newGuestFields').show();
+                $('#guestName, #guestPhone').attr('required', true);
             } else {
-                alert('Error creating reservation: ' + (response.message || 'Unknown error'));
+                $('#newGuestFields').hide();
+                $('#guestName, #guestPhone').attr('required', false);
             }
-        },
-        error: function() {
-            alert('Error creating reservation. Please try again.');
-        }
+        });
+
+        // Room type change - load available rooms
+        $('#roomTypeSelect').change(function () {
+            const roomTypeId = $(this).val();
+            if (roomTypeId) {
+                loadAvailableRooms(roomTypeId);
+                calculateTotal();
+            }
+        });
+
+        // Date change - recalculate total
+        $('#newCheckIn, #newCheckOut, #editCheckIn, #editCheckOut').change(function () {
+            calculateTotal();
+        });
+
+        // Form submissions
+        $('#newReservationForm').submit(function (e) {
+            e.preventDefault();
+            createReservation();
+        });
+
+        $('#editReservationForm').submit(function (e) {
+            e.preventDefault();
+            updateReservation();
+        });
+
+        $('#filterForm').submit(function (e) {
+            e.preventDefault();
+            filterReservations();
+        });
+
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        $('#newCheckIn, #editCheckIn').attr('min', today);
     });
-}
 
-function confirmReservation(id) {
-    if (confirm('Are you sure you want to confirm this reservation?')) {
+    function loadAvailableRooms(roomTypeId) {
+        const checkIn = $('#newCheckIn').val();
+        const checkOut = $('#newCheckOut').val();
+
+        if (!checkIn || !checkOut) {
+            $('#roomSelect').prop('disabled', true).html('<option value="">Select dates first</option>');
+            return;
+        }
+
         $.ajax({
             url: '${pageContext.request.contextPath}/receptionist/reservations',
             type: 'POST',
             data: {
-                action: 'confirmReservation',
-                reservationId: id
+                action: 'getAvailableRooms',
+                roomTypeId: roomTypeId,
+                checkIn: checkIn,
+                checkOut: checkOut
             },
-            success: function(response) {
-                if (response.success) {
-                    alert('Reservation confirmed successfully!');
-                    location.reload();
-                } else {
-                    alert('Error confirming reservation');
-                }
+            success: function (rooms) {
+                $('#roomSelect').prop('disabled', false).empty();
+                $('#roomSelect').append('<option value="">Select a room</option>');
+                rooms.forEach(room => {
+                    $('#roomSelect').append(`<option value="\${room.id}">Room \${room.roomNumber}</option>`);
+                });
             },
-            error: function() {
-                alert('Error confirming reservation. Please try again.');
+            error: function () {
+                alert('Error loading available rooms');
             }
         });
     }
-}
 
-function cancelReservation(id) {
-    if (confirm('Are you sure you want to cancel this reservation?')) {
+    function calculateTotal() {
+        // For new reservation
+        const checkIn = new Date($('#newCheckIn').val());
+        const checkOut = new Date($('#newCheckOut').val());
+        const roomType = $('#roomTypeSelect option:selected');
+
+        if (checkIn && checkOut && roomType.val() && checkOut > checkIn) {
+            const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+            const pricePerNight = parseFloat(roomType.data('price')) || 0;
+            const total = nights * pricePerNight;
+
+            $('#nightsDisplay').text(nights);
+            $('#totalAmountDisplay').text(formatCurrency(total));
+        } else {
+            $('#nightsDisplay').text('0');
+            $('#totalAmountDisplay').text('0₫');
+        }
+
+        // For edit reservation
+        const editCheckIn = new Date($('#editCheckIn').val());
+        const editCheckOut = new Date($('#editCheckOut').val());
+
+        if (editCheckIn && editCheckOut && editCheckOut > editCheckIn) {
+            const editNights = Math.ceil((editCheckOut - editCheckIn) / (1000 * 60 * 60 * 24));
+            $('#editNightsDisplay').text(editNights);
+            // You can add price calculation for edit modal if needed
+        }
+    }
+
+    function createReservation() {
+        const formData = {
+            guestId: $('#guestSelect').val() !== 'new' ? $('#guestSelect').val() : null,
+            newGuest: $('#guestSelect').val() === 'new' ? {
+                fullName: $('#guestName').val(),
+                email: $('#guestEmail').val(),
+                phone: $('#guestPhone').val()
+            } : null,
+            roomId: $('#roomSelect').val(),
+            checkIn: $('#newCheckIn').val(),
+            checkOut: $('#newCheckOut').val(),
+            numberOfGuests: $('#numberOfGuests').val(),
+            specialRequests: $('#specialRequests').val()
+        };
+
+        if (!formData.roomId) {
+            alert('Please select a room');
+            return;
+        }
+
+        $.ajax({
+            url: '${pageContext.request.contextPath}/receptionist/reservations',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                action: 'createReservation',
+                ...formData
+            }),
+            success: function (response) {
+                if (response.success) {
+                    alert('Reservation created successfully!');
+                    $('#newReservationModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert('Error creating reservation: ' + (response.message || 'Unknown error'));
+                }
+            },
+            error: function () {
+                alert('Error creating reservation. Please try again.');
+            }
+        });
+    }
+
+    function confirmReservation(id) {
+        if (confirm('Are you sure you want to confirm this reservation?')) {
+            $.ajax({
+                url: '${pageContext.request.contextPath}/receptionist/reservations',
+                type: 'POST',
+                data: {
+                    action: 'confirmReservation',
+                    reservationId: id
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert('Reservation confirmed successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error confirming reservation');
+                    }
+                },
+                error: function () {
+                    alert('Error confirming reservation. Please try again.');
+                }
+            });
+        }
+    }
+
+    function cancelReservation(id) {
+        if (confirm('Are you sure you want to cancel this reservation?')) {
+            $.ajax({
+                url: '${pageContext.request.contextPath}/receptionist/reservations',
+                type: 'POST',
+                data: {
+                    action: 'cancelReservation',
+                    reservationId: id
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert('Reservation cancelled successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error cancelling reservation');
+                    }
+                },
+                error: function () {
+                    alert('Error cancelling reservation. Please try again.');
+                }
+            });
+        }
+    }
+
+    function viewDetails(id) {
         $.ajax({
             url: '${pageContext.request.contextPath}/receptionist/reservations',
             type: 'POST',
             data: {
-                action: 'cancelReservation',
-                reservationId: id
+                action: 'getReservationDetails',
+                id: id
             },
-            success: function(response) {
-                if (response.success) {
-                    alert('Reservation cancelled successfully!');
-                    location.reload();
-                } else {
-                    alert('Error cancelling reservation');
+            success: function (data) {
+                // Function to get badge class based on status
+                function getStatusBadgeClass(status) {
+                    switch(status) {
+                        case 'CONFIRMED': return 'success';
+                        case 'PENDING': return 'warning';
+                        case 'CANCELLED': return 'danger';
+                        case 'COMPLETED': return 'info';
+                        default: return 'secondary';
+                    }
                 }
-            },
-            error: function() {
-                alert('Error cancelling reservation. Please try again.');
-            }
-        });
-    }
-}
-
-function viewDetails(id) {
-    $.ajax({
-        url: '${pageContext.request.contextPath}/receptionist/reservations',
-        type: 'POST',
-        data: {
-            action: 'getReservationDetails',
-            id: id
-        },
-        success: function(data) {
-            let html = `
+                
+                let html = `
                 <div class="row">
                     <div class="col-md-6">
                         <h6>Guest Information</h6>
                         <table class="table table-sm">
-                            <tr><th>Name:</th><td>${data.customerName}</td></tr>
-                            <tr><th>Phone:</th><td>${data.customerPhone}</td></tr>
-                            <tr><th>Email:</th><td>${data.customerEmail}</td></tr>
+                            <tr><th>Name:</th><td>\${data.customerName || '-'}</td></tr>
+                            <tr><th>Phone:</th><td>\${data.customerPhone || '-'}</td></tr>
+                            <tr><th>Email:</th><td>\${data.customerEmail || '-'}</td></tr>
                         </table>
                         
                         <h6>Booking Information</h6>
                         <table class="table table-sm">
-                            <tr><th>Booking ID:</th><td>#${data.id}</td></tr>
-                            <tr><th>Status:</th><td><span class="badge badge-success">${data.status}</span></td></tr>
-                            <tr><th>Created:</th><td>${formatDate(data.createdAt)}</td></tr>
+                            <tr><th>Booking ID:</th><td>#\${data.id}</td></tr>
+                            <tr><th>Status:</th><td><span class="badge badge-\${getStatusBadgeClass(data.status)}">\${data.status}</span></td></tr>
+                            <tr><th>Created:</th><td>\${formatDate(data.createdAt)}</td></tr>
                         </table>
                     </div>
                     <div class="col-md-6">
                         <h6>Room Information</h6>
                         <table class="table table-sm">
-                            <tr><th>Room:</th><td>${data.roomNumber}</td></tr>
-                            <tr><th>Type:</th><td>${data.roomTypeName}</td></tr>
-                            <tr><th>Check-in:</th><td>${formatDate(data.checkIn)}</td></tr>
-                            <tr><th>Check-out:</th><td>${formatDate(data.checkOut)}</td></tr>
-                            <tr><th>Nights:</th><td>${data.nights}</td></tr>
+                            <tr><th>Room:</th><td>\${data.roomNumber || '-'}</td></tr>
+                            <tr><th>Type:</th><td>\${data.roomTypeName || '-'}</td></tr>
+                            <tr><th>Check-in:</th><td>\${formatDate(data.checkIn)}</td></tr>
+                            <tr><th>Check-out:</th><td>\${formatDate(data.checkOut)}</td></tr>
+                            <tr><th>Nights:</th><td>\${data.nights || '-'}</td></tr>
                         </table>
                         
                         <h6>Payment Information</h6>
                         <table class="table table-sm">
-                            <tr><th>Total:</th><td><strong>${formatCurrency(data.totalAmount)}</strong></td></tr>
-                            <tr><th>Payment Status:</th><td><span class="badge badge-warning">Pending</span></td></tr>
+                            <tr><th>Total:</th><td><strong>\${formatCurrency(data.totalAmount)}</strong></td></tr>
+                            <tr><th>Payment Status:</th><td><span class="badge badge-\${data.paymentStatus === 'PAID' ? 'success' : 'warning'}">\${data.paymentStatus || 'Pending'}</span></td></tr>
                         </table>
                     </div>
                 </div>
-            `;
-            
-            if (data.specialRequests) {
-                html += `
+                `;
+
+                if (data.specialRequests) {
+                    html += `
                     <div class="mt-3">
                         <h6>Special Requests</h6>
-                        <div class="alert alert-info">${data.specialRequests}</div>
+                        <div class="alert alert-info">\${data.specialRequests}</div>
                     </div>
-                `;
+                    `;
+                }
+
+                $('#reservationDetails').html(html);
+                $('#viewDetailsModal').modal('show');
+            },
+            error: function () {
+                alert('Error loading reservation details');
             }
-            
-            $('#reservationDetails').html(html);
-            $('#viewDetailsModal').modal('show');
-        },
-        error: function() {
-            alert('Error loading reservation details');
-        }
-    });
-}
+        });
+    }
 
-function editReservation(id) {
-    $.ajax({
-        url: '${pageContext.request.contextPath}/receptionist/reservations',
-        type: 'POST',
-        data: {
-            action: 'getReservationDetails',
-            id: id
-        },
-        success: function(data) {
-            $('#editReservationId').val(data.id);
-            $('#editGuestName').val(data.customerName);
-            $('#editRoomInfo').val(`Room ${data.roomNumber} (${data.roomTypeName})`);
-            $('#editCheckIn').val(data.checkIn);
-            $('#editCheckOut').val(data.checkOut);
-            $('#editNumberOfGuests').val(data.numberOfGuests || 1);
-            $('#editStatus').val(data.status);
-            $('#editSpecialRequests').val(data.specialRequests || '');
-            
-            calculateTotal();
-            $('#editReservationModal').modal('show');
-        },
-        error: function() {
-            alert('Error loading reservation details');
-        }
-    });
-}
-
-function updateReservation() {
-    const formData = {
-        id: $('#editReservationId').val(),
-        checkIn: $('#editCheckIn').val(),
-        checkOut: $('#editCheckOut').val(),
-        numberOfGuests: $('#editNumberOfGuests').val(),
-        status: $('#editStatus').val(),
-        specialRequests: $('#editSpecialRequests').val()
-    };
-    
-    $.ajax({
-        url: '${pageContext.request.contextPath}/receptionist/reservations',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            action: 'updateReservation',
-            ...formData
-        }),
-        success: function(response) {
-            if (response.success) {
-                alert('Reservation updated successfully!');
-                $('#editReservationModal').modal('hide');
-                location.reload();
-            } else {
-                alert('Error updating reservation: ' + (response.message || 'Unknown error'));
-            }
-        },
-        error: function() {
-            alert('Error updating reservation. Please try again.');
-        }
-    });
-}
-
-function filterReservations() {
-    const params = new URLSearchParams();
-    
-    const status = $('#statusFilter').val();
-    const checkInDate = $('#checkInDate').val();
-    const checkOutDate = $('#checkOutDate').val();
-    const search = $('#searchInput').val();
-    
-    if (status) params.append('status', status);
-    if (checkInDate) params.append('checkInDate', checkInDate);
-    if (checkOutDate) params.append('checkOutDate', checkOutDate);
-    if (search) params.append('search', search);
-    
-    const url = '${pageContext.request.contextPath}/receptionist/reservations' + 
-                (params.toString() ? '?' + params.toString() : '');
-    window.location.href = url;
-}
-
-function clearFilters() {
-    window.location.href = '${pageContext.request.contextPath}/receptionist/reservations';
-}
-
-function printReservation(id) {
-    window.open(`${pageContext.request.contextPath}/receptionist/reservations?action=print&id=${id}`, '_blank');
-}
-
-function printReservationDetails() {
-    window.print();
-}
-
-function sendConfirmation(id) {
-    if (confirm('Send confirmation email to guest?')) {
+    function editReservation(id) {
         $.ajax({
             url: '${pageContext.request.contextPath}/receptionist/reservations',
             type: 'POST',
             data: {
-                action: 'sendConfirmation',
+                action: 'getReservationDetails',
                 id: id
             },
-            success: function(response) {
-                if (response.success) {
-                    alert('Confirmation email sent successfully!');
-                } else {
-                    alert('Error sending email');
+            success: function (data) {
+                // Format date to YYYY-MM-DD for input date fields
+                function formatDateForInput(dateStr) {
+                    if (!dateStr) return '';
+                    const date = new Date(dateStr);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `\${year}-\${month}-\${day}`;
                 }
+                
+                $('#editReservationId').val(data.id);
+                $('#editGuestName').val(data.customerName);
+                $('#editRoomInfo').val(`Room \${data.roomNumber} (\${data.roomTypeName})`);
+                $('#editCheckIn').val(formatDateForInput(data.checkIn));
+                $('#editCheckOut').val(formatDateForInput(data.checkOut));
+                $('#editNumberOfGuests').val(data.numberOfGuests || 1);
+                $('#editStatus').val(data.status);
+                $('#editSpecialRequests').val(data.specialRequests || '');
+
+                calculateTotal();
+                $('#editReservationModal').modal('show');
             },
-            error: function() {
-                alert('Error sending confirmation email');
+            error: function () {
+                alert('Error loading reservation details');
             }
         });
     }
-}
 
-function exportReservations() {
-    const params = new URLSearchParams(window.location.search);
-    params.append('action', 'export');
-    window.location.href = '${pageContext.request.contextPath}/receptionist/reservations?' + params.toString();
-}
+    function updateReservation() {
+        const formData = {
+            id: $('#editReservationId').val(),
+            checkIn: $('#editCheckIn').val(),
+            checkOut: $('#editCheckOut').val(),
+            numberOfGuests: $('#editNumberOfGuests').val(),
+            status: $('#editStatus').val(),
+            specialRequests: $('#editSpecialRequests').val()
+        };
 
-function refreshReservations() {
-    location.reload();
-}
+        $.ajax({
+            url: '${pageContext.request.contextPath}/receptionist/reservations',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                action: 'updateReservation',
+                ...formData
+            }),
+            success: function (response) {
+                if (response.success) {
+                    alert('Reservation updated successfully!');
+                    $('#editReservationModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert('Error updating reservation: ' + (response.message || 'Unknown error'));
+                }
+            },
+            error: function () {
+                alert('Error updating reservation. Please try again.');
+            }
+        });
+    }
 
-function formatDate(dateString) {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN');
-}
+    function filterReservations() {
+        const params = new URLSearchParams();
 
-function formatCurrency(amount) {
-    if (amount === null || amount === undefined) return '0₫';
-    return new Intl.NumberFormat('vi-VN').format(amount) + '₫';
-}
+        const status = $('#statusFilter').val();
+        const checkInDate = $('#checkInDate').val();
+        const checkOutDate = $('#checkOutDate').val();
+        const search = $('#searchInput').val();
+
+        if (status)
+            params.append('status', status);
+        if (checkInDate)
+            params.append('checkInDate', checkInDate);
+        if (checkOutDate)
+            params.append('checkOutDate', checkOutDate);
+        if (search)
+            params.append('search', search);
+
+        const url = '${pageContext.request.contextPath}/receptionist/reservations' +
+                (params.toString() ? '?' + params.toString() : '');
+        window.location.href = url;
+    }
+
+    function clearFilters() {
+        window.location.href = '${pageContext.request.contextPath}/receptionist/reservations';
+    }
+
+    function printReservation(id) {
+        window.open(`${pageContext.request.contextPath}/receptionist/reservations?action=print&id=\${id}`, '_blank');
+    }
+
+    function printReservationDetails() {
+        window.print();
+    }
+
+    function sendConfirmation(id) {
+        if (confirm('Send confirmation email to guest?')) {
+            $.ajax({
+                url: '${pageContext.request.contextPath}/receptionist/reservations',
+                type: 'POST',
+                data: {
+                    action: 'sendConfirmation',
+                    id: id
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert('Confirmation email sent successfully!');
+                    } else {
+                        alert('Error sending email');
+                    }
+                },
+                error: function () {
+                    alert('Error sending confirmation email');
+                }
+            });
+        }
+    }
+
+    function exportReservations() {
+        const params = new URLSearchParams(window.location.search);
+        params.append('action', 'export');
+        window.location.href = '${pageContext.request.contextPath}/receptionist/reservations?' + params.toString();
+    }
+
+    function refreshReservations() {
+        location.reload();
+    }
+
+    // Enhanced formatDate function with better error handling
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        
+        try {
+            let date;
+            if (dateString.includes('T')) {
+                // ISO format
+                date = new Date(dateString);
+            } else if (dateString.includes('-')) {
+                // yyyy-mm-dd format
+                date = new Date(dateString + 'T00:00:00');
+            } else {
+                // Try parsing as is
+                date = new Date(dateString);
+            }
+            
+            if (isNaN(date.getTime())) {
+                return dateString; // Return original if parsing fails
+            }
+            
+            return date.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        } catch (e) {
+            console.error('Date formatting error:', e);
+            return dateString || '-';
+        }
+    }
+
+    function formatCurrency(amount) {
+        if (amount === null || amount === undefined)
+            return '0₫';
+        return new Intl.NumberFormat('vi-VN').format(amount) + '₫';
+    }
 </script>
