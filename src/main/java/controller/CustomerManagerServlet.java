@@ -1,5 +1,5 @@
 //package controller;
-//
+
 //import dal.UserDAO;
 //import model.User;
 //import jakarta.servlet.ServletException;
@@ -14,7 +14,7 @@
 //@WebServlet(name = "CustomerManagerServlet", urlPatterns = {"/admin/customers"})
 //public class CustomerManagerServlet extends HttpServlet {
 //    
-//    private UserDAO userDAO = new UserDAO();
+    private UserDAO userDAO = new UserDAO();
 //    private static final String CUSTOMER_ROLE = "GUEST";
 //    private static final int RECORDS_PER_PAGE = 5; // Changed from 10 to 5
 //    
