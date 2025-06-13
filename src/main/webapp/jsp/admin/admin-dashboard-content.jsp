@@ -5,13 +5,11 @@
 <div class="container-fluid">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#">Home</a></li>
-            <li class="breadcrumb-item active">Dashboard</li>
+            <li class="breadcrumb-item"><a href="admin-dashboard">Home Dashboard</a></li>
+            
         </ol>
     </nav>
-    
-    <h1 class="mb-4">Dashboard</h1>
-    
+ 
     <!-- Stats Cards -->
     <div class="row">
         <div class="col-md-3">

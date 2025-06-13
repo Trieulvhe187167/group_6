@@ -32,7 +32,7 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <input name="name" type="text" required class="form-control" placeholder="name"> 
+                                    <input name="name" type="text" required class="form-control" placeholder="name" maxlength="30"> 
                                 </div>
                             </div>
                         </div>
@@ -41,7 +41,7 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <input name="username" type="text" required class="form-control" placeholder="Enter your username">
+                                    <input name="username" type="text" required class="form-control" placeholder="Enter your username" maxlength="30">
                                 </div>
                             </div>
                         </div>
