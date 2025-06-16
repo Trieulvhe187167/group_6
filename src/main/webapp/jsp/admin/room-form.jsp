@@ -178,7 +178,7 @@
                     </div>
                 </c:if>
 
-                <form method="post" action="${pageContext.request.contextPath}/admin/rooms" id="roomTypeForm">
+                <form method="post" action="${pageContext.request.contextPath}/admin/rooms" id="roomTypeForm" onsubmit="return validateForm();">
                     <input type="hidden" name="action" value="${isEdit ? 'update' : 'create'}">
                     <c:if test="${isEdit}">
                         <input type="hidden" name="id" value="${roomType.id}">
@@ -235,7 +235,8 @@
                             <input name="imageUrl" type="text" required 
                                    class="form-control" id="imageUrl"
                                    placeholder="Enter image filename (e.g., room1.jpg)"
-                                   value="${isEdit ? roomType.imageUrl : ''}">
+                                   value="${isEdit ? roomType.imageUrl : ''}"
+                                   maxlength="255">
                             <small class="text-muted">Image should be placed in /assets/images/uploads/ folder</small>
                         </div>
 
@@ -254,7 +255,7 @@
 
                         <div class="form-group">
                             <label for="description">Description <span class="text-danger">*</span></label>
-                            <textarea name="description" required 
+                            <textarea name="description" maxlength="300" required 
                                       class="form-control" id="description" rows="4"
                                       placeholder="Enter room type description">${isEdit ? roomType.description : ''}</textarea>
                         </div>
@@ -434,5 +435,28 @@ $(document).ready(function() {
             $('#description').val(description);
         }
     </c:if>
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const fields = [
+        { name: "name", max: 25 },
+        { name: "basePrice", max: 10 },
+        { name: "capacity", max: 3 },
+        { name: "description", max: 300 },
+        { name: "imageUrl", max: 255 }
+    ];
+
+    fields.forEach(field => {
+        const input = document.querySelector(`[name="\${field.name}"]`);
+        if (input) {
+            input.addEventListener("input", function() {
+                if (this.value.length > field.max) {
+                    alert(`Trường \${field.name} không được vượt quá \${field.max} ký tự.`);
+                    this.value = this.value.substring(0, field.max);
+                }
+            });
+        }
+    });
 });
 </script>

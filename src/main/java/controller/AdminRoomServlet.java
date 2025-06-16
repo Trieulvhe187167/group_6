@@ -68,7 +68,7 @@ public class AdminRoomServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Check admin authorization
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
@@ -78,8 +78,10 @@ public class AdminRoomServlet extends HttpServlet {
         }
 
         String action = request.getParameter("action");
-        if (action == null) action = "list";
-        
+        if (action == null) {
+            action = "list";
+        }
+
         try {
             switch (action) {
                 case "list":
@@ -115,7 +117,7 @@ public class AdminRoomServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Check admin authorization
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
@@ -137,17 +139,17 @@ public class AdminRoomServlet extends HttpServlet {
             response.sendRedirect("rooms");
         }
     }
-    
+
     private void listRoomTypes(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         RoomTypeDAO dao = new RoomTypeDAO();
         List<RoomType> roomTypes;
         String keyword = request.getParameter("keyword");
         String price = request.getParameter("price");
         String capacity = request.getParameter("capacity");
         String status = request.getParameter("status");
-        
+
         // Get page parameter
         int page = 1;
         try {
@@ -183,26 +185,26 @@ public class AdminRoomServlet extends HttpServlet {
         request.setAttribute("recordsPerPage", RECORDS_PER_PAGE);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalRecords", totalRecords);
-        
+
         // Set room types
         request.setAttribute("roomTypes", roomTypes);
-        
+
         // Set page info for template
         request.setAttribute("pageTitle", "Room Types Management");
         request.setAttribute("activePage", "rooms");
         request.setAttribute("contentPage", "/jsp/admin/room-list.jsp");
-        
+
         // Forward to template
         request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
     }
-    
+
     private void showRoomTypeForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String idStr = request.getParameter("id");
         RoomType roomType = null;
         boolean isEdit = false;
-        
+
         if (idStr != null) {
             try {
                 int id = Integer.parseInt(idStr);
@@ -213,51 +215,59 @@ public class AdminRoomServlet extends HttpServlet {
                 // Invalid ID
             }
         }
-        
+
         request.setAttribute("roomType", roomType);
         request.setAttribute("isEdit", isEdit);
         request.setAttribute("pageTitle", isEdit ? "Edit Room Type" : "Create Room Type");
         request.setAttribute("activePage", "rooms");
         request.setAttribute("contentPage", "/jsp/admin/room-form.jsp");
-        
+
         request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
     }
-    
+
     private void viewRoomType(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String idStr = request.getParameter("id");
         if (idStr == null) {
             response.sendRedirect("rooms");
             return;
         }
-        
+
         try {
             int id = Integer.parseInt(idStr);
             RoomTypeDAO roomTypeDAO = new RoomTypeDAO();
             RoomDAO roomDAO = new RoomDAO();
-            
+
             RoomType roomType = roomTypeDAO.getRoomTypesById(id);
             if (roomType == null) {
                 request.setAttribute("error", "Room type not found");
                 listRoomTypes(request, response);
                 return;
             }
-            
+
             // Get rooms for this room type
             List<Room> rooms = roomDAO.getRoomsByType(id);
-            
+
             // Calculate room statistics for this room type
             int availableCount = 0, occupiedCount = 0, maintenanceCount = 0, dirtyCount = 0;
             for (Room room : rooms) {
                 switch (room.getStatus()) {
-                    case "AVAILABLE": availableCount++; break;
-                    case "OCCUPIED": occupiedCount++; break;
-                    case "MAINTENANCE": maintenanceCount++; break;
-                    case "DIRTY": dirtyCount++; break;
+                    case "AVAILABLE":
+                        availableCount++;
+                        break;
+                    case "OCCUPIED":
+                        occupiedCount++;
+                        break;
+                    case "MAINTENANCE":
+                        maintenanceCount++;
+                        break;
+                    case "DIRTY":
+                        dirtyCount++;
+                        break;
                 }
             }
-            
+
             request.setAttribute("roomType", roomType);
             request.setAttribute("rooms", rooms);
             request.setAttribute("totalRooms", rooms.size());
@@ -265,69 +275,105 @@ public class AdminRoomServlet extends HttpServlet {
             request.setAttribute("occupiedRooms", occupiedCount);
             request.setAttribute("maintenanceRooms", maintenanceCount);
             request.setAttribute("dirtyRooms", dirtyCount);
-            
+
             request.setAttribute("pageTitle", "Room Type Details");
             request.setAttribute("activePage", "rooms");
             request.setAttribute("contentPage", "/jsp/admin/room-detail.jsp");
-            
+
             request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
-            
+
         } catch (NumberFormatException e) {
             response.sendRedirect("rooms");
         }
     }
-    
+
     private void showUpdateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String idStr = request.getParameter("id");
         if (idStr == null) {
             response.sendRedirect("rooms");
             return;
         }
-        
+
         try {
             int id = Integer.parseInt(idStr);
             RoomTypeDAO dao = new RoomTypeDAO();
             RoomType roomType = dao.getRoomTypesById(id);
-            
+
             if (roomType == null) {
                 request.setAttribute("error", "Room type not found");
                 listRoomTypes(request, response);
                 return;
             }
-            
+
             request.setAttribute("roomType", roomType);
             request.setAttribute("isEdit", true);
             request.setAttribute("pageTitle", "Edit Room Type");
             request.setAttribute("activePage", "rooms");
             request.setAttribute("contentPage", "/jsp/admin/room-form.jsp");
-            
+
             request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
-            
+
         } catch (NumberFormatException e) {
             response.sendRedirect("rooms");
         }
     }
-    
+
     private void createRoomType(HttpServletRequest request, HttpServletResponse response, RoomTypeDAO dao)
             throws ServletException, IOException {
-        
-        // Xử lý tạo mới RoomType
+
         request.setCharacterEncoding("UTF-8");
 
-        String name = request.getParameter("name");
-        String basePriceStr = request.getParameter("basePrice");
-        String capacityStr = request.getParameter("capacity");
-        String bed = request.getParameter("bed");
-        String description = request.getParameter("description");
-        String special = request.getParameter("special");
-        String imageUrl = request.getParameter("imageUrl");
+        String name = request.getParameter("name").trim();
+        String basePriceStr = request.getParameter("basePrice").trim();
+        String capacityStr = request.getParameter("capacity").trim();
+        String bed = request.getParameter("bed").trim();
+        String description = request.getParameter("description").trim();
+        String special = request.getParameter("special").trim();
+        String imageUrl = request.getParameter("imageUrl").trim();
+
+        // Validate dữ liệu
+        String error = null;
+        if (name.length() > 100) {
+            error = "Tên loại phòng không được quá 100 ký tự";
+        } else if (dao.isRoomTypeNameExists(name, 0)) {
+            error = "Tên loại phòng đã tồn tại";
+        } else if (description.length() > 300) {
+            error = "Mô tả không được quá 300 ký tự";
+        } else if (imageUrl.length() > 255) {
+            error = "Đường dẫn ảnh quá dài";
+        }
+
+        BigDecimal basePrice = BigDecimal.ZERO;
+        int capacity = 0;
+        try {
+            basePrice = new BigDecimal(basePriceStr);
+            if (basePrice.compareTo(BigDecimal.ZERO) <= 0) {
+                error = "Price must be greater than 0";
+            }
+        } catch (NumberFormatException e) {
+            error = "Price is not valid";
+        }
 
         try {
-            BigDecimal basePrice = new BigDecimal(basePriceStr);
-            int capacity = Integer.parseInt(capacityStr);
+            capacity = Integer.parseInt(capacityStr);
+            if (capacity <= 0 || capacity > 20) {
+                error = "Capacity must be from 1 to 20 people";
+            }
+        } catch (NumberFormatException e) {
+            error = "Invalid capacity";
+        }
 
+        if (error != null) {
+            // Gửi lại dữ liệu cũ cho form
+            request.setAttribute("error", error);
+            request.setAttribute("roomType", new RoomType(name, description + "," + bed + "," + special, basePrice, imageUrl, capacity));
+            showRoomTypeForm(request, response);
+            return;
+        }
+
+        try {
             RoomType roomType = new RoomType();
             roomType.setName(name);
             roomType.setDescription(description + "," + bed + "," + special);
@@ -338,18 +384,17 @@ public class AdminRoomServlet extends HttpServlet {
             roomType.setUpdatedAt(new Date());
 
             dao.insert(roomType);
-
             request.getSession().setAttribute("success", "Room type created successfully");
             response.sendRedirect("rooms");
         } catch (Exception e) {
-            request.setAttribute("error", "Error creating room type: " + e.getMessage());
+            request.setAttribute("error", "Error updating room type: " + e.getMessage());
             showRoomTypeForm(request, response);
         }
     }
-    
+
     private void deleteRoomType(HttpServletRequest request, HttpServletResponse response, RoomTypeDAO dao)
             throws ServletException, IOException {
-        
+
         try {
             int id = Integer.parseInt(request.getParameter("id"));
             String status = request.getParameter("status");
@@ -359,13 +404,13 @@ public class AdminRoomServlet extends HttpServlet {
         } catch (Exception e) {
             request.getSession().setAttribute("error", "Error updating room type status: " + e.getMessage());
         }
-        
+
         response.sendRedirect("rooms");
     }
-    
+
     private void updateRoomType(HttpServletRequest request, HttpServletResponse response, RoomTypeDAO dao)
             throws ServletException, IOException {
-        
+
         try {
             int id = Integer.parseInt(request.getParameter("id"));
             String name = request.getParameter("name");
