@@ -24,16 +24,16 @@ public class RegisterServlet extends HttpServlet {
     }
 
     private boolean isValidUsername(String username) {
-        return username != null && 
-               username.length() >= 3 && 
-               !username.contains(" ") && 
+        return username != null &&
+               username.length() >= 3 &&
+               !username.contains(" ") &&
                username.matches("^[a-zA-Z0-9_]+$");
     }
 
     private boolean isValidFullName(String fullName) {
-        return fullName != null && 
-               fullName.trim().length() >= 2 && 
-               fullName.matches("^[a-zA-ZÀ-ỹĐđ\\s]+$") && 
+        return fullName != null &&
+               fullName.trim().length() >= 2 &&
+               fullName.matches("^[a-zA-ZÀ-ỹĐđ\\s]+$") &&
                !fullName.matches("^\\s+$");
     }
 
@@ -60,13 +60,12 @@ public class RegisterServlet extends HttpServlet {
         String password = request.getParameter("password");
         String phone = request.getParameter("phone");
 
-        // Giữ lại dữ liệu để hiển thị lại khi lỗi
         request.setAttribute("username", username);
         request.setAttribute("fullName", fullName);
         request.setAttribute("email", email);
         request.setAttribute("phone", phone);
 
-        if (username == null || fullName == null || email == null || 
+        if (username == null || fullName == null || email == null ||
             password == null || phone == null) {
             request.setAttribute("errorMsg", "Please fill in all fields.");
             request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
@@ -78,7 +77,7 @@ public class RegisterServlet extends HttpServlet {
         email = email.trim();
         phone = phone.trim();
 
-        if (username.isEmpty() || fullName.isEmpty() || email.isEmpty() || 
+        if (username.isEmpty() || fullName.isEmpty() || email.isEmpty() ||
             password.isEmpty() || phone.isEmpty()) {
             request.setAttribute("errorMsg", "Fields cannot be empty or contain only spaces.");
             request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
@@ -143,7 +142,6 @@ public class RegisterServlet extends HttpServlet {
                 }
 
                 String sql = "INSERT INTO Users (Username, PasswordHash, FullName, Email, Phone, Role) VALUES (?, ?, ?, ?, ?, ?)";
-
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setString(1, username);
                     ps.setString(2, hashedPassword);
@@ -153,9 +151,9 @@ public class RegisterServlet extends HttpServlet {
                     ps.setString(6, role);
 
                     int rowsInserted = ps.executeUpdate();
-
                     if (rowsInserted > 0) {
-                        response.sendRedirect("jsp/login.jsp");
+                        // ✅ Chuyển hướng về trang đăng nhập với param thông báo thành công
+                        response.sendRedirect(request.getContextPath() + "/jsp/login.jsp?success=1");
                     } else {
                         request.setAttribute("errorMsg", "Registration failed. Please try again.");
                         request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
