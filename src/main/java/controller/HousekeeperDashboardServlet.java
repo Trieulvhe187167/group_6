@@ -1,6 +1,5 @@
 package controller;
 
-
 import dal.HousekeepingTaskDAO;
 import dal.RoomDAO;
 import model.HousekeepingTask;
@@ -16,6 +15,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Calendar;
 
 @WebServlet(name = "HousekeeperDashboardServlet", urlPatterns = {"/housekeeper-dashboard"})
 public class HousekeeperDashboardServlet extends HttpServlet {
@@ -86,12 +86,30 @@ public class HousekeeperDashboardServlet extends HttpServlet {
         List<HousekeepingTask> recentTasks = myTasks.size() > 5 ? 
             myTasks.subList(0, 5) : myTasks;
         
+        // Set greeting based on time
+        Calendar cal = Calendar.getInstance();
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        String greeting;
+        if (hour < 12) {
+            greeting = "morning";
+        } else if (hour < 18) {
+            greeting = "afternoon";
+        } else {
+            greeting = "evening";
+        }
+        
         // Set attributes
         request.setAttribute("stats", stats);
         request.setAttribute("recentTasks", recentTasks);
         request.setAttribute("currentUser", currentUser);
+        request.setAttribute("greeting", greeting);
         
-        // Forward to dashboard
-        request.getRequestDispatcher("/jsp/housekeeper/dashboard.jsp").forward(request, response);
+        // Set page info for template
+        request.setAttribute("pageTitle", "Dashboard");
+        request.setAttribute("activePage", "dashboard");
+        request.setAttribute("contentPage", "/jsp/housekeeper/housekeeper-dashboard-content.jsp");
+        
+        // Forward to template
+        request.getRequestDispatcher("/jsp/housekeeper/housekeeper-template.jsp").forward(request, response);
     }
 }
