@@ -8,20 +8,21 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "BlogListServlet", urlPatterns = {"/BlogListServlet"})
-public class BlogListServlet extends HttpServlet {
+@WebServlet(name = "BlogSearchServlet", urlPatterns = {"/BlogSearchServlet"})
+public class BlogSearchServlet extends HttpServlet {
     
     private BlogDAO blogDAO = new BlogDAO();
     private static final int BLOGS_PER_PAGE = 3;
     
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        String query = request.getParameter("q");
         int page = 1;
         
         try {
-            String pageStr = req.getParameter("page");
+            String pageStr = request.getParameter("page");
             if (pageStr != null) {
                 page = Integer.parseInt(pageStr);
             }
@@ -29,8 +30,15 @@ public class BlogListServlet extends HttpServlet {
             page = 1;
         }
         
-        // Get all published blogs
-        List<Blog> allBlogs = blogDAO.getPublishedBlogs();
+        List<Blog> allBlogs;
+        
+        if (query != null && !query.trim().isEmpty()) {
+            // Search blogs
+            allBlogs = blogDAO.searchBlogs(query.trim());
+        } else {
+            // Get all published blogs
+            allBlogs = blogDAO.getPublishedBlogs();
+        }
         
         // Pagination
         int totalBlogs = allBlogs.size();
@@ -44,10 +52,11 @@ public class BlogListServlet extends HttpServlet {
         
         List<Blog> blogs = allBlogs.subList(start, end);
         
-        req.setAttribute("blogs", blogs);
-        req.setAttribute("currentPage", page);
-        req.setAttribute("totalPages", totalPages);
+        request.setAttribute("blogs", blogs);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("query", query);
         
-        req.getRequestDispatcher("/jsp/blog.jsp").forward(req, resp);
+        request.getRequestDispatcher("/jsp/blog.jsp").forward(request, response);
     }
 }

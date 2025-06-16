@@ -595,4 +595,23 @@ public class UserDAO {
         }
         return sb.toString();
     }
+    
+    
+public List<User> getAuthors() {
+    List<User> authors = new ArrayList<>();
+    String sql = "SELECT * FROM Users WHERE Role IN ('ADMIN', 'RECEPTIONIST') AND Status = 1 ORDER BY FullName";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        
+        while (rs.next()) {
+            authors.add(mapResultSetToUser(rs));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return authors;
+}
+
 }
