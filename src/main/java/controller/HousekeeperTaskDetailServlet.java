@@ -1,6 +1,5 @@
 package controller;
 
-
 import dal.HousekeepingTaskDAO;
 import model.HousekeepingTask;
 import model.User;
@@ -32,7 +31,7 @@ public class HousekeeperTaskDetailServlet extends HttpServlet {
         
         String idStr = request.getParameter("id");
         if (idStr == null) {
-            response.sendRedirect(request.getContextPath() + "/jsp/housekeeper/tasks");
+            response.sendRedirect(request.getContextPath() + "/housekeeper/tasks");
             return;
         }
         
@@ -42,15 +41,21 @@ public class HousekeeperTaskDetailServlet extends HttpServlet {
             
             if (task == null || task.getAssignedTo() != currentUser.getId()) {
                 session.setAttribute("error", "Task not found or access denied");
-                response.sendRedirect(request.getContextPath() + "/jsp/housekeeper/tasks");
+                response.sendRedirect(request.getContextPath() + "/housekeeper/tasks");
                 return;
             }
             
             request.setAttribute("task", task);
-            request.getRequestDispatcher("/jsp/housekeeper/task-detail.jsp").forward(request, response);
+            
+            // Set page info for template
+            request.setAttribute("pageTitle", "Task Details - Room " + task.getRoomNumber());
+            request.setAttribute("activePage", "tasks");
+            request.setAttribute("contentPage", "/jsp/housekeeper/housekeeper-task-detail-content.jsp");
+            
+            request.getRequestDispatcher("/jsp/housekeeper/housekeeper-template.jsp").forward(request, response);
             
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/jsp/housekeeper/tasks");
+            response.sendRedirect(request.getContextPath() + "/housekeeper/tasks");
         }
     }
 }

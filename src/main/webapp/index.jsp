@@ -508,7 +508,7 @@
                                                     <div class="post-extra">
                                                         <a href="${pageContext.request.contextPath}/BlogDetailServlet?id=${blog.id}" 
                                                            class="btn-link">READ MORE</a>
-                                                        <a href="#" class="comments-bx">
+                                                        <a class="comments-bx">
                                                             <i class="fa fa-comments-o"></i>${blog.commentCount} Comment
                                                         </a>
                                                     </div>
@@ -549,8 +549,9 @@
                     </div>
                 </div>
             </div>
-        </div>
+        <section/>
     </div>
+
 
     <%@ include file="/jsp/footer.jsp" %>
     
