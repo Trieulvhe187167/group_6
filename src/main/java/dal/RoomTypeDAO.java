@@ -401,11 +401,10 @@ public class RoomTypeDAO {
         return list;
     }
 
-    public boolean isRoomTypeNameExists(String name, int excludeId) {
+    public boolean isRoomTypeNameExists(String name) {
         String sql = "SELECT COUNT(*) FROM RoomType WHERE name = ? AND id != ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, name);
-            ps.setInt(2, excludeId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1) > 0;

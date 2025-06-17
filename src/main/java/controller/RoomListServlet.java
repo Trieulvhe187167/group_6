@@ -9,6 +9,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Comparator;
 
 /**
  * Servlet for handling room list view for users
@@ -21,16 +22,18 @@ public class RoomListServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         RoomTypeDAO dao = new RoomTypeDAO();
         List<RoomType> roomTypes;
-        
+
         // Get parameters
         String keyword = request.getParameter("keyword");
         String price = request.getParameter("price");
         String capacity = request.getParameter("capacity");
         String status = request.getParameter("status");
-        
+        String sortBy = request.getParameter("sortBy");
+        String order = request.getParameter("order");
+
         // Get page parameter
         String pageStr = request.getParameter("page");
         int currentPage = 1;
@@ -59,6 +62,36 @@ public class RoomListServlet extends HttpServlet {
         } else {
             // Only show active room types to users
             roomTypes = dao.getAllRoomTypesActive();
+        }
+
+        // Apply sorting
+        if (sortBy != null && order != null) {
+            Comparator<RoomType> comparator = null;
+
+            switch (sortBy) {
+                case "name":
+                    comparator = Comparator.comparing(RoomType::getName, String.CASE_INSENSITIVE_ORDER);
+                    break;
+                case "capacity":
+                    comparator = Comparator.comparingInt(RoomType::getCapacity);
+                    break;
+                case "basePrice":
+                    comparator = Comparator.comparing(RoomType::getBasePrice);
+                    break;
+                case "createdAt":
+                    comparator = Comparator.comparing(RoomType::getCreatedAt);
+                    break;
+            }
+
+            if (comparator != null) {
+                if ("desc".equalsIgnoreCase(order)) {
+                    comparator = comparator.reversed();
+                }
+                roomTypes.sort(comparator);
+            }
+
+            request.setAttribute("sortBy", sortBy);
+            request.setAttribute("order", order);
         }
 
         // Calculate pagination

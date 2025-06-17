@@ -80,7 +80,7 @@
                                    <p style="color: red;"> ${message != null ? message : ""} </p>
                             </div>
                             <div class="widget-inner">
-                                <form class="edit-profile m-b30" onsubmit="return validateForm(); action="${pageContext.request.contextPath}/AdminRoomServlet?action=create" method="post">
+                                <form class="edit-profile m-b30" action="${pageContext.request.contextPath}/AdminRoomServlet?action=create" method="post">
                                     <div class="row">
                                         <div class="col-12">
                                             <div class="ml-auto">
@@ -91,19 +91,19 @@
                                         <div class="form-group col-6">
                                             <label class="col-form-label">Room Type</label>
                                             <div>
-                                                <input class="form-control" type="text" id="name" name="name" maxlength="25" required>
+                                                <input class="form-control" type="text" id="name" name="name" required>
                                             </div>
                                         </div>
                                         <div class="form-group col-6">
                                             <label class="col-form-label">Base Price</label>
                                             <div>
-                                                <input class="form-control" type="number" id="basePrice" name="basePrice" maxlength="12" required>
+                                                <input class="form-control" type="number" id="basePrice" name="basePrice" required>
                                             </div>
                                         </div>
                                         <div class="form-group col-6">
                                             <label class="col-form-label">Capacity</label>
                                             <div>
-                                                <input class="form-control" type="number" id="capacity" name="capacity" maxlength="3" required>
+                                                <input class="form-control" type="number" id="capacity" name="capacity" required>
                                             </div>
                                         </div>
                                         <div class="form-group col-6">
@@ -188,36 +188,6 @@
                     e.preventDefault();
                     $(this).parent().parent().parent().parent().remove();
                 });
-            }
-            function validateForm() {
-                const name = document.forms[0]["name"].value.trim();
-                const description = document.forms[0]["description"].value.trim();
-                const price = parseFloat(document.forms[0]["price"].value);
-                const capacity = parseInt(document.forms[0]["capacity"].value);
-                const image = document.forms[0]["imageUrl"].value.trim();
-
-                if (name.length > 100) {
-                    alert("Tên loại phòng không được quá 100 ký tự");
-                    return false;
-                }
-                if (description.length > 500) {
-                    alert("Mô tả quá dài");
-                    return false;
-                }
-                if (isNaN(price) || price <= 0) {
-                    alert("Giá không hợp lệ");
-                    return false;
-                }
-                if (isNaN(capacity) || capacity < 1 || capacity > 20) {
-                    alert("Sức chứa phải từ 1 đến 20");
-                    return false;
-                }
-                if (image.length > 255) {
-                    alert("Đường dẫn ảnh quá dài");
-                    return false;
-                }
-
-                return true;
             }
         </script>
     </body>

@@ -335,14 +335,13 @@ public class AdminRoomServlet extends HttpServlet {
 
         // Validate dữ liệu
         String error = null;
-        if (name.length() > 100) {
-            error = "Tên loại phòng không được quá 100 ký tự";
-        } else if (dao.isRoomTypeNameExists(name, 0)) {
-            error = "Tên loại phòng đã tồn tại";
-        } else if (description.length() > 300) {
-            error = "Mô tả không được quá 300 ký tự";
-        } else if (imageUrl.length() > 255) {
-            error = "Đường dẫn ảnh quá dài";
+        List<RoomType> existing = dao.getAllRoomTypes();
+        for (RoomType rt : existing) {
+            if (rt.getName().equalsIgnoreCase(name)) {
+                request.setAttribute("errorDuplicateName", "Room name already exists.");
+                showRoomTypeForm(request, response);
+                return;
+            }
         }
 
         BigDecimal basePrice = BigDecimal.ZERO;
@@ -410,16 +409,48 @@ public class AdminRoomServlet extends HttpServlet {
 
     private void updateRoomType(HttpServletRequest request, HttpServletResponse response, RoomTypeDAO dao)
             throws ServletException, IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+
+        String name = request.getParameter("name").trim();
+        String description = request.getParameter("description").trim();
+        String basePriceStr = request.getParameter("basePrice").trim();
+        String imageUrl = request.getParameter("imageUrl").trim();
+        String capacityStr = request.getParameter("capacity").trim();
+        String status = request.getParameter("status").trim();
+
+        String error = null;
+
+
+        BigDecimal basePrice = BigDecimal.ZERO;
+        int capacity = 0;
+        try {
+            basePrice = new BigDecimal(basePriceStr);
+            if (basePrice.compareTo(BigDecimal.ZERO) <= 0) {
+                error = "Giá phải lớn hơn 0";
+            }
+        } catch (NumberFormatException e) {
+            error = "Giá không hợp lệ";
+        }
 
         try {
-            int id = Integer.parseInt(request.getParameter("id"));
-            String name = request.getParameter("name");
-            String description = request.getParameter("description");
-            BigDecimal basePrice = new BigDecimal(request.getParameter("basePrice"));
-            String imageUrl = request.getParameter("imageUrl");
-            int capacity = Integer.parseInt(request.getParameter("capacity"));
-            String status = request.getParameter("status");
+            capacity = Integer.parseInt(capacityStr);
+            if (capacity <= 0 || capacity > 20) {
+                error = "Sức chứa phải từ 1 đến 20 người";
+            }
+        } catch (NumberFormatException e) {
+            error = "Sức chứa không hợp lệ";
+        }
 
+        if (error != null) {
+            request.setAttribute("error", error);
+            RoomType roomType = new RoomType(id, name, description, basePrice, imageUrl, capacity, status, null, new Date());
+            request.setAttribute("roomType", roomType);
+            request.setAttribute("isEdit", true);
+            showRoomTypeForm(request, response);
+            return;
+        }
+
+        try {
             RoomType roomType = new RoomType();
             roomType.setId(id);
             roomType.setName(name);
@@ -428,14 +459,13 @@ public class AdminRoomServlet extends HttpServlet {
             roomType.setImageUrl(imageUrl);
             roomType.setCapacity(capacity);
             roomType.setStatus(status);
-            roomType.setUpdatedAt(new java.util.Date());
+            roomType.setUpdatedAt(new Date());
 
             dao.updateRoomType(roomType);
-
             request.getSession().setAttribute("success", "Room type updated successfully");
             response.sendRedirect("rooms");
         } catch (Exception e) {
-            request.setAttribute("error", "Error updating room type: " + e.getMessage());
+            request.setAttribute("error", "Lỗi khi cập nhật loại phòng: " + e.getMessage());
             showRoomTypeForm(request, response);
         }
     }

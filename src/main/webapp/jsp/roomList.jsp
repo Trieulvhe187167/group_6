@@ -166,6 +166,33 @@
                                         </form>
                                     </div>
 
+                                    <!-- Sorts -->
+                                    <div class="filter-section">
+                                        <h5 class="widget-title">Sort by</h5>
+                                        <form action="RoomListServlet" method="get">
+                                            <!-- Sort By -->
+                                            <div class="form-group">
+                                                <label>Sort By</label>
+                                                <select name="sortBy" class="form-control" onchange="this.form.submit()">
+                                                    <option value="">-- Select --</option>
+                                                    <option value="name" ${sortBy == 'name' ? 'selected' : ''}>Name</option>
+                                                    <option value="capacity" ${sortBy == 'capacity' ? 'selected' : ''}>Capacity</option>
+                                                    <option value="basePrice" ${sortBy == 'basePrice' ? 'selected' : ''}>Price</option>
+                                                    <option value="createdAt" ${sortBy == 'createdAt' ? 'selected' : ''}>Created Date</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Order -->
+                                            <div class="form-group">
+                                                <label>Order</label>
+                                                <select name="order" class="form-control" onchange="this.form.submit()">
+                                                    <option value="asc" ${order == 'asc' ? 'selected' : ''}>Ascending</option>
+                                                    <option value="desc" ${order == 'desc' ? 'selected' : ''}>Descending</option>
+                                                </select>
+                                            </div>
+                                        </form>
+                                    </div>
+
                                     <!-- Featured Room -->
                                     <div class="widget mt-4">
                                         <h5 class="widget-title">Featured Room</h5>
@@ -188,9 +215,9 @@
                                                                 <i class="fa fa-star" style="color: #ffc107"></i>
                                                                 <i class="fa fa-star" style="color: #ffc107"></i>
                                                                 <i class="fa fa-star" style="color: #ffc107"></i>
-                                                                
+
                                                             </li>
-                                                           
+
                                                         </ul>
                                                     </div>
                                                 </div>
@@ -363,17 +390,17 @@
         <script src='${pageContext.request.contextPath}/assets/vendors/switcher/switcher.js'></script>
 
         <script>
-                                                    // Auto-submit form when filter changes
-                                                    $(document).ready(function () {
-                                                        $('.filter-form select').on('change', function () {
-                                                            $(this).closest('form').submit();
-                                                        });
+            // Auto-submit form when filter changes
+            $(document).ready(function () {
+                $('.filter-form select').on('change', function () {
+                    $(this).closest('form').submit();
+                });
 
-                                                        // Add loading animation
-                                                        $('form').on('submit', function () {
-                                                            $('#loading-icon-bx').show();
-                                                        });
-                                                    });
+                // Add loading animation
+                $('form').on('submit', function () {
+                    $('#loading-icon-bx').show();
+                });
+            });
         </script>
     </body>
 </html>

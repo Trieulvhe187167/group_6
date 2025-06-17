@@ -177,6 +177,10 @@
                         <i class="fas fa-exclamation-circle"></i> ${error}
                     </div>
                 </c:if>
+                <c:if test="${not empty errorDuplicateName}">
+                    <div style="color:red;">${errorDuplicateName}</div>
+                </c:if>
+
 
                 <form method="post" action="${pageContext.request.contextPath}/admin/rooms" id="roomTypeForm" onsubmit="return validateForm();">
                     <input type="hidden" name="action" value="${isEdit ? 'update' : 'create'}">
@@ -344,119 +348,122 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$(document).ready(function() {
-    // Form validation
-    $('#roomTypeForm').on('submit', function(e) {
-        var isValid = true;
-        var errorMessage = '';
+                    $(document).ready(function () {
+                        // Form validation
+                        $('#roomTypeForm').on('submit', function (e) {
+                            var isValid = true;
+                            var errorMessage = '';
 
-        // Clear previous validation states
-        $('.form-control').removeClass('is-invalid');
+                            // Clear previous validation states
+                            $('.form-control').removeClass('is-invalid');
 
-        // Check required fields
-        $(this).find('[required]').each(function() {
-            if (!$(this).val().trim()) {
-                $(this).addClass('is-invalid');
-                isValid = false;
-            }
-        });
+                            // Check required fields
+                            $(this).find('[required]').each(function () {
+                                if (!$(this).val().trim()) {
+                                    $(this).addClass('is-invalid');
+                                    isValid = false;
+                                }
+                            });
 
-        // Validate price
-        var price = $('#basePrice').val();
-        if (price && (isNaN(price) || parseFloat(price) <= 0)) {
-            $('#basePrice').addClass('is-invalid');
-            errorMessage = 'Price must be a positive number';
-            isValid = false;
-        }
+                            // Validate price
+                            var price = $('#basePrice').val();
+                            if (price && (isNaN(price) || parseFloat(price) <= 0)) {
+                                $('#basePrice').addClass('is-invalid');
+                                errorMessage = 'Price must be a positive number';
+                                isValid = false;
+                            }
 
-        // Validate capacity
-        var capacity = $('#capacity').val();
-        if (capacity && (isNaN(capacity) || parseInt(capacity) <= 0 || parseInt(capacity) > 10)) {
-            $('#capacity').addClass('is-invalid');
-            errorMessage = 'Capacity must be between 1 and 10';
-            isValid = false;
-        }
+                            // Validate capacity
+                            var capacity = $('#capacity').val();
+                            if (capacity && (isNaN(capacity) || parseInt(capacity) <= 0 || parseInt(capacity) > 10)) {
+                                $('#capacity').addClass('is-invalid');
+                                errorMessage = 'Capacity must be between 1 and 10';
+                                isValid = false;
+                            }
 
-        // Validate image URL
-        var imageUrl = $('#imageUrl').val();
-        if (imageUrl && !/\.(jpg|jpeg|png|gif|webp)$/i.test(imageUrl)) {
-            $('#imageUrl').addClass('is-invalid');
-            errorMessage = 'Image URL must end with a valid image extension (.jpg, .png, etc.)';
-            isValid = false;
-        }
+                            // Validate image URL
+                            var imageUrl = $('#imageUrl').val();
+                            if (imageUrl && !/\.(jpg|jpeg|png|gif|webp)$/i.test(imageUrl)) {
+                                $('#imageUrl').addClass('is-invalid');
+                                errorMessage = 'Image URL must end with a valid image extension (.jpg, .png, etc.)';
+                                isValid = false;
+                            }
 
-        if (!isValid) {
-            e.preventDefault();
-            if (errorMessage) {
-                alert(errorMessage);
-            } else {
-                alert('Please fill in all required fields');
-            }
-        }
-    });
+                            if (!isValid) {
+                                e.preventDefault();
+                                if (errorMessage) {
+                                    alert(errorMessage);
+                                } else {
+                                    alert('Please fill in all required fields');
+                                }
+                            }
+                        });
 
-    // Remove invalid class on input
-    $('.form-control').on('input change', function() {
-        $(this).removeClass('is-invalid');
-    });
+                        // Remove invalid class on input
+                        $('.form-control').on('input change', function () {
+                            $(this).removeClass('is-invalid');
+                        });
 
-    // Auto-format price input
-    $('#basePrice').on('input', function() {
-        var value = $(this).val().replace(/[^\d]/g, '');
-        if (value) {
-            $(this).val(parseInt(value));
-        }
-    });
+                        // Auto-format price input
+                        $('#basePrice').on('input', function () {
+                            var value = $(this).val().replace(/[^\d]/g, '');
+                            if (value) {
+                                $(this).val(parseInt(value));
+                            }
+                        });
 
-    // If editing, populate fields from description
+                        // If editing, populate fields from description
     <c:if test="${isEdit && not empty roomType.description}">
-        var description = "${roomType.description}";
-        var parts = description.split(',');
-        
-        if (parts.length > 1) {
-            // Set bed type
-            var bedType = parts[1].trim();
-            $('#bed').val(bedType);
-            
-            // Set description (first part)
-            $('#description').val(parts[0].trim());
-            
-            // Set special features (remaining parts)
-            if (parts.length > 2) {
-                var special = '';
-                for (var i = 2; i < parts.length; i++) {
-                    if (i > 2) special += ', ';
-                    special += parts[i].trim();
-                }
-                $('#special').val(special);
-            }
-        } else {
-            // If no comma separation, put everything in description
-            $('#description').val(description);
-        }
+                        var description = "${roomType.description}";
+                        var parts = description.split(',');
+
+                        if (parts.length > 1) {
+                            // Set bed type
+                            var bedType = parts[1].trim();
+                            $('#bed').val(bedType);
+
+                            // Set description (first part)
+                            $('#description').val(parts[0].trim());
+
+                            // Set special features (remaining parts)
+                            if (parts.length > 2) {
+                                var special = '';
+                                for (var i = 2; i < parts.length; i++) {
+                                    if (i > 2)
+                                        special += ', ';
+                                    special += parts[i].trim();
+                                }
+                                $('#special').val(special);
+                            }
+                        } else {
+                            // If no comma separation, put everything in description
+                            $('#description').val(description);
+                        }
     </c:if>
-});
+                    });
 </script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const fields = [
-        { name: "name", max: 25 },
-        { name: "basePrice", max: 10 },
-        { name: "capacity", max: 3 },
-        { name: "description", max: 300 },
-        { name: "imageUrl", max: 255 }
-    ];
+    document.addEventListener("DOMContentLoaded", function () {
+        const fields = [
+            {name: "name", max: 25},
+            {name: "basePrice", max: 10},
+            {name: "capacity", max: 3},
+            {name: "description", max: 300},
+            {name: "imageUrl", max: 255}
+        ];
 
-    fields.forEach(field => {
-        const input = document.querySelector(`[name="\${field.name}"]`);
-        if (input) {
-            input.addEventListener("input", function() {
-                if (this.value.length > field.max) {
-                    alert(`Trường \${field.name} không được vượt quá \${field.max} ký tự.`);
-                    this.value = this.value.substring(0, field.max);
-                }
-            });
-        }
+        fields.forEach(field => {
+            const input = document.querySelector(`[name="\${field.name}"]`);
+            if (input) {
+                input.addEventListener("input", function () {
+                    if (this.value.length > field.max) {
+                        alert(`Trường \${field.name} không được vượt quá \${field.max} ký tự.`);
+                        this.value = this.value.substring(0, field.max);
+                    }
+                });
+            }
+        });
     });
-});
 </script>
+
+
