@@ -1,181 +1,91 @@
-package controller;
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>LUXURY HOTEL - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="../assets/images/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" type="image/x-icon" href="../assets/images/favicon.png" />
+    <link rel="stylesheet" type="text/css" href="../assets/css/assets.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/typography.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/shortcodes/shortcodes.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/style.css">
+    <link class="skin" rel="stylesheet" type="text/css" href="../assets/css/color/color-1.css">
+</head>
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.sql.*;
-import dal.DBContext;
+<body id="bg">
+<div class="page-wraper">
+    <div id="loading-icon-bx"></div>
+    <div class="account-form">
+        <div class="account-head" style="background-image:url(../assets/images/background/bg2.jpg);">
+            <a href="../index.jsp"><img src="../assets/images/logo-white-2.png" alt=""></a>
+        </div>
+        <div class="account-form-inner">
+            <div class="account-container">
+                <div class="heading-bx left">
+                    <h2 class="title-head">Login to your <span>Account</span></h2>
+                    <p>Don't have an account? <a href="Register.jsp">Register here</a></p>
+                </div>
 
-@WebServlet("/RegisterServlet")
-public class RegisterServlet extends HttpServlet {
+                <!-- Registration success message -->
+                <c:if test="${param.success == '1'}">
+                    <div class="alert alert-success" style="color: green; font-weight: bold; margin-bottom: 15px;">
+                        Registration successful! Please log in.
+                    </div>
+                </c:if>
 
-    private boolean isStrongPassword(String password) {
-        return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$");
-    }
+                <!-- Login error message -->
+                <c:if test="${not empty errorMsg}">
+                    <div class="alert alert-danger" style="color: red; font-weight: bold; margin-bottom: 15px;">
+                        ${errorMsg}
+                    </div>
+                </c:if>
 
-    private boolean isValidEmail(String email) {
-        return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
-    }
+                <form class="contact-bx" action="../LoginServlet" method="post">
+                    <div class="row placeani">
+                        <div class="col-lg-12">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input name="username" type="text" required class="form-control" placeholder="Username">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-12">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input name="password" type="password" required class="form-control" placeholder="Password">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-12 m-b30">
+                            <button type="submit" class="btn button-md">Login</button>
+                        </div>
+                    </div>
+                </form>
 
-    private boolean isValidPhone(String phone) {
-        return phone != null && phone.matches("^\\d{10}$");
-    }
+            </div>
+        </div>
+    </div>
+</div>
 
-    private boolean isValidUsername(String username) {
-        return username != null &&
-               username.length() >= 3 &&
-               !username.contains(" ") &&
-               username.matches("^[a-zA-Z0-9_]+$");
-    }
+<!-- JS -->
+<script src="../assets/js/jquery.min.js"></script>
+<script src="../assets/vendors/bootstrap/js/popper.min.js"></script>
+<script src="../assets/vendors/bootstrap/js/bootstrap.min.js"></script>
+<script src="../assets/vendors/bootstrap-select/bootstrap-select.min.js"></script>
+<script src="../assets/vendors/bootstrap-touchspin/jquery.bootstrap-touchspin.js"></script>
+<script src="../assets/vendors/magnific-popup/magnific-popup.js"></script>
+<script src="../assets/vendors/counter/waypoints-min.js"></script>
+<script src="../assets/vendors/counter/counterup.min.js"></script>
+<script src="../assets/vendors/imagesloaded/imagesloaded.js"></script>
+<script src="../assets/vendors/masonry/masonry.js"></script>
+<script src="../assets/vendors/masonry/filter.js"></script>
+<script src="../assets/vendors/owl-carousel/owl.carousel.js"></script>
+<script src="../assets/js/functions.js"></script>
+<script src="../assets/js/contact.js"></script>
 
-    private boolean isValidFullName(String fullName) {
-        return fullName != null &&
-               fullName.trim().length() >= 2 &&
-               fullName.matches("^[a-zA-ZÀ-ỹĐđ\\s]+$") &&
-               !fullName.matches("^\\s+$");
-    }
+</body>
+</html>
 
-    private String hashPassword(String password) throws Exception {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = md.digest(password.getBytes("UTF-8"));
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hashBytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        request.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html;charset=UTF-8");
-
-        String username = request.getParameter("username");
-        String fullName = request.getParameter("name");
-        String email = request.getParameter("email");
-        String password = request.getParameter("password");
-        String phone = request.getParameter("phone");
-
-        request.setAttribute("username", username);
-        request.setAttribute("fullName", fullName);
-        request.setAttribute("email", email);
-        request.setAttribute("phone", phone);
-
-        if (username == null || fullName == null || email == null ||
-            password == null || phone == null) {
-            request.setAttribute("errorMsg", "Please fill in all fields.");
-            request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-            return;
-        }
-
-        username = username.trim();
-        fullName = fullName.trim();
-        email = email.trim();
-        phone = phone.trim();
-
-        if (username.isEmpty() || fullName.isEmpty() || email.isEmpty() ||
-            password.isEmpty() || phone.isEmpty()) {
-            request.setAttribute("errorMsg", "Fields cannot be empty or contain only spaces.");
-            request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-            return;
-        }
-
-        if (!isValidUsername(username)) {
-            request.setAttribute("errorMsg", "Username must be at least 3 characters, no spaces, only letters, numbers, and underscores.");
-            request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-            return;
-        }
-
-        if (!isValidFullName(fullName)) {
-            request.setAttribute("errorMsg", "Full name is invalid. Please enter your real name.");
-            request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-            return;
-        }
-
-        if (!isValidEmail(email)) {
-            request.setAttribute("errorMsg", "Invalid email address.");
-            request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-            return;
-        }
-
-        if (!isValidPhone(phone)) {
-            request.setAttribute("errorMsg", "Phone number must be exactly 10 digits.");
-            request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-            return;
-        }
-
-        if (!isStrongPassword(password)) {
-            request.setAttribute("errorMsg", "Password must be at least 8 characters, include uppercase, lowercase, number, and special character.");
-            request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-            return;
-        }
-
-        try {
-            String hashedPassword = hashPassword(password);
-            String role = "GUEST";
-
-            try (Connection conn = DBContext.getConnection()) {
-                String checkUserSql = "SELECT COUNT(*) FROM Users WHERE Username = ?";
-                try (PreparedStatement checkPs = conn.prepareStatement(checkUserSql)) {
-                    checkPs.setString(1, username);
-                    ResultSet rs = checkPs.executeQuery();
-                    if (rs.next() && rs.getInt(1) > 0) {
-                        request.setAttribute("errorMsg", "Username already exists. Please choose another one.");
-                        request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-                        return;
-                    }
-                }
-
-                String checkEmailSql = "SELECT COUNT(*) FROM Users WHERE Email = ?";
-                try (PreparedStatement checkPs = conn.prepareStatement(checkEmailSql)) {
-                    checkPs.setString(1, email);
-                    ResultSet rs = checkPs.executeQuery();
-                    if (rs.next() && rs.getInt(1) > 0) {
-                        request.setAttribute("errorMsg", "Email is already in use. Please use a different email.");
-                        request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-                        return;
-                    }
-                }
-
-                String sql = "INSERT INTO Users (Username, PasswordHash, FullName, Email, Phone, Role) VALUES (?, ?, ?, ?, ?, ?)";
-                try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                    ps.setString(1, username);
-                    ps.setString(2, hashedPassword);
-                    ps.setString(3, fullName);
-                    ps.setString(4, email);
-                    ps.setString(5, phone);
-                    ps.setString(6, role);
-
-                    int rowsInserted = ps.executeUpdate();
-                    if (rowsInserted > 0) {
-                        // ✅ Chuyển hướng về trang đăng nhập với param thông báo thành công
-                        response.sendRedirect(request.getContextPath() + "/jsp/login.jsp?success=1");
-                    } else {
-                        request.setAttribute("errorMsg", "Registration failed. Please try again.");
-                        request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-                    }
-                }
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-                request.setAttribute("errorMsg", "Database error. Please try again later.");
-                request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("errorMsg", "Unexpected error occurred. Please try again.");
-            request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
-        }
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.sendRedirect("jsp/Register.jsp");
-    }
-}
