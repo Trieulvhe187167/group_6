@@ -40,11 +40,11 @@ public class LoginServlet extends HttpServlet {
                     response.sendRedirect("/index.jsp");
                     break;
                 default:
-                    request.setAttribute("errorMsg", "Vai trò không hợp lệ!");
+                    request.setAttribute("errorMsg", "Role invalid!");
                     request.getRequestDispatcher("jsp/login.jsp").forward(request, response);
             }
         } else {
-            request.setAttribute("errorMsg", "Sai tên đăng nhập hoặc mật khẩu!");
+            request.setAttribute("errorMsg", "Wrong username or password!");
             request.getRequestDispatcher("jsp/login.jsp").forward(request, response);
         }
     }
