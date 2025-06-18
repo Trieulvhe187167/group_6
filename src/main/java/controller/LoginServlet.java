@@ -39,6 +39,7 @@ public class LoginServlet extends HttpServlet {
                 case "GUEST":
                     response.sendRedirect("/index.jsp");
                     break;
+                
                 default:
                     request.setAttribute("errorMsg", "Vai trò không hợp lệ!");
                     request.getRequestDispatcher("jsp/login.jsp").forward(request, response);
@@ -55,4 +56,3 @@ public class LoginServlet extends HttpServlet {
         response.sendRedirect("jsp/login.jsp");
     }
 }
-
