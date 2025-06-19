@@ -2,11 +2,11 @@ package controller;
 
 import dal.CommentDAO;
 import model.Comment;
+import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import model.User;
 
 @WebServlet(name = "CommentServlet", urlPatterns = {"/CommentServlet"})
 public class CommentServlet extends HttpServlet {
@@ -30,16 +30,39 @@ public class CommentServlet extends HttpServlet {
     private void addComment(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        HttpSession session = request.getSession();
+        User loggedInUser = (User) session.getAttribute("user");
+        
         String blogIdStr = request.getParameter("blogId");
-        String authorName = request.getParameter("authorName");
-        String email = request.getParameter("email");
         String content = request.getParameter("content");
         
+        // Variables for non-logged in users
+        String authorName = null;
+        String email = null;
+        
+        // Check if user is logged in
+        if (loggedInUser != null) {
+            // User is logged in - use their info
+            authorName = loggedInUser.getFullName();
+            email = loggedInUser.getEmail();
+        } else {
+            // User is not logged in - get from form
+            authorName = request.getParameter("authorName");
+            email = request.getParameter("email");
+        }
+        
         // Validate input
-        if (blogIdStr == null || authorName == null || email == null || content == null ||
-            authorName.trim().isEmpty() || email.trim().isEmpty() || content.trim().isEmpty()) {
+        if (blogIdStr == null || content == null || content.trim().isEmpty() ||
+            (loggedInUser == null && (authorName == null || authorName.trim().isEmpty() || 
+             email == null || email.trim().isEmpty()))) {
             
-            response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogIdStr + "&error=1");
+            response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogIdStr + "&error=1#respond");
+            return;
+        }
+        
+        // Validate email format for non-logged in users
+        if (loggedInUser == null && !isValidEmail(email)) {
+            response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogIdStr + "&error=email#respond");
             return;
         }
         
@@ -51,12 +74,22 @@ public class CommentServlet extends HttpServlet {
             comment.setAuthorName(authorName.trim());
             comment.setEmail(email.trim());
             comment.setContent(content.trim());
-            comment.setStatus("PENDING"); // Comments need approval
+            
+            // Set status based on login status
+            if (loggedInUser != null) {
+                comment.setStatus("APPROVED"); // Auto-approve for logged in users
+            } else {
+                comment.setStatus("PENDING"); // Require approval for non-logged in users
+            }
             
             if (commentDAO.addComment(comment)) {
-                response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogId + "&success=1#comments");
+                if (loggedInUser != null) {
+                    response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogId + "&success=1#comments");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogId + "&success=2#comments");
+                }
             } else {
-                response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogId + "&error=1");
+                response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogId + "&error=1#respond");
             }
             
         } catch (NumberFormatException e) {
@@ -94,5 +127,11 @@ public class CommentServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/admin/blogs");
         }
+    }
+    
+    // Helper method to validate email format
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        return email != null && email.matches(emailRegex);
     }
 }

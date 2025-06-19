@@ -178,4 +178,6 @@ public class RegisterServlet extends HttpServlet {
             throws ServletException, IOException {
         response.sendRedirect("jsp/Register.jsp");
     }
+
 }
+

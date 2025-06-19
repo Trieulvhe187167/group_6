@@ -19,9 +19,9 @@ public class ReceptionistServlet extends HttpServlet {
         request.setAttribute("activePage", "receptionist");
 
         // Forward to the receptionist content JSP
-        request.setAttribute("contentPage", "/WEB-INF/views/admin/receptionist.jsp");
+        request.setAttribute("contentPage", "/jsp/admin/receptionist.jsp");
 
         // Forward using the main layout that includes the contentPage
-        request.getRequestDispatcher("/WEB-INF/views/admin/layout.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/admin/admin-layout.jsp").forward(request, response);
     }
 }
