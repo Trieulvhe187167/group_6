@@ -595,8 +595,298 @@ public class UserDAO {
         }
         return sb.toString();
     }
+
+ 
+    public int getGuestCount() {
+        String sql = "SELECT COUNT(*) as Total FROM Users WHERE Role = 'CUSTOMER' AND Status = 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getGuestCount: " + e.getMessage());
+        }
+        return 0;
+    }
     
+    public int getActiveGuestCount() {
+        String sql = "SELECT COUNT(*) as Total FROM Users WHERE Role = 'CUSTOMER' AND Status = 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getActiveGuestCount: " + e.getMessage());
+        }
+        return 0;
+    }
     
+    public int getVIPGuestCount() {
+        String sql = "SELECT COUNT(*) as Total FROM (" +
+                    "SELECT u.Id " +
+                    "FROM Users u " +
+                    "LEFT JOIN Reservations r ON u.Id = r.UserId " +
+                    "WHERE u.Role = 'CUSTOMER' AND u.Status = 1 " +
+                    "GROUP BY u.Id " +
+                    "HAVING COALESCE(SUM(r.TotalAmount), 0) > 50000000 OR COUNT(r.Id) >= 10" +
+                    ") as VIPGuests";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getVIPGuestCount: " + e.getMessage());
+        }
+        return 0;
+    }
+    
+    public int getNewGuestsThisMonth() {
+        String sql = "SELECT COUNT(*) as Total FROM Users " +
+                    "WHERE Role = 'CUSTOMER' AND Status = 1 " +
+                    "AND MONTH(CreatedAt) = MONTH(GETDATE()) " +
+                    "AND YEAR(CreatedAt) = YEAR(GETDATE())";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getNewGuestsThisMonth: " + e.getMessage());
+        }
+        return 0;
+    }
+    
+    public boolean emailExists(String email) {
+        String sql = "SELECT COUNT(*) as Total FROM Users WHERE Email = ? AND Status = 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Total") > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in emailExists: " + e.getMessage());
+        }
+        return false;
+    }
+    
+    public boolean phoneExists(String phone) {
+        String sql = "SELECT COUNT(*) as Total FROM Users WHERE Phone = ? AND Status = 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, phone);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Total") > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in phoneExists: " + e.getMessage());
+        }
+        return false;
+    }
+    
+    public boolean usernameExists(String username) {
+        String sql = "SELECT COUNT(*) as Total FROM Users WHERE Username = ? AND Status = 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Total") > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in usernameExists: " + e.getMessage());
+        }
+        return false;
+    }
+    
+    public boolean createUser(User user) {
+        String sql = "INSERT INTO Users (Username, PasswordHash, FullName, Email, Phone, Role, Status, CreatedAt) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPassword()); // Already hashed in servlet
+            ps.setString(3, user.getFullName());
+            ps.setString(4, user.getEmail());
+            ps.setString(5, user.getPhone());
+            ps.setString(6, user.getRole());
+            ps.setBoolean(7, user.isStatus());
+            
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in createUser: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public int createUserAndGetId(User user) {
+        String sql = "INSERT INTO Users (Username, PasswordHash, FullName, Email, Phone, Role, Status, CreatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPassword()); // Already hashed in servlet
+            ps.setString(3, user.getFullName());
+            ps.setString(4, user.getEmail());
+            ps.setString(5, user.getPhone());
+            ps.setString(6, user.getRole());
+            ps.setBoolean(7, user.isStatus());
+            
+            int affectedRows = ps.executeUpdate();
+            
+            if (affectedRows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            }
+            
+            return 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in createUserAndGetId: " + e.getMessage());
+            return 0;
+        }
+    }
+    
+// Get user by email
+public User getUserByEmail(String email) {
+    String sql = "SELECT u.*, " +
+                "(SELECT COUNT(*) FROM Reservations r WHERE r.UserId = u.Id) as TotalBookings " +
+                "FROM Users u WHERE u.Email = ? AND u.Status = 1";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setString(1, email);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            return mapResultSetToUser(rs);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+// Get user by username or email (for login purposes)
+public User getUserByUsernameOrEmail(String usernameOrEmail) {
+    String sql = "SELECT u.*, " +
+                "(SELECT COUNT(*) FROM Reservations r WHERE r.UserId = u.Id) as TotalBookings " +
+                "FROM Users u WHERE (u.Username = ? OR u.Email = ?) AND u.Status = 1";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setString(1, usernameOrEmail);
+        ps.setString(2, usernameOrEmail);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            return mapResultSetToUser(rs);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+// Get guests with their booking statistics
+public List<User> getGuestsWithStats() {
+    List<User> guests = new ArrayList<>();
+    String sql = "SELECT u.*, " +
+                "COALESCE((SELECT COUNT(*) FROM Reservations r WHERE r.UserId = u.Id), 0) as TotalBookings, " +
+                "COALESCE((SELECT SUM(r.TotalAmount) FROM Reservations r WHERE r.UserId = u.Id AND r.Status = 'COMPLETED'), 0) as TotalSpent, " +
+                "COALESCE((SELECT MAX(r.CheckOut) FROM Reservations r WHERE r.UserId = u.Id AND r.Status = 'COMPLETED'), NULL) as LastVisit " +
+                "FROM Users u WHERE u.Role = 'CUSTOMER' AND u.Status = 1 " +
+                "ORDER BY TotalBookings DESC, u.CreatedAt DESC";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        
+        while (rs.next()) {
+            User guest = mapResultSetToUser(rs);
+            // You can add additional fields here if needed
+            guests.add(guest);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return guests;
+}
+
+// Check if user has any active reservations
+public boolean hasActiveReservations(int userId) {
+    String sql = "SELECT COUNT(*) FROM Reservations " +
+                "WHERE UserId = ? AND Status IN ('CONFIRMED', 'PENDING') " +
+                "AND CheckOut >= CAST(GETDATE() as DATE)";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            return rs.getInt(1) > 0;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+// Get staff users (receptionist, housekeeper, admin)
+public List<User> getStaffUsers() {
+    List<User> staff = new ArrayList<>();
+    String sql = "SELECT u.*, " +
+                "(SELECT COUNT(*) FROM Reservations r WHERE r.CreatedBy = u.Id) as TotalBookings " +
+                "FROM Users u WHERE u.Role IN ('ADMIN', 'RECEPTIONIST', 'HOUSEKEEPER') AND u.Status = 1 " +
+                "ORDER BY u.Role, u.FullName";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        
+        while (rs.next()) {
+            staff.add(mapResultSetToUser(rs));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return staff;
+}
+
 public List<User> getAuthors() {
     List<User> authors = new ArrayList<>();
     String sql = "SELECT * FROM Users WHERE Role IN ('ADMIN', 'RECEPTIONIST') AND Status = 1 ORDER BY FullName";
@@ -613,5 +903,90 @@ public List<User> getAuthors() {
     }
     return authors;
 }
+
+// Get all room inspectors
+public List<User> getRoomInspectors() {
+    List<User> inspectors = new ArrayList<>();
+    String sql = "SELECT u.*, " +
+                "(SELECT COUNT(*) FROM RoomInspections ri WHERE ri.InspectorId = u.Id) as TotalInspections " +
+                "FROM Users u WHERE u.Role = 'ROOM_INSPECTOR' AND u.Status = 1 " +
+                "ORDER BY u.FullName";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        
+        while (rs.next()) {
+            User inspector = mapResultSetToUser(rs);
+            // TotalInspections will be mapped to TotalBookings field
+            inspectors.add(inspector);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return inspectors;
+}
+
+// Get active room inspectors count
+public int getActiveRoomInspectorCount() {
+    String sql = "SELECT COUNT(*) FROM Users WHERE Role = 'ROOM_INSPECTOR' AND Status = 1";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return 0;
+}
+
+// Get room inspector by ID with inspection statistics
+public User getRoomInspectorWithStats(int inspectorId) {
+    String sql = "SELECT u.*, " +
+                "(SELECT COUNT(*) FROM RoomInspections ri WHERE ri.InspectorId = u.Id) as TotalInspections, " +
+                "(SELECT COUNT(*) FROM RoomInspections ri WHERE ri.InspectorId = u.Id AND ri.Status = 'COMPLETED') as CompletedInspections, " +
+                "(SELECT COUNT(*) FROM RoomInspections ri WHERE ri.InspectorId = u.Id AND CAST(ri.InspectionTime AS DATE) = CAST(GETDATE() AS DATE)) as TodayInspections " +
+                "FROM Users u WHERE u.Id = ? AND u.Role = 'ROOM_INSPECTOR'";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, inspectorId);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            User inspector = mapResultSetToUser(rs);
+            // Additional stats can be stored in custom fields or a separate object
+            return inspector;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+// Check if user is room inspector
+public boolean isRoomInspector(int userId) {
+    String sql = "SELECT COUNT(*) FROM Users WHERE Id = ? AND Role = 'ROOM_INSPECTOR' AND Status = 1";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            return rs.getInt(1) > 0;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
 
 }

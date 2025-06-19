@@ -22,6 +22,25 @@ public class RegisterServlet extends HttpServlet {
     private boolean isValidPhone(String phone) {
         return phone != null && phone.matches("^\\d{10}$");
     }
+    
+    // Thêm method kiểm tra username hợp lệ
+    private boolean isValidUsername(String username) {
+        // Username phải có ít nhất 3 ký tự, không chứa khoảng trắng
+        return username != null && 
+               username.length() >= 3 && 
+               !username.contains(" ") && 
+               username.matches("^[a-zA-Z0-9_]+$");
+    }
+    
+    // Thêm method kiểm tra tên đầy đủ
+    private boolean isValidFullName(String fullName) {
+        // Tên phải có ít nhất 2 ký tự không phải khoảng trắng
+        // Cho phép khoảng trắng giữa các từ
+        return fullName != null && 
+               fullName.trim().length() >= 2 && 
+               fullName.matches("^[a-zA-ZÀ-ỹĐđ\\s]+$") && // Cho phép tiếng Việt có dấu
+               !fullName.matches("^\\s+$"); // Không chỉ toàn khoảng trắng
+    }
 
     private boolean isValidUsername(String username) {
         return username != null &&
@@ -54,6 +73,7 @@ public class RegisterServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
 
+        // Lấy parameters
         String username = request.getParameter("username");
         String fullName = request.getParameter("name");
         String email = request.getParameter("email");
@@ -102,6 +122,7 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
+
         if (!isValidPhone(phone)) {
             request.setAttribute("errorMsg", "Phone number must be exactly 10 digits.");
             request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
@@ -119,11 +140,25 @@ public class RegisterServlet extends HttpServlet {
             String role = "CUSTOMER";
 
             try (Connection conn = DBContext.getConnection()) {
-                String checkUserSql = "SELECT COUNT(*) FROM Users WHERE Username = ?";
-                try (PreparedStatement checkPs = conn.prepareStatement(checkUserSql)) {
-                    checkPs.setString(1, username);
+                // Kiểm tra username đã tồn tại chưa
+
+              
+
+                // Kiểm tra email đã tồn tại chưa
+                String checkEmailSql = "SELECT COUNT(*) FROM Users WHERE Email = ?";
+                try (PreparedStatement checkPs = conn.prepareStatement(checkEmailSql)) {
+                    checkPs.setString(1, email);
                     ResultSet rs = checkPs.executeQuery();
                     if (rs.next() && rs.getInt(1) > 0) {
+                        out.println("<script>alert('Email đã được sử dụng. Vui lòng sử dụng email khác.');history.back();</script>");
+                        return;
+                    }
+                }
+
+                // Insert user mới
+                String sql = "INSERT INTO Users (Username, PasswordHash, FullName, Email, Phone, Role) " +
+                             "VALUES (?, ?, ?, ?, ?, ?)";
+
                         request.setAttribute("errorMsg", "Username already exists. Please choose another one.");
                         request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
                         return;
@@ -152,6 +187,7 @@ public class RegisterServlet extends HttpServlet {
 
                     int rowsInserted = ps.executeUpdate();
                     if (rowsInserted > 0) {
+
                         // ✅ Chuyển hướng về trang đăng nhập với param thông báo thành công
                         response.sendRedirect(request.getContextPath() + "/jsp/login.jsp?success=1");
                     } else {
@@ -161,13 +197,16 @@ public class RegisterServlet extends HttpServlet {
                 }
 
             } catch (SQLException e) {
+
                 e.printStackTrace();
                 request.setAttribute("errorMsg", "Database error. Please try again later.");
                 request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
+
             }
 
         } catch (Exception e) {
             e.printStackTrace();
+
             request.setAttribute("errorMsg", "Unexpected error occurred. Please try again.");
             request.getRequestDispatcher("jsp/Register.jsp").forward(request, response);
         }
@@ -179,3 +218,4 @@ public class RegisterServlet extends HttpServlet {
         response.sendRedirect("jsp/Register.jsp");
     }
 }
+

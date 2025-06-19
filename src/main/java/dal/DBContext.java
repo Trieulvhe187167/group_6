@@ -6,10 +6,10 @@ import java.sql.SQLException;
 
 public class DBContext {
 
-    // Cách 1: tắt SSL
-     private static final String URL = "jdbc:sqlserver://localhost:1433;"
-            + "databaseName=HotelManagement;"
-            + "encrypt=true;trustServerCertificate=true;";
+
+     private static final String URL = "jdbc:sqlserver://LAPTOP-Q4D6UCM6\\MSSQLSERVER01:1433;"
+             + "databaseName=HotelManagement_3;encrypt=false;";
+
 
   
     private static final String USER = "sa";
