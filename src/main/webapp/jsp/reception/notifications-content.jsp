@@ -122,7 +122,7 @@
                     <label>Filter by Type</label>
                     <select class="form-control" id="typeFilter" onchange="filterNotifications()">
                         <option value="">All Types</option>
-                        <option value="GUEST_REQUEST" ${param.type == 'GUEST_REQUEST' ? 'selected' : ''}>Guest Request</option>
+                        <option value="CUSTOMER_REQUEST" ${param.type == 'CUSTOMER_REQUEST' ? 'selected' : ''}>Guest Request</option>
                         <option value="SYSTEM_ALERT" ${param.type == 'SYSTEM_ALERT' ? 'selected' : ''}>System Alert</option>
                         <option value="MAINTENANCE" ${param.type == 'MAINTENANCE' ? 'selected' : ''}>Maintenance</option>
                         <option value="BOOKING" ${param.type == 'BOOKING' ? 'selected' : ''}>Booking</option>
@@ -188,7 +188,7 @@
                                     <div class="d-flex align-items-start">
                                         <div class="notification-icon priority-${notification.priority.toLowerCase()}">
                                             <c:choose>
-                                                <c:when test="${notification.type eq 'GUEST_REQUEST'}">
+                                                <c:when test="${notification.type eq 'CUSTOMER_REQUEST'}">
                                                     <i class="fas fa-user-cog"></i>
                                                 </c:when>
                                                 <c:when test="${notification.type eq 'SYSTEM_ALERT'}">
@@ -241,7 +241,7 @@
                                                             <i class="fas fa-check"></i>
                                                         </button>
                                                     </c:if>
-                                                    <c:if test="${notification.type eq 'GUEST_REQUEST' && notification.status ne 'RESOLVED'}">
+                                                    <c:if test="${notification.type eq 'CUSTOMER_REQUEST' && notification.status ne 'RESOLVED'}">
                                                         <button class="btn btn-sm btn-outline-success" 
                                                                 onclick="resolveNotification(${notification.id}, event)" title="Resolve">
                                                             <i class="fas fa-check-circle"></i>
@@ -346,7 +346,7 @@
                         <label>Notification Type <span class="text-danger">*</span></label>
                         <select class="form-control" id="notificationType" required>
                             <option value="">Select type</option>
-                            <option value="GUEST_REQUEST">Guest Request</option>
+                            <option value="CUSTOMER_REQUEST">Guest Request</option>
                             <option value="SYSTEM_ALERT">System Alert</option>
                             <option value="MAINTENANCE">Maintenance</option>
                             <option value="BOOKING">Booking</option>
@@ -724,7 +724,7 @@ function createTemplateNotification(template) {
             break;
         case 'cleaning':
             templateData = {
-                type: 'GUEST_REQUEST',
+                type: 'CUSTOMER_REQUEST',
                 priority: 'LOW',
                 title: 'Room Cleaning Request',
                 message: 'Guest has requested additional room cleaning service.'

@@ -342,7 +342,7 @@
                                 <option value="ADMIN" ${isEdit && user.role == 'ADMIN' ? 'selected' : ''}>Administrator</option>
                                 <option value="RECEPTIONIST" ${isEdit && user.role == 'RECEPTIONIST' ? 'selected' : ''}>Receptionist</option>
                                 <option value="HOUSEKEEPER" ${isEdit && user.role == 'HOUSEKEEPER' ? 'selected' : ''}>Housekeeper</option>
-                                <option value="GUEST" ${isEdit && user.role == 'GUEST' ? 'selected' : ''}>Guest</option>
+                                <option value="CUSTOMER" ${isEdit && user.role == 'CUSTOMER' ? 'selected' : ''}>Guest</option>
                             </select>
                         </div>
                     </div>

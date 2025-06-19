@@ -423,3 +423,29 @@ public class RoomTypeDAO {
     }
 
 }
+    public List<RoomType> getAllActiveRoomTypes() {
+        List<RoomType> roomTypes = new ArrayList<>();
+        String sql = "SELECT * FROM RoomTypes WHERE Status = 'ACTIVE' ORDER BY Name";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                RoomType roomType = new RoomType();
+                roomType.setId(rs.getInt("Id"));
+                roomType.setName(rs.getString("Name"));
+                roomType.setDescription(rs.getString("Description"));
+                roomType.setBasePrice(rs.getBigDecimal("BasePrice"));
+                roomType.setCapacity(rs.getInt("Capacity"));
+                roomType.setStatus(rs.getString("Status"));
+                roomTypes.add(roomType);
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return roomTypes;
+    }
+}

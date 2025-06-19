@@ -460,7 +460,7 @@
                         <label>Refund Reason <span class="text-danger">*</span></label>
                         <select class="form-control" id="refundReason" required>
                             <option value="">Select reason</option>
-                            <option value="GUEST_REQUEST">Guest Request</option>
+                            <option value="CUSTOMER_REQUEST">Guest Request</option>
                             <option value="OVERBOOKING">Overbooking</option>
                             <option value="SERVICE_ISSUE">Service Issue</option>
                             <option value="CANCELLATION">Cancellation</option>
