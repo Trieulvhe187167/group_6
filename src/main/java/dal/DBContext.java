@@ -8,7 +8,7 @@ public class DBContext {
 
     // Cách 1: tắt SSL
      private static final String URL = "jdbc:sqlserver://LAPTOP-Q4D6UCM6\\MSSQLSERVER01:1433;"
-             + "databaseName=HotelManagement;encrypt=false;";
+             + "databaseName=HotelManagement_3;encrypt=false;";
 
   
     private static final String USER = "sa";

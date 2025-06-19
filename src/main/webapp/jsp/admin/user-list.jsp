@@ -58,7 +58,7 @@
                             <option value="ADMIN" ${roleFilter == 'ADMIN' ? 'selected' : ''}>Admin</option>
                             <option value="RECEPTIONIST" ${roleFilter == 'RECEPTIONIST' ? 'selected' : ''}>Receptionist</option>
                             <option value="HOUSEKEEPER" ${roleFilter == 'HOUSEKEEPER' ? 'selected' : ''}>Housekeeper</option>
-                            <option value="GUEST" ${roleFilter == 'GUEST' ? 'selected' : ''}>Guest</option>
+                            <option value="CUSTOMER" ${roleFilter == 'CUSTOMER' ? 'selected' : ''}>Guest</option>
                         </select>
                     </div>
                     

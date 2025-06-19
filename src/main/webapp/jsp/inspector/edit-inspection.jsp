@@ -41,7 +41,7 @@
     </nav>
     
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Room Inspection - ${inspection.reservation.room.roomNumber}</h1>
+        <h1>Room Inspection - ${inspection.reservation.roomNumber}</h1>
         <div>
             <button type="button" class="btn btn-success" onclick="saveProgress()">
                 <i class="fas fa-save"></i> Save Progress
@@ -64,7 +64,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Guest:</strong> ${inspection.reservation.customerName}</p>
-                            <p><strong>Room Type:</strong> ${inspection.reservation.room.roomTypeName}</p>
+                            <p><strong>Room Type:</strong> ${inspection.reservation.roomTypeName}</p>
                             <p><strong>Stay Period:</strong> 
                                 <fmt:formatDate value="${inspection.reservation.checkIn}" pattern="dd/MM"/> - 
                                 <fmt:formatDate value="${inspection.reservation.checkOut}" pattern="dd/MM/yyyy"/>

@@ -120,6 +120,99 @@ public class RoomType {
     
 
     
+// Additional getter for compatibility with double-based calculations
+public double getBasePriceAsDouble() {
+    return basePrice != null ? basePrice.doubleValue() : 0.0;
+}
+
+// Helper method for display purposes
+public String getFormattedPrice() {
+    if (basePrice == null) return "0₫";
+    return String.format("%,.0f₫", basePrice.doubleValue());
+}
+
+// Helper method to check if room type is active
+public boolean isActive() {
+    return "active".equalsIgnoreCase(status);
+}
+
+// Helper method for capacity display
+public String getCapacityDisplay() {
+    if (capacity <= 1) {
+        return capacity + " person";
+    } else {
+        return capacity + " people";
+    }
+}
+
+// Helper method for status badge class (for frontend display)
+public String getStatusBadgeClass() {
+    if (status == null) return "badge-secondary";
+    switch (status.toLowerCase()) {
+        case "active":
+            return "badge-success";
+        case "inactive":
+            return "badge-secondary";
+        case "maintenance":
+            return "badge-warning";
+        default:
+            return "badge-secondary";
+    }
+}
+
+// Helper method for status display name
+public String getStatusDisplayName() {
+    if (status == null) return "Unknown";
+    switch (status.toLowerCase()) {
+        case "active":
+            return "Active";
+        case "inactive":
+            return "Inactive";
+        case "maintenance":
+            return "Under Maintenance";
+        default:
+            return status;
+    }
+}
+
+// Method to get shortened description for display
+public String getShortDescription() {
+    if (description == null || description.length() <= 100) {
+        return description;
+    }
+    return description.substring(0, 100) + "...";
+}
+
+// Method to check if this room type has any rooms
+public boolean hasRooms() {
+    // This would need to be set by the service/DAO layer
+    // You can add a field 'private int roomCount' and its getter/setter
+    return true; // Default implementation
+}
+
+@Override
+public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
+    RoomType roomType = (RoomType) obj;
+    return id == roomType.id;
+}
+
+@Override
+public int hashCode() {
+    return Integer.hashCode(id);
+}
+
+@Override
+public String toString() {
+    return "RoomType{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", basePrice=" + basePrice +
+            ", capacity=" + capacity +
+            ", status='" + status + '\'' +
+            '}';
+}
     
     
 }

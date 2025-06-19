@@ -2,6 +2,23 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
+<style>
+@media print {
+    .btn, .breadcrumb, header, aside {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin: 0 !important;
+        padding: 20px !important;
+    }
+    
+    .card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+</style>
 <div class="container-fluid">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -81,8 +98,8 @@
                     <h5 class="mb-0">Stay Details</h5>
                 </div>
                 <div class="card-body">
-                    <p><strong>Room:</strong> ${inspection.reservation.room.roomNumber} - 
-                       ${inspection.reservation.room.roomTypeName}</p>
+                    <p><strong>Room:</strong> ${inspection.reservation.roomNumber} - 
+                       ${inspection.reservation.roomTypeName}</p>
                     <p><strong>Check-in:</strong> 
                        <fmt:formatDate value="${inspection.reservation.checkIn}" pattern="dd/MM/yyyy"/></p>
                     <p><strong>Check-out:</strong> 
@@ -270,21 +287,3 @@
         </div>
     </div>
 </div>
-
-<style>
-@media print {
-    .btn, .breadcrumb, header, aside {
-        display: none !important;
-    }
-    
-    .main-content {
-        margin: 0 !important;
-        padding: 20px !important;
-    }
-    
-    .card {
-        break-inside: avoid;
-        page-break-inside: avoid;
-    }
-}
-</style>

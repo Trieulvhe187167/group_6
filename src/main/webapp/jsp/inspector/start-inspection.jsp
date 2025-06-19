@@ -25,7 +25,7 @@
                 </div>
                 <div class="col-md-3">
                     <strong>Room:</strong><br>
-                    ${reservation.room.roomNumber} - ${reservation.room.roomTypeName}
+                    ${reservation.roomNumber} - ${reservation.roomTypeName}
                 </div>
                 <div class="col-md-3">
                     <strong>Guest:</strong><br>

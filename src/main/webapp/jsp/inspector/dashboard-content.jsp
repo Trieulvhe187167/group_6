@@ -187,12 +187,15 @@
                                         <c:choose>
                                             <c:when test="${inspection.status == 'PENDING'}">
                                                 <span class="badge badge-warning">Pending Approval</span>
+                                                <a href="${pageContext.request.contextPath}/inspector/inspection?action=edit&id=${inspection.id}" 
+                                                   class="btn btn-sm btn-warning ml-2">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
                                             </c:when>
                                             <c:when test="${inspection.status == 'COMPLETED'}">
                                                 <span class="badge badge-success">Completed</span>
                                             </c:when>
                                         </c:choose>
-                                        
                                         <a href="${pageContext.request.contextPath}/inspector/inspection?action=view&id=${inspection.id}" 
                                            class="btn btn-sm btn-outline-primary float-right">
                                             View Details
