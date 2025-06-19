@@ -116,7 +116,7 @@ public class RegisterServlet extends HttpServlet {
 
         try {
             String hashedPassword = hashPassword(password);
-            String role = "GUEST";
+            String role = "CUSTOMER";
 
             try (Connection conn = DBContext.getConnection()) {
                 String checkUserSql = "SELECT COUNT(*) FROM Users WHERE Username = ?";
