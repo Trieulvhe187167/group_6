@@ -6,7 +6,7 @@ public class CheckInRequest {
     private int reservationId;
     private String idType;
     private String idNumber;
-    private int additionalGuests;
+    private int additionalCustomers;
     private double securityDeposit;
     private int keyCards;
     private String keyCardNumbers;
@@ -38,12 +38,12 @@ public class CheckInRequest {
         this.idNumber = idNumber; 
     }
     
-    public int getAdditionalGuests() { 
-        return additionalGuests; 
+    public int getAdditionalCustomers() { 
+        return additionalCustomers; 
     }
     
-    public void setAdditionalGuests(int additionalGuests) { 
-        this.additionalGuests = additionalGuests; 
+    public void setAdditionalCustomers(int additionalCustomers) { 
+        this.additionalCustomers = additionalCustomers; 
     }
     
     public double getSecurityDeposit() { 

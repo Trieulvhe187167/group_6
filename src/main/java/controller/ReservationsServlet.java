@@ -52,8 +52,8 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
                 reservations = reservationDAO.getRecentReservations(100);
             }
             
-            // Get all guests for dropdown
-            List<User> guests = userDAO.getUsersByRole("GUEST");
+            // Get all customers for dropdown
+            List<User> customers = userDAO.getUsersByRole("CUSTOMER");
             
             // Get all room types
             List<RoomType> roomTypes = roomTypeDAO.getAllActiveRoomTypes();
@@ -66,7 +66,7 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
             
             // Set attributes
             request.setAttribute("reservations", reservations);
-            request.setAttribute("guests", guests);
+            request.setAttribute("customers", customers);
             request.setAttribute("roomTypes", roomTypes);
             request.setAttribute("totalReservations", totalReservations);
             request.setAttribute("pendingReservations", pendingReservations);
@@ -204,33 +204,33 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
             HttpSession session = request.getSession();
             User currentUser = (User) session.getAttribute("user");
             
-            // Create new guest if needed
-            int guestId;
-            if (reservationData.get("guestId") != null) {
-                guestId = ((Double) reservationData.get("guestId")).intValue();
+            // Create new customer if needed
+            int customerId;
+            if (reservationData.get("customerId") != null) {
+                customerId = ((Double) reservationData.get("customerId")).intValue();
             } else {
-                // Create new guest
-                Map<String, String> newGuestData = (Map<String, String>) reservationData.get("newGuest");
-                User newGuest = new User();
-                newGuest.setFullName(newGuestData.get("fullName"));
-                newGuest.setEmail(newGuestData.get("email"));
-                newGuest.setPhone(newGuestData.get("phone"));
-                newGuest.setRole("GUEST");
-                newGuest.setStatus(true);
-                newGuest.setPassword("Pass123!"); // Default password
-                newGuest.setUsername(generateUsername(newGuest.getFullName()));
+                // Create new customer
+                Map<String, String> newCustomerData = (Map<String, String>) reservationData.get("newCustomer");
+                User newCustomer = new User();
+                newCustomer.setFullName(newCustomerData.get("fullName"));
+                newCustomer.setEmail(newCustomerData.get("email"));
+                newCustomer.setPhone(newCustomerData.get("phone"));
+                newCustomer.setRole("CUSTOMER");
+                newCustomer.setStatus(true);
+                newCustomer.setPassword("Pass123!"); // Default password
+                newCustomer.setUsername(generateUsername(newCustomer.getFullName()));
                 
-                guestId = userDAO.createUserAndGetId(newGuest);
-                if (guestId == 0) {
+                customerId = userDAO.createUserAndGetId(newCustomer);
+                if (customerId == 0) {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().write("{\"success\":false,\"message\":\"Failed to create guest\"}");
+                    response.getWriter().write("{\"success\":false,\"message\":\"Failed to create customer\"}");
                     return;
                 }
             }
             
             // Create reservation
             Reservation reservation = new Reservation();
-            reservation.setUserId(guestId);
+            reservation.setUserId(customerId);
             reservation.setRoomId(((Double) reservationData.get("roomId")).intValue());
             reservation.setCheckIn(Date.valueOf((String) reservationData.get("checkIn")));
             reservation.setCheckOut(Date.valueOf((String) reservationData.get("checkOut")));
@@ -238,8 +238,8 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
             reservation.setCreatedBy(currentUser.getId());
             reservation.setSpecialRequests((String) reservationData.get("specialRequests"));
             
-            if (reservationData.get("numberOfGuests") != null) {
-                reservation.setNumberOfGuests(((Double) reservationData.get("numberOfGuests")).intValue());
+            if (reservationData.get("numberOfCustomers") != null) {
+                reservation.setNumberOfCustomers(((Double) reservationData.get("numberOfCustomers")).intValue());
             }
             
             // Calculate total amount
@@ -256,7 +256,7 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
                 Activity activity = new Activity();
                 activity.setType("RESERVATION_CREATE");
                 activity.setUserId(currentUser.getId());
-                activity.setDescription("Created new reservation for " + userDAO.getUserById(guestId).getFullName());
+                activity.setDescription("Created new reservation for " + userDAO.getUserById(customerId).getFullName());
                 activity.setAmount(totalAmount);
                 activity.setIpAddress(request.getRemoteAddr());
                 activityDAO.logActivity(activity);
@@ -297,8 +297,8 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
             reservation.setStatus((String) reservationData.get("status"));
             reservation.setSpecialRequests((String) reservationData.get("specialRequests"));
             
-            if (reservationData.get("numberOfGuests") != null) {
-                reservation.setNumberOfGuests(((Double) reservationData.get("numberOfGuests")).intValue());
+            if (reservationData.get("numberOfCustomers") != null) {
+                reservation.setNumberOfCustomers(((Double) reservationData.get("numberOfCustomers")).intValue());
             }
             
             // Recalculate total amount

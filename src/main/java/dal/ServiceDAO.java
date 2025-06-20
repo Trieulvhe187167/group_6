@@ -99,7 +99,8 @@ public class ServiceDAO {
     public List<ServiceOrder> getRecentServiceOrders(int limit) {
         List<ServiceOrder> orders = new ArrayList<>();
         String sql = "SELECT TOP (?) rs.*, s.Name as ServiceName, s.Category, " +
-                    "r.Id as ReservationId, rm.RoomNumber, u.FullName as GuestName, " +
+                    "r.Id as ReservationId, rm.RoomNumber, u.FullName as CustomerName, " +
+                  
                     "staff.FullName as CreatedByName " +
                     "FROM ReservationServices rs " +
                     "INNER JOIN Services s ON rs.ServiceId = s.Id " +
@@ -127,7 +128,7 @@ public class ServiceDAO {
                 order.setTotalAmount(rs.getDouble("TotalPrice"));
                 order.setStatus(rs.getString("Status"));
                 order.setRoomNumber(rs.getString("RoomNumber"));
-                order.setGuestName(rs.getString("GuestName"));
+                order.setCustomerName(rs.getString("CustomerName"));
                 order.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 order.setCreatedByName(rs.getString("CreatedByName"));
                 orders.add(order);

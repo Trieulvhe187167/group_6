@@ -56,7 +56,7 @@
                 <div class="form-group">
                     <label>Search</label>
                     <input type="text" class="form-control" name="search" id="searchInput" 
-                           placeholder="Guest name, room, booking ID..." value="${filterSearch != null ? filterSearch : ''}">
+                           placeholder="Customer name, room, booking ID..." value="${filterSearch != null ? filterSearch : ''}">
                 </div>
             </div>
             <div class="col-md-3">
@@ -121,7 +121,7 @@
                 <thead>
                     <tr>
                         <th>Booking ID</th>
-                        <th>Guest Name</th>
+                        <th>Customer Name</th>
                         <th>Room</th>
                         <th>Check-in</th>
                         <th>Check-out</th>
@@ -265,31 +265,31 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Guest <span class="text-danger">*</span></label>
-                                <select class="form-control" id="guestSelect" required>
-                                    <option value="">Select existing guest or add new</option>
-                                    <option value="new">+ Add New Guest</option>
-                                    <c:forEach var="guest" items="${guests}">
-                                        <option value="${guest.id}">${guest.fullName} - ${guest.phone}</option>
+                                <label>Customer <span class="text-danger">*</span></label>
+                                <select class="form-control" id="customerSelect" required>
+                                    <option value="">Select existing customer or add new</option>
+                                    <option value="new">+ Add New Customer</option>
+                                    <c:forEach var="customer" items="${customers}">
+                                        <option value="${customer.id}">${customer.fullName} - ${customer.phone}</option>
                                     </c:forEach>
                                 </select>
                             </div>
 
-                            <!-- New Guest Fields (hidden by default) -->
-                            <div id="newGuestFields" style="display: none;">
+                            <!-- New Customer Fields (hidden by default) -->
+                            <div id="newCustomerFields" style="display: none;">
                                 <div class="form-group">
                                     <label>Full Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="guestName" 
-                                           placeholder="Enter guest name">
+                                    <input type="text" class="form-control" id="customerName" 
+                                           placeholder="Enter customer name">
                                 </div>
                                 <div class="form-group">
                                     <label>Email</label>
-                                    <input type="email" class="form-control" id="guestEmail" 
+                                    <input type="email" class="form-control" id="customerEmail" 
                                            placeholder="Enter email address">
                                 </div>
                                 <div class="form-group">
                                     <label>Phone <span class="text-danger">*</span></label>
-                                    <input type="tel" class="form-control" id="guestPhone" 
+                                    <input type="tel" class="form-control" id="customerPhone" 
                                            placeholder="Enter phone number">
                                 </div>
                             </div>
@@ -327,8 +327,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Number of Guests</label>
-                                <input type="number" class="form-control" id="numberOfGuests" 
+                                <label>Number of Customers</label>
+                                <input type="number" class="form-control" id="numberOfCustomers" 
                                        value="1" min="1" max="10">
                             </div>
                         </div>
@@ -401,8 +401,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Guest Name</label>
-                                <input type="text" class="form-control" id="editGuestName" readonly>
+                                <label>Customer Name</label>
+                                <input type="text" class="form-control" id="editCustomerName" readonly>
                             </div>
                             <div class="form-group">
                                 <label>Room</label>
@@ -424,8 +424,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Number of Guests</label>
-                                <input type="number" class="form-control" id="editNumberOfGuests" 
+                                <label>Number of Customers</label>
+                                <input type="number" class="form-control" id="editNumberOfCustomers" 
                                        min="1" max="10">
                             </div>
                         </div>
@@ -468,14 +468,14 @@
 
 <script>
     $(document).ready(function () {
-        // Guest select change
-        $('#guestSelect').change(function () {
+        // Customer select change
+        $('#customerSelect').change(function () {
             if ($(this).val() === 'new') {
-                $('#newGuestFields').show();
-                $('#guestName, #guestPhone').attr('required', true);
+                $('#newCustomerFields').show();
+                $('#customerName, #customerPhone').attr('required', true);
             } else {
-                $('#newGuestFields').hide();
-                $('#guestName, #guestPhone').attr('required', false);
+                $('#newCustomerFields').hide();
+                $('#customerName, #customerPhone').attr('required', false);
             }
         });
 
@@ -576,16 +576,16 @@
 
     function createReservation() {
         const formData = {
-            guestId: $('#guestSelect').val() !== 'new' ? $('#guestSelect').val() : null,
-            newGuest: $('#guestSelect').val() === 'new' ? {
-                fullName: $('#guestName').val(),
-                email: $('#guestEmail').val(),
-                phone: $('#guestPhone').val()
+            customerId: $('#customerSelect').val() !== 'new' ? $('#customerSelect').val() : null,
+            newCustomer: $('#customerSelect').val() === 'new' ? {
+                fullName: $('#customerName').val(),
+                email: $('#customerEmail').val(),
+                phone: $('#customerPhone').val()
             } : null,
             roomId: $('#roomSelect').val(),
             checkIn: $('#newCheckIn').val(),
             checkOut: $('#newCheckOut').val(),
-            numberOfGuests: $('#numberOfGuests').val(),
+            numberOfCustomers: $('#numberOfCustomers').val(),
             specialRequests: $('#specialRequests').val()
         };
 
@@ -688,7 +688,7 @@
                 let html = `
                 <div class="row">
                     <div class="col-md-6">
-                        <h6>Guest Information</h6>
+                        <h6>Customer Information</h6>
                         <table class="table table-sm">
                             <tr><th>Name:</th><td>\${data.customerName || '-'}</td></tr>
                             <tr><th>Phone:</th><td>\${data.customerPhone || '-'}</td></tr>
@@ -759,11 +759,11 @@
                 }
                 
                 $('#editReservationId').val(data.id);
-                $('#editGuestName').val(data.customerName);
+                $('#editCustomerName').val(data.customerName);
                 $('#editRoomInfo').val(`Room \${data.roomNumber} (\${data.roomTypeName})`);
                 $('#editCheckIn').val(formatDateForInput(data.checkIn));
                 $('#editCheckOut').val(formatDateForInput(data.checkOut));
-                $('#editNumberOfGuests').val(data.numberOfGuests || 1);
+                $('#editNumberOfCustomers').val(data.numberOfCustomers || 1);
                 $('#editStatus').val(data.status);
                 $('#editSpecialRequests').val(data.specialRequests || '');
 
@@ -781,7 +781,7 @@
             id: $('#editReservationId').val(),
             checkIn: $('#editCheckIn').val(),
             checkOut: $('#editCheckOut').val(),
-            numberOfGuests: $('#editNumberOfGuests').val(),
+            numberOfCustomers: $('#editNumberOfCustomers').val(),
             status: $('#editStatus').val(),
             specialRequests: $('#editSpecialRequests').val()
         };
@@ -844,7 +844,7 @@
     }
 
     function sendConfirmation(id) {
-        if (confirm('Send confirmation email to guest?')) {
+        if (confirm('Send confirmation email to customer?')) {
             $.ajax({
                 url: '${pageContext.request.contextPath}/receptionist/reservations',
                 type: 'POST',
