@@ -10,8 +10,8 @@ public class MailUtil {
 
     private static final String SMTP_HOST = "smtp.gmail.com";
     private static final String SMTP_PORT = "587";
-    private static final String USERNAME = "bruh280905@gmail.com"; // Thay bằng Gmail thật
-    private static final String PASSWORD = "";     // Mật khẩu ứng dụng Gmail
+    private static final String USERNAME = "luxuryhotel999@gmail.com"; // Thay bằng Gmail thật
+    private static final String PASSWORD = "ycby ivph hzcf jnqa";     // Mật khẩu ứng dụng Gmail
 
     public static void sendEmail(String to, String subject, String content) throws MessagingException {
         Properties props = new Properties();

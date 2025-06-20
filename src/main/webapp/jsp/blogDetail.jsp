@@ -85,6 +85,26 @@
             background-color: #007bff;
             border-color: #007bff;
         }
+        .logged-in-info {
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .logged-in-info i {
+            color: #007bff;
+        }
+        .widget-post.current-blog {
+            background-color: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .widget-post.current-blog .post-title a {
+            color: #007bff;
+            font-weight: 600;
+        }
     </style>
 </head>
     
@@ -214,43 +234,71 @@
                                     <h4 class="comment-reply-title">Leave a Comment</h4>
                                     
                                     <!-- Success/Error Messages -->
-                                    <c:if test="${not empty param.success}">
+                                    <c:if test="${param.success eq '1'}">
                                         <div class="alert alert-success">
-                                            Your comment has been submitted and is awaiting moderation.
+                                            <i class="fa fa-check-circle"></i> Your comment has been posted successfully!
                                         </div>
                                     </c:if>
-                                    <c:if test="${not empty param.error}">
+                                    <c:if test="${param.success eq '2'}">
+                                        <div class="alert alert-info">
+                                            <i class="fa fa-info-circle"></i> Your comment has been submitted and is awaiting moderation.
+                                        </div>
+                                    </c:if>
+                                    <c:if test="${param.error eq '1'}">
                                         <div class="alert alert-danger">
-                                            Failed to submit comment. Please try again.
+                                            <i class="fa fa-exclamation-circle"></i> Please fill in all required fields.
+                                        </div>
+                                    </c:if>
+                                    <c:if test="${param.error eq 'email'}">
+                                        <div class="alert alert-danger">
+                                            <i class="fa fa-exclamation-circle"></i> Please enter a valid email address.
+                                        </div>
+                                    </c:if>
+                                    
+                                    <!-- Show logged in user info -->
+                                    <c:if test="${not empty sessionScope.user}">
+                                        <div class="logged-in-info">
+                                            <i class="fa fa-user-check"></i> Commenting as <strong>${sessionScope.user.fullName}</strong>
                                         </div>
                                     </c:if>
                                     
                                     <form class="comment-form" method="post" action="${pageContext.request.contextPath}/CommentServlet">
                                         <input type="hidden" name="blogId" value="${blog.id}" />
                                         <input type="hidden" name="action" value="add" />
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="authorName">Name <span class="required">*</span></label>
-                                                    <input type="text" name="authorName" id="authorName" 
-                                                           class="form-control" placeholder="Your Name" required />
+                                        
+                                        <!-- Only show name and email fields if user is NOT logged in -->
+                                        <c:if test="${empty sessionScope.user}">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="authorName">Name <span class="required">*</span></label>
+                                                        <input type="text" name="authorName" id="authorName" 
+                                                               class="form-control" placeholder="Your Name" required />
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="email">Email <span class="required">*</span></label>
+                                                        <input type="email" name="email" id="email" 
+                                                               class="form-control" placeholder="Your Email" required />
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="email">Email <span class="required">*</span></label>
-                                                    <input type="email" name="email" id="email" 
-                                                           class="form-control" placeholder="Your Email" required />
-                                                </div>
-                                            </div>
-                                        </div>
+                                        </c:if>
+                                        
                                         <div class="form-group">
                                             <label for="content">Comment <span class="required">*</span></label>
                                             <textarea name="content" id="content" rows="6" 
                                                       class="form-control" placeholder="Your Comment" required></textarea>
                                         </div>
+                                        
                                         <div class="form-group">
                                             <button type="submit" class="btn btn-primary">Submit Comment</button>
+                                            <c:if test="${empty sessionScope.user}">
+                                                <a href="${pageContext.request.contextPath}/jsp/login.jsp" class="btn btn-link">
+                                                    <i class="fa fa-sign-in-alt"></i> Login to post instantly
+                                                </a>
+                                            </c:if>
                                         </div>
                                     </form>
                                 </div>
@@ -316,19 +364,7 @@
                                         <h6 class="widget-title">Recent Posts</h6>
                                         <div class="widget-post-bx">
                                             <c:forEach var="rp" items="${recentPosts}">
-                                                <div class="widget-post clearfix">
-                                                    <div class="ttr-post-media">
-                                                        <c:choose>
-                                                            <c:when test="${not empty rp.imageUrl}">
-                                                                <img src="${pageContext.request.contextPath}/uploads/${rp.imageUrl}" 
-                                                                     alt="${rp.title}" />
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <img src="${pageContext.request.contextPath}/assets/images/blog/default-thumb.jpg" 
-                                                                     alt="${rp.title}" />
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </div>
+                                                <div class="widget-post clearfix ${rp.id == blog.id ? 'current-blog' : ''}">
                                                     <div class="ttr-post-info">
                                                         <div class="ttr-post-header">
                                                             <h6 class="post-title">
@@ -382,5 +418,29 @@
     <script src="${pageContext.request.contextPath}/assets/vendors/owl-carousel/owl.carousel.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
+    
+    <script>
+        // Validate form before submit
+        document.querySelector('.comment-form').addEventListener('submit', function(e) {
+            const content = document.getElementById('content').value.trim();
+            
+            if (content.length < 10) {
+                e.preventDefault();
+                alert('Please enter a comment with at least 10 characters.');
+                return false;
+            }
+            
+            <c:if test="${empty sessionScope.user}">
+            // Validate email for non-logged in users
+            const email = document.getElementById('email').value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                alert('Please enter a valid email address.');
+                return false;
+            }
+            </c:if>
+        });
+    </script>
 </body>
 </html>

@@ -124,18 +124,7 @@
                                 <c:forEach var="blog" items="${blogs}">
                                     <div class="col-md-4 col-sm-6 m-b30">
                                         <div class="blog-card recent-news">
-                                            <div class="action-box">
-                                                <c:choose>
-                                                    <c:when test="${not empty blog.imageUrl}">
-                                                        <img src="${pageContext.request.contextPath}/uploads/${blog.imageUrl}" 
-                                                             alt="${blog.title}" class="blog-image" />
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <img src="${pageContext.request.contextPath}/assets/images/blog/default-blog.jpg" 
-                                                             alt="${blog.title}" class="blog-image" />
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
+                                           
                                             <div class="info-bx p-3">
                                                 <ul class="media-post">
                                                     <li>
