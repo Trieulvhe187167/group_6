@@ -13,7 +13,7 @@ public class User {
     private boolean status;
     private Timestamp createdAt;
     private Timestamp updatedAt;
-    private int totalBookings;
+    private int totalBookings; // Basic stat that can be used for all users
     
     // Constructors
     public User() {}
@@ -118,29 +118,31 @@ public class User {
     }
     
     // Helper methods
-    public String getRoleDisplayName() {
-        if (role == null) return "";
-        switch (role) {
-            case "ADMIN": return "Administrator";
-            case "RECEPTIONIST": return "Receptionist";
-            case "HOUSEKEEPER": return "Housekeeper";
-            case "GUEST": return "Guest";
-            case "INACTIVE": return "Inactive";
-            default: return role;
-        }
+   public String getRoleDisplayName() {
+    if (role == null) return "";
+    switch (role) {
+        case "ADMIN": return "Administrator";
+        case "RECEPTIONIST": return "Receptionist";
+        case "HOUSEKEEPER": return "Housekeeper";
+        case "ROOM_INSPECTOR": return "Room Inspector"; // Add this line
+        case "CUSTOMER": return "Customer";    
+        case "INACTIVE": return "Inactive";
+        default: return role;
     }
+}
     
-    public String getRoleBadgeClass() {
-        if (role == null) return "badge-secondary";
-        switch (role) {
-            case "ADMIN": return "badge-danger";
-            case "RECEPTIONIST": return "badge-primary";
-            case "HOUSEKEEPER": return "badge-info";
-            case "GUEST": return "badge-success";
-            case "INACTIVE": return "badge-secondary";
-            default: return "badge-secondary";
-        }
+   public String getRoleBadgeClass() {
+    if (role == null) return "badge-secondary";
+    switch (role) {
+        case "ADMIN": return "badge-danger";
+        case "RECEPTIONIST": return "badge-primary";
+        case "HOUSEKEEPER": return "badge-info";
+        case "ROOM_INSPECTOR": return "badge-warning"; // Add this line
+        case "CUSTOMER": return "badge-success";
+        case "INACTIVE": return "badge-secondary";
+        default: return "badge-secondary";
     }
+}
     
     public String getStatusDisplayName() {
         return status ? "Active" : "Inactive";
