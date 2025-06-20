@@ -24,9 +24,7 @@ public class RoomTypeDAO {
     public List<RoomType> getAllRoomTypes() {
         List<RoomType> listRoom = new ArrayList<>();
         String sql = "SELECT * FROM RoomTypes";
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql); 
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 RoomType rtype = new RoomType();
@@ -48,14 +46,12 @@ public class RoomTypeDAO {
         }
         return listRoom;
     }
-    
+
     // Lấy tất cả RoomTypes đang active
     public List<RoomType> getAllRoomTypesActive() {
         List<RoomType> listRoom = new ArrayList<>();
         String sql = "SELECT * FROM RoomTypes WHERE status = 'active' ";
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql); 
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 RoomType rtype = new RoomType();
@@ -83,8 +79,7 @@ public class RoomTypeDAO {
         List<RoomType> list = new ArrayList<>();
         String sql = "SELECT * FROM RoomTypes WHERE Name LIKE ? OR CAST(BasePrice AS VARCHAR) LIKE ? OR CAST(Capacity AS VARCHAR) LIKE ?";
 
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             String searchPattern = "%" + keyword + "%";
             ps.setString(1, searchPattern);
@@ -118,8 +113,7 @@ public class RoomTypeDAO {
         List<RoomType> listRoom = new ArrayList<>();
         String sql = "SELECT * FROM Rooms WHERE category = ?"; // Có thể cần sửa thành RoomTypes
 
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, category);
             ResultSet rs = ps.executeQuery();
@@ -148,8 +142,7 @@ public class RoomTypeDAO {
     public RoomType getRoomsById(String id) {
         String sql = "SELECT * FROM RoomTypes WHERE id = ?";
 
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, id);
             ResultSet rs = ps.executeQuery();
@@ -172,12 +165,11 @@ public class RoomTypeDAO {
         }
         return null;
     }
-    
+
     public RoomType getRoomTypesById(int id) {
         String sql = "SELECT * FROM RoomTypes WHERE id = ?";
 
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
@@ -200,16 +192,13 @@ public class RoomTypeDAO {
         }
         return null;
     }
-    
-  
+
     // Lấy RoomTypes available (Note: SQL sai tên bảng - thiếu 's')
     public List<RoomType> getAvailableRoomTypes() {
         List<RoomType> list = new ArrayList<>();
         String sql = "SELECT * FROM RoomTypes WHERE status = 'active'"; // Đã sửa từ RoomType thành RoomTypes
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql); 
-             ResultSet rs = ps.executeQuery()) {
-            
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 RoomType rtype = new RoomType();
                 rtype.setId(rs.getInt("Id")); // Thêm ID
@@ -233,9 +222,8 @@ public class RoomTypeDAO {
     public void insert(RoomType roomType) throws SQLException {
         String sql = "INSERT INTO RoomTypes (name, description, basePrice, imageUrl, capacity, status, createdAt, updatedAt) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, roomType.getName());
             ps.setString(2, roomType.getDescription());
             ps.setBigDecimal(3, roomType.getBasePrice());
@@ -254,9 +242,8 @@ public class RoomTypeDAO {
     // Cập nhật status của RoomType
     public void updateRoomTypeStatus(int id, String newStatus) {
         String sql = "UPDATE RoomTypes SET status = ? WHERE id = ?";
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, newStatus);
             ps.setInt(2, id);
             ps.executeUpdate();
@@ -264,14 +251,13 @@ public class RoomTypeDAO {
             e.printStackTrace();
         }
     }
-    
+
     // Cập nhật toàn bộ thông tin RoomType (Phương thức này chỉ có trong file 1)
     public void updateRoomType(RoomType roomType) {
         String sql = "UPDATE RoomTypes SET name = ?, description = ?, basePrice = ?, imageUrl = ?, capacity = ?, status = ?, updatedAt = GETDATE() WHERE id = ?";
 
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, roomType.getName());
             ps.setString(2, roomType.getDescription());
             ps.setBigDecimal(3, roomType.getBasePrice());
@@ -291,8 +277,7 @@ public class RoomTypeDAO {
         List<Room> list = new ArrayList<>();
         String sql = "SELECT * FROM Rooms WHERE RoomTypeId = ?";
 
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, roomTypeId);
             ResultSet rs = ps.executeQuery();
@@ -311,14 +296,13 @@ public class RoomTypeDAO {
         }
         return list;
     }
-    
+
     // Lấy danh sách Rooms available theo RoomType (Note: SQL có vẻ sai column name)
     public List<Room> getAvailableRoomsByType(int roomTypeId) {
         List<Room> list = new ArrayList<>();
         String sql = "SELECT * FROM Rooms WHERE RoomTypeId = ? AND Status = 'AVAILABLE'"; // Đã sửa từ room_type_id và is_available
 
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, roomTypeId);
             ResultSet rs = ps.executeQuery();
@@ -389,8 +373,7 @@ public class RoomTypeDAO {
             params.add(statusValue);
         }
 
-        try (Connection conn = DBContext.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             // Gán các giá trị vào PreparedStatement
             for (int i = 0; i < params.size(); i++) {
@@ -416,5 +399,53 @@ public class RoomTypeDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public boolean isRoomTypeNameExists(String name, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM RoomTypes WHERE LOWER(name) = LOWER(?)";
+        if (excludeId > 0) {
+            sql += " AND id != ?";
+        }
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            if (excludeId > 0) {
+                ps.setInt(2, excludeId);
+            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+}
+    public List<RoomType> getAllActiveRoomTypes() {
+        List<RoomType> roomTypes = new ArrayList<>();
+        String sql = "SELECT * FROM RoomTypes WHERE Status = 'ACTIVE' ORDER BY Name";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                RoomType roomType = new RoomType();
+                roomType.setId(rs.getInt("Id"));
+                roomType.setName(rs.getString("Name"));
+                roomType.setDescription(rs.getString("Description"));
+                roomType.setBasePrice(rs.getBigDecimal("BasePrice"));
+                roomType.setCapacity(rs.getInt("Capacity"));
+                roomType.setStatus(rs.getString("Status"));
+                roomTypes.add(roomType);
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return roomTypes;
     }
 }

@@ -1,0 +1,317 @@
+package controller;
+
+
+import dal.*;
+import model.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.sql.Date;
+import java.util.*;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
+
+@WebServlet(name = "ReceptionistBookingServlet", urlPatterns = {"/receptionist/booking"})
+public class ReceptionistBookingServlet extends HttpServlet {
+    
+    private RoomDAO roomDAO = new RoomDAO();
+    private RoomTypeDAO roomTypeDAO = new RoomTypeDAO();
+    private UserDAO userDAO = new UserDAO();
+    private ReservationDAO reservationDAO = new ReservationDAO();
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+        
+        if (currentUser == null || !"RECEPTIONIST".equals(currentUser.getRole())) {
+            response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
+            return;
+        }
+        
+        String action = request.getParameter("action");
+        
+        if ("checkAvailability".equals(action)) {
+            checkRoomAvailability(request, response);
+        } else {
+            showBookingForm(request, response);
+        }
+    }
+    
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+        
+        if (currentUser == null || !"RECEPTIONIST".equals(currentUser.getRole())) {
+            response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
+            return;
+        }
+        
+        String action = request.getParameter("action");
+        
+        if ("createBooking".equals(action)) {
+            createBooking(request, response, currentUser);
+        }
+    }
+    
+    private void showBookingForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        try {
+            // Get all active room types
+            List<RoomType> roomTypes = roomTypeDAO.getAvailableRoomTypes();
+            
+            // Get all guests
+            List<User> guests = userDAO.getUsersByRole("GUEST");
+            
+            request.setAttribute("roomTypes", roomTypes);
+            request.setAttribute("guests", guests);
+            request.setAttribute("pageTitle", "New Booking");
+            request.setAttribute("activePage", "booking");
+            request.setAttribute("contentPage", "/jsp/reception/booking-form.jsp");
+            
+            request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading booking form: " + e.getMessage());
+            request.getRequestDispatcher("/reception-dashboard").forward(request, response);
+        }
+    }
+    
+    private void checkRoomAvailability(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        try {
+            String checkInStr = request.getParameter("checkIn");
+            String checkOutStr = request.getParameter("checkOut");
+            String roomTypeIdStr = request.getParameter("roomTypeId");
+            
+            // Validate input
+            if (checkInStr == null || checkOutStr == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\":\"Missing date parameters\"}");
+                return;
+            }
+            
+            Date checkIn = Date.valueOf(checkInStr);
+            Date checkOut = Date.valueOf(checkOutStr);
+            
+            // Validate date range
+            if (!checkOut.after(checkIn)) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\":\"Check-out date must be after check-in date\"}");
+                return;
+            }
+            
+            List<Room> availableRooms;
+            
+            if (roomTypeIdStr != null && !roomTypeIdStr.isEmpty()) {
+                int roomTypeId = Integer.parseInt(roomTypeIdStr);
+                availableRooms = roomDAO.getAvailableRoomsByTypeAndDate(roomTypeId, checkIn, checkOut);
+            } else {
+                availableRooms = roomDAO.getAvailableRoomsForDateRange(checkIn, checkOut);
+            }
+            
+            // Return as JSON
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            
+            StringBuilder json = new StringBuilder("[");
+            for (int i = 0; i < availableRooms.size(); i++) {
+                Room room = availableRooms.get(i);
+                if (i > 0) json.append(",");
+                json.append("{")
+                    .append("\"id\":").append(room.getId()).append(",")
+                    .append("\"roomNumber\":\"").append(escapeJson(room.getRoomNumber())).append("\",")
+                    .append("\"roomType\":\"").append(escapeJson(room.getRoomTypeName())).append("\",")
+                    .append("\"price\":").append(room.getBasePrice())
+                    .append("}");
+            }
+            json.append("]");
+            
+            response.getWriter().write(json.toString());
+            
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"Invalid number format\"}");
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"Invalid date format\"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\":\"Internal server error\"}");
+        }
+    }
+    
+    private void createBooking(HttpServletRequest request, HttpServletResponse response, User receptionist)
+            throws ServletException, IOException {
+        
+        try {
+            // Get parameters
+            String guestType = request.getParameter("guestType");
+            String guestIdStr = request.getParameter("guestId");
+            String newGuestName = request.getParameter("newGuestName");
+            String newGuestEmail = request.getParameter("newGuestEmail");
+            String newGuestPhone = request.getParameter("newGuestPhone");
+            String roomIdStr = request.getParameter("roomId");
+            String checkInStr = request.getParameter("checkIn");
+            String checkOutStr = request.getParameter("checkOut");
+            String notes = request.getParameter("notes");
+            
+            // Validate required parameters
+            if (roomIdStr == null || roomIdStr.isEmpty()) {
+                throw new Exception("Please select a room");
+            }
+            
+            if (checkInStr == null || checkOutStr == null) {
+                throw new Exception("Please select check-in and check-out dates");
+            }
+            
+            int guestId;
+            
+            // Handle guest creation/selection
+            if ("new".equals(guestType)) {
+                // Validate new guest information
+                if (newGuestName == null || newGuestName.trim().isEmpty() ||
+                    newGuestEmail == null || newGuestEmail.trim().isEmpty() ||
+                    newGuestPhone == null || newGuestPhone.trim().isEmpty()) {
+                    throw new Exception("Please fill in all guest information");
+                }
+                
+                // Check if email already exists
+                if (userDAO.isEmailExists(newGuestEmail.trim(), null)) {
+                    throw new Exception("Email already exists in the system");
+                }
+                
+                // Check if phone already exists
+                if (userDAO.phoneExists(newGuestPhone.trim())) {
+                    throw new Exception("Phone number already exists in the system");
+                }
+                
+                // Create new guest
+                User newGuest = new User();
+                newGuest.setUsername(generateUsername(newGuestEmail.trim()));
+                newGuest.setPassword(hashPassword("Pass123!")); // Default password, already hashed
+                newGuest.setFullName(newGuestName.trim());
+                newGuest.setEmail(newGuestEmail.trim());
+                newGuest.setPhone(newGuestPhone.trim());
+                newGuest.setRole("GUEST");
+                newGuest.setStatus(true);
+                
+                guestId = userDAO.createUserAndGetId(newGuest);
+                if (guestId == 0) {
+                    throw new Exception("Failed to create guest account");
+                }
+            } else {
+                // Existing guest
+                if (guestIdStr == null || guestIdStr.isEmpty()) {
+                    throw new Exception("Please select a guest");
+                }
+                guestId = Integer.parseInt(guestIdStr);
+                
+                // Verify guest exists
+                User existingGuest = userDAO.getUserById(guestId);
+                if (existingGuest == null) {
+                    throw new Exception("Selected guest not found");
+                }
+            }
+            
+            // Parse and validate dates
+            Date checkIn = Date.valueOf(checkInStr);
+            Date checkOut = Date.valueOf(checkOutStr);
+            
+            if (!checkOut.after(checkIn)) {
+                throw new Exception("Check-out date must be after check-in date");
+            }
+            
+            // Validate room selection and availability
+            int roomId = Integer.parseInt(roomIdStr);
+            Room room = roomDAO.getRoomById(roomId);
+            if (room == null) {
+                throw new Exception("Selected room not found");
+            }
+            
+            // Double-check room availability
+            if (!roomDAO.isRoomAvailableForDateRange(roomId, checkIn, checkOut)) {
+                throw new Exception("Selected room is no longer available for these dates");
+            }
+            
+            // Create reservation
+            Reservation reservation = new Reservation();
+            reservation.setUserId(guestId);
+            reservation.setRoomId(roomId);
+            reservation.setCheckIn(checkIn);
+            reservation.setCheckOut(checkOut);
+            reservation.setStatus("CONFIRMED");
+            reservation.setCreatedBy(receptionist.getId());
+            reservation.setNotes(notes != null ? notes.trim() : null);
+            
+            // Calculate total amount
+            long days = (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24);
+            if (days <= 0) {
+                throw new Exception("Invalid date range");
+            }
+            
+            reservation.setTotalAmount(room.getBasePrice() * days);
+            
+            // Create the reservation
+            if (reservationDAO.createReservation(reservation)) {
+                // Update room status to occupied (optional - depends on business logic)
+                // roomDAO.updateRoomStatus(roomId, "OCCUPIED");
+                
+                request.getSession().setAttribute("success", "Booking created successfully! Reservation ID: #" + reservation.getId());
+                response.sendRedirect(request.getContextPath() + "/receptionist/check-in");
+            } else {
+                throw new Exception("Failed to create reservation in database");
+            }
+            
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "Invalid number format in form data");
+            showBookingForm(request, response);
+        } catch (IllegalArgumentException e) {
+            request.setAttribute("error", "Invalid date format: " + e.getMessage());
+            showBookingForm(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error creating booking: " + e.getMessage());
+            showBookingForm(request, response);
+        }
+    }
+    
+    // Helper method to generate unique username
+    private String generateUsername(String email) {
+        String baseUsername = email.split("@")[0];
+        String timestamp = String.valueOf(System.currentTimeMillis()).substring(8); // Last 5 digits
+        return baseUsername + timestamp;
+    }
+    
+    // Helper method to hash password
+    private String hashPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return password; // Fallback (not recommended for production)
+        }
+    }
+    
+    // Helper method to escape JSON strings
+    private String escapeJson(String value) {
+        if (value == null) return "";
+        return value.replace("\"", "\\\"").replace("\\", "\\\\");
+    }
+}

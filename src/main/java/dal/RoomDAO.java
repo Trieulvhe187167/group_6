@@ -449,4 +449,158 @@ public class RoomDAO {
         }
         return rooms;
     }
+    
+    
+   
+     
+    
+    // Get available rooms with details
+    public List<Room> getAvailableRoomsWithDetails() {
+        List<Room> rooms = new ArrayList<>();
+        String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, " +
+                    "rt.Capacity, rt.Description as RoomTypeDescription, rt.imageUrl " +
+                    "FROM Rooms r " +
+                    "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
+                    "WHERE r.Status = 'AVAILABLE' " +
+                    "ORDER BY r.RoomNumber";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                Room room = new Room();
+                room.setId(rs.getInt("Id"));
+                room.setRoomNumber(rs.getString("RoomNumber"));
+                room.setRoomTypeId(rs.getInt("RoomTypeId"));
+                room.setStatus(rs.getString("Status"));
+                room.setRoomTypeName(rs.getString("RoomTypeName"));
+                room.setBasePrice(rs.getDouble("BasePrice"));
+                room.setCapacity(rs.getInt("Capacity"));
+                room.setRoomTypeDescription(rs.getString("RoomTypeDescription"));
+                room.setImageUrl(rs.getString("imageUrl"));
+                rooms.add(room);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return rooms;
+    }
+    
+    
+// Get available rooms by room type and date range
+public List<Room> getAvailableRoomsByTypeAndDate(int roomTypeId, Date checkIn, Date checkOut) {
+    List<Room> rooms = new ArrayList<>();
+    String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, " +
+                "rt.Capacity, rt.Description, rt.imageUrl " +
+                "FROM Rooms r " +
+                "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
+                "WHERE r.Status = 'AVAILABLE' " +
+                "AND r.RoomTypeId = ? " +
+                "AND r.Id NOT IN ( " +
+                "  SELECT res.RoomId FROM Reservations res " +
+                "  WHERE res.Status IN ('CONFIRMED', 'PENDING') " +
+                "  AND ((res.CheckIn <= ? AND res.CheckOut > ?) " +
+                "  OR (res.CheckIn < ? AND res.CheckOut >= ?) " +
+                "  OR (res.CheckIn >= ? AND res.CheckOut <= ?)) " +
+                ") " +
+                "ORDER BY r.RoomNumber";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, roomTypeId);
+        ps.setDate(2, checkOut);
+        ps.setDate(3, checkIn);
+        ps.setDate(4, checkOut);
+        ps.setDate(5, checkOut);
+        ps.setDate(6, checkIn);
+        ps.setDate(7, checkOut);
+        
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            rooms.add(mapResultSetToRoom(rs));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return rooms;
+}
+
+// Get room with full details by ID
+public Room getRoomWithFullDetails(int roomId) {
+    String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, " +
+                "rt.Capacity, rt.Description as RoomTypeDescription, rt.imageUrl " +
+                "FROM Rooms r " +
+                "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
+                "WHERE r.Id = ?";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, roomId);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            return mapResultSetToRoom(rs);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+// Check if room is available for specific date range
+public boolean isRoomAvailableForDateRange(int roomId, Date checkIn, Date checkOut) {
+    String sql = "SELECT COUNT(*) FROM Reservations " +
+                "WHERE RoomId = ? AND Status IN ('CONFIRMED', 'PENDING') " +
+                "AND ((CheckIn <= ? AND CheckOut > ?) " +
+                "OR (CheckIn < ? AND CheckOut >= ?) " +
+                "OR (CheckIn >= ? AND CheckOut <= ?))";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, roomId);
+        ps.setDate(2, checkOut);
+        ps.setDate(3, checkIn);
+        ps.setDate(4, checkOut);
+        ps.setDate(5, checkOut);
+        ps.setDate(6, checkIn);
+        ps.setDate(7, checkOut);
+        
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1) == 0; // Return true if no conflicting reservations
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+// Get rooms by floor
+public List<Room> getRoomsByFloor(int floor) {
+    List<Room> rooms = new ArrayList<>();
+    String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, " +
+                "rt.Capacity, rt.Description, rt.imageUrl " +
+                "FROM Rooms r " +
+                "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
+                "WHERE LEFT(r.RoomNumber, 1) = ? " +
+                "ORDER BY r.RoomNumber";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setString(1, String.valueOf(floor));
+        ResultSet rs = ps.executeQuery();
+        
+        while (rs.next()) {
+            rooms.add(mapResultSetToRoom(rs));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return rooms;
+}
 }

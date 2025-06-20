@@ -100,7 +100,7 @@
                                             </a>
                                             <div class="dropdown-divider"></div>
                                         </c:when>
-                                        <c:when test="${sessionScope.user.role eq 'GUEST'}">
+                                        <c:when test="${sessionScope.user.role eq 'CUSTOMER'}">
                                             <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/profile">
                                                 <i class="fa fa-user"></i> My Profile
                                             </a>

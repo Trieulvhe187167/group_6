@@ -40,13 +40,13 @@ public class ResetPasswordServlet extends HttpServlet {
             dao.deleteToken(token);
 
             if (success) {
-                request.setAttribute("msg", "Mật khẩu đã được đặt lại thành công!");
+                request.setAttribute("msg", "Your password has been reset successfully!");
                 request.getRequestDispatcher("jsp/login.jsp").forward(request, response);
                 return;
             }
         }
 
-        request.setAttribute("msg", "Link không hợp lệ hoặc đã hết hạn.");
+        request.setAttribute("msg", "The reset link is invalid or has expired.");
         request.getRequestDispatcher("jsp/resetPassword.jsp").forward(request, response);
     }
 }

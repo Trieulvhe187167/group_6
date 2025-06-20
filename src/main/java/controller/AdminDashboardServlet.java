@@ -55,7 +55,7 @@ public class AdminDashboardServlet extends HttpServlet {
             stats.setTotalRooms(roomDAO.getTotalRoomCount());
             
             // Get today's check-ins
-            stats.setTodayCheckIns(reservationDAO.getTodayCheckIns());
+            stats.setTodayCheckIns(reservationDAO.getTodayCheckInsCount());
             
             // Get revenue statistics
             Calendar cal = Calendar.getInstance();
