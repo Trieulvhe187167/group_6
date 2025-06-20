@@ -152,7 +152,7 @@
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <div class="bg-light p-3 rounded">
-                                <strong>Guest:</strong> <span id="guestName">-</span>
+                                <strong>Customer:</strong> <span id="customerName">-</span>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -229,7 +229,7 @@
                     <tr>
                         <th>Time</th>
                         <th>Room</th>
-                        <th>Guest</th>
+                        <th>Customer</th>
                         <th>Amenity</th>
                         <th>Quantity</th>
                         <th>Amount</th>
@@ -244,7 +244,7 @@
                                 <tr>
                                     <td><fmt:formatDate value="${log.checkedAt}" pattern="HH:mm dd/MM/yyyy"/></td>
                                     <td><strong>Room ${log.roomNumber}</strong></td>
-                                    <td>${log.guestName}</td>
+                                    <td>${log.customerName}</td>
                                     <td>
                                         ${log.amenityName}
                                         <c:if test="${log.isChargeable}">
@@ -463,7 +463,7 @@ function loadRoomAmenities(roomId) {
             if (data.reservation) {
                 currentReservation = data.reservation;
                 
-                $('#guestName').text(data.reservation.guestName);
+                $('#customerName').text(data.reservation.customerName);
                 $('#checkInDate').text(formatDate(data.reservation.checkIn));
                 $('#daysStayed').text(data.reservation.daysStayed);
 

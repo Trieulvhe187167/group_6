@@ -16,7 +16,7 @@ public class AmenityUsageLog {
     private int recordedBy;
     private String recordedByName;
     private String roomNumber;
-    private String guestName;
+    private String customerName;
     private boolean isChargeable;
     
     // Constructors
@@ -59,8 +59,8 @@ public class AmenityUsageLog {
     public String getRoomNumber() { return roomNumber; }
     public void setRoomNumber(String roomNumber) { this.roomNumber = roomNumber; }
     
-    public String getGuestName() { return guestName; }
-    public void setGuestName(String guestName) { this.guestName = guestName; }
+    public String getCustomerName() { return customerName; }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
     
     public boolean getIsChargeable() { return isChargeable; }
     public void setIsChargeable(boolean isChargeable) { this.isChargeable = isChargeable; }

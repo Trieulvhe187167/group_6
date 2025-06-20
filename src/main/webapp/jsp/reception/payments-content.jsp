@@ -153,7 +153,7 @@
                 <div class="form-group">
                     <label>Search</label>
                     <input type="text" class="form-control" name="search" id="searchInput" 
-                           placeholder="Booking ID, guest name..." value="${param.search}">
+                           placeholder="Booking ID, customer name..." value="${param.search}">
                 </div>
             </div>
             <div class="col-md-2">
@@ -189,7 +189,7 @@
                     <tr>
                         <th>Payment ID</th>
                         <th>Booking ID</th>
-                        <th>Guest</th>
+                        <th>Customer</th>
                         <th>Room</th>
                         <th>Amount</th>
                         <th>Method</th>
@@ -214,8 +214,8 @@
                                            class="text-primary">#${payment.reservationId}</a>
                                     </td>
                                     <td>
-                                        <strong>${payment.guestName}</strong>
-                                        <br><small class="text-muted">${payment.guestPhone}</small>
+                                        <strong>${payment.customerName}</strong>
+                                        <br><small class="text-muted">${payment.customerPhone}</small>
                                     </td>
                                     <td>
                                         <span class="badge badge-info">Room ${payment.roomNumber}</span>
@@ -338,7 +338,7 @@
                                 <label>Search Reservation <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="reservationSearch" 
-                                           placeholder="Enter booking ID or guest name" required>
+                                           placeholder="Enter booking ID or customer name" required>
                                     <div class="input-group-append">
                                         <button type="button" class="btn btn-outline-secondary" onclick="searchReservation()">
                                             <i class="fas fa-search"></i>
@@ -350,7 +350,7 @@
                             <div id="reservationInfo" style="display: none;">
                                 <div class="alert alert-info">
                                     <h6>Reservation Details</h6>
-                                    <p class="mb-1"><strong>Guest:</strong> <span id="resGuestName"></span></p>
+                                    <p class="mb-1"><strong>Customer:</strong> <span id="resCustomerName"></span></p>
                                     <p class="mb-1"><strong>Room:</strong> <span id="resRoomNumber"></span></p>
                                     <p class="mb-1"><strong>Total Amount:</strong> <span id="resTotalAmount"></span></p>
                                     <p class="mb-0"><strong>Amount Paid:</strong> <span id="resAmountPaid"></span></p>
@@ -460,7 +460,7 @@
                         <label>Refund Reason <span class="text-danger">*</span></label>
                         <select class="form-control" id="refundReason" required>
                             <option value="">Select reason</option>
-                            <option value="CUSTOMER_REQUEST">Guest Request</option>
+                            <option value="CUSTOMER_REQUEST">Customer Request</option>
                             <option value="OVERBOOKING">Overbooking</option>
                             <option value="SERVICE_ISSUE">Service Issue</option>
                             <option value="CANCELLATION">Cancellation</option>
@@ -549,7 +549,7 @@ function processQuickPayment() {
 function searchReservation() {
     const searchTerm = $('#reservationSearch').val();
     if (!searchTerm) {
-        alert('Please enter booking ID or guest name');
+        alert('Please enter booking ID or customer name');
         return;
     }
     
@@ -563,7 +563,7 @@ function searchReservation() {
         success: function(reservation) {
             if (reservation && reservation.id) {
                 $('#selectedReservationId').val(reservation.id);
-                $('#resGuestName').text(reservation.guestName);
+                $('#resCustomerName').text(reservation.customerName);
                 $('#resRoomNumber').text(reservation.roomNumber);
                 $('#resTotalAmount').text(formatCurrency(reservation.totalAmount));
                 $('#resAmountPaid').text(formatCurrency(reservation.amountPaid || 0));
@@ -645,9 +645,9 @@ function viewPaymentDetails(paymentId) {
                         <h6>Reservation Information</h6>
                         <table class="table table-sm">
                             <tr><th>Booking ID:</th><td>#${payment.reservationId}</td></tr>
-                            <tr><th>Guest:</th><td>${payment.guestName}</td></tr>
+                            <tr><th>Customer:</th><td>${payment.customerName}</td></tr>
                             <tr><th>Room:</th><td>${payment.roomNumber}</td></tr>
-                            <tr><th>Phone:</th><td>${payment.guestPhone}</td></tr>
+                            <tr><th>Phone:</th><td>${payment.customerPhone}</td></tr>
                         </table>
                         
                         <h6>Staff Information</h6>

@@ -14,7 +14,7 @@ public class ServiceOrder {
     private double totalAmount;
     private String status;
     private String roomNumber;
-    private String guestName;
+    private String customerName;
     private Timestamp createdAt;
     private String createdByName;
     private String notes;
@@ -53,8 +53,8 @@ public class ServiceOrder {
     public String getRoomNumber() { return roomNumber; }
     public void setRoomNumber(String roomNumber) { this.roomNumber = roomNumber; }
     
-    public String getGuestName() { return guestName; }
-    public void setGuestName(String guestName) { this.guestName = guestName; }
+    public String getCustomerName() { return customerName; }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
     
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }

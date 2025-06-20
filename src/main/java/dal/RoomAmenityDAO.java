@@ -217,7 +217,7 @@ public class RoomAmenityDAO {
         List<AmenityUsageLog> logs = new ArrayList<>();
         String sql = "SELECT TOP (?) au.*, a.Name as AmenityName, a.Category, a.IsChargeable, " +
                     "u.FullName as RecordedByName, r.Id as ReservationId, rm.RoomNumber, " +
-                    "guest.FullName as GuestName " +
+                    "guest.FullName as CustomerName " +
                     "FROM AmenityUsage au " +
                     "INNER JOIN Amenities a ON au.AmenityId = a.Id " +
                     "INNER JOIN Users u ON au.RecordedBy = u.Id " +
@@ -246,7 +246,7 @@ public class RoomAmenityDAO {
                 log.setRecordedBy(rs.getInt("RecordedBy"));
                 log.setRecordedByName(rs.getString("RecordedByName"));
                 log.setRoomNumber(rs.getString("RoomNumber"));
-                log.setGuestName(rs.getString("GuestName"));
+                log.setCustomerName(rs.getString("CustomerName"));
                 log.setIsChargeable(rs.getBoolean("IsChargeable"));
                 logs.add(log);
             }

@@ -263,7 +263,7 @@ public class ReservationDAO {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT r.Id, u.FullName as CustomerName, u.Phone as CustomerPhone, u.Email as CustomerEmail, ");
         sql.append("rm.RoomNumber, rt.Name as RoomTypeName, r.CheckIn, r.CheckOut, r.Status, ");
-        sql.append("r.TotalAmount, r.CreatedAt, r.SpecialRequests, r.NumberOfGuests ");
+        sql.append("r.TotalAmount, r.CreatedAt, r.SpecialRequests, r.NumberOfCustomers ");
         sql.append("FROM Reservations r ");
         sql.append("INNER JOIN Users u ON r.UserId = u.Id ");
         sql.append("INNER JOIN Rooms rm ON r.RoomId = rm.Id ");
@@ -319,7 +319,7 @@ public class ReservationDAO {
                 res.setTotalAmount(rs.getDouble("TotalAmount"));
                 res.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 res.setSpecialRequests(rs.getString("SpecialRequests"));
-                res.setNumberOfGuests(rs.getInt("NumberOfGuests"));
+                res.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
                 reservations.add(res);
             }
         } catch (SQLException e) {
@@ -441,7 +441,7 @@ public class ReservationDAO {
                 detail.setStatus(rs.getString("Status"));
                 detail.setTotalAmount(rs.getDouble("TotalAmount"));
                 detail.setSpecialRequests(rs.getString("SpecialRequests"));
-                detail.setNumberOfGuests(rs.getInt("NumberOfGuests"));
+                detail.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
                 detail.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 
                 // Calculate nights
@@ -486,7 +486,7 @@ public class ReservationDAO {
     
     // Get active reservation by room number
     public Reservation getActiveReservationByRoom(String roomNumber) {
-        String sql = "SELECT r.*, u.FullName as GuestName FROM Reservations r " +
+        String sql = "SELECT r.*, u.FullName as CustomerName FROM Reservations r " +
                     "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
                     "INNER JOIN Users u ON r.UserId = u.Id " +
                     "WHERE rm.RoomNumber = ? AND r.Status = 'CONFIRMED' " +
@@ -508,7 +508,7 @@ public class ReservationDAO {
                 reservation.setCheckOut(rs.getDate("CheckOut"));
                 reservation.setStatus(rs.getString("Status"));
                 reservation.setTotalAmount(rs.getDouble("TotalAmount"));
-                reservation.setGuestName(rs.getString("GuestName"));
+                reservation.setCustomerName(rs.getString("CustomerName"));
                 return reservation;
             }
         } catch (SQLException e) {
@@ -519,7 +519,7 @@ public class ReservationDAO {
     
     // Get current reservation by room ID
     public Reservation getCurrentReservationByRoom(int roomId) {
-        String sql = "SELECT r.*, u.FullName as GuestName FROM Reservations r " +
+        String sql = "SELECT r.*, u.FullName as CustomerName FROM Reservations r " +
                     "INNER JOIN Users u ON r.UserId = u.Id " +
                     "WHERE r.RoomId = ? AND r.Status = 'CONFIRMED' " +
                     "AND r.CheckIn <= CAST(GETDATE() AS DATE) " +
@@ -540,7 +540,7 @@ public class ReservationDAO {
                 reservation.setCheckOut(rs.getDate("CheckOut"));
                 reservation.setStatus(rs.getString("Status"));
                 reservation.setTotalAmount(rs.getDouble("TotalAmount"));
-                reservation.setGuestName(rs.getString("GuestName"));
+                reservation.setCustomerName(rs.getString("CustomerName"));
                 return reservation;
             }
         } catch (SQLException e) {
@@ -552,7 +552,7 @@ public class ReservationDAO {
     // Create reservation (comprehensive version)
     public boolean createReservation(Reservation reservation) {
         String sql = "INSERT INTO Reservations (UserId, GroupBookingId, CreatedBy, RoomId, CheckIn, CheckOut, " +
-                    "Status, TotalAmount, SpecialRequests, NumberOfGuests, Notes, CreatedAt) " +
+                    "Status, TotalAmount, SpecialRequests, NumberOfCustomers, Notes, CreatedAt) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
         
         try (Connection conn = DBContext.getConnection();
@@ -578,7 +578,7 @@ public class ReservationDAO {
             ps.setString(7, reservation.getStatus());
             ps.setDouble(8, reservation.getTotalAmount());
             ps.setString(9, reservation.getSpecialRequests());
-            ps.setInt(10, reservation.getNumberOfGuests());
+            ps.setInt(10, reservation.getNumberOfCustomers());
             ps.setString(11, reservation.getNotes());
             
             int result = ps.executeUpdate();
@@ -600,7 +600,7 @@ public class ReservationDAO {
     // Update reservation
     public boolean updateReservation(Reservation reservation) {
         String sql = "UPDATE Reservations SET UserId = ?, RoomId = ?, CheckIn = ?, CheckOut = ?, " +
-                    "Status = ?, TotalAmount = ?, SpecialRequests = ?, NumberOfGuests = ?, " +
+                    "Status = ?, TotalAmount = ?, SpecialRequests = ?, NumberOfCustomers = ?, " +
                     "Notes = ?, UpdatedAt = GETDATE() WHERE Id = ?";
         
         try (Connection conn = DBContext.getConnection();
@@ -613,7 +613,7 @@ public class ReservationDAO {
             ps.setString(5, reservation.getStatus());
             ps.setDouble(6, reservation.getTotalAmount());
             ps.setString(7, reservation.getSpecialRequests());
-            ps.setInt(8, reservation.getNumberOfGuests());
+            ps.setInt(8, reservation.getNumberOfCustomers());
             ps.setString(9, reservation.getNotes());
             ps.setInt(10, reservation.getId());
             
@@ -646,7 +646,7 @@ public class ReservationDAO {
         List<ReservationSummary> reservations = new ArrayList<>();
         String sql = "SELECT r.Id, u.FullName as CustomerName, u.Phone as CustomerPhone, u.Email as CustomerEmail, " +
                     "rm.RoomNumber, rt.Name as RoomTypeName, r.CheckIn, r.CheckOut, r.Status, " +
-                    "r.TotalAmount, r.CreatedAt, r.SpecialRequests, r.NumberOfGuests " +
+                    "r.TotalAmount, r.CreatedAt, r.SpecialRequests, r.NumberOfCustomers " +
                     "FROM Reservations r " +
                     "INNER JOIN Users u ON r.UserId = u.Id " +
                     "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
@@ -677,7 +677,7 @@ public class ReservationDAO {
                 res.setTotalAmount(rs.getDouble("TotalAmount"));
                 res.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 res.setSpecialRequests(rs.getString("SpecialRequests"));
-                res.setNumberOfGuests(rs.getInt("NumberOfGuests"));
+                res.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
                 reservations.add(res);
             }
         } catch (SQLException e) {
@@ -718,12 +718,12 @@ public class ReservationDAO {
         return reservations;
     }
     
-    // Get guest booking history
-    public List<ReservationSummary> getGuestBookingHistory(int guestId) {
+    // Get customer booking history
+    public List<ReservationSummary> getCustomerBookingHistory(int customerId) {
         List<ReservationSummary> bookings = new ArrayList<>();
         String sql = "SELECT r.Id, u.FullName as CustomerName, u.Phone as CustomerPhone, u.Email as CustomerEmail, " +
                     "rm.RoomNumber, rt.Name as RoomTypeName, r.CheckIn, r.CheckOut, r.Status, " +
-                    "r.TotalAmount, r.CreatedAt, r.SpecialRequests, r.NumberOfGuests " +
+                    "r.TotalAmount, r.CreatedAt, r.SpecialRequests, r.NumberOfCustomers " +
                     "FROM Reservations r " +
                     "INNER JOIN Users u ON r.UserId = u.Id " +
                     "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
@@ -734,7 +734,7 @@ public class ReservationDAO {
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
-            ps.setInt(1, guestId);
+            ps.setInt(1, customerId);
             ResultSet rs = ps.executeQuery();
             
             while (rs.next()) {
@@ -751,7 +751,7 @@ public class ReservationDAO {
                 booking.setTotalAmount(rs.getDouble("TotalAmount"));
                 booking.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 booking.setSpecialRequests(rs.getString("SpecialRequests"));
-                booking.setNumberOfGuests(rs.getInt("NumberOfGuests"));
+                booking.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
                 bookings.add(booking);
             }
         } catch (SQLException e) {
@@ -761,67 +761,67 @@ public class ReservationDAO {
     }
     
     /**
-     * Get reservation count for a guest
-     * @param guestId Guest user ID
+     * Get reservation count for a customer
+     * @param customerId Customer user ID
      * @return Number of reservations
      */
-    public int getGuestReservationCount(int guestId) {
+    public int getCustomerReservationCount(int customerId) {
         String sql = "SELECT COUNT(*) FROM Reservations WHERE UserId = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
-            ps.setInt(1, guestId);
+            ps.setInt(1, customerId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Error getting guest reservation count: " + e.getMessage());
+            System.out.println("Error getting customer reservation count: " + e.getMessage());
         }
         return 0;
     }
     
     /**
-     * Get total amount spent by a guest
-     * @param guestId Guest user ID
+     * Get total amount spent by a customer
+     * @param customerId Customer user ID
      * @return Total amount spent
      */
-    public double getGuestTotalSpent(int guestId) {
+    public double getCustomerTotalSpent(int customerId) {
         String sql = "SELECT COALESCE(SUM(TotalAmount), 0) FROM Reservations WHERE UserId = ? AND Status IN ('CONFIRMED', 'COMPLETED')";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
-            ps.setInt(1, guestId);
+            ps.setInt(1, customerId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getDouble(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Error getting guest total spent: " + e.getMessage());
+            System.out.println("Error getting customer total spent: " + e.getMessage());
         }
         return 0.0;
     }
     
     /**
-     * Get last visit date for a guest
-     * @param guestId Guest user ID
+     * Get last visit date for a customer
+     * @param customerId Customer user ID
      * @return Last check-out date
      */
-    public Date getGuestLastVisit(int guestId) {
+    public Date getCustomerLastVisit(int customerId) {
         String sql = "SELECT MAX(CheckOut) FROM Reservations WHERE UserId = ? AND Status = 'COMPLETED'";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
-            ps.setInt(1, guestId);
+            ps.setInt(1, customerId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getDate(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Error getting guest last visit: " + e.getMessage());
+            System.out.println("Error getting customer last visit: " + e.getMessage());
         }
         return null;
     }
@@ -878,7 +878,7 @@ public class ReservationDAO {
         }
         
         try {
-            reservation.setNumberOfGuests(rs.getInt("NumberOfGuests"));
+            reservation.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
         } catch (SQLException e) {
             // Column might not exist
         }

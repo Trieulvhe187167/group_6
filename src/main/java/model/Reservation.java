@@ -16,7 +16,7 @@ public class Reservation {
     private double totalAmount;
     private String notes;
     private String specialRequests;
-    private int numberOfGuests;
+    private int numberOfCustomers;
     private Timestamp createdAt;
     private Timestamp updatedAt;
     
@@ -24,9 +24,6 @@ public class Reservation {
     private String customerName;
     private String customerEmail;
     private String customerPhone;
-    private String guestName;
-    private String guestEmail;
-    private String guestPhone;
     private String roomNumber;
     private String roomTypeName;
     private String createdByName;
@@ -138,12 +135,12 @@ public class Reservation {
         this.specialRequests = specialRequests;
     }
     
-    public int getNumberOfGuests() {
-        return numberOfGuests;
+    public int getNumberOfCustomers() {
+        return numberOfCustomers;
     }
     
-    public void setNumberOfGuests(int numberOfGuests) {
-        this.numberOfGuests = numberOfGuests;
+    public void setNumberOfCustomers(int numberOfCustomers) {
+        this.numberOfCustomers = numberOfCustomers;
     }
     
     public Timestamp getCreatedAt() {
@@ -160,80 +157,6 @@ public class Reservation {
     
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
-    }
-    
-    // Customer fields (compatibility with version 1)
-    public String getCustomerName() {
-        return customerName != null ? customerName : guestName;
-    }
-    
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-        // Also set guestName for compatibility
-        if (this.guestName == null) {
-            this.guestName = customerName;
-        }
-    }
-    
-    public String getCustomerEmail() {
-        return customerEmail != null ? customerEmail : guestEmail;
-    }
-    
-    public void setCustomerEmail(String customerEmail) {
-        this.customerEmail = customerEmail;
-        // Also set guestEmail for compatibility
-        if (this.guestEmail == null) {
-            this.guestEmail = customerEmail;
-        }
-    }
-    
-    public String getCustomerPhone() {
-        return customerPhone != null ? customerPhone : guestPhone;
-    }
-    
-    public void setCustomerPhone(String customerPhone) {
-        this.customerPhone = customerPhone;
-        // Also set guestPhone for compatibility
-        if (this.guestPhone == null) {
-            this.guestPhone = customerPhone;
-        }
-    }
-    
-    // Guest fields (compatibility with version 2)
-    public String getGuestName() {
-        return guestName != null ? guestName : customerName;
-    }
-    
-    public void setGuestName(String guestName) {
-        this.guestName = guestName;
-        // Also set customerName for compatibility
-        if (this.customerName == null) {
-            this.customerName = guestName;
-        }
-    }
-    
-    public String getGuestEmail() {
-        return guestEmail != null ? guestEmail : customerEmail;
-    }
-    
-    public void setGuestEmail(String guestEmail) {
-        this.guestEmail = guestEmail;
-        // Also set customerEmail for compatibility
-        if (this.customerEmail == null) {
-            this.customerEmail = guestEmail;
-        }
-    }
-    
-    public String getGuestPhone() {
-        return guestPhone != null ? guestPhone : customerPhone;
-    }
-    
-    public void setGuestPhone(String guestPhone) {
-        this.guestPhone = guestPhone;
-        // Also set customerPhone for compatibility
-        if (this.customerPhone == null) {
-            this.customerPhone = guestPhone;
-        }
     }
     
     // Room info
@@ -309,6 +232,30 @@ public class Reservation {
         this.amountPaid = amountPaid;
     }
     
+    public String getCustomerName() {
+        return customerName;
+    }
+    
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+    
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+    
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+    
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+    
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
+    }
+    
     // Helper methods
     public String getStatusDisplayName() {
         if (status == null) return "";
@@ -370,9 +317,9 @@ public class Reservation {
                 ", checkOut=" + checkOut +
                 ", status='" + status + '\'' +
                 ", totalAmount=" + totalAmount +
-                ", customerName='" + getCustomerName() + '\'' +
+                ", customerName='" + customerName + '\'' +
                 ", roomNumber='" + roomNumber + '\'' +
-                ", numberOfGuests=" + numberOfGuests +
+                ", numberOfCustomers=" + numberOfCustomers +
                 ", nights=" + nights +
                 '}';
     }

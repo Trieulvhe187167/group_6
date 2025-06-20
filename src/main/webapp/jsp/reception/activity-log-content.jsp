@@ -193,7 +193,7 @@
                     <div class="form-group">
                         <label>Search</label>
                         <input type="text" class="form-control" name="search" id="searchInput" 
-                               placeholder="Room, guest name..." value="${param.search}">
+                               placeholder="Room, customer name..." value="${param.search}">
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -262,7 +262,7 @@
                             <th>User</th>
                             <th>Activity</th>
                             <th>Details</th>
-                            <th>Room/Guest</th>
+                            <th>Room/Customer</th>
                             <th>IP Address</th>
                             <th>Status</th>
                         </tr>
@@ -333,8 +333,8 @@
                                                 <span class="badge badge-info">Room ${activity.roomNumber}</span>
                                                 <br>
                                             </c:if>
-                                            <c:if test="${not empty activity.guestName}">
-                                                <small>${activity.guestName}</small>
+                                            <c:if test="${not empty activity.customerName}">
+                                                <small>${activity.customerName}</small>
                                             </c:if>
                                         </td>
                                         <td>

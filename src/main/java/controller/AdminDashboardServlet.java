@@ -45,7 +45,7 @@ public class AdminDashboardServlet extends HttpServlet {
             DashboardStats stats = new DashboardStats();
             
             // Get customer statistics
-            stats.setTotalCustomers(userDAO.getTotalUsersByRole("GUEST"));
+            stats.setTotalCustomers(userDAO.getTotalUsersByRole("CUSTOMER"));
             
             // Get room statistics
             int[] roomStats = roomDAO.getRoomStatistics();

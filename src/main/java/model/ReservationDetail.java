@@ -15,7 +15,7 @@ public class ReservationDetail {
     private String status;
     private double totalAmount;
     private String specialRequests;
-    private int numberOfGuests;
+    private int numberOfCustomers;
     private Timestamp createdAt;
     private int nights;
     private int roomId;
@@ -109,12 +109,12 @@ public class ReservationDetail {
         this.specialRequests = specialRequests;
     }
 
-    public int getNumberOfGuests() {
-        return numberOfGuests;
+    public int getNumberOfCustomers() {
+        return numberOfCustomers;
     }
 
-    public void setNumberOfGuests(int numberOfGuests) {
-        this.numberOfGuests = numberOfGuests;
+    public void setNumberOfCustomers(int numberOfCustomers) {
+        this.numberOfCustomers = numberOfCustomers;
     }
 
     public Timestamp getCreatedAt() {
