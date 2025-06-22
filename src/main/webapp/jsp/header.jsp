@@ -258,6 +258,20 @@
         border-color: #ff6b6b;
     }
     
+    /* Date validation error styles */
+    .date-field.error {
+        border-right-color: #ff6b6b !important;
+        background: rgba(255, 107, 107, 0.1) !important;
+    }
+    
+    .date-field.error input {
+        color: #ff6b6b !important;
+    }
+    
+    .date-field.error i {
+        color: #ff6b6b !important;
+    }
+    
     /* Hide the old search elements */
     .nav-search-bar,
     .secondary-menu > ul {
@@ -448,7 +462,7 @@
 
             <!-- Compact Hotel Search Form -->
             <div class="secondary-menu">
-                <form action="${pageContext.request.contextPath}/SearchAvailableRoomsServlet" method="GET" class="hotel-search-form">
+                <form action="${pageContext.request.contextPath}/SearchAvailableRoomsServlet" method="GET" class="hotel-search-form" id="headerSearchForm">
                     <!-- Room Type -->
                     <div class="search-field roomtype-field">
                         <i class="fa fa-bed"></i>
@@ -464,25 +478,27 @@
                     </div>
                     
                     <!-- Check-in -->
-                    <div class="search-field date-field">
+                    <div class="search-field date-field" id="checkinField">
                         <div class="date-picker-wrapper">
                             <span class="date-label">Check in</span>
                             <i class="fa fa-calendar"></i>
                             <input type="date" id="checkIn" name="checkIn" 
                                    value="${searchCheckIn}" 
                                    title="Select check-in date (today or future)"
+                                   min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>"
                                    required>
                         </div>
                     </div>
                     
                     <!-- Check-out -->
-                    <div class="search-field date-field">
+                    <div class="search-field date-field" id="checkoutField">
                         <div class="date-picker-wrapper">
                             <span class="date-label">Check out</span>
                             <i class="fa fa-calendar"></i>
                             <input type="date" id="checkOut" name="checkOut" 
                                    value="${searchCheckOut}" 
                                    title="Select check-out date (must be after check-in)"
+                                   min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 24*60*60*1000)) %>"
                                    required>
                         </div>
                     </div>
@@ -529,9 +545,202 @@
 
 <!-- Add necessary JavaScript -->
 <script>
+    // Define global variables for date validation
+    var todayStr;
+    
+    // Function to get today's date in YYYY-MM-DD format
+    function getTodayString() {
+        var today = new Date();
+        var year = today.getFullYear();
+        var month = String(today.getMonth() + 1).padStart(2, '0');
+        var day = String(today.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    }
+    
+    // Function to force update min attribute and validate (similar to roomDetail.jsp)
+    function forceSetMinDates() {
+        todayStr = getTodayString();
+        var checkinInput = document.getElementById('checkIn');
+        var checkoutInput = document.getElementById('checkOut');
+        
+        if (checkinInput) {
+            checkinInput.setAttribute('min', todayStr);
+            
+            // If current value is less than today, reset to today
+            if (checkinInput.value && checkinInput.value < todayStr) {
+                checkinInput.value = todayStr;
+            }
+            
+            // Set default to today if empty
+            if (!checkinInput.value) {
+                checkinInput.value = todayStr;
+            }
+        }
+        
+        // Update checkout minimum
+        updateCheckoutMin();
+    }
+    
+    function updateCheckoutMin() {
+    const inEl  = document.getElementById('checkIn');
+    const outEl = document.getElementById('checkOut');
+    if (!inEl.value) return;
+
+    const d = new Date(inEl.value);
+    d.setDate(d.getDate() + 1);
+    const minStr = d.toISOString().split('T')[0];
+
+    outEl.min = minStr;
+    if (outEl.value < minStr) {
+      outEl.value = minStr;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Thi?t l?p min cho Check-in là hôm nay
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('checkIn').min = today;
+
+    // 2. Kh?i t?o min cho Check-out
+    updateCheckoutMin();
+
+    // 3. G?n listener ?? c?p nh?t m?i khi thay ??i Check-in
+    document.getElementById('checkIn')
+            .addEventListener('change', updateCheckoutMin);
+  });
+    
+    // Function to calculate nights (similar to roomDetail.jsp)
+    function calculateNights() {
+        const checkinDate = document.querySelector('#checkIn').value;
+        const checkoutDate = document.querySelector('#checkOut').value;
+
+        if (checkinDate && checkoutDate) {
+            const checkin = new Date(checkinDate);
+            const checkout = new Date(checkoutDate);
+            const nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+
+            if (nights > 0) {
+                console.log('Nights calculated:', nights);
+            }
+        }
+    }
+    
+    // Function to ensure checkout is always at least one day after any given date
+    function ensureCheckoutMinimumFromToday() {
+        var checkoutInput = document.getElementById('checkOut');
+        if (checkoutInput) {
+            var tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            var year = tomorrow.getFullYear();
+            var month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            var day = String(tomorrow.getDate()).padStart(2, '0');
+            var tomorrowStr = year + '-' + month + '-' + day;
+            
+            // Set absolute minimum as tomorrow (only when no checkin is selected)
+            var checkinInput = document.getElementById('checkIn');
+            if (!checkinInput.value) {
+                checkoutInput.setAttribute('min', tomorrowStr);
+                checkoutInput.min = tomorrowStr;
+                
+                // If no value or value is today or earlier, set to tomorrow
+                if (!checkoutInput.value || checkoutInput.value <= todayStr) {
+                    checkoutInput.value = tomorrowStr;
+                }
+            }
+        }
+    }
+    
+    // Function to get the day after a given date
+    function getDayAfter(dateString) {
+        var date = new Date(dateString);
+        date.setDate(date.getDate() + 1);
+        
+        var year = date.getFullYear();
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var day = String(date.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    }
+    
+    // Function to validate all dates (simplified version like roomDetail.jsp)
+    function validateAllDates() {
+        var checkinInput = document.getElementById('checkIn');
+        var checkoutInput = document.getElementById('checkOut');
+        var checkinField = document.getElementById('checkinField');
+        var checkoutField = document.getElementById('checkoutField');
+        
+        // Clear error states
+        if (checkinField) checkinField.classList.remove('error');
+        if (checkoutField) checkoutField.classList.remove('error');
+        
+        var isValid = true;
+        var today = new Date(todayStr);
+        
+        // Validate check-in
+        if (checkinInput && checkinInput.value) {
+            var checkinDate = new Date(checkinInput.value);
+            
+            // Check if checkin is in the past
+            if (checkinDate < today) {
+                if (checkinField) checkinField.classList.add('error');
+                checkinInput.value = todayStr; // Auto-correct
+                isValid = false;
+            }
+        }
+        
+        // Validate check-out
+        if (checkinInput && checkoutInput && checkinInput.value && checkoutInput.value) {
+            var checkinDate = new Date(checkinInput.value);
+            var checkoutDate = new Date(checkoutInput.value);
+            
+            if (checkoutDate <= checkinDate) {
+                if (checkoutField) checkoutField.classList.add('error');
+                // Auto-correct to next day after checkin
+                const nextDay = new Date(checkinDate);
+                nextDay.setDate(nextDay.getDate() + 1);
+                checkoutInput.value = nextDay.toISOString().split('T')[0];
+                isValid = false;
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // Helper function to get tomorrow's date string
+    function getTomorrowString() {
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        var year = tomorrow.getFullYear();
+        var month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        var day = String(tomorrow.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    }
+
     $(document).ready(function() {
         // Initialize dropdown
         $('.dropdown-toggle').dropdown();
+        
+        // Set today as minimum date for check-in (similar to roomDetail.jsp)
+        const today = new Date().toISOString().split('T')[0];
+        const checkinInput = document.querySelector('#checkIn');
+        if (checkinInput) {
+            checkinInput.setAttribute('min', today);
+        }
+
+        // Initial setup
+        updateCheckoutMin();
+        
+        // Set default checkout to tomorrow if empty
+        if (!$('#checkOut').val()) {
+            $('#checkOut').val(getTomorrowString());
+        }
+        
+        // Final setup similar to roomDetail.jsp
+        setTimeout(function() {
+            updateCheckoutMin();
+            console.log('Page load - checkout min setup completed');
+        }, 100);
+    });
         
         // Function to add highlight class to selected dropdowns
         function updateDropdownHighlight() {
@@ -562,86 +771,87 @@
             updateDropdownHighlight();
         });
         
-        // Get today's date and format it
-        var today = new Date();
-        var dd = String(today.getDate()).padStart(2, '0');
-        var mm = String(today.getMonth() + 1).padStart(2, '0');
-        var yyyy = today.getFullYear();
-        var todayStr = yyyy + '-' + mm + '-' + dd;
-        
-        // Set min attribute for check-in (today)
-        document.getElementById('checkIn').setAttribute('min', todayStr);
-        
-        // Set default check-in to today if empty
-        if (!$('#checkIn').val()) {
-            $('#checkIn').val(todayStr);
-        }
-        
-        // Function to update check-out min date
-        function updateCheckOutMin() {
-            var checkInVal = $('#checkIn').val();
-            if (checkInVal) {
-                var checkInDate = new Date(checkInVal);
-                checkInDate.setDate(checkInDate.getDate() + 1);
-                
-                var dd = String(checkInDate.getDate()).padStart(2, '0');
-                var mm = String(checkInDate.getMonth() + 1).padStart(2, '0');
-                var yyyy = checkInDate.getFullYear();
-                var minCheckOut = yyyy + '-' + mm + '-' + dd;
-                
-                document.getElementById('checkOut').setAttribute('min', minCheckOut);
-                
-                // Update check-out value if it's invalid
-                if (!$('#checkOut').val() || $('#checkOut').val() <= checkInVal) {
-                    $('#checkOut').val(minCheckOut);
-                }
-            }
-        }
-        
-        // Initial setup for check-out
-        updateCheckOutMin();
-        
-        // Update when check-in changes
+        // Event handlers similar to roomDetail.jsp
         $('#checkIn').on('change', function() {
-            updateCheckOutMin();
+            updateCheckoutMin();
+            calculateNights();
         });
         
-        // Form validation
-        $('.hotel-search-form').on('submit', function(e) {
-            var checkIn = $('#checkIn').val();
-            var checkOut = $('#checkOut').val();
+        $('#checkOut').on('change', function() {
+            calculateNights();
+        });
+        
+        // Enhanced form validation on submit
+        $('#headerSearchForm').on('submit', function(e) {
+            var checkinValue = $('#checkIn').val();
+            var checkoutValue = $('#checkOut').val();
+            var today = getTodayString();
             
-            if (!checkIn || !checkOut) {
+            // Check if dates are selected
+            if (!checkinValue || !checkoutValue) {
                 e.preventDefault();
                 alert('Please select both check-in and check-out dates');
                 return false;
             }
             
-            // Validate dates
-            var checkInDate = new Date(checkIn);
-            var checkOutDate = new Date(checkOut);
-            var todayDate = new Date(todayStr);
+            // Final validation
+            var checkinDate = new Date(checkinValue);
+            var checkoutDate = new Date(checkoutValue);
+            var todayDate = new Date(today);
             
-            if (checkInDate < todayDate) {
+            // Check past date for checkin
+            if (checkinDate < todayDate) {
                 e.preventDefault();
-                alert('Check-in date cannot be in the past');
-                $('#checkIn').val(todayStr);
+                alert('Check-in date cannot be in the past. Please select today or a future date.');
+                $('#checkIn').val(today);
+                updateCheckoutMinimum();
                 return false;
             }
             
-            if (checkOutDate <= checkInDate) {
+            // CRITICAL: Check checkout is ALWAYS at least one day after checkin
+            if (checkoutDate <= checkinDate) {
                 e.preventDefault();
-                alert('Check-out date must be after check-in date');
-                updateCheckOutMin();
+                alert('Check-out date must be at least one day after check-in date.');
+                $('#checkOut').val(getDayAfter(checkinValue));
                 return false;
             }
+            
+            // Calculate nights (must be at least 1)
+            var nights = Math.ceil((checkoutDate - checkinDate) / (1000 * 60 * 60 * 24));
+            if (nights <= 0) {
+                e.preventDefault();
+                alert('Invalid date selection. Minimum stay is 1 night.');
+                return false;
+            }
+            
+            // Final check - ensure we have valid dates
+            console.log('Form submission - Check-in:', checkinValue, 'Check-out:', checkoutValue, 'Nights:', nights);
+            return true;
         });
 
         // Add focus/blur states for search fields
-        $('.search-field input, .bootstrap-select > .btn').on('focus', function() {
+        $('.search-field input, .search-field select').on('focus', function() {
             $(this).closest('.search-field').addClass('is-focused');
         }).on('blur', function() {
             $(this).closest('.search-field').removeClass('is-focused');
         });
-    });
+        
+        // Simple periodic validation (similar to roomDetail.jsp approach)
+        setInterval(function() {
+            const checkinValue = document.querySelector('#checkIn').value;
+            const checkoutValue = document.querySelector('#checkOut').value;
+            
+            if (checkinValue && checkoutValue && checkoutValue <= checkinValue) {
+                const checkin = new Date(checkinValue);
+                checkin.setDate(checkin.getDate() + 1);
+                const newCheckout = checkin.toISOString().split('T')[0];
+                document.querySelector('#checkOut').value = newCheckout;
+                console.log('Auto-corrected checkout to:', newCheckout);
+            }
+        }, 1000);
+        
+        // Additional validation on window focus
+        $(window).on('focus', function() {
+            updateCheckoutMin();
+        });
 </script>

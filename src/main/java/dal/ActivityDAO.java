@@ -260,4 +260,56 @@ public class ActivityDAO {
         activity.setUserName(rs.getString("UserName"));
         return activity;
     }
+   
+    
+    // Get activities by date range
+    public List<Activity> getActivitiesByDateRange(Date startDate, Date endDate) {
+        List<Activity> activities = new ArrayList<>();
+        String sql = "SELECT a.*, u.FullName as UserName, " +
+                    "r.Id as ReservationId, rm.RoomNumber " +
+                    "FROM Activities a " +
+                    "INNER JOIN Users u ON a.UserId = u.Id " +
+                    "LEFT JOIN Reservations r ON a.ReservationId = r.Id " +
+                    "LEFT JOIN Rooms rm ON r.RoomId = rm.Id " +
+                    "WHERE a.Timestamp BETWEEN ? AND ? " +
+                    "ORDER BY a.Timestamp DESC";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setDate(1, startDate);
+            ps.setDate(2, endDate);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                activities.add(mapResultSetToActivity(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return activities;
+    }
+    
+    // Get activity count by type
+    public int getActivityCountByType(String type, Date date) {
+        String sql = "SELECT COUNT(*) FROM Activities " +
+                    "WHERE Type = ? AND CAST(Timestamp AS DATE) = ?";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, type);
+            ps.setDate(2, date);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+   
 }

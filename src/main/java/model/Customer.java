@@ -26,6 +26,10 @@ public class Customer {
     private Date lastVisit;
     private String loyaltyStatus;
     private double avgNights;
+    private boolean isGuest;
+private Date guestCreatedAt;
+private int bookingCount;
+private boolean hasCompletedRegistration;
     
     // Related data
     private List<Reservation> bookingHistory;
@@ -218,6 +222,54 @@ public class Customer {
         return customer;
     }
     
+// Getters and Setters
+public boolean isGuest() {
+    return isGuest;
+}
+
+public void setIsGuest(boolean isGuest) {
+    this.isGuest = isGuest;
+}
+
+public Date getGuestCreatedAt() {
+    return guestCreatedAt;
+}
+
+public void setGuestCreatedAt(Date guestCreatedAt) {
+    this.guestCreatedAt = guestCreatedAt;
+}
+
+public int getBookingCount() {
+    return bookingCount;
+}
+
+public void setBookingCount(int bookingCount) {
+    this.bookingCount = bookingCount;
+}
+
+public boolean hasCompletedRegistration() {
+    return hasCompletedRegistration;
+}
+
+public void setHasCompletedRegistration(boolean hasCompletedRegistration) {
+    this.hasCompletedRegistration = hasCompletedRegistration;
+}
+
+// Helper methods
+public boolean isEligibleForUpgrade() {
+    // Guest is eligible for upgrade if they have 2+ bookings or high total spent
+    return isGuest && (bookingCount >= 2 || totalSpent > 10000000);
+}
+
+public String getAccountType() {
+    if (!isGuest) {
+        return "Member";
+    } else if (hasCompletedRegistration) {
+        return "Guest (Registered)";
+    } else {
+        return "Guest";
+    }
+}
     @Override
     public String toString() {
         return "Customer{" +
