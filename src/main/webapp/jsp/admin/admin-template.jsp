@@ -214,6 +214,10 @@
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/rooms" 
                    class="nav-item ${activePage == 'rooms' ? 'active' : ''}">
+                    <i class="fas fa-bed"></i> RoomTypes
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/rooms2" 
+                   class="nav-item ${activePage == 'room-manage' ? 'active' : ''}">
                     <i class="fas fa-bed"></i> Rooms
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/users" 
