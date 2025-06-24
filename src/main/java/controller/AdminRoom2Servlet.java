@@ -28,7 +28,7 @@ import model.User;
 @WebServlet(name = "AdminRoom2Servlet", urlPatterns = {"/admin/rooms2"})
 public class AdminRoom2Servlet extends HttpServlet {
 
-    private static final int RECORDS_PER_PAGE = 6;
+    private static final int RECORDS_PER_PAGE = 3;
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -218,14 +218,31 @@ public class AdminRoom2Servlet extends HttpServlet {
     private void showRoomForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        String idStr = request.getParameter("id");
+        Room room = null;
+        boolean isEdit = false;
+
+        if (idStr != null && !idStr.isEmpty()) {
+            try {
+                int id = Integer.parseInt(idStr);
+                RoomDAO dao = new RoomDAO();
+                room = dao.getRoomById(id);
+                isEdit = true;
+            } catch (NumberFormatException e) {
+                // Có thể log nếu cần
+            }
+        }
+
         RoomTypeDAO roomTypeDAO = new RoomTypeDAO();
         List<RoomType> roomTypes = roomTypeDAO.getAllRoomTypes();
 
+        request.setAttribute("room", room); // null nếu tạo mới
         request.setAttribute("roomTypes", roomTypes);
-        request.setAttribute("isEdit", false);
-        request.setAttribute("pageTitle", "Create Room");
+        request.setAttribute("isEdit", isEdit);
+        request.setAttribute("pageTitle", isEdit ? "Edit Room" : "Create Room");
         request.setAttribute("activePage", "room-manage");
         request.setAttribute("contentPage", "/jsp/admin/room2-form.jsp");
+
         request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
     }
 
@@ -328,9 +345,16 @@ public class AdminRoom2Servlet extends HttpServlet {
     }
 
     private void deleteRoom(HttpServletRequest request, HttpServletResponse response, RoomDAO dao)
-            throws IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        dao.deleteRoom(id);
+            throws ServletException, IOException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            String status = request.getParameter("status");
+
+            dao.updateRoomStatus(id, status);
+            request.getSession().setAttribute("success", "Room status updated successfully");
+        } catch (Exception e) {
+            request.getSession().setAttribute("error", "Error updating room type status: " + e.getMessage());
+        }
         response.sendRedirect("rooms2");
     }
 
