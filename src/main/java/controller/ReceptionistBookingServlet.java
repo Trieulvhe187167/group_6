@@ -67,11 +67,11 @@ public class ReceptionistBookingServlet extends HttpServlet {
             // Get all active room types
             List<RoomType> roomTypes = roomTypeDAO.getAvailableRoomTypes();
             
-            // Get all guests
-            List<User> guests = userDAO.getUsersByRole("GUEST");
+            // Get all customers
+            List<User> customers = userDAO.getUsersByRole("CUSTOMER");
             
             request.setAttribute("roomTypes", roomTypes);
-            request.setAttribute("guests", guests);
+            request.setAttribute("customers", customers);
             request.setAttribute("pageTitle", "New Booking");
             request.setAttribute("activePage", "booking");
             request.setAttribute("contentPage", "/jsp/reception/booking-form.jsp");
@@ -156,11 +156,11 @@ public class ReceptionistBookingServlet extends HttpServlet {
         
         try {
             // Get parameters
-            String guestType = request.getParameter("guestType");
-            String guestIdStr = request.getParameter("guestId");
-            String newGuestName = request.getParameter("newGuestName");
-            String newGuestEmail = request.getParameter("newGuestEmail");
-            String newGuestPhone = request.getParameter("newGuestPhone");
+            String customerType = request.getParameter("customerType");
+            String customerIdStr = request.getParameter("customerId");
+            String newCustomerName = request.getParameter("newCustomerName");
+            String newCustomerEmail = request.getParameter("newCustomerEmail");
+            String newCustomerPhone = request.getParameter("newCustomerPhone");
             String roomIdStr = request.getParameter("roomId");
             String checkInStr = request.getParameter("checkIn");
             String checkOutStr = request.getParameter("checkOut");
@@ -175,52 +175,52 @@ public class ReceptionistBookingServlet extends HttpServlet {
                 throw new Exception("Please select check-in and check-out dates");
             }
             
-            int guestId;
+            int customerId;
             
-            // Handle guest creation/selection
-            if ("new".equals(guestType)) {
-                // Validate new guest information
-                if (newGuestName == null || newGuestName.trim().isEmpty() ||
-                    newGuestEmail == null || newGuestEmail.trim().isEmpty() ||
-                    newGuestPhone == null || newGuestPhone.trim().isEmpty()) {
-                    throw new Exception("Please fill in all guest information");
+            // Handle customer creation/selection
+            if ("new".equals(customerType)) {
+                // Validate new customer information
+                if (newCustomerName == null || newCustomerName.trim().isEmpty() ||
+                    newCustomerEmail == null || newCustomerEmail.trim().isEmpty() ||
+                    newCustomerPhone == null || newCustomerPhone.trim().isEmpty()) {
+                    throw new Exception("Please fill in all customer information");
                 }
                 
                 // Check if email already exists
-                if (userDAO.isEmailExists(newGuestEmail.trim(), null)) {
+                if (userDAO.isEmailExists(newCustomerEmail.trim(), null)) {
                     throw new Exception("Email already exists in the system");
                 }
                 
                 // Check if phone already exists
-                if (userDAO.phoneExists(newGuestPhone.trim())) {
+                if (userDAO.phoneExists(newCustomerPhone.trim())) {
                     throw new Exception("Phone number already exists in the system");
                 }
                 
-                // Create new guest
-                User newGuest = new User();
-                newGuest.setUsername(generateUsername(newGuestEmail.trim()));
-                newGuest.setPassword(hashPassword("Pass123!")); // Default password, already hashed
-                newGuest.setFullName(newGuestName.trim());
-                newGuest.setEmail(newGuestEmail.trim());
-                newGuest.setPhone(newGuestPhone.trim());
-                newGuest.setRole("GUEST");
-                newGuest.setStatus(true);
+                // Create new customer
+                User newCustomer = new User();
+                newCustomer.setUsername(generateUsername(newCustomerEmail.trim()));
+                newCustomer.setPassword(hashPassword("Pass123!")); // Default password, already hashed
+                newCustomer.setFullName(newCustomerName.trim());
+                newCustomer.setEmail(newCustomerEmail.trim());
+                newCustomer.setPhone(newCustomerPhone.trim());
+                newCustomer.setRole("CUSTOMER");
+                newCustomer.setStatus(true);
                 
-                guestId = userDAO.createUserAndGetId(newGuest);
-                if (guestId == 0) {
-                    throw new Exception("Failed to create guest account");
+                customerId = userDAO.createUserAndGetId(newCustomer);
+                if (customerId == 0) {
+                    throw new Exception("Failed to create customer account");
                 }
             } else {
-                // Existing guest
-                if (guestIdStr == null || guestIdStr.isEmpty()) {
-                    throw new Exception("Please select a guest");
+                // Existing customer
+                if (customerIdStr == null || customerIdStr.isEmpty()) {
+                    throw new Exception("Please select a customer");
                 }
-                guestId = Integer.parseInt(guestIdStr);
+                customerId = Integer.parseInt(customerIdStr);
                 
-                // Verify guest exists
-                User existingGuest = userDAO.getUserById(guestId);
-                if (existingGuest == null) {
-                    throw new Exception("Selected guest not found");
+                // Verify customer exists
+                User existingCustomer = userDAO.getUserById(customerId);
+                if (existingCustomer == null) {
+                    throw new Exception("Selected customer not found");
                 }
             }
             
@@ -246,7 +246,7 @@ public class ReceptionistBookingServlet extends HttpServlet {
             
             // Create reservation
             Reservation reservation = new Reservation();
-            reservation.setUserId(guestId);
+            reservation.setUserId(customerId);
             reservation.setRoomId(roomId);
             reservation.setCheckIn(checkIn);
             reservation.setCheckOut(checkOut);

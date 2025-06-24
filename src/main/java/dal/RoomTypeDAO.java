@@ -422,10 +422,7 @@ public class RoomTypeDAO {
         return false;
     }
 
-<<<<<<< HEAD
-=======
-}
->>>>>>> 9321eea4cf5420a4a6ea30682422dbff733e49fe
+
     public List<RoomType> getAllActiveRoomTypes() {
         List<RoomType> roomTypes = new ArrayList<>();
         String sql = "SELECT * FROM RoomTypes WHERE Status = 'ACTIVE' ORDER BY Name";

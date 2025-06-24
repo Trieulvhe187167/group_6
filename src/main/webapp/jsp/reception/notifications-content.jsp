@@ -228,8 +228,8 @@
                                                         <c:if test="${not empty notification.roomNumber}">
                                                             | <i class="fas fa-door-open mr-1"></i>Room ${notification.roomNumber}
                                                         </c:if>
-                                                        <c:if test="${not empty notification.guestName}">
-                                                            | <i class="fas fa-user mr-1"></i>${notification.guestName}
+                                                        <c:if test="${not empty notification.customerName}">
+                                                            | <i class="fas fa-user mr-1"></i>${notification.customerName}
                                                         </c:if>
                                                     </div>
                                                 </div>
@@ -387,9 +387,9 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Guest Name</label>
-                                <input type="text" class="form-control" id="notificationGuest" 
-                                       placeholder="Optional guest name">
+                                <label>Customer Name</label>
+                                <input type="text" class="form-control" id="notificationCustomer" 
+                                       placeholder="Optional customer name">
                             </div>
                         </div>
                     </div>
@@ -461,7 +461,7 @@ function createNotification() {
         title: $('#notificationTitle').val(),
         message: $('#notificationMessage').val(),
         roomNumber: $('#notificationRoom').val(),
-        guestName: $('#notificationGuest').val(),
+        customerName: $('#notificationCustomer').val(),
         notifyStaff: $('#notifyStaff').val()
     };
     
@@ -510,11 +510,11 @@ function viewNotification(notificationId) {
             
             let statusBadgeClass = notification.status === 'RESOLVED' ? 'success' : 'warning';
             
-            // Build room and guest rows
+            // Build room and customer rows
             let roomRow = notification.roomNumber ? 
                 '<tr><th>Room:</th><td>' + notification.roomNumber + '</td></tr>' : '';
-            let guestRow = notification.guestName ? 
-                '<tr><th>Guest:</th><td>' + notification.guestName + '</td></tr>' : '';
+            let customerRow = notification.customerName ? 
+                '<tr><th>Customer:</th><td>' + notification.customerName + '</td></tr>' : '';
             
             // Build action buttons
             let markAsReadBtn = !notification.isRead ? 
@@ -539,7 +539,7 @@ function viewNotification(notificationId) {
                                 '<tr><th>Created:</th><td>' + formatDateTime(notification.createdAt) + '</td></tr>' +
                                 '<tr><th>Created By:</th><td>' + notification.createdBy + '</td></tr>' +
                                 roomRow +
-                                guestRow +
+                                customerRow +
                             '</table>' +
                         '</div>' +
                     '</div>' +

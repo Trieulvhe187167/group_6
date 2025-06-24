@@ -125,54 +125,54 @@
                     <!-- Existing Guest Selection -->
                     <div id="existingGuestSection">
                         <div class="form-group">
-                            <label>Select Guest <span class="text-danger">*</span></label>
-                            <select name="guestId" class="form-control" id="guestSelect" required>
-                                <option value="">-- Select Guest --</option>
-                                <c:forEach var="guest" items="${guests}">
-                                    <option value="${guest.id}" data-phone="${guest.phone}" data-email="${guest.email}">
-                                        ${guest.fullName} - ${guest.phone}
+                            <label>Select Customer <span class="text-danger">*</span></label>
+                            <select name="customerId" class="form-control" id="customerSelect" required>
+                                <option value="">-- Select Customer --</option>
+                                <c:forEach var="customer" items="${customers}">
+                                    <option value="${customer.id}" data-phone="${customer.phone}" data-email="${customer.email}">
+                                        ${customer.fullName} - ${customer.phone}
                                     </option>
                                 </c:forEach>
                             </select>
                         </div>
                         
-                        <div id="selectedGuestInfo" style="display: none;">
+                        <div id="selectedCustomerInfo" style="display: none;">
                             <div class="alert alert-info">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <strong>Name:</strong> <span id="guestInfoName"></span><br>
-                                        <strong>Phone:</strong> <span id="guestInfoPhone"></span>
+                                        <strong>Name:</strong> <span id="customerInfoName"></span><br>
+                                        <strong>Phone:</strong> <span id="customerInfoPhone"></span>
                                     </div>
                                     <div class="col-md-6">
-                                        <strong>Email:</strong> <span id="guestInfoEmail"></span><br>
-                                        <strong>Total Bookings:</strong> <span id="guestInfoBookings"></span>
+                                        <strong>Email:</strong> <span id="customerInfoEmail"></span><br>
+                                        <strong>Total Bookings:</strong> <span id="customerInfoBookings"></span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- New Guest Form -->
-                    <div id="newGuestSection" style="display: none;">
+                    <!-- New Customer Form -->
+                    <div id="newCustomerSection" style="display: none;">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Full Name <span class="text-danger">*</span></label>
-                                    <input type="text" name="newGuestName" class="form-control" id="newGuestName"
-                                           placeholder="Enter guest's full name">
+                                    <input type="text" name="newCustomerName" class="form-control" id="newCustomerName"
+                                           placeholder="Enter customer's full name">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Phone Number <span class="text-danger">*</span></label>
-                                    <input type="tel" name="newGuestPhone" class="form-control" id="newGuestPhone"
+                                    <input type="tel" name="newCustomerPhone" class="form-control" id="newCustomerPhone"
                                            placeholder="Enter phone number" pattern="0[0-9]{9}">
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Email Address <span class="text-danger">*</span></label>
-                            <input type="email" name="newGuestEmail" class="form-control" id="newGuestEmail"
+                            <input type="email" name="newCustomerEmail" class="form-control" id="newCustomerEmail"
                                    placeholder="Enter email address">
                         </div>
                     </div>
@@ -295,17 +295,17 @@ $(document).ready(function() {
         }
     });
     
-    // Show guest info when selecting existing guest
-    $('#guestSelect').change(function() {
+    // Show customer info when selecting existing customer
+    $('#customerSelect').change(function() {
         var selectedOption = $(this).find('option:selected');
         if (selectedOption.val()) {
-            $('#guestInfoName').text(selectedOption.text().split(' - ')[0]);
-            $('#guestInfoPhone').text(selectedOption.data('phone'));
-            $('#guestInfoEmail').text(selectedOption.data('email'));
-            $('#guestInfoBookings').text('N/A'); // This could be populated if available
-            $('#selectedGuestInfo').show();
+            $('#customerInfoName').text(selectedOption.text().split(' - ')[0]);
+            $('#customerInfoPhone').text(selectedOption.data('phone'));
+            $('#customerInfoEmail').text(selectedOption.data('email'));
+            $('#customerInfoBookings').text('N/A'); // This could be populated if available
+            $('#selectedCustomerInfo').show();
         } else {
-            $('#selectedGuestInfo').hide();
+            $('#selectedCustomerInfo').hide();
         }
     });
     
@@ -324,21 +324,21 @@ function setGuestType(type) {
         $('#existingGuestBtn').addClass('active');
         $('#newGuestBtn').removeClass('active');
         $('#existingGuestSection').show();
-        $('#newGuestSection').hide();
+        $('#newCustomerSection').hide();
         
         // Set validation
-        $('#guestSelect').prop('required', true);
-        $('#newGuestName, #newGuestEmail, #newGuestPhone').prop('required', false);
+        $('#customerSelect').prop('required', true);
+        $('#newCustomerName, #newCustomerEmail, #newCustomerPhone').prop('required', false);
     } else {
         $('#newGuestBtn').addClass('active');
         $('#existingGuestBtn').removeClass('active');
-        $('#newGuestSection').show();
+        $('#newCustomerSection').show();
         $('#existingGuestSection').hide();
-        $('#selectedGuestInfo').hide();
+        $('#selectedCustomerInfo').hide();
         
         // Set validation
-        $('#guestSelect').prop('required', false);
-        $('#newGuestName, #newGuestEmail, #newGuestPhone').prop('required', true);
+        $('#customerSelect').prop('required', false);
+        $('#newCustomerName, #newCustomerEmail, #newCustomerPhone').prop('required', true);
     }
 }
 
@@ -479,27 +479,27 @@ function clearRoomSelection() {
 function validateForm() {
     var guestType = $('#guestType').val();
     
-    // Validate guest information
+    // Validate customer information
     if (guestType === 'existing') {
-        if (!$('#guestSelect').val()) {
-            alert('Please select a guest');
-            $('#guestSelect').focus();
+        if (!$('#customerSelect').val()) {
+            alert('Please select a customer');
+            $('#customerSelect').focus();
             return false;
         }
     } else {
-        if (!$('#newGuestName').val().trim()) {
-            alert('Please enter guest name');
-            $('#newGuestName').focus();
+        if (!$('#newCustomerName').val().trim()) {
+            alert('Please enter customer name');
+            $('#newCustomerName').focus();
             return false;
         }
-        if (!$('#newGuestEmail').val().trim()) {
-            alert('Please enter guest email');
-            $('#newGuestEmail').focus();
+        if (!$('#newCustomerEmail').val().trim()) {
+            alert('Please enter customer email');
+            $('#newCustomerEmail').focus();
             return false;
         }
-        if (!$('#newGuestPhone').val().trim()) {
-            alert('Please enter guest phone');
-            $('#newGuestPhone').focus();
+        if (!$('#newCustomerPhone').val().trim()) {
+            alert('Please enter customer phone');
+            $('#newCustomerPhone').focus();
             return false;
         }
     }

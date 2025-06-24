@@ -488,44 +488,7 @@ public class RoomDAO {
     }
     
     
-// Get available rooms by room type and date range
-public List<Room> getAvailableRoomsByTypeAndDate(int roomTypeId, Date checkIn, Date checkOut) {
-    List<Room> rooms = new ArrayList<>();
-    String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, " +
-                "rt.Capacity, rt.Description, rt.imageUrl " +
-                "FROM Rooms r " +
-                "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
-                "WHERE r.Status = 'AVAILABLE' " +
-                "AND r.RoomTypeId = ? " +
-                "AND r.Id NOT IN ( " +
-                "  SELECT res.RoomId FROM Reservations res " +
-                "  WHERE res.Status IN ('CONFIRMED', 'PENDING') " +
-                "  AND ((res.CheckIn <= ? AND res.CheckOut > ?) " +
-                "  OR (res.CheckIn < ? AND res.CheckOut >= ?) " +
-                "  OR (res.CheckIn >= ? AND res.CheckOut <= ?)) " +
-                ") " +
-                "ORDER BY r.RoomNumber";
-    
-    try (Connection conn = DBContext.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-        
-        ps.setInt(1, roomTypeId);
-        ps.setDate(2, checkOut);
-        ps.setDate(3, checkIn);
-        ps.setDate(4, checkOut);
-        ps.setDate(5, checkOut);
-        ps.setDate(6, checkIn);
-        ps.setDate(7, checkOut);
-        
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            rooms.add(mapResultSetToRoom(rs));
-        }
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
-    return rooms;
-}
+
 
 // Get room with full details by ID
 public Room getRoomWithFullDetails(int roomId) {
@@ -603,4 +566,192 @@ public List<Room> getRoomsByFloor(int floor) {
     }
     return rooms;
 }
+
+public List<Room> getAvailableRoomsByTypeNoDateCheck(int roomTypeId) {
+    List<Room> rooms = new ArrayList<>();
+    String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, " +
+                "rt.Capacity, rt.Description, rt.imageUrl " +
+                "FROM Rooms r " +
+                "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
+                "WHERE r.Status = 'AVAILABLE' " +
+                "AND r.RoomTypeId = ? " +
+                "ORDER BY r.RoomNumber";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, roomTypeId);
+        
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            rooms.add(mapResultSetToRoom(rs));
+        }
+        
+        System.out.println("DEBUG: Found " + rooms.size() + " AVAILABLE rooms for type " + roomTypeId + " (no date check)");
+            
+    } catch (SQLException e) {
+        System.err.println("Error in getAvailableRoomsByTypeNoDateCheck: " + e.getMessage());
+        e.printStackTrace();
+    }
+    return rooms;
+}
+
+/**
+ * Get all reservations for debugging
+ */
+public void debugReservations(Date checkIn, Date checkOut) {
+    String sql = "SELECT r.Id, r.RoomId, rm.RoomNumber, r.CheckIn, r.CheckOut, r.Status " +
+                "FROM Reservations r " +
+                "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
+                "WHERE r.Status IN ('CONFIRMED', 'PENDING') " +
+                "ORDER BY r.CheckIn";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ResultSet rs = ps.executeQuery();
+        System.out.println("\n=== Current Reservations ===");
+        System.out.println("Search dates: Check-in=" + checkIn + ", Check-out=" + checkOut);
+        
+        while (rs.next()) {
+            System.out.println("Reservation ID: " + rs.getInt("Id") + 
+                             ", Room: " + rs.getString("RoomNumber") +
+                             ", CheckIn: " + rs.getDate("CheckIn") +
+                             ", CheckOut: " + rs.getDate("CheckOut") +
+                             ", Status: " + rs.getString("Status"));
+        }
+        System.out.println("========================\n");
+            
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
+
+
+public List<Room> getAvailableRoomsByTypeAndDate(int roomTypeId, Date checkIn, Date checkOut) {
+    List<Room> rooms = new ArrayList<>();
+    
+    // Fixed SQL query with proper date overlap detection
+    String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, " +
+                "rt.Capacity, rt.Description, rt.imageUrl " +
+                "FROM Rooms r " +
+                "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
+                "WHERE r.Status = 'AVAILABLE' " +
+                "AND r.RoomTypeId = ? " +
+                "AND r.Id NOT IN ( " +
+                "  SELECT DISTINCT res.RoomId " +
+                "  FROM Reservations res " +
+                "  WHERE res.RoomId IS NOT NULL " +  // Important: handle null RoomId
+                "  AND res.Status IN ('CONFIRMED', 'PENDING') " +
+                "  AND (" +
+                "    (res.CheckIn < ? AND res.CheckOut > ?) OR " +  // Reservation spans check-in
+                "    (res.CheckIn < ? AND res.CheckOut > ?) OR " +  // Reservation spans check-out
+                "    (res.CheckIn >= ? AND res.CheckOut <= ?) OR " + // Reservation within dates
+                "    (res.CheckIn <= ? AND res.CheckOut >= ?)" +    // Dates within reservation
+                "  )" +
+                ") " +
+                "ORDER BY r.RoomNumber";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, roomTypeId);
+        // Set all date parameters
+        ps.setDate(2, checkOut);  // for CheckOut > checkIn
+        ps.setDate(3, checkIn);   // for CheckOut > checkIn
+        ps.setDate(4, checkOut);  // for CheckIn < checkOut
+        ps.setDate(5, checkOut);  // for CheckIn < checkOut
+        ps.setDate(6, checkIn);   // for CheckIn >= checkIn
+        ps.setDate(7, checkOut);  // for CheckOut <= checkOut
+        ps.setDate(8, checkIn);   // for CheckIn <= checkIn
+        ps.setDate(9, checkOut);  // for CheckOut >= checkOut
+        
+        System.out.println("Executing availability query for RoomType " + roomTypeId + 
+                         " from " + checkIn + " to " + checkOut);
+        
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            rooms.add(mapResultSetToRoom(rs));
+        }
+        
+        System.out.println("Found " + rooms.size() + " available rooms");
+            
+    } catch (SQLException e) {
+        System.err.println("Error in getAvailableRoomsByTypeAndDate: " + e.getMessage());
+        e.printStackTrace();
+    }
+    
+    return rooms;
+}
+
+// Also add this simpler method that might be more reliable
+public List<Room> getAvailableRoomsByTypeSimple(int roomTypeId, Date checkIn, Date checkOut) {
+    List<Room> availableRooms = new ArrayList<>();
+    
+    // First get all rooms of this type with AVAILABLE status
+    String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, " +
+                "rt.Capacity, rt.Description, rt.imageUrl " +
+                "FROM Rooms r " +
+                "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
+                "WHERE r.RoomTypeId = ? AND r.Status = 'AVAILABLE'";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, roomTypeId);
+        ResultSet rs = ps.executeQuery();
+        
+        while (rs.next()) {
+            Room room = mapResultSetToRoom(rs);
+            
+            // Check if this specific room is available for the dates
+            if (isRoomAvailableForDates(room.getId(), checkIn, checkOut)) {
+                availableRooms.add(room);
+            }
+        }
+            
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    
+    return availableRooms;
+}
+
+// Helper method to check if a specific room is available
+private boolean isRoomAvailableForDates(int roomId, Date checkIn, Date checkOut) {
+    String sql = "SELECT COUNT(*) FROM Reservations " +
+                "WHERE RoomId = ? " +
+                "AND Status IN ('CONFIRMED', 'PENDING') " +
+                "AND (" +
+                "  (CheckIn < ? AND CheckOut > ?) OR " +
+                "  (CheckIn < ? AND CheckOut > ?) OR " +
+                "  (CheckIn >= ? AND CheckOut <= ?) OR " +
+                "  (CheckIn <= ? AND CheckOut >= ?)" +
+                ")";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, roomId);
+        ps.setDate(2, checkOut);
+        ps.setDate(3, checkIn);
+        ps.setDate(4, checkOut);
+        ps.setDate(5, checkOut);
+        ps.setDate(6, checkIn);
+        ps.setDate(7, checkOut);
+        ps.setDate(8, checkIn);
+        ps.setDate(9, checkOut);
+        
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            int count = rs.getInt(1);
+            return count == 0; // Room is available if no conflicting reservations
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    
+    return false;
+}
+
 }

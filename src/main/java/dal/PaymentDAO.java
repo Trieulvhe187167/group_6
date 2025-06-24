@@ -301,4 +301,63 @@ public class PaymentDAO {
         }
         return 0.0;
     }
+    
+public int createPaymentAndGetId(Payment payment) {
+    String sql = "INSERT INTO Payments (ReservationId, Amount, Method, Status, TransactionId, CreatedAt) " +
+                "VALUES (?, ?, ?, ?, ?, GETDATE())";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        
+        ps.setInt(1, payment.getReservationId());
+        ps.setDouble(2, payment.getAmount());
+        ps.setString(3, payment.getMethod());
+        ps.setString(4, payment.getStatus());
+        ps.setString(5, payment.getTransactionId());
+        
+        int affectedRows = ps.executeUpdate();
+        
+        if (affectedRows > 0) {
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return 0;
+    }
+}
+
+public Payment getLatestPaymentByReservation(int reservationId) {
+    String sql = "SELECT TOP 1 * FROM Payments WHERE ReservationId = ? ORDER BY CreatedAt DESC";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, reservationId);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            return mapResultSetToPayment(rs);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+private Payment mapResultSetToPayment(ResultSet rs) throws SQLException {
+    Payment payment = new Payment();
+    payment.setId(rs.getInt("Id"));
+    payment.setReservationId(rs.getInt("ReservationId"));
+    payment.setAmount(rs.getDouble("Amount"));
+    payment.setMethod(rs.getString("Method"));
+    payment.setStatus(rs.getString("Status"));
+    payment.setTransactionId(rs.getString("TransactionId"));
+    payment.setCreatedAt(rs.getTimestamp("CreatedAt"));
+    return payment;
+}
 }

@@ -7,7 +7,7 @@
     <div class="row mb-4">
         <div class="col-md-6">
             <h2>Services Management</h2>
-            <p class="text-muted">Add and manage additional services for guests</p>
+            <p class="text-muted">Add and manage additional services for customers</p>
         </div>
         <div class="col-md-6 text-right">
             <button class="btn btn-success" data-toggle="modal" data-target="#addServiceModal">
@@ -21,7 +21,7 @@
     
     <!-- Quick Service Add -->
     <div class="table-container mb-4">
-        <h5 class="mb-3">Quick Add Service to Guest</h5>
+        <h5 class="mb-3">Quick Add Service to Customer</h5>
         <form id="quickServiceForm">
             <div class="row">
                 <div class="col-md-3">
@@ -194,7 +194,7 @@
                     <tr>
                         <th>Order ID</th>
                         <th>Room</th>
-                        <th>Guest</th>
+                        <th>Customer</th>
                         <th>Service</th>
                         <th>Category</th>
                         <th>Quantity</th>
@@ -211,7 +211,7 @@
                                 <tr>
                                     <td>#${order.id}</td>
                                     <td>${order.roomNumber}</td>
-                                    <td>${order.guestName}</td>
+                                    <td>${order.customerName}</td>
                                     <td>${order.serviceName}</td>
                                     <td>
                                         <span class="badge badge-info">${order.category}</span>
@@ -278,7 +278,7 @@
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i>
                         Adding service to Room <strong id="modalRoomNumber"></strong>
-                        <br><small>Guest: <span id="modalGuestName"></span></small>
+                        <br><small>Customer: <span id="modalCustomerName"></span></small>
                     </div>
                     
                     <input type="hidden" id="modalReservationId">
@@ -462,7 +462,7 @@ function quickAddService() {
                 // Set modal data
                 $('#modalReservationId').val(reservation.id);
                 $('#modalRoomNumber').text(roomNumber);
-                $('#modalGuestName').text(reservation.guestName);
+                $('#modalCustomerName').text(reservation.customerName);
                 
                 // Pre-select service if chosen
                 const serviceId = $('#serviceSelect').val();

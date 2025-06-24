@@ -118,12 +118,12 @@ public class NotificationsServlet extends HttpServlet {
             String type = request.getParameter("type");
             String message = request.getParameter("message");
             
-            List<User> guests = userDAO.getUsersByRole("GUEST");
+            List<User> customers = userDAO.getUsersByRole("CUSTOMER");
             int successCount = 0;
             
-            for (User guest : guests) {
+            for (User customer : customers) {
                 Notification notification = new Notification();
-                notification.setUserId(guest.getId());
+                notification.setUserId(customer.getId());
                 notification.setType(type);
                 notification.setMessage(message);
                 

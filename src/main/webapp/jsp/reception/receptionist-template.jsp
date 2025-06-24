@@ -257,9 +257,9 @@
                class="nav-item ${activePage == 'payments' ? 'active' : ''}">
                 <i class="fas fa-money-bill-wave"></i> Payments
             </a>
-            <a href="${pageContext.request.contextPath}/receptionist/guests" 
-               class="nav-item ${activePage == 'guests' ? 'active' : ''}">
-                <i class="fas fa-users"></i> Guests
+            <a href="${pageContext.request.contextPath}/receptionist/customers" 
+               class="nav-item ${activePage == 'customers' ? 'active' : ''}">
+                <i class="fas fa-users"></i> Customers
             </a>
             <a href="${pageContext.request.contextPath}/receptionist/services" 
                class="nav-item ${activePage == 'services' ? 'active' : ''}">

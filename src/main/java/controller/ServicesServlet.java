@@ -113,7 +113,7 @@ public class ServicesServlet extends HttpServlet {
                 // Create response object with guest info
                 Map<String, Object> result = new HashMap<>();
                 result.put("id", reservation.getId());
-                result.put("guestName", reservation.getGuestName());
+                result.put("customerName", reservation.getCustomerName());
                 result.put("roomNumber", roomNumber);
                 result.put("checkIn", reservation.getCheckIn());
                 result.put("checkOut", reservation.getCheckOut());

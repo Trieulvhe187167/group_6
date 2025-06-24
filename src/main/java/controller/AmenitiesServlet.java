@@ -125,7 +125,7 @@ public class AmenitiesServlet extends HttpServlet {
             Map<String, Object> result = new HashMap<>();
             Map<String, Object> reservationInfo = new HashMap<>();
             reservationInfo.put("id", reservation.getId());
-            reservationInfo.put("guestName", reservation.getGuestName());
+            reservationInfo.put("customerName", reservation.getCustomerName());
             reservationInfo.put("checkIn", reservation.getCheckIn());
             reservationInfo.put("daysStayed", daysStayed);
             

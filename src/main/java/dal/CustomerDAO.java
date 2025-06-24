@@ -6,7 +6,9 @@ import java.sql.*;
 import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Data Access Object for Customer management
@@ -422,4 +424,137 @@ public class CustomerDAO {
         }
         return customers;
     }
+    
+    
+/**
+ * Update customer details including guest status
+ */
+public boolean updateCustomerDetails(Customer customer) {
+    String sql = "UPDATE CustomerDetails SET IsGuest = ?, UpdatedAt = GETDATE() WHERE UserId = ?";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setBoolean(1, customer.isGuest());
+        ps.setInt(2, customer.getId());
+        
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+/**
+ * Get guest customers who are eligible for upgrade
+ */
+public List<Customer> getEligibleGuestCustomers() {
+    List<Customer> guests = new ArrayList<>();
+    String sql = "SELECT u.*, cd.IsGuest, " +
+                "COUNT(r.Id) as BookingCount, " +
+                "COALESCE(SUM(r.TotalAmount), 0) as TotalSpent " +
+                "FROM Users u " +
+                "INNER JOIN CustomerDetails cd ON u.Id = cd.UserId " +
+                "LEFT JOIN Reservations r ON u.Id = r.UserId " +
+                "WHERE u.Role = 'CUSTOMER' AND cd.IsGuest = 1 " +
+                "GROUP BY u.Id, u.Username, u.FullName, u.Email, u.Phone, u.Status, " +
+                "u.CreatedAt, u.UpdatedAt, cd.IsGuest " +
+                "HAVING COUNT(r.Id) >= 2 OR COALESCE(SUM(r.TotalAmount), 0) > 10000000 " +
+                "ORDER BY TotalSpent DESC";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Customer customer = mapResultSetToCustomer(rs);
+            customer.setIsGuest(rs.getBoolean("IsGuest"));
+            customer.setBookingCount(rs.getInt("BookingCount"));
+            guests.add(customer);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return guests;
+}
+
+/**
+ * Convert guest to member
+ */
+public boolean convertGuestToMember(int userId, String newPassword) {
+    Connection conn = null;
+    try {
+        conn = DBContext.getConnection();
+        conn.setAutoCommit(false);
+        
+        // Update password
+        String updateUserSql = "UPDATE Users SET PasswordHash = ?, UpdatedAt = GETDATE() WHERE Id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(updateUserSql)) {
+            ps.setString(1, hashPassword(newPassword));
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        }
+        
+        // Update guest status
+        String updateDetailsSql = "UPDATE CustomerDetails SET IsGuest = 0, UpdatedAt = GETDATE() WHERE UserId = ?";
+        try (PreparedStatement ps = conn.prepareStatement(updateDetailsSql)) {
+            ps.setInt(1, userId);
+            ps.executeUpdate();
+        }
+        
+        conn.commit();
+        return true;
+        
+    } catch (SQLException e) {
+        if (conn != null) {
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+        e.printStackTrace();
+        return false;
+    } finally {
+        if (conn != null) {
+            try {
+                conn.setAutoCommit(true);
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+/**
+ * Get guest statistics for dashboard
+ */
+public Map<String, Object> getGuestStatistics() {
+    Map<String, Object> stats = new HashMap<>();
+    
+    String sql = "SELECT " +
+                "COUNT(CASE WHEN cd.IsGuest = 1 THEN 1 END) as TotalGuests, " +
+                "COUNT(CASE WHEN cd.IsGuest = 1 AND MONTH(u.CreatedAt) = MONTH(GETDATE()) " +
+                "    AND YEAR(u.CreatedAt) = YEAR(GETDATE()) THEN 1 END) as NewGuestsThisMonth, " +
+                "COUNT(CASE WHEN cd.IsGuest = 0 THEN 1 END) as TotalMembers " +
+                "FROM Users u " +
+                "INNER JOIN CustomerDetails cd ON u.Id = cd.UserId " +
+                "WHERE u.Role = 'CUSTOMER' AND u.Status = 1";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            stats.put("totalGuests", rs.getInt("TotalGuests"));
+            stats.put("newGuestsThisMonth", rs.getInt("NewGuestsThisMonth"));
+            stats.put("totalMembers", rs.getInt("TotalMembers"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    
+    return stats;
+}
 }

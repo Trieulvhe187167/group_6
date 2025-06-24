@@ -59,18 +59,6 @@
         border-color: #dc3545;
     }
 
-    select.form-control {
-        cursor: pointer;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right .75rem center;
-        background-size: 16px 12px;
-        padding-right: 2.25rem;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-    }
-
     .form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -145,11 +133,6 @@
         background: #e0a800;
     }
 
-    .btn-sm {
-        padding: 5px 10px;
-        font-size: 12px;
-    }
-
     .info-box {
         background: #f8f9fa;
         border-left: 4px solid #5a2b81;
@@ -222,12 +205,6 @@
         color: white;
     }
 
-    /* Ensure all inputs have same height */
-    input.form-control,
-    select.form-control {
-        height: 44px;
-    }
-
     @media (max-width: 768px) {
         .form-row {
             grid-template-columns: 1fr;
@@ -240,12 +217,12 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin-dashboard">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin/users">User Management</a></li>
-            <li class="breadcrumb-item active">${isEdit ? 'Edit User' : 'Create User'}</li>
+            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin/customers">Customer Management</a></li>
+            <li class="breadcrumb-item active">${isEdit ? 'Edit Customer' : 'Add New Customer'}</li>
         </ol>
     </nav>
 
-    <h1 class="mb-4">${isEdit ? 'Edit' : 'Create New'} User</h1>
+    <h1 class="mb-4">${isEdit ? 'Edit' : 'Add New'} Customer</h1>
 
     <div class="row">
         <div class="col-lg-8">
@@ -257,10 +234,10 @@
                     </div>
                 </c:if>
 
-                <form method="post" action="${pageContext.request.contextPath}/admin/users" id="userForm">
+                <form method="post" action="${pageContext.request.contextPath}/admin/customers" id="customerForm">
                     <input type="hidden" name="action" value="${isEdit ? 'update' : 'create'}">
                     <c:if test="${isEdit}">
-                        <input type="hidden" name="id" value="${user.id}">
+                        <input type="hidden" name="id" value="${customer.id}">
                     </c:if>
 
                     <!-- Account Information -->
@@ -292,7 +269,7 @@
                         <c:if test="${isEdit}">
                             <div class="form-group">
                                 <label>Username</label>
-                                <input type="text" class="form-control" value="${user.username}" disabled>
+                                <input type="text" class="form-control" value="${customer.username}" disabled>
                                 <small class="text-muted">Username cannot be changed after creation</small>
                             </div>
 
@@ -334,17 +311,6 @@
                                 <input type="hidden" name="changePassword" id="changePasswordFlag" value="false">
                             </div>
                         </c:if>
-
-                        <div class="form-group">
-                            <label>Role <span class="text-danger">*</span></label>
-                            <select name="role" class="form-control" id="role" required>
-                                <option value="">Select Role</option>
-                                <option value="ADMIN" ${isEdit && user.role == 'ADMIN' ? 'selected' : ''}>Administrator</option>
-                                <option value="RECEPTIONIST" ${isEdit && user.role == 'RECEPTIONIST' ? 'selected' : ''}>Receptionist</option>
-                                <option value="HOUSEKEEPER" ${isEdit && user.role == 'HOUSEKEEPER' ? 'selected' : ''}>Housekeeper</option>
-                                <option value="CUSTOMER" ${isEdit && user.role == 'CUSTOMER' ? 'selected' : ''}>Guest</option>
-                            </select>
-                        </div>
                     </div>
 
                     <!-- Personal Information -->
@@ -356,7 +322,7 @@
                             <input name="fullName" type="text" required 
                                    class="form-control" id="fullName"
                                    placeholder="Enter full name"
-                                   value="${isEdit ? user.fullName : ''}">
+                                   value="${isEdit ? customer.fullName : ''}">
                         </div>
 
                         <div class="form-row">
@@ -365,16 +331,16 @@
                                 <input name="email" type="email" required 
                                        class="form-control" id="email"
                                        placeholder="Enter email address"
-                                       value="${isEdit ? user.email : ''}">
+                                       value="${isEdit ? customer.email : ''}">
                             </div>
                             <div class="form-group">
                                 <label>Phone</label>
-                                 <input name="phone" type="text" 
+                                <input name="phone" type="text" 
                                        class="form-control" id="phone"
                                        placeholder="Enter phone number"
                                        pattern="0\d{9}"
                                        title="Phone number must start with 0 and be exactly 10 digits"
-                                       value="${not empty user ? user.phone : ''}">
+                                       value="${not empty customer ? customer.phone : ''}">
                                 <small class="text-muted">Must start with 0 (10 digits total)</small>
                             </div>
                         </div>
@@ -382,9 +348,9 @@
 
                     <div class="btn-group">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> ${isEdit ? 'Update' : 'Create'} User
+                            <i class="fas fa-save"></i> ${isEdit ? 'Update' : 'Create'} Customer
                         </button>
-                        <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-secondary">
+                        <a href="${pageContext.request.contextPath}/admin/customers" class="btn btn-secondary">
                             <i class="fas fa-times"></i> Cancel
                         </a>
                     </div>
@@ -395,12 +361,12 @@
         <!-- Side Information -->
         <div class="col-lg-4">
             <div class="info-box">
-                <h6><i class="fas fa-shield-alt"></i> User Roles</h6>
+                <h6><i class="fas fa-info-circle"></i> Customer Information</h6>
                 <ul class="small">
-                    <li><strong>Administrator:</strong> Full system access</li>
-                    <li><strong>Receptionist:</strong> Manage bookings and check-ins</li>
-                    <li><strong>Housekeeper:</strong> View room status and cleaning tasks</li>
-                    <li><strong>Guest:</strong> Book rooms and view reservations</li>
+                    <li>Customers can book rooms and manage their reservations</li>
+                    <li>Customer accounts have access to booking history</li>
+                    <li>VIP status is automatically assigned based on spending</li>
+                    <li>All customer data is encrypted and secure</li>
                 </ul>
             </div>
 
@@ -417,30 +383,31 @@
 
             <c:if test="${isEdit}">
                 <div class="info-box">
-                    <h6><i class="fas fa-info"></i> User Information</h6>
+                    <h6><i class="fas fa-chart-line"></i> Customer Statistics</h6>
                     <p class="small mb-1">
                         <strong>Status:</strong> 
-                        <span class="badge ${user.statusBadgeClass}">${user.statusDisplayName}</span>
+                        <span class="badge ${customer.statusBadgeClass}">${customer.statusDisplayName}</span>
                     </p>
                     <p class="small mb-1">
-                        <strong>Created:</strong> 
-                        <fmt:formatDate value="${user.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                        <strong>Total Bookings:</strong> ${customer.totalBookings}
                     </p>
                     <p class="small mb-1">
-                        <strong>Last Updated:</strong> 
-                        <fmt:formatDate value="${user.updatedAt}" pattern="dd/MM/yyyy HH:mm"/>
+                        <strong>Member Since:</strong> 
+                        <fmt:formatDate value="${customer.createdAt}" pattern="dd/MM/yyyy"/>
                     </p>
                     <p class="small mb-0">
-                        <strong>Total Bookings:</strong> ${user.totalBookings}
+                        <strong>Last Updated:</strong> 
+                        <fmt:formatDate value="${customer.updatedAt}" pattern="dd/MM/yyyy HH:mm"/>
                     </p>
                 </div>
 
                 <div class="info-box">
-                    <h6><i class="fas fa-exclamation-triangle"></i> Security Notes</h6>
+                    <h6><i class="fas fa-shield-alt"></i> Security Notes</h6>
                     <ul class="small">
-                        <li>Changing password will log out the user from all devices</li>
-                        <li>User will receive email notification of password change</li>
-                        <li>All password changes are logged for security audit</li>
+                        <li>Password changes are logged for security</li>
+                        <li>Customer will receive email notification</li>
+                        <li>All login attempts are monitored</li>
+                        <li>Two-factor authentication available</li>
                     </ul>
                 </div>
             </c:if>
@@ -493,6 +460,36 @@ $(document).ready(function() {
     // Real-time password strength indicator for edit mode
     $('#newPassword').on('input', function() {
         var password = $(this).val();
+        checkPasswordStrength(password, '#newPasswordStrength');
+    });
+
+    // Password confirmation validation
+    $('#confirmPassword').on('input', function() {
+        var password = $('#newPassword').val();
+        var confirmPassword = $(this).val();
+        
+        if (confirmPassword.length > 0) {
+            if (password === confirmPassword) {
+                $('#passwordMatch').html('<span class="text-success"><i class="fas fa-check"></i> Passwords match</span>');
+            } else {
+                $('#passwordMatch').html('<span class="text-danger"><i class="fas fa-times"></i> Passwords do not match</span>');
+            }
+        } else {
+            $('#passwordMatch').html('');
+        }
+    });
+    </c:if>
+
+    // Real-time password strength indicator for new customers
+    <c:if test="${!isEdit}">
+    $('#password').on('input', function() {
+        var password = $(this).val();
+        checkPasswordStrength(password, '#passwordStrength');
+    });
+    </c:if>
+
+    // Password strength checker function
+    function checkPasswordStrength(password, targetElement) {
         var strength = 0;
 
         if (password.length >= 8) strength++;
@@ -526,31 +523,14 @@ $(document).ready(function() {
         }
 
         if (password.length > 0) {
-            $('#newPasswordStrength').html('<span class="' + strengthClass + '">Password strength: ' + strengthText + '</span>');
+            $(targetElement).html('<span class="' + strengthClass + '">Password strength: ' + strengthText + '</span>');
         } else {
-            $('#newPasswordStrength').html('');
+            $(targetElement).html('');
         }
-    });
-
-    // Password confirmation validation
-    $('#confirmPassword').on('input', function() {
-        var password = $('#newPassword').val();
-        var confirmPassword = $(this).val();
-        
-        if (confirmPassword.length > 0) {
-            if (password === confirmPassword) {
-                $('#passwordMatch').html('<span class="text-success"><i class="fas fa-check"></i> Passwords match</span>');
-            } else {
-                $('#passwordMatch').html('<span class="text-danger"><i class="fas fa-times"></i> Passwords do not match</span>');
-            }
-        } else {
-            $('#passwordMatch').html('');
-        }
-    });
-    </c:if>
+    }
 
     // Form validation
-    $('#userForm').on('submit', function(e) {
+    $('#customerForm').on('submit', function(e) {
         var isValid = true;
         var errorMessage = '';
 
@@ -565,7 +545,7 @@ $(document).ready(function() {
             }
         });
 
-        // Username validation (only for new users)
+        // Username validation (only for new customers)
         <c:if test="${!isEdit}">
         var username = $('#username').val();
         if (username && !/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
@@ -574,7 +554,7 @@ $(document).ready(function() {
             isValid = false;
         }
 
-        // Password validation for new users
+        // Password validation for new customers
         var password = $('#password').val();
         if (password) {
             if (!validatePassword(password, '#password')) {
@@ -664,49 +644,5 @@ $(document).ready(function() {
     $('.form-control').on('input change', function() {
         $(this).removeClass('is-invalid');
     });
-
-    // Real-time password strength indicator for new users
-    <c:if test="${!isEdit}">
-    $('#password').on('input', function() {
-        var password = $(this).val();
-        var strength = 0;
-
-        if (password.length >= 8) strength++;
-        if (/[a-z]/.test(password)) strength++;
-        if (/[A-Z]/.test(password)) strength++;
-        if (/\d/.test(password)) strength++;
-        if (/[@#$%^&+=!]/.test(password)) strength++;
-
-        var strengthText = '';
-        var strengthClass = '';
-
-        switch(strength) {
-            case 0:
-            case 1:
-                strengthText = 'Weak';
-                strengthClass = 'text-danger';
-                break;
-            case 2:
-            case 3:
-                strengthText = 'Medium';
-                strengthClass = 'text-warning';
-                break;
-            case 4:
-                strengthText = 'Good';
-                strengthClass = 'text-info';
-                break;
-            case 5:
-                strengthText = 'Strong';
-                strengthClass = 'text-success';
-                break;
-        }
-
-        if (password.length > 0) {
-            $('#passwordStrength').html('<span class="' + strengthClass + '">Password strength: ' + strengthText + '</span>');
-        } else {
-            $('#passwordStrength').html('');
-        }
-    });
-    </c:if>
 });
 </script>
