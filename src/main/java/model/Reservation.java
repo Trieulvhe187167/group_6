@@ -9,7 +9,8 @@ public class Reservation {
     private int userId;
     private Integer groupBookingId;
     private Integer createdBy;
-    private int roomId;
+    private Integer roomId;  // Changed to Integer to allow null when room not assigned
+    private Integer roomTypeId; // Store the requested room type
     private Date checkIn;
     private Date checkOut;
     private String status;
@@ -37,9 +38,20 @@ public class Reservation {
     // Constructors
     public Reservation() {}
     
-    public Reservation(int userId, int roomId, Date checkIn, Date checkOut, String status, double totalAmount) {
+    public Reservation(int userId, Integer roomId, Date checkIn, Date checkOut, String status, double totalAmount) {
         this.userId = userId;
         this.roomId = roomId;
+        this.checkIn = checkIn;
+        this.checkOut = checkOut;
+        this.status = status;
+        this.totalAmount = totalAmount;
+    }
+    
+    // Constructor for reservations without room assignment
+    public Reservation(int userId, int roomTypeId, Date checkIn, Date checkOut, String status, double totalAmount) {
+        this.userId = userId;
+        this.roomTypeId = roomTypeId;
+        this.roomId = null; // No room assigned yet
         this.checkIn = checkIn;
         this.checkOut = checkOut;
         this.status = status;
@@ -79,12 +91,20 @@ public class Reservation {
         this.createdBy = createdBy;
     }
     
-    public int getRoomId() {
+    public Integer getRoomId() {
         return roomId;
     }
     
-    public void setRoomId(int roomId) {
+    public void setRoomId(Integer roomId) {
         this.roomId = roomId;
+    }
+    
+    public Integer getRoomTypeId() {
+        return roomTypeId;
+    }
+    
+    public void setRoomTypeId(Integer roomTypeId) {
+        this.roomTypeId = roomTypeId;
     }
     
     public Date getCheckIn() {
@@ -159,7 +179,31 @@ public class Reservation {
         this.updatedAt = updatedAt;
     }
     
-    // Room info
+    // Additional display fields
+    public String getCustomerName() {
+        return customerName;
+    }
+    
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+    
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+    
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+    
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+    
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
+    }
+    
     public String getRoomNumber() {
         return roomNumber;
     }
@@ -232,30 +276,6 @@ public class Reservation {
         this.amountPaid = amountPaid;
     }
     
-    public String getCustomerName() {
-        return customerName;
-    }
-    
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-    
-    public String getCustomerEmail() {
-        return customerEmail;
-    }
-    
-    public void setCustomerEmail(String customerEmail) {
-        this.customerEmail = customerEmail;
-    }
-    
-    public String getCustomerPhone() {
-        return customerPhone;
-    }
-    
-    public void setCustomerPhone(String customerPhone) {
-        this.customerPhone = customerPhone;
-    }
-    
     // Helper methods
     public String getStatusDisplayName() {
         if (status == null) return "";
@@ -264,6 +284,9 @@ public class Reservation {
             case "CONFIRMED": return "Confirmed";
             case "CANCELLED": return "Cancelled";
             case "COMPLETED": return "Completed";
+            case "CHECKED_IN": return "Checked In";
+            case "CHECKED_OUT": return "Checked Out";
+            case "NO_SHOW": return "No Show";
             default: return status;
         }
     }
@@ -275,6 +298,9 @@ public class Reservation {
             case "CONFIRMED": return "badge-success";
             case "CANCELLED": return "badge-danger";
             case "COMPLETED": return "badge-info";
+            case "CHECKED_IN": return "badge-primary";
+            case "CHECKED_OUT": return "badge-secondary";
+            case "NO_SHOW": return "badge-dark";
             default: return "badge-secondary";
         }
     }
@@ -295,6 +321,28 @@ public class Reservation {
         return "COMPLETED".equalsIgnoreCase(status);
     }
     
+    public boolean isCheckedInStatus() {
+        return "CHECKED_IN".equalsIgnoreCase(status);
+    }
+    
+    public boolean isCheckedOutStatus() {
+        return "CHECKED_OUT".equalsIgnoreCase(status);
+    }
+    
+    public boolean isNoShow() {
+        return "NO_SHOW".equalsIgnoreCase(status);
+    }
+    
+    // Check if room is assigned
+    public boolean hasRoomAssigned() {
+        return roomId != null && roomId > 0;
+    }
+    
+    // Check if reservation needs room assignment
+    public boolean needsRoomAssignment() {
+        return !hasRoomAssigned() && (isPending() || isConfirmed());
+    }
+    
     // Calculate nights based on check-in and check-out dates
     public int calculateNights() {
         if (checkIn != null && checkOut != null) {
@@ -307,18 +355,48 @@ public class Reservation {
         return 0;
     }
     
+    // Check if check-in date is today
+    public boolean isCheckInToday() {
+        if (checkIn == null) return false;
+        Date today = new Date(System.currentTimeMillis());
+        return checkIn.equals(today);
+    }
+    
+    // Check if check-out date is today
+    public boolean isCheckOutToday() {
+        if (checkOut == null) return false;
+        Date today = new Date(System.currentTimeMillis());
+        return checkOut.equals(today);
+    }
+    
+    // Get a display string for room info
+    public String getRoomDisplay() {
+        if (hasRoomAssigned()) {
+            return roomNumber != null ? roomNumber : "Room #" + roomId;
+        } else {
+            return "Not Assigned";
+        }
+    }
+    
+    // Get formatted total amount
+    public String getFormattedTotalAmount() {
+        return String.format("%,.0f VND", totalAmount);
+    }
+    
     @Override
     public String toString() {
         return "Reservation{" +
                 "id=" + id +
                 ", userId=" + userId +
                 ", roomId=" + roomId +
+                ", roomTypeId=" + roomTypeId +
                 ", checkIn=" + checkIn +
                 ", checkOut=" + checkOut +
                 ", status='" + status + '\'' +
                 ", totalAmount=" + totalAmount +
                 ", customerName='" + customerName + '\'' +
                 ", roomNumber='" + roomNumber + '\'' +
+                ", roomTypeName='" + roomTypeName + '\'' +
                 ", numberOfCustomers=" + numberOfCustomers +
                 ", nights=" + nights +
                 '}';

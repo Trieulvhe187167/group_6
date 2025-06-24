@@ -1,6 +1,5 @@
 package model;
 
-
 import java.sql.Timestamp;
 
 public class Payment {
@@ -15,6 +14,7 @@ public class Payment {
     // Additional fields for display
     private String customerName;
     private String roomNumber;
+    private String reservationStatus;
     
     // Constructors
     public Payment() {}
@@ -99,36 +99,46 @@ public class Payment {
         this.roomNumber = roomNumber;
     }
     
+    public String getReservationStatus() {
+        return reservationStatus;
+    }
+    
+    public void setReservationStatus(String reservationStatus) {
+        this.reservationStatus = reservationStatus;
+    }
+    
     // Helper methods
     public String getMethodDisplayName() {
         if (method == null) return "";
         switch (method) {
-            case "VNPay": return "VNPay";
-            case "MoMo": return "MoMo";
-            case "CASH": return "Cash";
             case "CREDIT_CARD": return "Credit Card";
             case "BANK_TRANSFER": return "Bank Transfer";
+            case "CASH": return "Cash";
+            case "VNPay": return "VNPay";
+            case "MoMo": return "MoMo";
             default: return method;
-        }
-    }
-    
-    public String getStatusDisplayName() {
-        if (status == null) return "";
-        switch (status) {
-            case "PENDING": return "Pending";
-            case "SUCCESS": return "Success";
-            case "FAILED": return "Failed";
-            default: return status;
         }
     }
     
     public String getStatusBadgeClass() {
         if (status == null) return "badge-secondary";
         switch (status) {
-            case "PENDING": return "badge-warning";
             case "SUCCESS": return "badge-success";
+            case "PENDING": return "badge-warning";
             case "FAILED": return "badge-danger";
             default: return "badge-secondary";
         }
+    }
+    
+    public boolean isSuccess() {
+        return "SUCCESS".equals(status);
+    }
+    
+    public boolean isPending() {
+        return "PENDING".equals(status);
+    }
+    
+    public boolean isFailed() {
+        return "FAILED".equals(status);
     }
 }
