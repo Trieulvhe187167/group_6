@@ -12,7 +12,7 @@
            https://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
     <!-- Scan for @Controller, @Service, @Repository, etc. -->
-    <context:component-scan base-package="com.yourapp" />
+    <context:component-scan base-package="hms" />
 
     <!-- Enable @RequestMapping, @PathVariable, etc. -->
     <mvc:annotation-driven />

@@ -852,470 +852,495 @@
         <script src="${pageContext.request.contextPath}/assets/js/jquery.scroller.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/vendors/switcher/switcher.js"></script>
+     
 
         <!-- Custom JavaScript for booking functionality -->
-        <script>
-                                                               const basePrice = <%= roomTypes.getBasePrice() %>;
-                                                               let nights = 1;
-                                                               let adults = 2;
-                                                               let children = 0;
-
-                                                               function changeMainImage(img) {
-                                                                   document.getElementById('mainImage').src = img.src;
-                                                                   // Remove active class from all thumbnails
-                                                                   document.querySelectorAll('.room-thumbnails img').forEach(thumb => {
-                                                                       thumb.classList.remove('active');
-                                                                   });
-                                                                   // Add active class to clicked thumbnail
-                                                                   img.classList.add('active');
-                                                               }
-
-                                                               function updateCheckoutMin() {
-                                                                   const checkinDate = document.querySelector('input[name="checkinDate"]').value;
-                                                                   const checkoutInput = document.querySelector('input[name="checkoutDate"]');
-
-                                                                   if (checkinDate) {
-                                                                       const checkin = new Date(checkinDate);
-                                                                       checkin.setDate(checkin.getDate() + 1);
-                                                                       const minCheckout = checkin.toISOString().split('T')[0];
-                                                                       checkoutInput.setAttribute('min', minCheckout);
-
-                                                                       // Reset checkout if it's before new minimum
-                                                                       if (checkoutInput.value && checkoutInput.value < minCheckout) {
-                                                                           checkoutInput.value = minCheckout;
-                                                                       }
-                                                                   }
-                                                                   calculateNights();
-                                                               }
-
-                                                               function calculateNights() {
-                                                                   const checkinDate = document.querySelector('input[name="checkinDate"]').value;
-                                                                   const checkoutDate = document.querySelector('input[name="checkoutDate"]').value;
-
-                                                                   if (checkinDate && checkoutDate) {
-                                                                       const checkin = new Date(checkinDate);
-                                                                       const checkout = new Date(checkoutDate);
-                                                                       nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
-
-                                                                       document.getElementById('nightsDisplay').textContent = nights;
-                                                                       document.getElementById('nightsText').textContent = nights;
-
-                                                                       updateTotalPrice();
-
-                                                                       // Check room availability for selected dates
-                                                                       checkRoomAvailability(checkinDate, checkoutDate);
-                                                                   }
-                                                               }
-
-                                                               function checkRoomAvailability(checkinDate, checkoutDate) {
-                                                                   const roomTypeId = document.querySelector('input[name="roomTypeId"]').value;
-                                                                   const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
-
-                                                                   // Show loading message
-                                                                   const statusDiv = document.getElementById('availabilityStatus');
-                                                                   if (statusDiv) {
-                                                                       statusDiv.innerHTML = '<div class="text-center p-4"><i class="fa fa-spinner fa-spin" style="font-size: 48px; color: #ff6b6b;"></i><p class="mt-3">Checking availability...</p></div>';
-                                                                   }
-
-                                                                   // Make AJAX call to check availability
-                                                                   fetch(contextPath + '/CheckRoomAvailability?roomTypeId=' + roomTypeId +
-                                                                           '&checkIn=' + checkinDate + '&checkOut=' + checkoutDate)
-                                                                           .then(response => response.json())
-                                                                           .then(data => {
-                                                                               updateAvailabilityStatus(data);
-                                                                           })
-                                                                           .catch(error => {
-                                                                               console.error('Error checking availability:', error);
-                                                                               if (statusDiv) {
-                                                                                   statusDiv.innerHTML = '<div class="text-center p-4 text-danger"><i class="fa fa-exclamation-circle" style="font-size: 48px;"></i><p class="mt-3">Error checking availability. Please try again.</p></div>';
-                                                                               }
-                                                                           });
-                                                               }
-
-                                                               function updateAvailabilityStatus(data) {
-                                                                   const statusDiv = document.getElementById('availabilityStatus');
-                                                                   if (!statusDiv)
-                                                                       return;
-
-                                                                   if (data.available) {
-                                                                       statusDiv.innerHTML = `
-                        <div class="text-center">
-                            <div class="availability-badge available">
-                                <i class="fa fa-check-circle" style="font-size: 24px;"></i>
-                                <span>Rooms Available!</span>
-                            </div>
-                            <div class="availability-details mt-4">
-                                <h5>Availability Details</h5>
-                                <div class="availability-info">
-                                    <span>Room Type:</span>
-                                    <span><%= roomTypes.getName() %></span>
-                                </div>
-                                <div class="availability-info">
-                                    <span>Available Rooms:</span>
-                                    <span>${data.availableCount || 'Multiple'} rooms</span>
-                                </div>
-                                <div class="availability-info">
-                                    <span>Your Dates:</span>
-                                    <span>${document.querySelector('input[name="checkinDate"]').value} to ${document.querySelector('input[name="checkoutDate"]').value}</span>
-                                </div>
-                            </div>
-                            <p class="mt-3 text-success">
-                                <i class="fa fa-info-circle"></i> Great! We have rooms available for your selected dates. 
-                                Proceed with booking and our reception staff will assign you the best available room during check-in.
-                            </p>
-                        </div>
-                    `;
-
-                                                                       // Enable the booking button if it was disabled
-                                                                       const bookingBtn = document.querySelector('.book-now-btn');
-                                                                       if (bookingBtn) {
-                                                                           bookingBtn.disabled = false;
-                                                                           bookingBtn.textContent = 'Confirm Booking';
-                                                                       }
-                                                                   } else {
-                                                                       statusDiv.innerHTML = `
-                        <div class="text-center">
-                            <div class="availability-badge unavailable">
-                                <i class="fa fa-times-circle" style="font-size: 24px;"></i>
-                                <span>No Rooms Available</span>
-                            </div>
-                            <p class="mt-3 text-danger">
-                                <i class="fa fa-calendar-times-o"></i> Sorry, we don't have any <%= roomTypes.getName() %> rooms available for your selected dates.
-                                Please try different dates or check other room types.
-                            </p>
-                            <div class="mt-4">
-                                <a href="${window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1))}/RoomListServlet" class="btn btn-primary">
-                                    <i class="fa fa-search"></i> View Other Room Types
-                                </a>
-                            </div>
-                        </div>
-                    `;
-
-                                                                       // Disable the booking button
-                                                                       const bookingBtn = document.querySelector('.book-now-btn');
-                                                                       if (bookingBtn) {
-                                                                           bookingBtn.disabled = true;
-                                                                           bookingBtn.textContent = 'No Rooms Available';
-                                                                       }
-                                                                   }
-                                                               }
-
-                                                               function updateGuests(type, change) {
-                                                                   if (type === 'adults') {
-                                                                       adults = Math.max(1, Math.min(4, adults + change));
-                                                                       document.getElementById('adultsCount').textContent = adults;
-                                                                       document.getElementById('adultsInput').value = adults;
-                                                                   } else {
-                                                                       children = Math.max(0, Math.min(3, children + change));
-                                                                       document.getElementById('childrenCount').textContent = children;
-                                                                       document.getElementById('childrenInput').value = children;
-                                                                   }
-
-                                                                   updateGuestsDisplay();
-                                                               }
-
-                                                               function updateGuestsDisplay() {
-                                                                   let guestText = adults + ' adult' + (adults > 1 ? 's' : '');
-                                                                   if (children > 0) {
-                                                                       guestText += ', ' + children + ' child' + (children > 1 ? 'ren' : '');
-                                                                   }
-                                                                   document.getElementById('guestsDisplay').textContent = guestText;
-                                                               }
-
-                                                               function updateTotalPrice() {
-                                                                   const roomPrice = basePrice * nights;
-                                                                   const tax = roomPrice * 0.1;
-                                                                   let servicesTotal = 0;
-                                                                   let servicesHtml = '';
-
-                                                                   // Calculate services total
-                                                                   document.querySelectorAll('input[name="services"]:checked').forEach(checkbox => {
-                                                                       const servicePrice = parseFloat(checkbox.getAttribute('data-price'));
-                                                                       servicesTotal += servicePrice;
-
-                                                                       const serviceName = checkbox.parentElement.querySelector('.service-info strong').textContent;
-                                                                       servicesHtml += '<div class="price-row">' +
-                                                                               '<span>' + serviceName + '</span>' +
-                                                                               '<span>' + formatPrice(servicePrice) + '</span>' +
-                                                                               '</div>';
-                                                                   });
-
-                                                                   const total = roomPrice + tax + servicesTotal;
-
-                                                                   // Update display
-                                                                   document.getElementById('roomPriceDisplay').textContent = formatPrice(roomPrice);
-                                                                   document.getElementById('taxDisplay').textContent = formatPrice(tax);
-                                                                   document.getElementById('servicesDisplay').innerHTML = servicesHtml;
-                                                                   document.getElementById('totalPriceDisplay').textContent = formatPrice(total);
-                                                               }
-
-                                                               function formatPrice(price) {
-                                                                   return new Intl.NumberFormat('vi-VN').format(price) + '₫';
-                                                               }
-
-                                                               function validateBookingForm() {
-                                                                   console.log('Starting form validation...');
-
-                                                                   // Check terms and conditions
-                                                                   const termsCheck = document.getElementById('termsCheck');
-                                                                   if (!termsCheck) {
-                                                                       console.error('Terms checkbox not found');
-                                                                       showAlert('Error: Terms checkbox not found', 'error');
-                                                                       return false;
-                                                                   }
-
-                                                                   if (!termsCheck.checked) {
-                                                                       showAlert('Please accept the terms and conditions', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   // Check if room type is available (no need to select specific room)
-                                                                   const bookingBtn = document.querySelector('.book-now-btn');
-                                                                   if (bookingBtn && bookingBtn.disabled) {
-                                                                       showAlert('No rooms available for selected dates', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   // Validate dates
-                                                                   const checkinDateInput = document.querySelector('input[name="checkinDate"]');
-                                                                   const checkoutDateInput = document.querySelector('input[name="checkoutDate"]');
-
-                                                                   if (!checkinDateInput || !checkoutDateInput) {
-                                                                       console.error('Date inputs not found');
-                                                                       showAlert('Error: Date inputs not found', 'error');
-                                                                       return false;
-                                                                   }
-
-                                                                   const checkinDate = checkinDateInput.value;
-                                                                   const checkoutDate = checkoutDateInput.value;
-
-                                                                   if (!checkinDate || !checkoutDate) {
-                                                                       showAlert('Please select both check-in and check-out dates', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   // Validate guest information
-                                                                   const fullNameInput = document.querySelector('input[name="fullName"]');
-                                                                   const emailInput = document.querySelector('input[name="email"]');
-                                                                   const phoneInput = document.querySelector('input[name="phone"]');
-
-                                                                   if (!fullNameInput || !emailInput || !phoneInput) {
-                                                                       console.error('Contact info inputs not found');
-                                                                       showAlert('Error: Contact information inputs not found', 'error');
-                                                                       return false;
-                                                                   }
-
-                                                                   const fullName = fullNameInput.value.trim();
-                                                                   const email = emailInput.value.trim();
-                                                                   const phone = phoneInput.value.trim();
-
-                                                                   if (!fullName || !email || !phone) {
-                                                                       showAlert('Please fill in all required contact information', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   // Validate email format
-                                                                   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                                                                   if (!emailRegex.test(email)) {
-                                                                       showAlert('Please enter a valid email address', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   // Validate phone format (Vietnamese phone number)
-                                                                   const phoneRegex = /^(0|84|\+84)?[3456789]\d{8}$/;
-                                                                   if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
-                                                                       showAlert('Please enter a valid phone number', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   console.log('Form validation passed!');
-                                                                   return true;
-                                                               }
-
-                                                               function checkLoginAndProceed() {
-                                                                   showLoading(true);
-
-                                                                   const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
-                                                                   const url = contextPath + '/BookingServlet?action=checkLogin';
-
-                                                                   fetch(url)
-                                                                           .then(response => {
-                                                                               if (!response.ok) {
-                                                                                   throw new Error('Server responded with status: ' + response.status);
-                                                                               }
-                                                                               return response.json();
-                                                                           })
-                                                                           .then(data => {
-                                                                               if (data.isLoggedIn) {
-                                                                                   // User is logged in - update form with user data if needed
-                                                                                   updateFormWithUserData(data.user);
-                                                                                   submitBookingForm();
-                                                                               } else {
-                                                                                   // User not logged in - proceed with guest booking
-                                                                                   submitBookingForm();
-                                                                               }
-                                                                           })
-                                                                           .catch(error => {
-                                                                               showLoading(false);
-                                                                               console.error('Error:', error);
-                                                                               showAlert('An error occurred. Please try again.', 'error');
-                                                                           });
-                                                               }
-
-                                                               function updateFormWithUserData(user) {
-                                                                   if (user) {
-                                                                       // Update form fields with logged-in user data
-                                                                       if (user.fullName)
-                                                                           document.querySelector('input[name="fullName"]').value = user.fullName;
-                                                                       if (user.email)
-                                                                           document.querySelector('input[name="email"]').value = user.email;
-                                                                       if (user.phone)
-                                                                           document.querySelector('input[name="phone"]').value = user.phone;
-                                                                   }
-                                                               }
-
-                                                               function submitBookingForm() {
-                                                                   console.log('submitBookingForm called');
-
-                                                                   const form = document.getElementById('bookingForm');
-                                                                   if (!form) {
-                                                                       console.error('Form not found!');
-                                                                       showAlert('Error: Booking form not found', 'error');
-                                                                       return;
-                                                                   }
-
-                                                                   // Get form data manually
-                                                                   const formData = {
-                                                                       roomTypeId: form.roomTypeId.value,
-                                                                       basePrice: form.basePrice.value,
-                                                                       checkinDate: form.checkinDate.value,
-                                                                       checkoutDate: form.checkoutDate.value,
-                                                                       adults: form.adults.value,
-                                                                       children: form.children.value,
-                                                                       fullName: form.fullName.value,
-                                                                       email: form.email.value,
-                                                                       phone: form.phone.value,
-                                                                       nationality: form.nationality.value,
-                                                                       specialRequests: form.specialRequests.value,
-                                                                       paymentMethod: form.paymentMethod.value
-                                                                   };
-
-                                                                   // Get selected services
-                                                                   const selectedServices = [];
-                                                                   document.querySelectorAll('input[name="services"]:checked').forEach(checkbox => {
-                                                                       selectedServices.push(checkbox.value);
-                                                                   });
-
-                                                                   // Log form data for debugging
-                                                                   console.log('=== Form Data ===');
-                                                                   console.log(formData);
-                                                                   console.log('Services:', selectedServices);
-
-                                                                   // Check required fields
-                                                                   const requiredFields = ['roomTypeId', 'basePrice', 'checkinDate', 'checkoutDate',
-                                                                       'fullName', 'email', 'phone'];
-
-                                                                   for (let field of requiredFields) {
-                                                                       if (!formData[field]) {
-                                                                           console.error('Missing required field: ' + field);
-                                                                           showAlert('Missing required field: ' + field, 'error');
-                                                                           return;
-                                                                       }
-                                                                   }
-
-                                                                   // Calculate and add nights
-                                                                   const checkinDate = new Date(formData.checkinDate);
-                                                                   const checkoutDate = new Date(formData.checkoutDate);
-                                                                   const nights = Math.ceil((checkoutDate - checkinDate) / (1000 * 60 * 60 * 24));
-                                                                   formData.nights = nights;
-
-                                                                   // Build URL encoded string
-                                                                   let params = new URLSearchParams();
-                                                                   for (let key in formData) {
-                                                                       params.append(key, formData[key]);
-                                                                   }
-
-                                                                   // Add services
-                                                                   selectedServices.forEach(serviceId => {
-                                                                       params.append('services', serviceId);
-                                                                   });
-
-                                                                   console.log('Request params:', params.toString());
-
-                                                                   // Get context path
-                                                                   const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
-                                                                   const url = contextPath + '/BookingServlet';
-                                                                   console.log('Context path:', contextPath);
-                                                                   console.log('Posting to URL:', url);
-
-                                                                   fetch(url, {
-                                                                       method: 'POST',
-                                                                       headers: {
-                                                                           'Content-Type': 'application/x-www-form-urlencoded'
-                                                                       },
-                                                                       body: params.toString()
-                                                                   })
-                                                                           .then(response => {
-                                                                               console.log('Response status:', response.status);
-                                                                               console.log('Response headers:', response.headers);
-
-                                                                               // Read response text first
-                                                                               return response.text().then(text => {
-                                                                                   console.log('Response text:', text);
-
-                                                                                   // Check if response is OK
-                                                                                   if (!response.ok) {
-                                                                                       // Try to parse as JSON
-                                                                                       try {
-                                                                                           const errorData = JSON.parse(text);
-                                                                                           throw new Error(errorData.error || 'Server responded with status: ' + response.status);
-                                                                                       } catch (e) {
-                                                                                           throw new Error('Server responded with status: ' + response.status);
-                                                                                       }
-                                                                                   }
-
-                                                                                   // Parse as JSON
-                                                                                   return JSON.parse(text);
-                                                                               });
-                                                                           })
-                                                                           .then(data => {
-                                                                               showLoading(false);
-                                                                               console.log('Response data:', data);
-
-                                                                               if (data.requireOTP) {
-                                                                                   // Guest booking - show OTP modal
-                                                                                   showOTPModal(data.email);
-                                                                               } else if (data.success) {
-                                                                                   // Booking successful
-                                                                                   const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-                                                                                   handleBookingSuccess(data, paymentMethod);
-                                                                               } else {
-                                                                                   showAlert(data.error || 'Booking failed. Please try again.', 'error');
-                                                                               }
-                                                                           })
-                                                                           .catch(error => {
-                                                                               showLoading(false);
-                                                                               console.error('Error:', error);
-                                                                               showAlert(error.message || 'An error occurred while processing your booking. Please try again.', 'error');
-                                                                           });
-                                                               }
-
-                                                               function handleBookingSuccess(data, paymentMethod) {
-                                                                   if (paymentMethod === 'CASH') {
-                                                                       // For cash payment, redirect to confirmation page
-                                                                       window.location.href = 'BookingConfirmation?reservationId=' + data.reservationId;
-                                                                   } else {
-                                                                       // For online payment, redirect to payment gateway
-                                                                       window.location.href = 'PaymentGateway?reservationId=' + data.reservationId +
-                                                                               '&paymentId=' + data.paymentId +
-                                                                               '&method=' + paymentMethod;
-                                                                   }
-                                                               }
-
-                                                               // Add these functions to your roomDetail.jsp JavaScript section
-
-                                                          function showOTPModal(maskedEmail) {
+       /* Custom JavaScript for booking functionality */
+<script>
+const basePrice = <%= roomTypes.getBasePrice() %>;
+let nights = 1;
+let adults = 2;
+let children = 0;
+
+function changeMainImage(img) {
+    document.getElementById('mainImage').src = img.src;
+    // Remove active class from all thumbnails
+    document.querySelectorAll('.room-thumbnails img').forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+    // Add active class to clicked thumbnail
+    img.classList.add('active');
+}
+
+function updateCheckoutMin() {
+    const checkinDate = document.querySelector('input[name="checkinDate"]').value;
+    const checkoutInput = document.querySelector('input[name="checkoutDate"]');
+
+    if (checkinDate) {
+        const checkin = new Date(checkinDate);
+        checkin.setDate(checkin.getDate() + 1);
+        const minCheckout = checkin.toISOString().split('T')[0];
+        checkoutInput.setAttribute('min', minCheckout);
+
+        // Reset checkout if it's before new minimum
+        if (checkoutInput.value && checkoutInput.value < minCheckout) {
+            checkoutInput.value = minCheckout;
+        }
+    }
+    calculateNights();
+}
+
+function calculateNights() {
+    const checkinDate = document.querySelector('input[name="checkinDate"]').value;
+    const checkoutDate = document.querySelector('input[name="checkoutDate"]').value;
+
+    if (checkinDate && checkoutDate) {
+        const checkin = new Date(checkinDate);
+        const checkout = new Date(checkoutDate);
+        nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+
+        document.getElementById('nightsDisplay').textContent = nights;
+        document.getElementById('nightsText').textContent = nights;
+
+        updateTotalPrice();
+
+        // Check room availability for selected dates
+        checkRoomAvailability(checkinDate, checkoutDate);
+    }
+}
+
+function checkRoomAvailability(checkinDate, checkoutDate) {
+    const roomTypeId = document.querySelector('input[name="roomTypeId"]').value;
+    const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
+
+    // Show loading message
+    const statusDiv = document.getElementById('availabilityStatus');
+    if (statusDiv) {
+        statusDiv.innerHTML = '<div class="text-center p-4"><i class="fa fa-spinner fa-spin" style="font-size: 48px; color: #ff6b6b;"></i><p class="mt-3">Checking availability...</p></div>';
+    }
+
+    // Make AJAX call to check availability
+    fetch(contextPath + '/CheckRoomAvailability?roomTypeId=' + roomTypeId +
+            '&checkIn=' + checkinDate + '&checkOut=' + checkoutDate)
+            .then(response => response.json())
+            .then(data => {
+                updateAvailabilityStatus(data);
+            })
+            .catch(error => {
+                console.error('Error checking availability:', error);
+                if (statusDiv) {
+                    statusDiv.innerHTML = '<div class="text-center p-4 text-danger"><i class="fa fa-exclamation-circle" style="font-size: 48px;"></i><p class="mt-3">Error checking availability. Please try again.</p></div>';
+                }
+            });
+}
+
+function updateAvailabilityStatus(data) {
+    const statusDiv = document.getElementById('availabilityStatus');
+    if (!statusDiv) return;
+
+    if (data.available) {
+        statusDiv.innerHTML = `
+            <div class="text-center">
+                <div class="availability-badge available">
+                    <i class="fa fa-check-circle" style="font-size: 24px;"></i>
+                    <span>Rooms Available!</span>
+                </div>
+                <div class="availability-details mt-4">
+                    <h5>Availability Details</h5>
+                    <div class="availability-info">
+                        <span>Room Type:</span>
+                        <span><%= roomTypes.getName() %></span>
+                    </div>
+                    <div class="availability-info">
+                        <span>Available Rooms:</span>
+                        <span>${data.availableCount || 'Multiple'} rooms</span>
+                    </div>
+                    <div class="availability-info">
+                        <span>Your Dates:</span>
+                        <span>${document.querySelector('input[name="checkinDate"]').value} to ${document.querySelector('input[name="checkoutDate"]').value}</span>
+                    </div>
+                </div>
+                <p class="mt-3 text-success">
+                    <i class="fa fa-info-circle"></i> Great! We have rooms available for your selected dates. 
+                    Proceed with booking and our reception staff will assign you the best available room during check-in.
+                </p>
+            </div>
+        `;
+
+        // Enable the booking button if it was disabled
+        const bookingBtn = document.querySelector('.book-now-btn');
+        if (bookingBtn) {
+            bookingBtn.disabled = false;
+            bookingBtn.textContent = 'Confirm Booking';
+        }
+    } else {
+        statusDiv.innerHTML = `
+            <div class="text-center">
+                <div class="availability-badge unavailable">
+                    <i class="fa fa-times-circle" style="font-size: 24px;"></i>
+                    <span>No Rooms Available</span>
+                </div>
+                <p class="mt-3 text-danger">
+                    <i class="fa fa-calendar-times-o"></i> Sorry, we don't have any <%= roomTypes.getName() %> rooms available for your selected dates.
+                    Please try different dates or check other room types.
+                </p>
+                <div class="mt-4">
+                    <a href="${window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1))}/RoomListServlet" class="btn btn-primary">
+                        <i class="fa fa-search"></i> View Other Room Types
+                    </a>
+                </div>
+            </div>
+        `;
+
+        // Disable the booking button
+        const bookingBtn = document.querySelector('.book-now-btn');
+        if (bookingBtn) {
+            bookingBtn.disabled = true;
+            bookingBtn.textContent = 'No Rooms Available';
+        }
+    }
+}
+
+function updateGuests(type, change) {
+    if (type === 'adults') {
+        adults = Math.max(1, Math.min(4, adults + change));
+        document.getElementById('adultsCount').textContent = adults;
+        document.getElementById('adultsInput').value = adults;
+    } else {
+        children = Math.max(0, Math.min(3, children + change));
+        document.getElementById('childrenCount').textContent = children;
+        document.getElementById('childrenInput').value = children;
+    }
+
+    updateGuestsDisplay();
+}
+
+function updateGuestsDisplay() {
+    let guestText = adults + ' adult' + (adults > 1 ? 's' : '');
+    if (children > 0) {
+        guestText += ', ' + children + ' child' + (children > 1 ? 'ren' : '');
+    }
+    document.getElementById('guestsDisplay').textContent = guestText;
+}
+
+function updateTotalPrice() {
+    const roomPrice = basePrice * nights;
+    const tax = roomPrice * 0.1;
+    let servicesTotal = 0;
+    let servicesHtml = '';
+
+    // Calculate services total
+    document.querySelectorAll('input[name="services"]:checked').forEach(checkbox => {
+        const servicePrice = parseFloat(checkbox.getAttribute('data-price'));
+        servicesTotal += servicePrice;
+
+        const serviceName = checkbox.parentElement.querySelector('.service-info strong').textContent;
+        servicesHtml += '<div class="price-row">' +
+                '<span>' + serviceName + '</span>' +
+                '<span>' + formatPrice(servicePrice) + '</span>' +
+                '</div>';
+    });
+
+    const total = roomPrice + tax + servicesTotal;
+
+    // Update display
+    document.getElementById('roomPriceDisplay').textContent = formatPrice(roomPrice);
+    document.getElementById('taxDisplay').textContent = formatPrice(tax);
+    document.getElementById('servicesDisplay').innerHTML = servicesHtml;
+    document.getElementById('totalPriceDisplay').textContent = formatPrice(total);
+}
+
+function formatPrice(price) {
+    return new Intl.NumberFormat('vi-VN').format(price) + '₫';
+}
+
+function validateBookingForm() {
+    console.log('Starting form validation...');
+
+    // Check terms and conditions
+    const termsCheck = document.getElementById('termsCheck');
+    if (!termsCheck) {
+        console.error('Terms checkbox not found');
+        showAlert('Error: Terms checkbox not found', 'error');
+        return false;
+    }
+
+    if (!termsCheck.checked) {
+        showAlert('Please accept the terms and conditions', 'warning');
+        return false;
+    }
+
+    // Check if room type is available (no need to select specific room)
+    const bookingBtn = document.querySelector('.book-now-btn');
+    if (bookingBtn && bookingBtn.disabled) {
+        showAlert('No rooms available for selected dates', 'warning');
+        return false;
+    }
+
+    // Validate dates
+    const checkinDateInput = document.querySelector('input[name="checkinDate"]');
+    const checkoutDateInput = document.querySelector('input[name="checkoutDate"]');
+
+    if (!checkinDateInput || !checkoutDateInput) {
+        console.error('Date inputs not found');
+        showAlert('Error: Date inputs not found', 'error');
+        return false;
+    }
+
+    const checkinDate = checkinDateInput.value;
+    const checkoutDate = checkoutDateInput.value;
+
+    if (!checkinDate || !checkoutDate) {
+        showAlert('Please select both check-in and check-out dates', 'warning');
+        return false;
+    }
+
+    // Validate guest information
+    const fullNameInput = document.querySelector('input[name="fullName"]');
+    const emailInput = document.querySelector('input[name="email"]');
+    const phoneInput = document.querySelector('input[name="phone"]');
+
+    if (!fullNameInput || !emailInput || !phoneInput) {
+        console.error('Contact info inputs not found');
+        showAlert('Error: Contact information inputs not found', 'error');
+        return false;
+    }
+
+    const fullName = fullNameInput.value.trim();
+    const email = emailInput.value.trim();
+    const phone = phoneInput.value.trim();
+
+    if (!fullName || !email || !phone) {
+        showAlert('Please fill in all required contact information', 'warning');
+        return false;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showAlert('Please enter a valid email address', 'warning');
+        return false;
+    }
+
+    // Validate phone format (Vietnamese phone number)
+    const phoneRegex = /^(0|84|\+84)?[3456789]\d{8}$/;
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+        showAlert('Please enter a valid phone number', 'warning');
+        return false;
+    }
+
+    console.log('Form validation passed!');
+    return true;
+}
+
+function checkLoginAndProceed() {
+    showLoading(true);
+
+    const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
+    const url = contextPath + '/BookingServlet?action=checkLogin';
+
+    fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Server responded with status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.isLoggedIn) {
+                    // User is logged in - update form with user data if needed
+                    updateFormWithUserData(data.user);
+                    submitBookingForm();
+                } else {
+                    // User not logged in - proceed with guest booking
+                    submitBookingForm();
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                console.error('Error:', error);
+                showAlert('An error occurred. Please try again.', 'error');
+            });
+}
+
+function updateFormWithUserData(user) {
+    if (user) {
+        // Update form fields with logged-in user data
+        if (user.fullName)
+            document.querySelector('input[name="fullName"]').value = user.fullName;
+        if (user.email)
+            document.querySelector('input[name="email"]').value = user.email;
+        if (user.phone)
+            document.querySelector('input[name="phone"]').value = user.phone;
+    }
+}
+
+function handleBookingButtonState(isLoading = false) {
+    const bookingBtn = document.querySelector('.book-now-btn');
+    if (!bookingBtn) return;
+
+    if (isLoading) {
+        bookingBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+        bookingBtn.disabled = true;
+        bookingBtn.style.background = '#ccc';
+    } else {
+        bookingBtn.innerHTML = 'Confirm Booking';
+        bookingBtn.disabled = false;
+        bookingBtn.style.background = '#ff6b6b';
+    }
+}
+
+function submitBookingForm() {
+    console.log('submitBookingForm called');
+
+    // Show loading state on button
+    handleBookingButtonState(true);
+
+    const form = document.getElementById('bookingForm');
+    if (!form) {
+        console.error('Form not found!');
+        showAlert('Error: Booking form not found', 'error');
+        handleBookingButtonState(false);
+        return;
+    }
+
+    // Get form data manually
+    const formData = {
+        roomTypeId: form.roomTypeId.value,
+        basePrice: form.basePrice.value,
+        checkinDate: form.checkinDate.value,
+        checkoutDate: form.checkoutDate.value,
+        adults: form.adults.value,
+        children: form.children.value,
+        fullName: form.fullName.value,
+        email: form.email.value,
+        phone: form.phone.value,
+        nationality: form.nationality.value,
+        specialRequests: form.specialRequests.value,
+        paymentMethod: form.paymentMethod.value
+    };
+
+    // Get selected services
+    const selectedServices = [];
+    document.querySelectorAll('input[name="services"]:checked').forEach(checkbox => {
+        selectedServices.push(checkbox.value);
+    });
+
+    // Log form data for debugging
+    console.log('=== Form Data ===');
+    console.log(formData);
+    console.log('Services:', selectedServices);
+
+    // Check required fields
+    const requiredFields = ['roomTypeId', 'basePrice', 'checkinDate', 'checkoutDate',
+        'fullName', 'email', 'phone'];
+
+    for (let field of requiredFields) {
+        if (!formData[field]) {
+            console.error('Missing required field: ' + field);
+            showAlert('Missing required field: ' + field, 'error');
+            handleBookingButtonState(false);
+            return;
+        }
+    }
+
+    // Calculate and add nights
+    const checkinDate = new Date(formData.checkinDate);
+    const checkoutDate = new Date(formData.checkoutDate);
+    const nights = Math.ceil((checkoutDate - checkinDate) / (1000 * 60 * 60 * 24));
+    formData.nights = nights;
+
+    // Build URL encoded string
+    let params = new URLSearchParams();
+    for (let key in formData) {
+        params.append(key, formData[key]);
+    }
+
+    // Add services
+    selectedServices.forEach(serviceId => {
+        params.append('services', serviceId);
+    });
+
+    console.log('Request params:', params.toString());
+
+    // Get context path
+    const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
+    const url = contextPath + '/BookingServlet';
+    console.log('Context path:', contextPath);
+    console.log('Posting to URL:', url);
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params.toString()
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+
+        // Read response text first
+        return response.text().then(text => {
+            console.log('Response text:', text);
+
+            // Check if response is OK
+            if (!response.ok) {
+                // Try to parse as JSON
+                try {
+                    const errorData = JSON.parse(text);
+                    throw new Error(errorData.error || 'Server responded with status: ' + response.status);
+                } catch (e) {
+                    throw new Error('Server responded with status: ' + response.status);
+                }
+            }
+
+            // Parse as JSON
+            return JSON.parse(text);
+        });
+    })
+    .then(data => {
+        handleBookingButtonState(false);
+        showLoading(false);
+        console.log('Response data:', data);
+
+        if (data.requireOTP) {
+            // Guest booking - show OTP modal
+            showOTPModal(data.email);
+        } else if (data.success) {
+            // Booking successful - show success message briefly
+            showAlert('Booking confirmed! Redirecting...', 'success');
+            
+            // Redirect after 1 second
+            setTimeout(() => {
+                const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+                handleBookingSuccess(data, paymentMethod);
+            }, 1000);
+        } else {
+            showAlert(data.error || 'Booking failed. Please try again.', 'error');
+        }
+    })
+    .catch(error => {
+        handleBookingButtonState(false);
+        showLoading(false);
+        console.error('Error:', error);
+        showAlert(error.message || 'An error occurred while processing your booking. Please try again.', 'error');
+    });
+}
+
+function handleBookingSuccess(data, paymentMethod) {
+    if (paymentMethod === 'CASH') {
+        // For cash payment, redirect to confirmation page
+        window.location.href = 'BookingConfirmation?reservationId=' + data.reservationId;
+    } else {
+        // For online payment, redirect to payment gateway
+        window.location.href = 'PaymentGateway?reservationId=' + data.reservationId +
+                '&paymentId=' + data.paymentId +
+                '&method=' + paymentMethod;
+    }
+}
+
+function showOTPModal(maskedEmail) {
     // Create modal HTML with improved styling
     const modalHTML = `
         <div id="otpModal" class="modal" style="display: block; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
@@ -1367,363 +1392,370 @@
         </div>
     `;
 
-                                                                   document.body.insertAdjacentHTML('beforeend', modalHTML);
-                                                                   document.getElementById('otpInput').focus();
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.getElementById('otpInput').focus();
 
-                                                                   // Auto-submit when 6 digits are entered
-                                                                   document.getElementById('otpInput').addEventListener('input', function () {
-                                                                       if (this.value.length === 6) {
-                                                                           console.log('6 digits entered, auto-verifying...');
-                                                                           verifyOTP();
-                                                                       }
-                                                                   });
+    // Auto-submit when 6 digits are entered
+    document.getElementById('otpInput').addEventListener('input', function () {
+        if (this.value.length === 6) {
+            console.log('6 digits entered, auto-verifying...');
+            verifyOTP();
+        }
+    });
 
-                                                                   // Debug - check if functions are accessible
-                                                                   console.log('OTP Modal created. Functions available:');
-                                                                   console.log('verifyOTP:', typeof verifyOTP);
-                                                                   console.log('resendOTP:', typeof resendOTP);
-                                                                   console.log('closeOTPModal:', typeof closeOTPModal);
-                                                               }
+    // Debug - check if functions are accessible
+    console.log('OTP Modal created. Functions available:');
+    console.log('verifyOTP:', typeof verifyOTP);
+    console.log('resendOTP:', typeof resendOTP);
+    console.log('closeOTPModal:', typeof closeOTPModal);
+}
 
-                                                               function handleOTPInput(event) {
-                                                                   const input = event.target;
-                                                                   // Only allow numbers
-                                                                   input.value = input.value.replace(/[^0-9]/g, '');
+function handleOTPInput(event) {
+    const input = event.target;
+    // Only allow numbers
+    input.value = input.value.replace(/[^0-9]/g, '');
 
-                                                                   // Hide error message when typing
-                                                                   document.getElementById('otpError').style.display = 'none';
-                                                               }
+    // Hide error message when typing
+    document.getElementById('otpError').style.display = 'none';
+}
 
-                                                               function closeOTPModal() {
-                                                                   const modal = document.getElementById('otpModal');
-                                                                   if (modal) {
-                                                                       modal.remove();
-                                                                   }
-                                                               }
+function closeOTPModal() {
+    const modal = document.getElementById('otpModal');
+    if (modal) {
+        modal.remove();
+    }
+}
 
-                                                               function verifyOTP() {
-                                                                   const otpInput = document.getElementById('otpInput');
-                                                                   const otp = otpInput.value;
-                                                                   const errorDiv = document.getElementById('otpError');
+function verifyOTP() {
+    const otpInput = document.getElementById('otpInput');
+    const otp = otpInput.value;
+    const errorDiv = document.getElementById('otpError');
 
-                                                                   // Validate OTP
-                                                                   if (otp.length !== 6) {
-                                                                       errorDiv.textContent = 'Please enter a 6-digit code';
-                                                                       errorDiv.style.display = 'block';
-                                                                       return;
-                                                                   }
+    // Validate OTP
+    if (otp.length !== 6) {
+        errorDiv.textContent = 'Please enter a 6-digit code';
+        errorDiv.style.display = 'block';
+        return;
+    }
 
-                                                                   // Get the verify button
-                                                                   const verifyBtn = document.querySelector('button[onclick="verifyOTP()"]');
-                                                                   const originalText = verifyBtn.innerHTML;
-                                                                   verifyBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Verifying...';
-                                                                   verifyBtn.disabled = true;
+    // Get the verify button
+    const verifyBtn = document.querySelector('button[onclick="verifyOTP()"]');
+    const originalText = verifyBtn.innerHTML;
+    verifyBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Verifying...';
+    verifyBtn.disabled = true;
 
-                                                                   const contextPath = getContextPath();
-                                                                   const url = contextPath + '/ValidateOTP';
+    const contextPath = getContextPath();
+    const url = contextPath + '/ValidateOTP';
 
-                                                                   fetch(url, {
-                                                                       method: 'POST',
-                                                                       headers: {
-                                                                           'Content-Type': 'application/x-www-form-urlencoded',
-                                                                       },
-                                                                       body: 'otp=' + otp
-                                                                   })
-                                                                           .then(response => {
-                                                                               if (!response.ok) {
-                                                                                   throw new Error('Server responded with status: ' + response.status);
-                                                                               }
-                                                                               return response.json();
-                                                                           })
-                                                                           .then(data => {
-                                                                               if (data.success) {
-                                                                                   // OTP validated successfully
-                                                                                   errorDiv.style.display = 'none';
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'otp=' + otp
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Server responded with status: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // OTP validated successfully
+            errorDiv.style.display = 'none';
 
-                                                                                   // Show success message
-                                                                                   verifyBtn.innerHTML = '<i class="fa fa-check"></i> Verified!';
-                                                                                   verifyBtn.style.background = '#28a745';
+            // Show success message
+            verifyBtn.innerHTML = '<i class="fa fa-check"></i> Verified!';
+            verifyBtn.style.background = '#28a745';
 
-                                                                                   // Close modal after a short delay
-                                                                                   setTimeout(() => {
-                                                                                       const modal = document.getElementById('otpModal');
-                                                                                       if (modal) {
-                                                                                           modal.remove();
-                                                                                       }
-                                                                                       // Resubmit the booking form
-                                                                                       submitBookingForm();
-                                                                                   }, 300);
-                                                                               } else {
-                                                                                   // Invalid OTP
-                                                                                   errorDiv.textContent = data.message || 'Invalid code. Please try again.';
-                                                                                   errorDiv.style.display = 'block';
-                                                                                   otpInput.value = '';
-                                                                                   otpInput.focus();
+            // Close modal after 1 second instead of 300ms
+            setTimeout(() => {
+                const modal = document.getElementById('otpModal');
+                if (modal) {
+                    modal.remove();
+                }
+                // Resubmit the booking form
+                submitBookingForm();
+            }, 1000); // Changed from 300 to 1000 (1 second)
+        } else {
+            // Invalid OTP
+            errorDiv.textContent = data.message || 'Invalid code. Please try again.';
+            errorDiv.style.display = 'block';
+            otpInput.value = '';
+            otpInput.focus();
 
-                                                                                   // Restore button
-                                                                                   verifyBtn.innerHTML = originalText;
-                                                                                   verifyBtn.disabled = false;
-                                                                               }
-                                                                           })
-                                                                           .catch(error => {
-                                                                               console.error('Error:', error);
-                                                                               errorDiv.textContent = 'An error occurred. Please try again.';
-                                                                               errorDiv.style.display = 'block';
+            // Restore button
+            verifyBtn.innerHTML = originalText;
+            verifyBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        errorDiv.textContent = 'An error occurred. Please try again.';
+        errorDiv.style.display = 'block';
 
-                                                                               // Restore button
-                                                                               verifyBtn.innerHTML = originalText;
-                                                                               verifyBtn.disabled = false;
-                                                                           });
-                                                               }
+        // Restore button
+        verifyBtn.innerHTML = originalText;
+        verifyBtn.disabled = false;
+    });
+}
 
-                                                               function resendOTP() {
-                                                                   const resendBtn = document.querySelector('button[onclick="resendOTP()"]');
-                                                                   const originalText = resendBtn.innerHTML;
-                                                                   const resendMessage = document.getElementById('resendMessage');
+function resendOTP() {
+    const resendBtn = document.querySelector('button[onclick="resendOTP()"]');
+    const originalText = resendBtn.innerHTML;
+    const resendMessage = document.getElementById('resendMessage');
 
-                                                                   // Show loading on resend button
-                                                                   resendBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Sending...';
-                                                                   resendBtn.disabled = true;
+    // Show loading on resend button
+    resendBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Sending...';
+    resendBtn.disabled = true;
 
-                                                                   const contextPath = getContextPath();
-                                                                   const url = contextPath + '/ResendOTP';
+    const contextPath = getContextPath();
+    const url = contextPath + '/ResendOTP';
 
-                                                                   fetch(url, {
-                                                                       method: 'POST'
-                                                                   })
-                                                                           .then(response => {
-                                                                               if (!response.ok) {
-                                                                                   throw new Error('Server responded with status: ' + response.status);
-                                                                               }
-                                                                               return response.json();
-                                                                           })
-                                                                           .then(data => {
-                                                                               if (data.success) {
-                                                                                   // Show success message
-                                                                                   resendMessage.style.display = 'block';
-                                                                                   document.getElementById('otpInput').value = '';
-                                                                                   document.getElementById('otpInput').focus();
+    fetch(url, {
+        method: 'POST'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Server responded with status: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            resendMessage.style.display = 'block';
+            document.getElementById('otpInput').value = '';
+            document.getElementById('otpInput').focus();
 
-                                                                                   // Hide error if any
-                                                                                   document.getElementById('otpError').style.display = 'none';
+            // Hide error if any
+            document.getElementById('otpError').style.display = 'none';
 
-                                                                                   // Hide success message after 3 seconds
-                                                                                   setTimeout(() => {
-                                                                                       resendMessage.style.display = 'none';
-                                                                                   }, 3000);
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                resendMessage.style.display = 'none';
+            }, 3000);
 
-                                                                                   // Restore button after delay
-                                                                                   setTimeout(() => {
-                                                                                       resendBtn.innerHTML = originalText;
-                                                                                       resendBtn.disabled = false;
-                                                                                   }, 30000); // 30 second cooldown
+            // Restore button after shorter delay - from 30000ms to 10000ms (10 seconds)
+            setTimeout(() => {
+                resendBtn.innerHTML = originalText;
+                resendBtn.disabled = false;
+            }, 10000); // Changed from 30000 to 10000 (10 seconds cooldown)
 
-                                                                               } else {
-                                                                                   // Show error
-                                                                                   document.getElementById('otpError').textContent = data.message || 'Failed to resend code. Please try again.';
-                                                                                   document.getElementById('otpError').style.display = 'block';
+        } else {
+            // Show error
+            document.getElementById('otpError').textContent = data.message || 'Failed to resend code. Please try again.';
+            document.getElementById('otpError').style.display = 'block';
 
-                                                                                   // Restore button
-                                                                                   resendBtn.innerHTML = originalText;
-                                                                                   resendBtn.disabled = false;
-                                                                               }
-                                                                           })
-                                                                           .catch(error => {
-                                                                               console.error('Error:', error);
-                                                                               document.getElementById('otpError').textContent = 'An error occurred. Please try again.';
-                                                                               document.getElementById('otpError').style.display = 'block';
+            // Restore button
+            resendBtn.innerHTML = originalText;
+            resendBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('otpError').textContent = 'An error occurred. Please try again.';
+        document.getElementById('otpError').style.display = 'block';
 
-                                                                               // Restore button
-                                                                               resendBtn.innerHTML = originalText;
-                                                                               resendBtn.disabled = false;
-                                                                           });
-                                                               }
+        // Restore button
+        resendBtn.innerHTML = originalText;
+        resendBtn.disabled = false;
+    });
+}
 
 // Helper function to get context path
-                                                               const getContextPath = () => {
-                                                                   const path = '${pageContext.request.contextPath}';
-                                                                   return path || '';
-                                                               };
+const getContextPath = () => {
+    const path = '${pageContext.request.contextPath}';
+    return path || '';
+};
 
-                                                               function showLoading(show) {
-                                                                   const loadingDiv = document.getElementById('loading-icon-bx');
-                                                                   if (loadingDiv) {
-                                                                       loadingDiv.style.display = show ? 'block' : 'none';
-                                                                   }
-                                                               }
+function showLoading(show) {
+    const loadingDiv = document.getElementById('loading-icon-bx');
+    if (loadingDiv) {
+        loadingDiv.style.display = show ? 'block' : 'none';
+    }
+}
 
-                                                               function showAlert(message, type = 'info') {
-                                                                   // Create alert div
-                                                                   const alertDiv = document.createElement('div');
-                                                                   alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-                                                                   alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+function showAlert(message, type = 'info') {
+    // Create alert div
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
 
-                                                                   // Set icon based on type
-                                                                   let icon = 'fa-info-circle';
-                                                                   if (type === 'success')
-                                                                       icon = 'fa-check-circle';
-                                                                   else if (type === 'warning')
-                                                                       icon = 'fa-exclamation-triangle';
-                                                                   else if (type === 'error' || type === 'danger')
-                                                                       icon = 'fa-times-circle';
+    // Set icon based on type
+    let icon = 'fa-info-circle';
+    if (type === 'success') icon = 'fa-check-circle';
+    else if (type === 'warning') icon = 'fa-exclamation-triangle';
+    else if (type === 'error' || type === 'danger') icon = 'fa-times-circle';
 
-                                                                   alertDiv.innerHTML = `
-                    <i class="fa \${icon}"></i> \${message}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                `;
+    alertDiv.innerHTML = `
+        <i class="fa ${icon}"></i> ${message}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    `;
 
-                                                                   document.body.appendChild(alertDiv);
+    document.body.appendChild(alertDiv);
 
-                                                                   // Auto-dismiss after 5 seconds
-                                                                   setTimeout(() => {
-                                                                       alertDiv.remove();
-                                                                   }, 5000);
-                                                               }
+    // Auto-dismiss after 3 seconds instead of 5 seconds
+    setTimeout(() => {
+        if (alertDiv && alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 3000); // Changed from 5000 to 3000 (3 seconds)
 
-                                                               // Initialize on page load
-                                                               document.addEventListener('DOMContentLoaded', function () {
-                                                                   console.log('Page loaded - initializing booking form');
+    // Add click handler for close button
+    const closeBtn = alertDiv.querySelector('.close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            alertDiv.remove();
+        });
+    }
+}
 
-                                                                   // Check if form exists
-                                                                   const bookingForm = document.getElementById('bookingForm');
-                                                                   if (!bookingForm) {
-                                                                       console.error('Booking form not found!');
-                                                                       return;
-                                                                   }
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('Page loaded - initializing booking form');
 
-                                                                   console.log('Booking form found');
+    // Check if form exists
+    const bookingForm = document.getElementById('bookingForm');
+    if (!bookingForm) {
+        console.error('Booking form not found!');
+        return;
+    }
 
-                                                                   // Add form submit listener
-                                                                   bookingForm.addEventListener('submit', function (e) {
-                                                                       e.preventDefault();
-                                                                       console.log('Form submitted - starting validation');
+    console.log('Booking form found');
 
-                                                                       // Validate form
-                                                                       if (!validateBookingForm()) {
-                                                                           console.log('Validation failed');
-                                                                           return;
-                                                                       }
+    // Add form submit listener
+    bookingForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        console.log('Form submitted - starting validation');
 
-                                                                       console.log('Validation passed - checking login status');
-                                                                       // Check if user is logged in
-                                                                       checkLoginAndProceed();
-                                                                   });
+        // Validate form
+        if (!validateBookingForm()) {
+            console.log('Validation failed');
+            return;
+        }
 
-                                                                   // Check hidden inputs
-                                                                   const roomTypeIdInput = document.querySelector('input[name="roomTypeId"]');
-                                                                   const basePriceInput = document.querySelector('input[name="basePrice"]');
+        console.log('Validation passed - checking login status');
+        // Check if user is logged in
+        checkLoginAndProceed();
+    });
 
-                                                                   console.log('Hidden inputs check:');
-                                                                   console.log('roomTypeId input:', roomTypeIdInput);
-                                                                   console.log('roomTypeId value:', roomTypeIdInput ? roomTypeIdInput.value : 'NOT FOUND');
-                                                                   console.log('basePrice input:', basePriceInput);
-                                                                   console.log('basePrice value:', basePriceInput ? basePriceInput.value : 'NOT FOUND');
+    // Check hidden inputs
+    const roomTypeIdInput = document.querySelector('input[name="roomTypeId"]');
+    const basePriceInput = document.querySelector('input[name="basePrice"]');
 
-                                                                   updateTotalPrice();
-                                                                   updateGuestsDisplay();
+    console.log('Hidden inputs check:');
+    console.log('roomTypeId input:', roomTypeIdInput);
+    console.log('roomTypeId value:', roomTypeIdInput ? roomTypeIdInput.value : 'NOT FOUND');
+    console.log('basePrice input:', basePriceInput);
+    console.log('basePrice value:', basePriceInput ? basePriceInput.value : 'NOT FOUND');
 
-                                                                   // Set today as minimum date for check-in
-                                                                   const today = new Date().toISOString().split('T')[0];
-                                                                   const checkinInput = document.querySelector('input[name="checkinDate"]');
-                                                                   if (checkinInput) {
-                                                                       checkinInput.setAttribute('min', today);
-                                                                   }
+    updateTotalPrice();
+    updateGuestsDisplay();
 
-                                                                   // Check if user is logged in and pre-fill form
-                                                                   checkUserLoginStatus();
+    // Set today as minimum date for check-in
+    const today = new Date().toISOString().split('T')[0];
+    const checkinInput = document.querySelector('input[name="checkinDate"]');
+    if (checkinInput) {
+        checkinInput.setAttribute('min', today);
+    }
 
-                                                                   // Add listeners for real-time validation
-                                                                   addFormValidationListeners();
-                                                               });
+    // Check if user is logged in and pre-fill form
+    checkUserLoginStatus();
 
-                                                               function checkUserLoginStatus() {
-                                                                   const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
-                                                                   const url = contextPath + '/BookingServlet?action=checkLogin';
+    // Add listeners for real-time validation
+    addFormValidationListeners();
+});
 
-                                                                   fetch(url)
-                                                                           .then(response => {
-                                                                               if (!response.ok) {
-                                                                                   throw new Error('Server responded with status: ' + response.status);
-                                                                               }
-                                                                               return response.json();
-                                                                           })
-                                                                           .then(data => {
-                                                                               if (data.isLoggedIn && data.user) {
-                                                                                   // Pre-fill form with user data
-                                                                                   updateFormWithUserData(data.user);
+function checkUserLoginStatus() {
+    const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
+    const url = contextPath + '/BookingServlet?action=checkLogin';
 
-                                                                                   // Show a welcome message
-                                                                                   const welcomeDiv = document.createElement('div');
-                                                                                   welcomeDiv.className = 'alert alert-info mb-3';
-                                                                                   welcomeDiv.innerHTML = '<i class="fa fa-user"></i> Booking as <strong>' + data.user.fullName + '</strong>';
+    fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Server responded with status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.isLoggedIn && data.user) {
+                    // Pre-fill form with user data
+                    updateFormWithUserData(data.user);
 
-                                                                                   const contactSection = document.querySelector('h4').parentElement;
-                                                                                   if (contactSection) {
-                                                                                       contactSection.insertBefore(welcomeDiv, contactSection.firstChild);
-                                                                                   }
-                                                                               }
-                                                                           })
-                                                                           .catch(error => {
-                                                                               console.error('Error checking login status:', error);
-                                                                           });
-                                                               }
+                    // Show a welcome message
+                    const welcomeDiv = document.createElement('div');
+                    welcomeDiv.className = 'alert alert-info mb-3';
+                    welcomeDiv.innerHTML = '<i class="fa fa-user"></i> Booking as <strong>' + data.user.fullName + '</strong>';
 
-                                                               function addFormValidationListeners() {
-                                                                   // Email validation on blur
-                                                                   const emailInput = document.querySelector('input[name="email"]');
-                                                                   emailInput.addEventListener('blur', function () {
-                                                                       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                                                                       if (this.value && !emailRegex.test(this.value)) {
-                                                                           this.classList.add('is-invalid');
-                                                                           showFieldError(this, 'Please enter a valid email address');
-                                                                       } else {
-                                                                           this.classList.remove('is-invalid');
-                                                                           hideFieldError(this);
-                                                                       }
-                                                                   });
+                    const contactSection = document.querySelector('h4').parentElement;
+                    if (contactSection) {
+                        contactSection.insertBefore(welcomeDiv, contactSection.firstChild);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error checking login status:', error);
+            });
+}
 
-                                                                   // Phone validation on blur
-                                                                   const phoneInput = document.querySelector('input[name="phone"]');
-                                                                   phoneInput.addEventListener('blur', function () {
-                                                                       const phoneRegex = /^(0|84|\+84)?[3456789]\d{8}$/;
-                                                                       const cleanPhone = this.value.replace(/\s/g, '');
-                                                                       if (this.value && !phoneRegex.test(cleanPhone)) {
-                                                                           this.classList.add('is-invalid');
-                                                                           showFieldError(this, 'Please enter a valid phone number');
-                                                                       } else {
-                                                                           this.classList.remove('is-invalid');
-                                                                           hideFieldError(this);
-                                                                       }
-                                                                   });
+function addFormValidationListeners() {
+    // Email validation on blur
+    const emailInput = document.querySelector('input[name="email"]');
+    emailInput.addEventListener('blur', function () {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (this.value && !emailRegex.test(this.value)) {
+            this.classList.add('is-invalid');
+            showFieldError(this, 'Please enter a valid email address');
+        } else {
+            this.classList.remove('is-invalid');
+            hideFieldError(this);
+        }
+    });
 
-                                                                   // Clear validation on input
-                                                                   document.querySelectorAll('input, select, textarea').forEach(field => {
-                                                                       field.addEventListener('input', function () {
-                                                                           this.classList.remove('is-invalid');
-                                                                           hideFieldError(this);
-                                                                       });
-                                                                   });
-                                                               }
+    // Phone validation on blur
+    const phoneInput = document.querySelector('input[name="phone"]');
+    phoneInput.addEventListener('blur', function () {
+        const phoneRegex = /^(0|84|\+84)?[3456789]\d{8}$/;
+        const cleanPhone = this.value.replace(/\s/g, '');
+        if (this.value && !phoneRegex.test(cleanPhone)) {
+            this.classList.add('is-invalid');
+            showFieldError(this, 'Please enter a valid phone number');
+        } else {
+            this.classList.remove('is-invalid');
+            hideFieldError(this);
+        }
+    });
 
-                                                               function showFieldError(field, message) {
-                                                                   let errorDiv = field.nextElementSibling;
-                                                                   if (!errorDiv || !errorDiv.classList.contains('invalid-feedback')) {
-                                                                       errorDiv = document.createElement('div');
-                                                                       errorDiv.className = 'invalid-feedback';
-                                                                       field.parentNode.insertBefore(errorDiv, field.nextSibling);
-                                                                   }
-                                                                   errorDiv.textContent = message;
-                                                                   errorDiv.style.display = 'block';
-                                                               }
+    // Clear validation on input
+    document.querySelectorAll('input, select, textarea').forEach(field => {
+        field.addEventListener('input', function () {
+            this.classList.remove('is-invalid');
+            hideFieldError(this);
+        });
+    });
+}
 
-                                                               function hideFieldError(field) {
-                                                                   const errorDiv = field.nextElementSibling;
-                                                                   if (errorDiv && errorDiv.classList.contains('invalid-feedback')) {
-                                                                       errorDiv.style.display = 'none';
-                                                                   }
-                                                               }
-        </script>
+function showFieldError(field, message) {
+    let errorDiv = field.nextElementSibling;
+    if (!errorDiv || !errorDiv.classList.contains('invalid-feedback')) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback';
+        field.parentNode.insertBefore(errorDiv, field.nextSibling);
+    }
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+}
+
+function hideFieldError(field) {
+    const errorDiv = field.nextElementSibling;
+    if (errorDiv && errorDiv.classList.contains('invalid-feedback')) {
+        errorDiv.style.display = 'none';
+    }
+}
+</script>
     </body>
 </html>

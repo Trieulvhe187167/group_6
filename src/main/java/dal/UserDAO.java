@@ -988,5 +988,666 @@ public boolean isRoomInspector(int userId) {
     return false;
 }
 
-
+    // Get customers with their detailed information including CustomerDetails
+    public List<User> getCustomersWithDetails() {
+        List<User> customers = new ArrayList<>();
+        String sql = "SELECT u.*, cd.*, " +
+                    "COUNT(r.Id) as TotalBookings, " +
+                    "COUNT(CASE WHEN r.Status = 'COMPLETED' THEN 1 END) as CompletedBookings, " +
+                    "COALESCE(SUM(CASE WHEN r.Status = 'COMPLETED' THEN r.TotalAmount ELSE 0 END), 0) as TotalSpent, " +
+                    "MAX(CASE WHEN r.Status = 'COMPLETED' THEN r.CheckOut END) as LastVisit " +
+                    "FROM Users u " +
+                    "LEFT JOIN CustomerDetails cd ON u.Id = cd.UserId " +
+                    "LEFT JOIN Reservations r ON u.Id = r.UserId " +
+                    "WHERE u.Role = 'CUSTOMER' AND u.Status = 1 " +
+                    "GROUP BY u.Id, u.Username, u.PasswordHash, u.FullName, u.Email, u.Phone, u.Role, u.Status, u.CreatedAt, u.UpdatedAt, " +
+                    "cd.Id, cd.UserId, cd.IdType, cd.IdNumber, cd.DateOfBirth, cd.Gender, cd.Address, cd.City, cd.Country, " +
+                    "cd.LoyaltyPoints, cd.MembershipLevel, cd.IsVIP, cd.CreatedAt, cd.UpdatedAt " +
+                    "ORDER BY u.CreatedAt DESC";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User customer = mapResultSetToUserWithCustomerDetails(rs);
+                customers.add(customer);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getCustomersWithDetails: " + e.getMessage());
+        }
+        return customers;
+    }
+    
+    // Get customers with pagination and detailed information
+    public List<User> getCustomersPaginated(int page, int recordsPerPage) {
+        List<User> customers = new ArrayList<>();
+        int offset = (page - 1) * recordsPerPage;
+        
+        String sql = "SELECT u.*, cd.*, " +
+                    "COUNT(r.Id) as TotalBookings, " +
+                    "COUNT(CASE WHEN r.Status = 'COMPLETED' THEN 1 END) as CompletedBookings, " +
+                    "COALESCE(SUM(CASE WHEN r.Status = 'COMPLETED' THEN r.TotalAmount ELSE 0 END), 0) as TotalSpent, " +
+                    "MAX(CASE WHEN r.Status = 'COMPLETED' THEN r.CheckOut END) as LastVisit " +
+                    "FROM Users u " +
+                    "LEFT JOIN CustomerDetails cd ON u.Id = cd.UserId " +
+                    "LEFT JOIN Reservations r ON u.Id = r.UserId " +
+                    "WHERE u.Role = 'CUSTOMER' AND u.Status = 1 " +
+                    "GROUP BY u.Id, u.Username, u.PasswordHash, u.FullName, u.Email, u.Phone, u.Role, u.Status, u.CreatedAt, u.UpdatedAt, " +
+                    "cd.Id, cd.UserId, cd.IdType, cd.IdNumber, cd.DateOfBirth, cd.Gender, cd.Address, cd.City, cd.Country, " +
+                    "cd.LoyaltyPoints, cd.MembershipLevel, cd.IsVIP, cd.CreatedAt, cd.UpdatedAt " +
+                    "ORDER BY u.CreatedAt DESC " +
+                    "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, offset);
+            ps.setInt(2, recordsPerPage);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User customer = mapResultSetToUserWithCustomerDetails(rs);
+                customers.add(customer);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getCustomersPaginated: " + e.getMessage());
+        }
+        return customers;
+    }
+    
+    // Get employees with their detailed information including EmployeeDetails
+    public List<User> getEmployeesWithDetails() {
+        List<User> employees = new ArrayList<>();
+        String sql = "SELECT u.*, ed.*, " +
+                    "COUNT(r.Id) as TotalBookingsCreated " +
+                    "FROM Users u " +
+                    "LEFT JOIN EmployeeDetails ed ON u.Id = ed.UserId " +
+                    "LEFT JOIN Reservations r ON u.Id = r.CreatedBy " +
+                    "WHERE u.Role IN ('ADMIN','RECEPTIONIST','HOUSEKEEPER','ROOM_INSPECTOR') AND u.Status = 1 " +
+                    "GROUP BY u.Id, u.Username, u.PasswordHash, u.FullName, u.Email, u.Phone, u.Role, u.Status, u.CreatedAt, u.UpdatedAt, " +
+                    "ed.Id, ed.UserId, ed.Department, ed.HireDate, ed.Salary, ed.CreatedAt, ed.UpdatedAt " +
+                    "ORDER BY u.Role, u.CreatedAt DESC";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User employee = mapResultSetToUserWithEmployeeDetails(rs);
+                employees.add(employee);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getEmployeesWithDetails: " + e.getMessage());
+        }
+        return employees;
+    }
+    
+    // Get employees with pagination and detailed information
+    public List<User> getEmployeesPaginated(int page, int recordsPerPage) {
+        List<User> employees = new ArrayList<>();
+        int offset = (page - 1) * recordsPerPage;
+        
+        String sql = "SELECT u.*, ed.*, " +
+                    "COUNT(r.Id) as TotalBookingsCreated " +
+                    "FROM Users u " +
+                    "LEFT JOIN EmployeeDetails ed ON u.Id = ed.UserId " +
+                    "LEFT JOIN Reservations r ON u.Id = r.CreatedBy " +
+                    "WHERE u.Role IN ('ADMIN','RECEPTIONIST','HOUSEKEEPER','ROOM_INSPECTOR') AND u.Status = 1 " +
+                    "GROUP BY u.Id, u.Username, u.PasswordHash, u.FullName, u.Email, u.Phone, u.Role, u.Status, u.CreatedAt, u.UpdatedAt, " +
+                    "ed.Id, ed.UserId, ed.Department, ed.HireDate, ed.Salary, ed.CreatedAt, ed.UpdatedAt " +
+                    "ORDER BY u.Role, u.CreatedAt DESC " +
+                    "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, offset);
+            ps.setInt(2, recordsPerPage);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User employee = mapResultSetToUserWithEmployeeDetails(rs);
+                employees.add(employee);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getEmployeesPaginated: " + e.getMessage());
+        }
+        return employees;
+    }
+    
+    // Get employees by role with pagination
+    public List<User> getEmployeesByRolePaginated(String role, int page, int recordsPerPage) {
+        List<User> employees = new ArrayList<>();
+        int offset = (page - 1) * recordsPerPage;
+        
+        String sql = "SELECT u.*, ed.*, " +
+                    "COUNT(r.Id) as TotalBookingsCreated " +
+                    "FROM Users u " +
+                    "LEFT JOIN EmployeeDetails ed ON u.Id = ed.UserId " +
+                    "LEFT JOIN Reservations r ON u.Id = r.CreatedBy " +
+                    "WHERE u.Status = 1 ";
+        
+        if (role != null && !role.isEmpty() && !"ALL".equals(role)) {
+            sql += "AND u.Role = ? ";
+        } else {
+            sql += "AND u.Role IN ('ADMIN','RECEPTIONIST','HOUSEKEEPER','ROOM_INSPECTOR') ";
+        }
+        
+        sql += "GROUP BY u.Id, u.Username, u.PasswordHash, u.FullName, u.Email, u.Phone, u.Role, u.Status, u.CreatedAt, u.UpdatedAt, " +
+               "ed.Id, ed.UserId, ed.Department, ed.HireDate, ed.Salary, ed.CreatedAt, ed.UpdatedAt " +
+               "ORDER BY u.Role, u.CreatedAt DESC " +
+               "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            int paramIndex = 1;
+            if (role != null && !role.isEmpty() && !"ALL".equals(role)) {
+                ps.setString(paramIndex++, role);
+            }
+            ps.setInt(paramIndex++, offset);
+            ps.setInt(paramIndex, recordsPerPage);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User employee = mapResultSetToUserWithEmployeeDetails(rs);
+                employees.add(employee);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getEmployeesByRolePaginated: " + e.getMessage());
+        }
+        return employees;
+    }
+    
+    // Search customers with pagination
+    public List<User> searchCustomersPaginated(String keyword, int page, int recordsPerPage) {
+        List<User> customers = new ArrayList<>();
+        int offset = (page - 1) * recordsPerPage;
+        
+        String sql = "SELECT u.*, cd.*, " +
+                    "COUNT(r.Id) as TotalBookings, " +
+                    "COUNT(CASE WHEN r.Status = 'COMPLETED' THEN 1 END) as CompletedBookings, " +
+                    "COALESCE(SUM(CASE WHEN r.Status = 'COMPLETED' THEN r.TotalAmount ELSE 0 END), 0) as TotalSpent, " +
+                    "MAX(CASE WHEN r.Status = 'COMPLETED' THEN r.CheckOut END) as LastVisit " +
+                    "FROM Users u " +
+                    "LEFT JOIN CustomerDetails cd ON u.Id = cd.UserId " +
+                    "LEFT JOIN Reservations r ON u.Id = r.UserId " +
+                    "WHERE u.Role = 'CUSTOMER' AND u.Status = 1 " +
+                    "AND (u.FullName LIKE ? OR u.Email LIKE ? OR u.Phone LIKE ? OR u.Username LIKE ?) " +
+                    "GROUP BY u.Id, u.Username, u.PasswordHash, u.FullName, u.Email, u.Phone, u.Role, u.Status, u.CreatedAt, u.UpdatedAt, " +
+                    "cd.Id, cd.UserId, cd.IdType, cd.IdNumber, cd.DateOfBirth, cd.Gender, cd.Address, cd.City, cd.Country, " +
+                    "cd.LoyaltyPoints, cd.MembershipLevel, cd.IsVIP, cd.CreatedAt, cd.UpdatedAt " +
+                    "ORDER BY u.CreatedAt DESC " +
+                    "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
+            ps.setString(4, searchPattern);
+            ps.setInt(5, offset);
+            ps.setInt(6, recordsPerPage);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User customer = mapResultSetToUserWithCustomerDetails(rs);
+                customers.add(customer);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in searchCustomersPaginated: " + e.getMessage());
+        }
+        return customers;
+    }
+    
+    // Search employees with pagination
+    public List<User> searchEmployeesPaginated(String keyword, String role, int page, int recordsPerPage) {
+        List<User> employees = new ArrayList<>();
+        int offset = (page - 1) * recordsPerPage;
+        
+        String sql = "SELECT u.*, ed.*, " +
+                    "COUNT(r.Id) as TotalBookingsCreated " +
+                    "FROM Users u " +
+                    "LEFT JOIN EmployeeDetails ed ON u.Id = ed.UserId " +
+                    "LEFT JOIN Reservations r ON u.Id = r.CreatedBy " +
+                    "WHERE u.Status = 1 " +
+                    "AND (u.FullName LIKE ? OR u.Email LIKE ? OR u.Phone LIKE ? OR u.Username LIKE ?) ";
+        
+        if (role != null && !role.isEmpty() && !"ALL".equals(role)) {
+            sql += "AND u.Role = ? ";
+        } else {
+            sql += "AND u.Role IN ('ADMIN','RECEPTIONIST','HOUSEKEEPER','ROOM_INSPECTOR') ";
+        }
+        
+        sql += "GROUP BY u.Id, u.Username, u.PasswordHash, u.FullName, u.Email, u.Phone, u.Role, u.Status, u.CreatedAt, u.UpdatedAt, " +
+               "ed.Id, ed.UserId, ed.Department, ed.HireDate, ed.Salary, ed.CreatedAt, ed.UpdatedAt " +
+               "ORDER BY u.Role, u.CreatedAt DESC " +
+               "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
+            ps.setString(4, searchPattern);
+            
+            int paramIndex = 5;
+            if (role != null && !role.isEmpty() && !"ALL".equals(role)) {
+                ps.setString(paramIndex++, role);
+            }
+            ps.setInt(paramIndex++, offset);
+            ps.setInt(paramIndex, recordsPerPage);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User employee = mapResultSetToUserWithEmployeeDetails(rs);
+                employees.add(employee);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in searchEmployeesPaginated: " + e.getMessage());
+        }
+        return employees;
+    }
+    
+    // Get customer by ID with detailed information
+    public User getCustomerByIdWithDetails(int id) {
+        String sql = "SELECT u.*, cd.*, " +
+                    "COUNT(r.Id) as TotalBookings, " +
+                    "COUNT(CASE WHEN r.Status = 'COMPLETED' THEN 1 END) as CompletedBookings, " +
+                    "COALESCE(SUM(CASE WHEN r.Status = 'COMPLETED' THEN r.TotalAmount ELSE 0 END), 0) as TotalSpent, " +
+                    "MAX(CASE WHEN r.Status = 'COMPLETED' THEN r.CheckOut END) as LastVisit " +
+                    "FROM Users u " +
+                    "LEFT JOIN CustomerDetails cd ON u.Id = cd.UserId " +
+                    "LEFT JOIN Reservations r ON u.Id = r.UserId " +
+                    "WHERE u.Id = ? AND u.Role = 'CUSTOMER' " +
+                    "GROUP BY u.Id, u.Username, u.PasswordHash, u.FullName, u.Email, u.Phone, u.Role, u.Status, u.CreatedAt, u.UpdatedAt, " +
+                    "cd.Id, cd.UserId, cd.IdType, cd.IdNumber, cd.DateOfBirth, cd.Gender, cd.Address, cd.City, cd.Country, " +
+                    "cd.LoyaltyPoints, cd.MembershipLevel, cd.IsVIP, cd.CreatedAt, cd.UpdatedAt";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                return mapResultSetToUserWithCustomerDetails(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    // Get employee by ID with detailed information
+    public User getEmployeeByIdWithDetails(int id) {
+        String sql = "SELECT u.*, ed.*, " +
+                    "COUNT(r.Id) as TotalBookingsCreated " +
+                    "FROM Users u " +
+                    "LEFT JOIN EmployeeDetails ed ON u.Id = ed.UserId " +
+                    "LEFT JOIN Reservations r ON u.Id = r.CreatedBy " +
+                    "WHERE u.Id = ? AND u.Role IN ('ADMIN','RECEPTIONIST','HOUSEKEEPER','ROOM_INSPECTOR') " +
+                    "GROUP BY u.Id, u.Username, u.PasswordHash, u.FullName, u.Email, u.Phone, u.Role, u.Status, u.CreatedAt, u.UpdatedAt, " +
+                    "ed.Id, ed.UserId, ed.Department, ed.HireDate, ed.Salary, ed.CreatedAt, ed.UpdatedAt";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                return mapResultSetToUserWithEmployeeDetails(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    // Create customer with CustomerDetails
+    public boolean createCustomer(User customer) {
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
+            
+            // Insert into Users table
+            String userSql = "INSERT INTO Users (Username, PasswordHash, FullName, Email, Phone, Role, Status, CreatedAt) " +
+                           "VALUES (?, ?, ?, ?, ?, 'CUSTOMER', 1, GETDATE())";
+            
+            int userId;
+            try (PreparedStatement ps = conn.prepareStatement(userSql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setString(1, customer.getUsername());
+                ps.setString(2, customer.getPassword()); // Already hashed
+                ps.setString(3, customer.getFullName());
+                ps.setString(4, customer.getEmail());
+                ps.setString(5, customer.getPhone());
+                
+                ps.executeUpdate();
+                
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        userId = rs.getInt(1);
+                    } else {
+                        throw new SQLException("Failed to get generated user ID");
+                    }
+                }
+            }
+            
+            // Insert into CustomerDetails table with default values
+            String detailsSql = "INSERT INTO CustomerDetails (UserId, LoyaltyPoints, MembershipLevel, IsVIP, CreatedAt) " +
+                               "VALUES (?, 0, 'BRONZE', 0, GETDATE())";
+            
+            try (PreparedStatement ps = conn.prepareStatement(detailsSql)) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+            
+            conn.commit();
+            return true;
+            
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
+    // Create employee with EmployeeDetails
+    public boolean createEmployee(User employee) {
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
+            
+            // Insert into Users table
+            String userSql = "INSERT INTO Users (Username, PasswordHash, FullName, Email, Phone, Role, Status, CreatedAt) " +
+                           "VALUES (?, ?, ?, ?, ?, ?, 1, GETDATE())";
+            
+            int userId;
+            try (PreparedStatement ps = conn.prepareStatement(userSql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setString(1, employee.getUsername());
+                ps.setString(2, employee.getPassword()); // Already hashed
+                ps.setString(3, employee.getFullName());
+                ps.setString(4, employee.getEmail());
+                ps.setString(5, employee.getPhone());
+                ps.setString(6, employee.getRole());
+                
+                ps.executeUpdate();
+                
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        userId = rs.getInt(1);
+                    } else {
+                        throw new SQLException("Failed to get generated user ID");
+                    }
+                }
+            }
+            
+            // Insert into EmployeeDetails table with default values
+            String detailsSql = "INSERT INTO EmployeeDetails (UserId, Department, HireDate, CreatedAt) " +
+                               "VALUES (?, ?, GETDATE(), GETDATE())";
+            
+            try (PreparedStatement ps = conn.prepareStatement(detailsSql)) {
+                ps.setInt(1, userId);
+                ps.setString(2, getDepartmentByRole(employee.getRole()));
+                ps.executeUpdate();
+            }
+            
+            conn.commit();
+            return true;
+            
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
+    // Helper method to get department by role
+    private String getDepartmentByRole(String role) {
+        switch (role) {
+            case "ADMIN": return "Management";
+            case "RECEPTIONIST": return "Front Office";
+            case "HOUSEKEEPER": return "Housekeeping";
+            case "ROOM_INSPECTOR": return "Quality Control";
+            default: return "General";
+        }
+    }
+    
+    // Count total customers
+    public int getTotalCustomersCount() {
+        String sql = "SELECT COUNT(*) FROM Users WHERE Role = 'CUSTOMER' AND Status = 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+    // Count total employees
+    public int getTotalEmployeesCount() {
+        String sql = "SELECT COUNT(*) FROM Users WHERE Role IN ('ADMIN','RECEPTIONIST','HOUSEKEEPER','ROOM_INSPECTOR') AND Status = 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+    // Count employees by role
+    public int getTotalEmployeesByRole(String role) {
+        String sql = "SELECT COUNT(*) FROM Users WHERE Status = 1 ";
+        
+        if (role != null && !role.isEmpty() && !"ALL".equals(role)) {
+            sql += "AND Role = ?";
+        } else {
+            sql += "AND Role IN ('ADMIN','RECEPTIONIST','HOUSEKEEPER','ROOM_INSPECTOR')";
+        }
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            if (role != null && !role.isEmpty() && !"ALL".equals(role)) {
+                ps.setString(1, role);
+            }
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+    // Count search results for customers
+    public int getTotalSearchCustomersCount(String keyword) {
+        String sql = "SELECT COUNT(*) FROM Users u WHERE u.Role = 'CUSTOMER' AND u.Status = 1 " +
+                    "AND (u.FullName LIKE ? OR u.Email LIKE ? OR u.Phone LIKE ? OR u.Username LIKE ?)";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
+            ps.setString(4, searchPattern);
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+    // Count search results for employees
+    public int getTotalSearchEmployeesCount(String keyword, String role) {
+        String sql = "SELECT COUNT(*) FROM Users u WHERE u.Status = 1 " +
+                    "AND (u.FullName LIKE ? OR u.Email LIKE ? OR u.Phone LIKE ? OR u.Username LIKE ?) ";
+        
+        if (role != null && !role.isEmpty() && !"ALL".equals(role)) {
+            sql += "AND u.Role = ?";
+        } else {
+            sql += "AND u.Role IN ('ADMIN','RECEPTIONIST','HOUSEKEEPER','ROOM_INSPECTOR')";
+        }
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
+            ps.setString(4, searchPattern);
+            
+            if (role != null && !role.isEmpty() && !"ALL".equals(role)) {
+                ps.setString(5, role);
+            }
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+    // Map ResultSet to User with CustomerDetails
+    private User mapResultSetToUserWithCustomerDetails(ResultSet rs) throws SQLException {
+        User user = new User();
+        user.setId(rs.getInt("Id"));
+        user.setUsername(rs.getString("Username"));
+        user.setFullName(rs.getString("FullName"));
+        user.setEmail(rs.getString("Email"));
+        user.setPhone(rs.getString("Phone"));
+        user.setRole(rs.getString("Role"));
+        user.setStatus(rs.getBoolean("Status"));
+        user.setCreatedAt(rs.getTimestamp("CreatedAt"));
+        user.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+        
+        // Customer details
+        try {
+            user.setIdType(rs.getString("IdType"));
+            user.setIdNumber(rs.getString("IdNumber"));
+            user.setDateOfBirth(rs.getDate("DateOfBirth"));
+            user.setGender(rs.getString("Gender"));
+            user.setAddress(rs.getString("Address"));
+            user.setCity(rs.getString("City"));
+            user.setCountry(rs.getString("Country"));
+            user.setLoyaltyPoints(rs.getInt("LoyaltyPoints"));
+            user.setMembershipLevel(rs.getString("MembershipLevel"));
+            user.setIsVIP(rs.getBoolean("IsVIP"));
+        } catch (SQLException e) {
+            // CustomerDetails might not exist for some users
+        }
+        
+        // Statistics
+        try {
+            user.setTotalBookings(rs.getInt("TotalBookings"));
+            user.setCompletedBookings(rs.getInt("CompletedBookings"));
+            user.setTotalSpent(rs.getDouble("TotalSpent"));
+            user.setLastVisit(rs.getDate("LastVisit"));
+        } catch (SQLException e) {
+            // Statistics columns might not be in all queries
+        }
+        
+        return user;
+    }
+    
+    // Map ResultSet to User with EmployeeDetails
+    private User mapResultSetToUserWithEmployeeDetails(ResultSet rs) throws SQLException {
+        User user = new User();
+        user.setId(rs.getInt("Id"));
+        user.setUsername(rs.getString("Username"));
+        user.setFullName(rs.getString("FullName"));
+        user.setEmail(rs.getString("Email"));
+        user.setPhone(rs.getString("Phone"));
+        user.setRole(rs.getString("Role"));
+        user.setStatus(rs.getBoolean("Status"));
+        user.setCreatedAt(rs.getTimestamp("CreatedAt"));
+        user.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+        
+        // Employee details
+        try {
+            user.setDepartment(rs.getString("Department"));
+            user.setHireDate(rs.getDate("HireDate"));
+            user.setSalary(rs.getDouble("Salary"));
+        } catch (SQLException e) {
+            // EmployeeDetails might not exist for some users
+        }
+        
+        // Statistics
+        try {
+            user.setTotalBookings(rs.getInt("TotalBookingsCreated"));
+        } catch (SQLException e) {
+            // Statistics columns might not be in all queries
+        }
+        
+        return user;
+    }
+   
+  
 }
