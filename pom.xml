@@ -23,10 +23,17 @@
   </properties>
 
   <dependencies>
-    <!-- Spring MVC & embedded Tomcat -->
+    <!-- Spring MVC -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Exclude embedded tomcat when deploying to external server -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-tomcat</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Spring Data JPA -->
@@ -42,44 +49,41 @@
       <version>${mysql.connector.version}</version>
       <scope>runtime</scope>
     </dependency>
-    
-<dependency>
-  <groupId>javax.servlet</groupId>
-  <artifactId>jstl</artifactId>
-  <version>1.2</version>
-</dependency>
 
     <!-- SQL Server driver -->
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
       <version>${mssql.jdbc.version}</version>
-      <scope>runtime</scope>
     </dependency>
 
     <!-- JSP support -->
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-jasper</artifactId>
+      <scope>provided</scope>
     </dependency>
-    <!-- Jakarta JSTL API -->
+
+    <!-- JSTL for Spring Boot 3.x -->
     <dependency>
       <groupId>jakarta.servlet.jsp.jstl</groupId>
       <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
-      <version>3.0.2</version>
+      <version>3.0.0</version>
     </dependency>
-    <!-- GlassFish implementation of Jakarta JSTL -->
+    
     <dependency>
       <groupId>org.glassfish.web</groupId>
       <artifactId>jakarta.servlet.jsp.jstl</artifactId>
       <version>3.0.1</version>
     </dependency>
 
+    <!-- Jakarta Mail -->
     <dependency>
-     <groupId>com.sun.mail</groupId>
-     <artifactId>jakarta.mail</artifactId>
-    <version>2.0.1</version>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>jakarta.mail</artifactId>
+      <version>2.0.1</version>
     </dependency>
+    
     <!-- Spring Boot Mail Starter -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -92,6 +96,14 @@
       <artifactId>gson</artifactId>
       <version>2.10.1</version>
     </dependency>
+
+    <!-- Spring Boot DevTools for development -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-devtools</artifactId>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 
   <build>
@@ -100,6 +112,11 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <!-- Tạo executable WAR file -->
+          <executable>true</executable>
+          <mainClass>hms.HotelManagementSystemApplication</mainClass>
+        </configuration>
       </plugin>
     </plugins>
   </build>
