@@ -1,0 +1,353 @@
+package dal;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import model.Reservation;
+
+public class BookingDAO {
+    
+    /**
+     * Get reservations with filtering and pagination
+     */
+    public List<Reservation> getReservations(String statusFilter, String fromDate, String toDate, 
+                                           int offset, int limit) throws SQLException {
+        List<Reservation> reservations = new ArrayList<>();
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT r.Id, r.UserId, r.GroupBookingId, r.CreatedBy, r.RoomId, r.RoomTypeId, ");
+        sql.append("r.CheckIn, r.CheckOut, r.Status, r.TotalAmount, r.Notes, r.SpecialRequests, ");
+        sql.append("r.NumberOfCustomers, r.CreatedAt, r.UpdatedAt, ");
+        sql.append("u.FullName as UserFullName, u.Email as UserEmail, ");
+        sql.append("room.RoomNumber, rt.Name as RoomName ");
+        sql.append("FROM reservations r ");
+        sql.append("LEFT JOIN Users u ON r.UserId = u.Id ");
+        sql.append("LEFT JOIN rooms room ON r.RoomId = room.Id ");
+        sql.append("LEFT JOIN roomtypes rt ON r.RoomTypeId = rt.Id ");
+        sql.append("WHERE 1=1 ");
+
+        List<Object> parameters = new ArrayList<>();
+        
+        // Add filters
+        if (statusFilter != null && !statusFilter.isEmpty()) {
+    sql.append("AND r.Status = ? ");
+    parameters.add(statusFilter);
+}
+
+if (fromDate != null && !fromDate.isEmpty()) {
+    sql.append("AND r.CheckIn >= ? ");
+    parameters.add(fromDate);
+}
+
+if (toDate != null && !toDate.isEmpty()) {
+    sql.append("AND r.CheckOut <= ? ");
+    parameters.add(toDate);
+}
+
+// Order + pagination (SQL Server style)
+sql.append("ORDER BY r.CreatedAt DESC ");
+sql.append("OFFSET ? ROWS FETCH NEXT ? ROWS ONLY ");
+parameters.add(offset);          // OFFSET comes first
+parameters.add(limit);           // THEN FETCH NEXT
+
+try (Connection conn = DBContext.getConnection();
+     PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+
+    for (int i = 0; i < parameters.size(); i++) {
+        stmt.setObject(i + 1, parameters.get(i));
+    }
+
+    try (ResultSet rs = stmt.executeQuery()) {
+        while (rs.next()) {
+            Reservation reservation = mapResultSetToReservation(rs);
+            reservations.add(reservation);
+        }
+    }
+        }
+        
+        return reservations;
+    }
+
+    /**
+     * Get total count of reservations with filtering
+     */
+    public int getTotalReservationCount(String statusFilter, String fromDate, String toDate) 
+            throws SQLException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT COUNT(*) FROM reservations r WHERE 1=1 ");
+        
+        List<Object> parameters = new ArrayList<>();
+        
+        if (statusFilter != null && !statusFilter.isEmpty()) {
+            sql.append("AND r.Status = ? ");
+            parameters.add(statusFilter);
+        }
+        
+        if (fromDate != null && !fromDate.isEmpty()) {
+            sql.append("AND r.CheckIn >= ? ");
+            parameters.add(fromDate);
+        }
+        
+        if (toDate != null && !toDate.isEmpty()) {
+            sql.append("AND r.CheckOut <= ? ");
+            parameters.add(toDate);
+        }
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            
+            for (int i = 0; i < parameters.size(); i++) {
+                stmt.setObject(i + 1, parameters.get(i));
+            }
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        
+        return 0;
+    }
+
+    /**
+     * Get a single reservation by ID
+     */
+    public Reservation getReservationById(int reservationId) throws SQLException {
+        String sql = "SELECT r.Id, r.UserId, r.GroupBookingId, r.CreatedBy, r.RoomId, r.RoomTypeId, " +
+                    "r.CheckIn, r.CheckOut, r.Status, r.TotalAmount, r.Notes, r.SpecialRequests, " +
+                    "r.NumberOfCustomers, r.CreatedAt, r.UpdatedAt, " +
+                    "u.FullName as UserFullName, u.Email as UserEmail, " +
+                    "room.RoomNumber, rt.Name as RoomName " +
+                    "FROM reservations r " +
+                    "LEFT JOIN Users u ON r.UserId = u.Id " +
+                    "LEFT JOIN rooms room ON r.RoomId = room.Id " +
+                    "LEFT JOIN roomtypes rt ON r.RoomTypeId = rt.Id " +
+                    "WHERE r.Id = ?";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, reservationId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToReservation(rs);
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Update reservation status
+     */
+    public boolean updateReservationStatus(int reservationId, String status) throws SQLException {
+        String sql = "UPDATE reservations SET Status = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = ?";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, status);
+            stmt.setInt(2, reservationId);
+            
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Get reservations by user ID
+     */
+    public List<Reservation> getReservationsByUserId(int userId) throws SQLException {
+        List<Reservation> reservations = new ArrayList<>();
+        
+        String sql = "SELECT r.Id, r.UserId, r.GroupBookingId, r.CreatedBy, r.RoomId, r.RoomTypeId, " +
+                    "r.CheckIn, r.CheckOut, r.Status, r.TotalAmount, r.Notes, r.SpecialRequests, " +
+                    "r.NumberOfCustomers, r.CreatedAt, r.UpdatedAt, " +
+                    "u.FullName as UserFullName, u.Email as UserEmail, " +
+                    "room.RoomNumber, rt.TypeName as RoomName " +
+                    "FROM reservations r " +
+                    "LEFT JOIN Users u ON r.UserId = u.Id " +
+                    "LEFT JOIN rooms room ON r.RoomId = room.Id " +
+                    "LEFT JOIN roomtypes rt ON r.RoomTypeId = rt.Id " +
+                    "WHERE r.UserId = ? " +
+                    "ORDER BY r.CreatedAt DESC";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, userId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    reservations.add(mapResultSetToReservation(rs));
+                }
+            }
+        }
+        
+        return reservations;
+    }
+
+    /**
+     * Create a new reservation
+     */
+    public int createReservation(Reservation reservation) throws SQLException {
+        String sql = "INSERT INTO reservations (UserId, GroupBookingId, CreatedBy, RoomId, RoomTypeId, " +
+                    "CheckIn, CheckOut, Status, TotalAmount, Notes, SpecialRequests, NumberOfCustomers, " +
+                    "CreatedAt, UpdatedAt) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            
+            stmt.setInt(1, reservation.getUserId());
+            stmt.setObject(2, reservation.getGroupBookingId());
+            stmt.setInt(3, reservation.getCreatedBy());
+            stmt.setInt(4, reservation.getRoomId());
+            stmt.setInt(5, reservation.getRoomTypeId());
+            stmt.setDate(6, reservation.getCheckIn());
+            stmt.setDate(7, reservation.getCheckOut());
+            stmt.setString(8, reservation.getStatus());
+            stmt.setDouble(9, reservation.getTotalAmount());
+            stmt.setString(10, reservation.getNotes());
+            stmt.setString(11, reservation.getSpecialRequests());
+            stmt.setInt(12, reservation.getNumberOfCustomers());
+            
+            int affectedRows = stmt.executeUpdate();
+            
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        return generatedKeys.getInt(1);
+                    }
+                }
+            }
+        }
+        
+        return -1;
+    }
+
+    /**
+     * Update reservation
+     */
+    public boolean updateReservation(Reservation reservation) throws SQLException {
+        String sql = "UPDATE reservations SET UserId = ?, GroupBookingId = ?, RoomId = ?, RoomTypeId = ?, " +
+                    "CheckIn = ?, CheckOut = ?, Status = ?, TotalAmount = ?, Notes = ?, SpecialRequests = ?, " +
+                    "NumberOfCustomers = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = ?";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, reservation.getUserId());
+            stmt.setObject(2, reservation.getGroupBookingId());
+            stmt.setInt(3, reservation.getRoomId());
+            stmt.setInt(4, reservation.getRoomTypeId());
+            stmt.setDate(5, reservation.getCheckIn());
+            stmt.setDate(6, reservation.getCheckOut());
+            stmt.setString(7, reservation.getStatus());
+            stmt.setDouble(8, reservation.getTotalAmount());
+            stmt.setString(9, reservation.getNotes());
+            stmt.setString(10, reservation.getSpecialRequests());
+            stmt.setInt(11, reservation.getNumberOfCustomers());
+            stmt.setInt(12, reservation.getId());
+            
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Delete reservation
+     */
+    public boolean deleteReservation(int reservationId) throws SQLException {
+        String sql = "DELETE FROM reservations WHERE Id = ?";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, reservationId);
+            
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Get reservations by status
+     */
+    public List<Reservation> getReservationsByStatus(String status) throws SQLException {
+        return getReservations(status, null, null, 0, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Check if room is available for given dates
+     */
+    public boolean isRoomAvailable(int roomId, java.sql.Date checkIn, java.sql.Date checkOut, Integer excludeReservationId) throws SQLException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT COUNT(*) FROM reservations WHERE RoomId = ? ");
+        sql.append("AND Status NOT IN ('CANCELLED', 'REJECTED') ");
+        sql.append("AND ((CheckIn <= ? AND CheckOut > ?) OR (CheckIn < ? AND CheckOut >= ?)) ");
+        
+        List<Object> parameters = new ArrayList<>();
+        parameters.add(roomId);
+        parameters.add(checkIn);
+        parameters.add(checkIn);
+        parameters.add(checkOut);
+        parameters.add(checkOut);
+        
+        if (excludeReservationId != null) {
+            sql.append("AND Id != ? ");
+            parameters.add(excludeReservationId);
+        }
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            
+            for (int i = 0; i < parameters.size(); i++) {
+                stmt.setObject(i + 1, parameters.get(i));
+            }
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) == 0;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Helper method to map ResultSet to Reservation object
+     */
+    private Reservation mapResultSetToReservation(ResultSet rs) throws SQLException {
+        Reservation reservation = new Reservation();
+        reservation.setId(rs.getInt("Id"));
+        reservation.setUserId(rs.getInt("UserId"));
+        reservation.setGroupBookingId(rs.getObject("GroupBookingId") != null ? 
+                                    rs.getInt("GroupBookingId") : null);
+        reservation.setCreatedBy(rs.getInt("CreatedBy"));
+        reservation.setRoomId(rs.getInt("RoomId"));
+        reservation.setRoomTypeId(rs.getInt("RoomTypeId"));
+        reservation.setCheckIn(rs.getDate("CheckIn"));
+        reservation.setCheckOut(rs.getDate("CheckOut"));
+        reservation.setStatus(rs.getString("Status"));
+        reservation.setTotalAmount(rs.getDouble("TotalAmount"));
+        reservation.setNotes(rs.getString("Notes"));
+        reservation.setSpecialRequests(rs.getString("SpecialRequests"));
+        reservation.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
+        reservation.setCreatedAt(rs.getTimestamp("CreatedAt"));
+        reservation.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+        
+        // Set additional fields for display
+        reservation.setUserFullName(rs.getString("UserFullName"));
+        reservation.setUserEmail(rs.getString("UserEmail"));
+        reservation.setRoomNumber(rs.getString("RoomNumber"));
+        reservation.setRoomName(rs.getString("RoomName"));
+        
+        return reservation;
+    }
+}
