@@ -20,6 +20,10 @@ public class Reservation {
     private int numberOfCustomers;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private String userFullName;
+    private String userEmail;
+
+    private String roomName;    
     
     // Additional fields for display purposes
     private String customerName;
@@ -59,6 +63,38 @@ public class Reservation {
     }
     
     // Getters and Setters
+    public String getUserFullName() {
+    return userFullName;
+}
+
+public void setUserFullName(String userFullName) {
+    this.userFullName = userFullName;
+}
+
+public String getUserEmail() {
+    return userEmail;
+}
+
+public void setUserEmail(String userEmail) {
+    this.userEmail = userEmail;
+}
+
+public String getRoomNumber() {
+    return roomNumber;
+}
+
+public void setRoomNumber(String roomNumber) {
+    this.roomNumber = roomNumber;
+}
+
+public String getRoomName() {
+    return roomName;
+}
+
+public void setRoomName(String roomName) {
+    this.roomName = roomName;
+}
+
     public int getId() {
         return id;
     }
@@ -204,13 +240,7 @@ public class Reservation {
         this.customerPhone = customerPhone;
     }
     
-    public String getRoomNumber() {
-        return roomNumber;
-    }
-    
-    public void setRoomNumber(String roomNumber) {
-        this.roomNumber = roomNumber;
-    }
+   
     
     public String getRoomTypeName() {
         return roomTypeName;
@@ -402,3 +432,7 @@ public class Reservation {
                 '}';
     }
 }
+
+   
+
+   
