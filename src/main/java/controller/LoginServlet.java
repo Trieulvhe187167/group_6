@@ -32,13 +32,13 @@ public class LoginServlet extends HttpServlet {
                     response.sendRedirect("/admin-dashboard");
                     break;
                 case "RECEPTIONIST":
-                    response.sendRedirect("reception-dashboard.jsp");
+                    response.sendRedirect(request.getContextPath() + "/reception-dashboard");
                     break;
                 case "HOUSEKEEPER":
                     response.sendRedirect("/housekeeper-dashboard");
                     break;
                 case "ROOM_INSPECTOR":
-                    response.sendRedirect("/inspector-dashboard");
+                    response.sendRedirect("/inspector/dashboard");
                     break;
                 case "CUSTOMER":
                     response.sendRedirect("/index.jsp");

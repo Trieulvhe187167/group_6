@@ -45,7 +45,7 @@ public class AdminDashboardServlet extends HttpServlet {
             DashboardStats stats = new DashboardStats();
             
             // Get customer statistics
-            stats.setTotalCustomers(userDAO.getTotalUsersByRole("GUEST"));
+            stats.setTotalCustomers(userDAO.getTotalUsersByRole("CUSTOMER"));
             
             // Get room statistics
             int[] roomStats = roomDAO.getRoomStatistics();
@@ -55,7 +55,7 @@ public class AdminDashboardServlet extends HttpServlet {
             stats.setTotalRooms(roomDAO.getTotalRoomCount());
             
             // Get today's check-ins
-            stats.setTodayCheckIns(reservationDAO.getTodayCheckIns());
+            stats.setTodayCheckIns(reservationDAO.getTodayCheckInsCount());
             
             // Get revenue statistics
             Calendar cal = Calendar.getInstance();

@@ -193,25 +193,40 @@
                             <input name="name" type="text" required 
                                    class="form-control" id="name"
                                    placeholder="Enter room type name"
-                                   value="${isEdit ? roomType.name : ''}">
+                                   maxlength="50"
+                                   value="${roomType != null ? roomType.name : ''}">
+                            <small class="form-text text-muted">
+                                Name must be between 1 and 30 characters.
+                            </small>
                         </div>
 
+                        <input type="hidden" name="originalName" value="${isEdit ? roomType.name : ''}">
+
                         <div class="form-row">
-                            <div class="form-group">
+                            <!-- Base Price -->
+                            <div class="form-group col-md-6">
                                 <label for="basePrice">Base Price (₫/night) <span class="text-danger">*</span></label>
                                 <input name="basePrice" type="number" required 
                                        class="form-control" id="basePrice"
                                        placeholder="Enter base price"
-                                       min="0" step="1000"
-                                       value="${isEdit ? roomType.basePrice : ''}">
+                                       min="0" max="100000000" step="1000"
+                                       value="${roomType != null ? roomType.basePrice : ''}">
+                                <small class="form-text text-muted">
+                                    Must be between 0 and 100,000,000 VND.
+                                </small>
                             </div>
-                            <div class="form-group">
+
+                            <!-- Capacity -->
+                            <div class="form-group col-md-6">
                                 <label for="capacity">Capacity (guests) <span class="text-danger">*</span></label>
                                 <input name="capacity" type="number" required 
                                        class="form-control" id="capacity"
                                        placeholder="Enter max capacity"
                                        min="1" max="10"
-                                       value="${isEdit ? roomType.capacity : ''}">
+                                       value="${roomType != null ? roomType.capacity : ''}">
+                                <small class="form-text text-muted">
+                                    Must be between 1 and 10 guests.
+                                </small>
                             </div>
                         </div>
 
@@ -235,7 +250,7 @@
                             <input name="imageUrl" type="text" required 
                                    class="form-control" id="imageUrl"
                                    placeholder="Enter image filename (e.g., room1.jpg)"
-                                   value="${isEdit ? roomType.imageUrl : ''}">
+                                   value="${roomType != null ? roomType.imageUrl : ''}">
                             <small class="text-muted">Image should be placed in /assets/images/uploads/ folder</small>
                         </div>
 
@@ -256,7 +271,7 @@
                             <label for="description">Description <span class="text-danger">*</span></label>
                             <textarea name="description" required 
                                       class="form-control" id="description" rows="4"
-                                      placeholder="Enter room type description">${isEdit ? roomType.description : ''}</textarea>
+                                      placeholder="Enter room type description">${roomType != null ? roomType.description : ''}</textarea>
                         </div>
 
                         <div class="form-group">
@@ -343,88 +358,89 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$(document).ready(function() {
-    // Form validation
-    $('#roomTypeForm').on('submit', function(e) {
-        var isValid = true;
-        var errorMessage = '';
+    $(document).ready(function () {
+        // Form validation
+        $('#roomTypeForm').on('submit', function (e) {
+            var isValid = true;
+            var errorMessage = '';
 
-        // Clear previous validation states
-        $('.form-control').removeClass('is-invalid');
+            // Clear previous validation states
+            $('.form-control').removeClass('is-invalid');
 
-        // Check required fields
-        $(this).find('[required]').each(function() {
-            if (!$(this).val().trim()) {
-                $(this).addClass('is-invalid');
+            // Check required fields
+            $(this).find('[required]').each(function () {
+                if (!$(this).val().trim()) {
+                    $(this).addClass('is-invalid');
+                    isValid = false;
+                }
+            });
+
+            // Validate price
+            var price = $('#basePrice').val();
+            if (price && (isNaN(price) || parseFloat(price) <= 0)) {
+                $('#basePrice').addClass('is-invalid');
+                errorMessage = 'Price must be a positive number';
                 isValid = false;
+            }
+
+            // Validate capacity
+            var capacity = $('#capacity').val();
+            if (capacity && (isNaN(capacity) || parseInt(capacity) <= 0 || parseInt(capacity) > 10)) {
+                $('#capacity').addClass('is-invalid');
+                errorMessage = 'Capacity must be between 1 and 10';
+                isValid = false;
+            }
+
+            // Validate image URL
+            var imageUrl = $('#imageUrl').val();
+            if (imageUrl && !/\.(jpg|jpeg|png|gif|webp)$/i.test(imageUrl)) {
+                $('#imageUrl').addClass('is-invalid');
+                errorMessage = 'Image URL must end with a valid image extension (.jpg, .png, etc.)';
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                if (errorMessage) {
+                    alert(errorMessage);
+                } else {
+                    alert('Please fill in all required fields');
+                }
             }
         });
 
-        // Validate price
-        var price = $('#basePrice').val();
-        if (price && (isNaN(price) || parseFloat(price) <= 0)) {
-            $('#basePrice').addClass('is-invalid');
-            errorMessage = 'Price must be a positive number';
-            isValid = false;
-        }
+        // Remove invalid class on input
+        $('.form-control').on('input change', function () {
+            $(this).removeClass('is-invalid');
+        });
 
-        // Validate capacity
-        var capacity = $('#capacity').val();
-        if (capacity && (isNaN(capacity) || parseInt(capacity) <= 0 || parseInt(capacity) > 10)) {
-            $('#capacity').addClass('is-invalid');
-            errorMessage = 'Capacity must be between 1 and 10';
-            isValid = false;
-        }
-
-        // Validate image URL
-        var imageUrl = $('#imageUrl').val();
-        if (imageUrl && !/\.(jpg|jpeg|png|gif|webp)$/i.test(imageUrl)) {
-            $('#imageUrl').addClass('is-invalid');
-            errorMessage = 'Image URL must end with a valid image extension (.jpg, .png, etc.)';
-            isValid = false;
-        }
-
-        if (!isValid) {
-            e.preventDefault();
-            if (errorMessage) {
-                alert(errorMessage);
-            } else {
-                alert('Please fill in all required fields');
+        // Auto-format price input
+        $('#basePrice').on('input', function () {
+            var value = $(this).val().replace(/[^\d]/g, '');
+            if (value) {
+                $(this).val(parseInt(value));
             }
-        }
-    });
+        });
 
-    // Remove invalid class on input
-    $('.form-control').on('input change', function() {
-        $(this).removeClass('is-invalid');
-    });
-
-    // Auto-format price input
-    $('#basePrice').on('input', function() {
-        var value = $(this).val().replace(/[^\d]/g, '');
-        if (value) {
-            $(this).val(parseInt(value));
-        }
-    });
-
-    // If editing, populate fields from description
+        // If editing, populate fields from description
     <c:if test="${isEdit && not empty roomType.description}">
         var description = "${roomType.description}";
         var parts = description.split(',');
-        
+
         if (parts.length > 1) {
             // Set bed type
             var bedType = parts[1].trim();
             $('#bed').val(bedType);
-            
+
             // Set description (first part)
             $('#description').val(parts[0].trim());
-            
+
             // Set special features (remaining parts)
             if (parts.length > 2) {
                 var special = '';
                 for (var i = 2; i < parts.length; i++) {
-                    if (i > 2) special += ', ';
+                    if (i > 2)
+                        special += ', ';
                     special += parts[i].trim();
                 }
                 $('#special').val(special);
@@ -434,5 +450,62 @@ $(document).ready(function() {
             $('#description').val(description);
         }
     </c:if>
-});
+    });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const nameInput = document.getElementById("name");
+        const priceInput = document.getElementById("basePrice");
+        const capacityInput = document.getElementById("capacity");
+
+        // Hàm tạo thẻ hiển thị lỗi
+        function createErrorMessage(input) {
+            const error = document.createElement("small");
+            error.classList.add("text-danger");
+            input.parentNode.appendChild(error);
+            return error;
+        }
+
+        const nameHint = createErrorMessage(nameInput);
+        const priceHint = createErrorMessage(priceInput);
+        const capacityHint = createErrorMessage(capacityInput);
+
+        // Validate name
+        nameInput.addEventListener("input", function () {
+            const value = nameInput.value.trim();
+            if (value.length === 0 || value.length > 30) {
+                nameHint.textContent = "Name must be between 1 and 30 characters.";
+                nameInput.classList.add("is-invalid");
+            } else {
+                nameHint.textContent = "";
+                nameInput.classList.remove("is-invalid");
+            }
+        });
+
+        // Validate base price
+        priceInput.addEventListener("input", function () {
+            const value = parseInt(priceInput.value);
+            if (isNaN(value) || value < 0 || value > 100000000) {
+                priceHint.textContent = "Price must be between 0 and 100,000,000 VND.";
+                priceInput.classList.add("is-invalid");
+            } else {
+                priceHint.textContent = "";
+                priceInput.classList.remove("is-invalid");
+            }
+        });
+
+        // Validate capacity
+        capacityInput.addEventListener("input", function () {
+            const value = parseInt(capacityInput.value);
+            if (isNaN(value) || value < 1 || value > 10) {
+                capacityHint.textContent = "Capacity must be between 1 and 10 guests.";
+                capacityInput.classList.add("is-invalid");
+            } else {
+                capacityHint.textContent = "";
+                capacityInput.classList.remove("is-invalid");
+            }
+        });
+    });
+</script>
+
+

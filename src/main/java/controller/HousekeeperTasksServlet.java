@@ -1,6 +1,5 @@
 package controller;
 
-
 import dal.HousekeepingTaskDAO;
 import model.HousekeepingTask;
 import model.User;
@@ -73,7 +72,22 @@ public class HousekeeperTasksServlet extends HttpServlet {
         request.setAttribute("status", status);
         request.setAttribute("search", search);
         
-        request.getRequestDispatcher("/jsp/housekeeper/tasks.jsp").forward(request, response);
+        // Determine active page based on status
+        String activePage = "tasks";
+        if ("PENDING".equals(status)) {
+            activePage = "pending";
+        } else if ("IN_PROGRESS".equals(status)) {
+            activePage = "in-progress";
+        } else if ("DONE".equals(status)) {
+            activePage = "completed";
+        }
+        
+        // Set page info for template
+        request.setAttribute("pageTitle", "My Tasks");
+        request.setAttribute("activePage", activePage);
+        request.setAttribute("contentPage", "/jsp/housekeeper/housekeeper-tasks-content.jsp");
+        
+        request.getRequestDispatcher("/jsp/housekeeper/housekeeper-template.jsp").forward(request, response);
     }
     
     @Override
