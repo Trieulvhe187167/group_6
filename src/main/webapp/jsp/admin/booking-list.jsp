@@ -1,6 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ page import="java.util.List, model.Reservation" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -150,7 +152,33 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
-        /* Responsive */
+        /* Breadcrumb Styles */
+        .breadcrumb {
+            background: white;
+            border-radius: 8px;
+            padding: 12px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+            color: #6c757d;
+        }
+        
+        .breadcrumb-item a {
+            color: #5a2b81;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #7b3fa0;
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -188,45 +216,75 @@
     </header>
     
     <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <nav class="sidebar-nav">
-            <a href="${pageContext.request.contextPath}/admin-dashboard" class="nav-item">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/rooms" class="nav-item">
-                <i class="fas fa-bed"></i> Rooms
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/customers" class="nav-item">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/bookings" class="nav-item active">
-                <i class="fas fa-calendar-check"></i> Bookings
-            </a>
-            <a href="${pageContext.request.contextPath}/HouseKeeping" class="nav-item">
-                <i class="fas fa-broom"></i> Housekeeping
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item">
-                <i class="fas fa-chart-bar"></i> Reports
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item">
-                <i class="fas fa-blog"></i> Blog Posts
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/events" class="nav-item">
-                <i class="fas fa-calendar-alt"></i> Events
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/settings" class="nav-item">
-                <i class="fas fa-cog"></i> Settings
-            </a>
-        </nav>
-    </aside>
+    <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <nav class="sidebar-nav">
+                <a href="${pageContext.request.contextPath}/admin-dashboard" 
+                   class="nav-item ${activePage == 'dashboard' ? 'active' : ''}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/rooms" 
+                   class="nav-item ${activePage == 'rooms' ? 'active' : ''}">
+                    <i class="fas fa-bed"></i> Rooms
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/customers" 
+                   class="nav-item ${activePage == 'customers' ? 'active' : ''}">
+                    <i class="fas fa-users"></i> Customers
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/staff" 
+                   class="nav-item ${activePage == 'staff' ? 'active' : ''}">
+                    <i class="fas fa-user-tie"></i> Staff
+                </a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/change-request">
+        <i class="fas fa-clock"></i> Pending Changes
+        <span class="badge badge-warning ml-1">${pendingChangesCount}</span>
+    </a>
+                <a href="${pageContext.request.contextPath}/jsp/admin/booking-list.jsp" 
+                   class="nav-item ${activePage == 'bookings' ? 'active' : ''}">
+                    <i class="fas fa-calendar-check"></i> Bookings
+                </a>
+                    
+                <a href="${pageContext.request.contextPath}/HouseKeeping" 
+                   class="nav-item ${activePage == 'houseKeeping' ? 'active' : ''}">
+                    <i class="fas fa-broom"></i> Housekeeping
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/receptionist" 
+                   class="nav-item ${activePage == 'receptionist' ? 'active' : ''}">
+                    <i class="fas fa-bell-concierge"></i> Receptionist
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/reports" 
+                   class="nav-item ${activePage == 'reports' ? 'active' : ''}">
+                    <i class="fas fa-chart-bar"></i> Reports
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/blogs" 
+                   class="nav-item ${activePage == 'blogs' ? 'active' : ''}">
+                    <i class="fas fa-blog"></i> Blog Posts
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/events" 
+                   class="nav-item ${activePage == 'events' ? 'active' : ''}">
+                    <i class="fas fa-calendar-alt"></i> Events
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/settings" 
+                   class="nav-item ${activePage == 'settings' ? 'active' : ''}">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </nav>
+        </aside>
     
     <!-- Main Content -->
     <main class="main-content">
         <div class="container-fluid">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin-dashboard">Home</a></li>
-                    <li class="breadcrumb-item active">Bookings</li>
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-white shadow-sm rounded px-3 py-2">
+                    <li class="breadcrumb-item">
+                        <a href="${pageContext.request.contextPath}/admin-dashboard" class="text-decoration-none">
+                            <i class="fas fa-home"></i> Home Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="fas fa-calendar-check"></i> Booking Management
+                    </li>
                 </ol>
             </nav>
             
@@ -239,19 +297,19 @@
                         <label for="status">Status</label>
                         <select class="form-control" id="status" name="status">
                             <option value="">All Status</option>
-                            <option value="PENDING">Pending</option>
-                            <option value="CONFIRMED">Confirmed</option>
-                            <option value="CANCELLED">Cancelled</option>
-                            <option value="COMPLETED">Completed</option>
+                            <option value="PENDING" ${param.status == 'PENDING' ? 'selected' : ''}>Pending</option>
+                            <option value="CONFIRMED" ${param.status == 'CONFIRMED' ? 'selected' : ''}>Confirmed</option>
+                            <option value="CANCELLED" ${param.status == 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                            <option value="COMPLETED" ${param.status == 'COMPLETED' ? 'selected' : ''}>Completed</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label for="fromDate">From Date</label>
-                        <input type="date" class="form-control" id="fromDate" name="fromDate">
+                        <input type="date" class="form-control" id="fromDate" name="fromDate" value="${param.fromDate}">
                     </div>
                     <div class="col-md-3">
                         <label for="toDate">To Date</label>
-                        <input type="date" class="form-control" id="toDate" name="toDate">
+                        <input type="date" class="form-control" id="toDate" name="toDate" value="${param.toDate}">
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary mr-2">
@@ -268,7 +326,6 @@
             <div class="table-responsive">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="mb-0">All Bookings</h5>
-                   
                 </div>
                 
                 <table class="table table-bordered table-hover">
@@ -283,6 +340,7 @@
                             <th>Status</th>
                             <th>Total Amount</th>
                             <th>Created At</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
