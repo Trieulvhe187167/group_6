@@ -45,7 +45,7 @@
             </div>
         </div>
         <div class="card-body p-0">
-            <div class="calendar-container" style="overflow-x: auto;">
+            <div class="calendar-container">
                 <c:if test="${empty rooms || empty calendarDates}">
                     <div class="alert alert-warning m-3">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
@@ -53,13 +53,13 @@
                     </div>
                 </c:if>
                 <c:if test="${not empty rooms && not empty calendarDates}">
-                    <table class="table table-bordered calendar-table" style="min-width: 1500px;">
+                    <table class="table table-bordered calendar-table">
                         <thead>
                             <tr>
-                                <th style="width: 120px; min-width: 120px;">Room</th>
+                                <th style="width: 60px; min-width: 60px;">Room</th>
                                 <c:forEach var="date" items="${calendarDates}">
                                     <th class="text-center ${date.equals(today) ? 'bg-warning' : (date.getDayOfWeek().getValue() >= 6 ? 'bg-light' : '')}" 
-                                        style="width: 40px; min-width: 40px;">
+                                        style="width: 14%; min-width: 14%;">
                                         <div class="small">${date.getDayOfMonth()}</div>
                                         <div class="small text-muted">${date.getDayOfWeek().toString().substring(0,3)}</div>
                                     </th>
@@ -72,17 +72,17 @@
                                 <c:if test="${room.roomTypeName != currentRoomType}">
                                     <c:set var="currentRoomType" value="${room.roomTypeName}" />
                                     <c:set var="roomTypeId" value="${fn:replace(room.roomTypeName, ' ', '-')}" />
-                                    <tr class="room-type-header collapsed" data-room-type="${roomTypeId}" id="header-${roomTypeId}">
+                                    <tr class="room-type-header" data-room-type="${roomTypeId}" id="header-${roomTypeId}">
                                         <td colspan="${calendarDates.size() + 1}" class="bg-secondary text-white">
                                             <div class="d-flex justify-content-between align-items-center" 
                                                  onclick="toggleRoomType('${roomTypeId}')">
                                                 <strong>${room.roomTypeName}</strong>
-                                                <i class="fas fa-chevron-up toggle-icon"></i>
+                                                <i class="fas fa-chevron-down toggle-icon"></i>
                                             </div>
                                         </td>
                                     </tr>
                                 </c:if>
-                                <tr class="room-row room-hidden" id="room-${room.id}" data-room-type="${fn:replace(room.roomTypeName, ' ', '-')}" style="display: none;">
+                                <tr class="room-row" id="room-${room.id}" data-room-type="${fn:replace(room.roomTypeName, ' ', '-')}">
                                     <td class="align-middle">
                                         <div class="font-weight-bold">${room.roomNumber}</div>
                                         <span class="badge badge-${room.status == 'AVAILABLE' ? 'success' : (room.status == 'OCCUPIED' ? 'info' : (room.status == 'MAINTENANCE' ? 'danger' : 'warning'))}">${room.status}</span>
@@ -347,9 +347,12 @@
 
 <style>
     .calendar-container {
-        overflow-x: auto;
+        width: 100%;
+        overflow-x: hidden;
     }
     .calendar-table {
+        width: 100%;
+        table-layout: fixed;
         border-collapse: separate;
         border-spacing: 0;
     }
@@ -357,6 +360,9 @@
         border: 1px solid #dee2e6;
         padding: 0.25rem;
         height: 30px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
     .reservation-bar {
         transition: all 0.2s;
