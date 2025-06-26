@@ -56,10 +56,10 @@
                     <table class="table table-bordered calendar-table">
                         <thead>
                             <tr>
-                                <th style="width: 60px; min-width: 60px;">Room</th>
+                                <th style="width: 130px; min-width: 130px;">Room</th>
                                 <c:forEach var="date" items="${calendarDates}">
                                     <th class="text-center ${date.equals(today) ? 'bg-warning' : (date.getDayOfWeek().getValue() >= 6 ? 'bg-light' : '')}" 
-                                        style="width: 14%; min-width: 14%;">
+                                        style="width: 12%; min-width: 12%;">
                                         <div class="small">${date.getDayOfMonth()}</div>
                                         <div class="small text-muted">${date.getDayOfWeek().toString().substring(0,3)}</div>
                                     </th>
@@ -84,8 +84,10 @@
                                 </c:if>
                                 <tr class="room-row" id="room-${room.id}" data-room-type="${fn:replace(room.roomTypeName, ' ', '-')}">
                                     <td class="align-middle">
-                                        <div class="font-weight-bold">${room.roomNumber}</div>
-                                        <span class="badge badge-${room.status == 'AVAILABLE' ? 'success' : (room.status == 'OCCUPIED' ? 'info' : (room.status == 'MAINTENANCE' ? 'danger' : 'warning'))}">${room.status}</span>
+                                        <div class="font-weight-bold text-center">${room.roomNumber}</div>
+                                        <div class="text-center mt-1">
+                                            <span class="badge badge-${room.status == 'AVAILABLE' ? 'success' : (room.status == 'OCCUPIED' ? 'info' : (room.status == 'MAINTENANCE' ? 'danger' : 'warning'))}">${room.status}</span>
+                                        </div>
                                     </td>
                                     <c:forEach var="date" items="${calendarDates}" varStatus="dateStatus">
                                         <td class="p-0 position-relative ${date.equals(today) ? 'bg-warning-light' : ''}">
@@ -363,6 +365,13 @@
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+    }
+    .calendar-table td .badge {
+        display: inline-block;
+        width: auto;
+        min-width: 80px;
+        text-align: center;
+        font-size: 90%;
     }
     .reservation-bar {
         transition: all 0.2s;
