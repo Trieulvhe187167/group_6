@@ -12,19 +12,36 @@
         </div>
     </div>
 
-    <!-- Calendar View Toggle -->
-    <div class="mb-4">
-        <a href="#" class="btn btn-outline-primary" onclick="toggleCalendar(); return false;">
-            <i class="fas fa-calendar-alt"></i> Toggle Calendar View
-        </a>
-    </div>
-
     <!-- Calendar View -->
-    <div id="calendarView" class="card mb-4" style="display: none;">
+    <div id="calendarView" class="card mb-4">
         <div class="card-header bg-info text-white">
-            <h5 class="mb-0">
-                <i class="fas fa-calendar-alt mr-2"></i> Reservation Calendar
-            </h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt mr-2"></i> Reservation Calendar
+                </h5>
+                <div class="btn-group">
+                    <a href="?weekOffset=${prevWeekOffset}" class="btn btn-sm btn-light">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-light dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                            ${startOfWeekFormatted} - ${endOfWeekFormatted}
+                        </button>
+                        <div class="dropdown-menu p-3">
+                            <div class="form-group mb-0">
+                                <label for="calendarDatePicker">Select a date:</label>
+                                <input type="date" id="calendarDatePicker" class="form-control form-control-sm">
+                                <div class="mt-2 text-right">
+                                    <button type="button" class="btn btn-sm btn-info" onclick="goToSelectedDate()">Go</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="?weekOffset=${nextWeekOffset}" class="btn btn-sm btn-light">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
         </div>
         <div class="card-body p-0">
             <div class="calendar-container" style="overflow-x: auto;">
@@ -54,17 +71,17 @@
                                 <c:if test="${room.roomTypeName != currentRoomType}">
                                     <c:set var="currentRoomType" value="${room.roomTypeName}" />
                                     <c:set var="roomTypeId" value="${fn:replace(room.roomTypeName, ' ', '-')}" />
-                                    <tr class="room-type-header collapsed" data-room-type="${roomTypeId}" id="header-${roomTypeId}">
+                                    <tr class="room-type-header" data-room-type="${roomTypeId}" id="header-${roomTypeId}">
                                         <td colspan="${calendarDates.size() + 1}" class="bg-secondary text-white">
                                             <div class="d-flex justify-content-between align-items-center" 
                                                  onclick="toggleRoomType('${roomTypeId}')">
                                                 <strong>${room.roomTypeName}</strong>
-                                                <i class="fas fa-chevron-up toggle-icon"></i>
+                                                <i class="fas fa-chevron-down toggle-icon"></i>
                                             </div>
                                         </td>
                                     </tr>
                                 </c:if>
-                                <tr class="room-row room-hidden" id="room-${room.id}" data-room-type="${fn:replace(room.roomTypeName, ' ', '-')}" style="display: none;">
+                                <tr class="room-row" id="room-${room.id}" data-room-type="${fn:replace(room.roomTypeName, ' ', '-')}">
                                     <td class="align-middle">
                                         <div class="font-weight-bold">${room.roomNumber}</div>
                                         <span class="badge badge-${room.status == 'AVAILABLE' ? 'success' : (room.status == 'OCCUPIED' ? 'info' : (room.status == 'MAINTENANCE' ? 'danger' : 'warning'))}">${room.status}</span>
@@ -374,17 +391,9 @@
     // Execute when DOM is fully loaded
     document.addEventListener('DOMContentLoaded', function() {
         console.log("DOM loaded - initialization complete");
+        // Set default date for calendar picker to today
+        document.getElementById('calendarDatePicker').valueAsDate = new Date();
     });
-    
-    function toggleCalendar() {
-        console.log("Toggle calendar function called");
-        const calendarView = document.getElementById('calendarView');
-        if (calendarView.style.display === 'none') {
-            calendarView.style.display = 'block';
-        } else {
-            calendarView.style.display = 'none';
-        }
-    }
     
     // Function to toggle room type visibility
     function toggleRoomType(roomTypeId) {
@@ -405,18 +414,28 @@
         headerRow.classList.toggle('collapsed');
         const isCollapsed = headerRow.classList.contains('collapsed');
         
-        // Toggle visibility of room rows using direct style manipulation
+        // Toggle visibility of room rows
         roomRows.forEach(row => {
             if (isCollapsed) {
-                row.classList.add('room-hidden');
                 row.style.display = 'none';
                 console.log("Hiding row: " + row.id);
             } else {
-                row.classList.remove('room-hidden');
                 row.style.display = '';
                 console.log("Showing row: " + row.id);
             }
         });
+        
+        // Toggle icon direction
+        const toggleIcon = headerRow.querySelector('.toggle-icon');
+        if (toggleIcon) {
+            if (isCollapsed) {
+                toggleIcon.classList.remove('fa-chevron-down');
+                toggleIcon.classList.add('fa-chevron-up');
+            } else {
+                toggleIcon.classList.remove('fa-chevron-up');
+                toggleIcon.classList.add('fa-chevron-down');
+            }
+        }
         
         console.log(isCollapsed 
             ? "Collapsed room type: " + roomTypeId
@@ -599,5 +618,13 @@
     
     function scanQRCode() {
         alert('QR Code scanning functionality not implemented yet.');
+    }
+
+    // Function to go to selected date
+    function goToSelectedDate() {
+        const selectedDate = document.getElementById('calendarDatePicker').value;
+        if (selectedDate) {
+            window.location.href = '?selectedDate=' + selectedDate;
+        }
     }
 </script>

@@ -9,9 +9,14 @@ import java.io.IOException;
 import java.util.*;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.Comparator;
 import com.google.gson.Gson;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.time.DayOfWeek;
+import java.time.format.DateTimeFormatter;
 
 @WebServlet(name = "CheckInServlet", urlPatterns = {"/receptionist/check-in"})
 public class CheckInServlet extends HttpServlet {
@@ -50,6 +55,29 @@ public class CheckInServlet extends HttpServlet {
             request.setAttribute("todayCheckIns", todayCheckIns);
             request.setAttribute("currentUser", currentUser);
             
+            // Set up calendar data - handle week navigation if present
+            String weekOffset = request.getParameter("weekOffset");
+            int offset = 0;
+            if (weekOffset != null && !weekOffset.isEmpty()) {
+                try {
+                    offset = Integer.parseInt(weekOffset);
+                } catch (NumberFormatException e) {
+                    LOGGER.warning("Invalid weekOffset parameter: " + weekOffset);
+                }
+            }
+            
+            String selectedDate = request.getParameter("selectedDate");
+            LocalDate baseDate = LocalDate.now();
+            if (selectedDate != null && !selectedDate.isEmpty()) {
+                try {
+                    baseDate = LocalDate.parse(selectedDate);
+                } catch (Exception e) {
+                    LOGGER.warning("Invalid selectedDate parameter: " + selectedDate);
+                }
+            }
+            
+            setupCalendarData(request, offset, baseDate);
+            
             // Set template attributes
             request.setAttribute("pageTitle", "Check-in Management");
             request.setAttribute("activePage", "checkin");
@@ -61,6 +89,61 @@ public class CheckInServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("error", "Error loading check-in page: " + e.getMessage());
             request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
+        }
+    }
+    
+    /**
+     * Set up calendar data for the reservation calendar view
+     * @param request HttpServletRequest to set attributes
+     * @param weekOffset Offset from current week (0 = current week, 1 = next week, -1 = previous week)
+     * @param baseDate Base date to calculate the week from
+     */
+    private void setupCalendarData(HttpServletRequest request, int weekOffset, LocalDate baseDate) {
+        try {
+            // Get today's date for highlighting
+            LocalDate today = LocalDate.now();
+            request.setAttribute("today", today);
+            
+            // Calculate the Monday of the week for the given base date and offset
+            LocalDate startOfWeek = baseDate.with(DayOfWeek.MONDAY).plusWeeks(weekOffset);
+            
+            // Create calendar dates (Monday to Sunday)
+            List<LocalDate> calendarDates = new ArrayList<>();
+            for (int i = 0; i < 7; i++) {
+                calendarDates.add(startOfWeek.plusDays(i));
+            }
+            request.setAttribute("calendarDates", calendarDates);
+            
+            // Set week information for navigation
+            request.setAttribute("currentWeekOffset", weekOffset);
+            request.setAttribute("prevWeekOffset", weekOffset - 1);
+            request.setAttribute("nextWeekOffset", weekOffset + 1);
+            request.setAttribute("startOfWeek", startOfWeek);
+            request.setAttribute("endOfWeek", startOfWeek.plusDays(6));
+            
+            // Format dates for display
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            request.setAttribute("startOfWeekFormatted", startOfWeek.format(formatter));
+            request.setAttribute("endOfWeekFormatted", startOfWeek.plusDays(6).format(formatter));
+            
+            // Get all rooms
+            List<Room> rooms = roomDAO.getAllRooms();
+            
+            // Sort rooms by roomTypeId to group rooms of the same type together
+            rooms.sort(Comparator.comparing(Room::getRoomTypeId).thenComparing(Room::getRoomNumber));
+            
+            request.setAttribute("rooms", rooms);
+            
+            // Get calendar reservations for the date range
+            Date startDate = Date.valueOf(startOfWeek);
+            Date endDate = Date.valueOf(startOfWeek.plusDays(6));
+            List<ReservationSummary> calendarReservations = 
+                reservationDAO.getReservationsByDateRange(startDate, endDate);
+            request.setAttribute("calendarReservations", calendarReservations);
+            
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error setting up calendar data", e);
+            // Don't set the attributes if there's an error
         }
     }
     
