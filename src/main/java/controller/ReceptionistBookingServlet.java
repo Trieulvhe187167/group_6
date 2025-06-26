@@ -74,7 +74,7 @@ public class ReceptionistBookingServlet extends HttpServlet {
             request.setAttribute("customers", customers);
             request.setAttribute("pageTitle", "New Booking");
             request.setAttribute("activePage", "booking");
-            request.setAttribute("contentPage", "/jsp/reception/booking-form.jsp");
+            // No need to set contentPage anymore as we're using direct includes
             
             request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
             

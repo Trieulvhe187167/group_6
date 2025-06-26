@@ -59,7 +59,7 @@
         <style>
             .booking-section {
                 background-color: #f8f9fa;
-                padding: 50px 0;
+              
             }
 
             .booking-form {
@@ -119,13 +119,7 @@
                 color: #ff6b6b;
             }
 
-            .booking-summary {
-                background: #f8f9fa;
-                padding: 25px;
-                border-radius: 10px;
-                position: sticky;
-                top: 20px;
-            }
+           
 
             .form-group {
                 margin-bottom: 20px;
@@ -195,6 +189,197 @@
                 border-color: #ff6b6b;
             }
 
+            /* Enhanced Services Container with Scrollable List */
+#servicesContainer {
+    max-height: 400px; /* Chiều cao tối đa cho container */
+    overflow-y: auto; /* Thêm thanh cuộn dọc */
+    padding-right: 10px; /* Tạo khoảng cách cho thanh cuộn */
+    margin-top: 15px;
+}
+
+/* Custom Scrollbar Styling for Services Container */
+#servicesContainer::-webkit-scrollbar {
+    width: 8px;
+}
+
+#servicesContainer::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#servicesContainer::-webkit-scrollbar-thumb {
+    background: #ff6b6b;
+    border-radius: 10px;
+    transition: background 0.3s;
+}
+
+#servicesContainer::-webkit-scrollbar-thumb:hover {
+    background: #e85555;
+}
+
+/* Firefox scrollbar styling */
+#servicesContainer {
+    scrollbar-width: thin;
+    scrollbar-color: #ff6b6b #f1f1f1;
+}
+
+/* Improve service item spacing within scrollable area */
+.service-item {
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 12px; /* Tăng khoảng cách giữa các items */
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+}
+
+.service-item:last-child {
+    margin-bottom: 0; /* Bỏ margin cho item cuối cùng */
+}
+
+.service-item:hover {
+    border-color: #ff6b6b;
+    background: #fff5f5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
+}
+
+.service-item.selected {
+    border-color: #ff6b6b;
+    background: #fff5f5;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2);
+}
+
+/* Enhanced Services Section Header */
+.services-section {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    max-height: 600px; /* Giới hạn chiều cao tổng thể */
+    display: flex;
+    flex-direction: column;
+}
+
+.services-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+    flex-shrink: 0; /* Không cho header co lại */
+}
+
+.service-categories {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    flex-shrink: 0; /* Không cho categories co lại */
+}
+
+/* Loading state for services */
+.services-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.services-loading i {
+    font-size: 48px;
+    color: #ff6b6b;
+    margin-bottom: 15px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Empty state for filtered services */
+.services-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.services-empty i {
+    font-size: 48px;
+    color: #ddd;
+    margin-bottom: 15px;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+    #servicesContainer {
+        max-height: 300px; /* Giảm chiều cao trên mobile */
+        padding-right: 5px;
+    }
+    
+    .service-item {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .service-categories {
+        gap: 8px;
+    }
+    
+    .category-tab {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    .services-section {
+        padding: 20px;
+        max-height: 500px;
+    }
+}
+
+/* Fade effect for better visual transition */
+.service-item {
+    opacity: 1;
+    transition: all 0.3s ease, opacity 0.2s ease;
+}
+
+.service-item.filtering {
+    opacity: 0.3;
+}
+
+/* Highlight effect when services are filtered */
+.services-filtered #servicesContainer {
+    border: 2px solid #ff6b6b;
+    border-radius: 8px;
+    animation: highlight 0.5s ease-in-out;
+}
+
+@keyframes highlight {
+    0% { border-color: #ff6b6b; }
+    50% { border-color: #ff9999; }
+    100% { border-color: #ff6b6b; }
+}
+            .category-tab {
+                padding: 8px 16px;
+                border: 1px solid #ddd;
+                border-radius: 20px;
+                background: white;
+                cursor: pointer;
+                transition: all 0.3s;
+                font-size: 14px;
+            }
+
+            .category-tab:hover,
+            .category-tab.active {
+                background: #ff6b6b;
+                color: white;
+                border-color: #ff6b6b;
+            }
+
             .service-item {
                 border: 1px solid #eee;
                 padding: 15px;
@@ -205,24 +390,64 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                background: white;
             }
 
             .service-item:hover {
                 border-color: #ff6b6b;
                 background: #fff5f5;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
+            }
+
+            .service-item.selected {
+                border-color: #ff6b6b;
+                background: #fff5f5;
             }
 
             .service-item input[type="checkbox"] {
-                margin-right: 10px;
+                margin-right: 15px;
+                width: 18px;
+                height: 18px;
+                cursor: pointer;
             }
 
             .service-info {
                 flex: 1;
+                padding-right: 15px;
+            }
+
+            .service-info strong {
+                display: block;
+                color: #333;
+                font-size: 16px;
+                margin-bottom: 5px;
+            }
+
+            .service-info .category-badge {
+                display: inline-block;
+                background: #e8e8e8;
+                color: #666;
+                padding: 3px 10px;
+                border-radius: 12px;
+                font-size: 11px;
+                margin-bottom: 5px;
             }
 
             .service-price {
                 color: #ff6b6b;
                 font-weight: 600;
+                font-size: 18px;
+                white-space: nowrap;
+            }
+
+            .selected-services-count {
+                background: #ff6b6b;
+                color: white;
+                padding: 3px 12px;
+                border-radius: 15px;
+                font-size: 12px;
+                margin-left: 10px;
             }
 
             .price-breakdown {
@@ -236,6 +461,11 @@
                 justify-content: space-between;
                 margin-bottom: 10px;
                 color: #666;
+            }
+
+            .price-row.service-row {
+                color: #ff6b6b;
+                font-size: 14px;
             }
 
             .total-price {
@@ -431,6 +661,245 @@
                 border: none;
                 cursor: pointer;
             }
+
+            /* Icon styles for services */
+            .service-icon {
+                margin-right: 8px;
+                color: #ff6b6b;
+            }
+            /* Enhanced Booking Summary with proper header spacing */
+.booking-summary {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 10px;
+    position: sticky;
+    top: 120px; /* Tăng từ 20px lên 120px để tránh header */
+    max-height: calc(100vh - 140px); /* Giới hạn chiều cao để không vượt quá viewport */
+    overflow-y: auto; /* Thêm scroll nếu nội dung quá dài */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    z-index: 100; /* Đảm bảo nó nằm trên các elements khác */
+}
+
+/* Responsive adjustments for different screen sizes */
+@media (max-width: 1200px) {
+    .booking-summary {
+        top: 100px; /* Giảm một chút cho màn hình nhỏ hơn */
+        max-height: calc(100vh - 120px);
+    }
+}
+
+@media (max-width: 992px) {
+    .booking-summary {
+        position: relative; /* Bỏ sticky trên tablet */
+        top: auto;
+        max-height: none;
+        margin-top: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .booking-summary {
+        position: relative;
+        top: auto;
+        max-height: none;
+        margin-top: 20px;
+        padding: 20px;
+    }
+}
+
+/* Enhanced visual effects for booking summary */
+.booking-summary:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+/* Smooth scrolling for booking summary content */
+.booking-summary::-webkit-scrollbar {
+    width: 6px;
+}
+
+.booking-summary::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.booking-summary::-webkit-scrollbar-thumb {
+    background: #ff6b6b;
+    border-radius: 3px;
+}
+
+.booking-summary::-webkit-scrollbar-thumb:hover {
+    background: #e85555;
+}
+
+/* Firefox scrollbar */
+.booking-summary {
+    scrollbar-width: thin;
+    scrollbar-color: #ff6b6b #f1f1f1;
+}
+
+/* Enhanced spacing and typography within booking summary */
+.booking-summary h4 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 22px;
+    font-weight: 600;
+    border-bottom: 2px solid #ff6b6b;
+    padding-bottom: 10px;
+}
+
+.booking-summary .price-breakdown {
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+.booking-summary .price-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    color: #666;
+    font-size: 15px;
+}
+
+.booking-summary .price-row.service-row {
+    color: #ff6b6b;
+    font-size: 14px;
+    padding-left: 15px;
+}
+
+.booking-summary .total-price {
+    display: flex;
+    justify-content: space-between;
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 3px solid #ff6b6b;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px -5px 0 -5px;
+}
+
+/* Enhanced booking button */
+.book-now-btn {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #e85555 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 25px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.book-now-btn:hover {
+    background: linear-gradient(135deg, #e85555 0%, #d94444 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.book-now-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+}
+
+.book-now-btn:disabled {
+    background: #ccc !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Security notice styling */
+.booking-summary .text-center.mt-3 {
+    margin-top: 20px !important;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.booking-summary .text-center.mt-3 small {
+    color: #6c757d;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* Terms checkbox styling */
+.booking-summary .form-check {
+    margin: 20px 0;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.booking-summary .form-check-input {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+.booking-summary .form-check-label {
+    font-size: 14px;
+    color: #495057;
+    cursor: pointer;
+}
+
+.booking-summary .form-check-label a {
+    color: #ff6b6b;
+    text-decoration: none;
+}
+
+.booking-summary .form-check-label a:hover {
+    text-decoration: underline;
+}
+
+/* Animation for price updates */
+.booking-summary .price-row,
+.booking-summary .total-price {
+    transition: all 0.3s ease;
+}
+
+.booking-summary .price-row.updated {
+    background: #fff5f5;
+    padding: 5px 10px;
+    border-radius: 5px;
+    animation: priceUpdate 0.6s ease;
+}
+
+@keyframes priceUpdate {
+    0% { background: #ff6b6b; color: white; }
+    100% { background: #fff5f5; color: inherit; }
+}
+
+/* Loading state for booking button */
+.book-now-btn .fa-spinner {
+    margin-right: 8px;
+}
+
+/* Guest display styling */
+.booking-summary .mb-3.pb-3.border-bottom p {
+    color: #6c757d;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.booking-summary .mb-3.pb-3.border-bottom h5 {
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
         </style>
     </head>
     <body id="bg">
@@ -624,6 +1093,18 @@
                                                 </div>
                                             </div>
                                         </div>
+                                         <div class="room-availability-section mb-4">
+    <div class="availability-status" id="availabilityStatus">
+        <div class="availability-placeholder">
+            <div class="text-center p-4">
+                <i class="fa fa-calendar-check-o" style="font-size: 48px; color: #ddd;"></i>
+                <h5 class="mt-3 mb-2">Check Room Availability</h5>
+                <p class="text-muted mb-0">Please select your check-in and check-out dates to see available rooms</p>
+            </div>
+        </div>
+    </div>
+</div>
+                  
 
                                         <!-- Guest Selection -->
                                         <div class="mb-4">
@@ -660,25 +1141,87 @@
                                             </div>
                                         </div>
 
-                                        <!-- Additional Services -->
-                                        <div class="mb-4">
-                                            <h4>Additional Services</h4>
-                                            <% for(Service service : services) { %>
-                                            <div class="service-item">
-                                                <label style="display: flex; align-items: center; width: 100%; cursor: pointer; margin: 0;">
-                                                    <input type="checkbox" name="services" value="<%= service.getId() %>" 
-                                                           data-price="<%= service.getPrice() %>" onchange="updateTotalPrice()">
-                                                    <div class="service-info">
-                                                        <strong><%= service.getName() %></strong>
-                                                        <div class="text-muted small"><%= service.getDescription() %></div>
-                                                    </div>
-                                                    <div class="service-price">
-                                                        <%= df.format(service.getPrice()) %>₫
-                                                    </div>
-                                                </label>
-                                            </div>
-                                            <% } %>
-                                        </div>
+                                       <!-- Enhanced Additional Services Section -->
+<div class="services-section">
+    <div class="services-header">
+        <h4>
+            <i class="fa fa-concierge-bell service-icon"></i>
+            Additional Services
+        </h4>
+        <span class="badge">Optional</span>
+        <span class="selected-services-count" id="selectedServicesCount" style="display: none;">0 selected</span>
+    </div>
+    
+    <!-- Service Categories -->
+    <div class="service-categories">
+        <div class="category-tab active" onclick="filterServices('all'); scrollToServicesTop();">All Services</div>
+        <div class="category-tab" onclick="filterServices('TRANSPORT'); scrollToServicesTop();">Transportation</div>
+        <div class="category-tab" onclick="filterServices('DINING'); scrollToServicesTop();">Dining</div>
+        <div class="category-tab" onclick="filterServices('SPA'); scrollToServicesTop();">Spa & Wellness</div>
+        <div class="category-tab" onclick="filterServices('SPECIAL'); scrollToServicesTop();">Special Services</div>
+    </div>
+    
+    <!-- Services Container with Scroll -->
+    <div id="servicesContainer">
+        <% 
+        String previousCategory = "";
+        for(Service service : services) { 
+            // Determine category from service name/description
+            String category = "OTHER";
+            String serviceName = service.getName().toLowerCase();
+            String serviceDesc = service.getDescription() != null ? service.getDescription().toLowerCase() : "";
+            
+            if (serviceName.contains("airport") || serviceName.contains("shuttle") || 
+                serviceName.contains("tour") || serviceName.contains("car")) {
+                category = "TRANSPORT";
+            } else if (serviceName.contains("breakfast") || serviceName.contains("dinner") || 
+                      serviceName.contains("room service") || serviceName.contains("mini bar")) {
+                category = "DINING";
+            } else if (serviceName.contains("spa") || serviceName.contains("massage") || 
+                      serviceName.contains("yoga")) {
+                category = "SPA";
+            } else if (serviceName.contains("flower") || serviceName.contains("birthday") || 
+                      serviceName.contains("honeymoon") || serviceName.contains("laundry")) {
+                category = "SPECIAL";
+            }
+            
+            // Icon based on category
+            String icon = "fa-concierge-bell";
+            switch(category) {
+                case "TRANSPORT": icon = "fa-car"; break;
+                case "DINING": icon = "fa-utensils"; break;
+                case "SPA": icon = "fa-spa"; break;
+                case "SPECIAL": icon = "fa-gift"; break;
+            }
+        %>
+        <div class="service-item" data-category="<%= category %>" tabindex="0">
+            <label style="display: flex; align-items: center; width: 100%; cursor: pointer; margin: 0;">
+                <input type="checkbox" name="services" value="<%= service.getId() %>" 
+                       data-price="<%= service.getPrice() %>" 
+                       onchange="toggleServiceSelection(this);">
+                <div class="service-info">
+                    <strong>
+                        <i class="fa <%= icon %> service-icon"></i>
+                        <%= service.getName() %>
+                    </strong>
+                    <div class="category-badge"><%= category %></div>
+                    <div class="text-muted small"><%= service.getDescription() %></div>
+                </div>
+                <div class="service-price">
+                    <%= df.format(service.getPrice()) %>₫
+                </div>
+            </label>
+        </div>
+        <% } %>
+    </div>
+    
+    <!-- Services scroll hint -->
+    <div class="text-center mt-2">
+        <small class="text-muted">
+            <i class="fa fa-mouse-pointer"></i> Click categories to filter • <i class="fa fa-arrows-v"></i> Scroll to see more services
+        </small>
+    </div>
+</div>
 
                                         <!-- Contact Information -->
                                         <div class="mb-4">
@@ -812,30 +1355,15 @@
                             </ul>
                         </div>
 
-                        <!-- Room Availability Check -->
-                        <div class="mt-5">
-                            <h3 class="mb-4">Room Availability</h3>
-                            <div class="alert alert-info">
-                                <i class="fa fa-info-circle"></i> <strong>Note:</strong> Room assignment will be done by our reception staff during check-in to ensure you get the best available room.
-                            </div>
-                            <div class="availability-status" id="availabilityStatus">
-                                <div class="text-center p-4">
-                                    <i class="fa fa-calendar-check-o" style="font-size: 48px; color: #ddd;"></i>
-                                    <p class="mt-3 text-muted">Please select your check-in and check-out dates to check availability</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                     
             <!-- Content END-->
 
             <!-- Footer ==== -->
-            <jsp:include page="footer.jsp" />
+     
             <!-- Footer END ==== -->
             <button class="back-to-top fa fa-chevron-up" ></button>
         </div>
-
+       
         <!-- External JavaScripts -->
         <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
         <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/popper.min.js"></script>
@@ -852,878 +1380,1143 @@
         <script src="${pageContext.request.contextPath}/assets/js/jquery.scroller.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/vendors/switcher/switcher.js"></script>
+     
 
         <!-- Custom JavaScript for booking functionality -->
-        <script>
-                                                               const basePrice = <%= roomTypes.getBasePrice() %>;
-                                                               let nights = 1;
-                                                               let adults = 2;
-                                                               let children = 0;
-
-                                                               function changeMainImage(img) {
-                                                                   document.getElementById('mainImage').src = img.src;
-                                                                   // Remove active class from all thumbnails
-                                                                   document.querySelectorAll('.room-thumbnails img').forEach(thumb => {
-                                                                       thumb.classList.remove('active');
-                                                                   });
-                                                                   // Add active class to clicked thumbnail
-                                                                   img.classList.add('active');
-                                                               }
-
-                                                               function updateCheckoutMin() {
-                                                                   const checkinDate = document.querySelector('input[name="checkinDate"]').value;
-                                                                   const checkoutInput = document.querySelector('input[name="checkoutDate"]');
-
-                                                                   if (checkinDate) {
-                                                                       const checkin = new Date(checkinDate);
-                                                                       checkin.setDate(checkin.getDate() + 1);
-                                                                       const minCheckout = checkin.toISOString().split('T')[0];
-                                                                       checkoutInput.setAttribute('min', minCheckout);
-
-                                                                       // Reset checkout if it's before new minimum
-                                                                       if (checkoutInput.value && checkoutInput.value < minCheckout) {
-                                                                           checkoutInput.value = minCheckout;
-                                                                       }
-                                                                   }
-                                                                   calculateNights();
-                                                               }
-
-                                                               function calculateNights() {
-                                                                   const checkinDate = document.querySelector('input[name="checkinDate"]').value;
-                                                                   const checkoutDate = document.querySelector('input[name="checkoutDate"]').value;
-
-                                                                   if (checkinDate && checkoutDate) {
-                                                                       const checkin = new Date(checkinDate);
-                                                                       const checkout = new Date(checkoutDate);
-                                                                       nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
-
-                                                                       document.getElementById('nightsDisplay').textContent = nights;
-                                                                       document.getElementById('nightsText').textContent = nights;
-
-                                                                       updateTotalPrice();
-
-                                                                       // Check room availability for selected dates
-                                                                       checkRoomAvailability(checkinDate, checkoutDate);
-                                                                   }
-                                                               }
-
-                                                               function checkRoomAvailability(checkinDate, checkoutDate) {
-                                                                   const roomTypeId = document.querySelector('input[name="roomTypeId"]').value;
-                                                                   const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
-
-                                                                   // Show loading message
-                                                                   const statusDiv = document.getElementById('availabilityStatus');
-                                                                   if (statusDiv) {
-                                                                       statusDiv.innerHTML = '<div class="text-center p-4"><i class="fa fa-spinner fa-spin" style="font-size: 48px; color: #ff6b6b;"></i><p class="mt-3">Checking availability...</p></div>';
-                                                                   }
-
-                                                                   // Make AJAX call to check availability
-                                                                   fetch(contextPath + '/CheckRoomAvailability?roomTypeId=' + roomTypeId +
-                                                                           '&checkIn=' + checkinDate + '&checkOut=' + checkoutDate)
-                                                                           .then(response => response.json())
-                                                                           .then(data => {
-                                                                               updateAvailabilityStatus(data);
-                                                                           })
-                                                                           .catch(error => {
-                                                                               console.error('Error checking availability:', error);
-                                                                               if (statusDiv) {
-                                                                                   statusDiv.innerHTML = '<div class="text-center p-4 text-danger"><i class="fa fa-exclamation-circle" style="font-size: 48px;"></i><p class="mt-3">Error checking availability. Please try again.</p></div>';
-                                                                               }
-                                                                           });
-                                                               }
-
-                                                               function updateAvailabilityStatus(data) {
-                                                                   const statusDiv = document.getElementById('availabilityStatus');
-                                                                   if (!statusDiv)
-                                                                       return;
-
-                                                                   if (data.available) {
-                                                                       statusDiv.innerHTML = `
-                        <div class="text-center">
-                            <div class="availability-badge available">
-                                <i class="fa fa-check-circle" style="font-size: 24px;"></i>
-                                <span>Rooms Available!</span>
-                            </div>
-                            <div class="availability-details mt-4">
-                                <h5>Availability Details</h5>
-                                <div class="availability-info">
-                                    <span>Room Type:</span>
-                                    <span><%= roomTypes.getName() %></span>
-                                </div>
-                                <div class="availability-info">
-                                    <span>Available Rooms:</span>
-                                    <span>${data.availableCount || 'Multiple'} rooms</span>
-                                </div>
-                                <div class="availability-info">
-                                    <span>Your Dates:</span>
-                                    <span>${document.querySelector('input[name="checkinDate"]').value} to ${document.querySelector('input[name="checkoutDate"]').value}</span>
-                                </div>
-                            </div>
-                            <p class="mt-3 text-success">
-                                <i class="fa fa-info-circle"></i> Great! We have rooms available for your selected dates. 
-                                Proceed with booking and our reception staff will assign you the best available room during check-in.
-                            </p>
-                        </div>
-                    `;
-
-                                                                       // Enable the booking button if it was disabled
-                                                                       const bookingBtn = document.querySelector('.book-now-btn');
-                                                                       if (bookingBtn) {
-                                                                           bookingBtn.disabled = false;
-                                                                           bookingBtn.textContent = 'Confirm Booking';
-                                                                       }
-                                                                   } else {
-                                                                       statusDiv.innerHTML = `
-                        <div class="text-center">
-                            <div class="availability-badge unavailable">
-                                <i class="fa fa-times-circle" style="font-size: 24px;"></i>
-                                <span>No Rooms Available</span>
-                            </div>
-                            <p class="mt-3 text-danger">
-                                <i class="fa fa-calendar-times-o"></i> Sorry, we don't have any <%= roomTypes.getName() %> rooms available for your selected dates.
-                                Please try different dates or check other room types.
-                            </p>
-                            <div class="mt-4">
-                                <a href="${window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1))}/RoomListServlet" class="btn btn-primary">
-                                    <i class="fa fa-search"></i> View Other Room Types
-                                </a>
-                            </div>
-                        </div>
-                    `;
-
-                                                                       // Disable the booking button
-                                                                       const bookingBtn = document.querySelector('.book-now-btn');
-                                                                       if (bookingBtn) {
-                                                                           bookingBtn.disabled = true;
-                                                                           bookingBtn.textContent = 'No Rooms Available';
-                                                                       }
-                                                                   }
-                                                               }
-
-                                                               function updateGuests(type, change) {
-                                                                   if (type === 'adults') {
-                                                                       adults = Math.max(1, Math.min(4, adults + change));
-                                                                       document.getElementById('adultsCount').textContent = adults;
-                                                                       document.getElementById('adultsInput').value = adults;
-                                                                   } else {
-                                                                       children = Math.max(0, Math.min(3, children + change));
-                                                                       document.getElementById('childrenCount').textContent = children;
-                                                                       document.getElementById('childrenInput').value = children;
-                                                                   }
-
-                                                                   updateGuestsDisplay();
-                                                               }
-
-                                                               function updateGuestsDisplay() {
-                                                                   let guestText = adults + ' adult' + (adults > 1 ? 's' : '');
-                                                                   if (children > 0) {
-                                                                       guestText += ', ' + children + ' child' + (children > 1 ? 'ren' : '');
-                                                                   }
-                                                                   document.getElementById('guestsDisplay').textContent = guestText;
-                                                               }
-
-                                                               function updateTotalPrice() {
-                                                                   const roomPrice = basePrice * nights;
-                                                                   const tax = roomPrice * 0.1;
-                                                                   let servicesTotal = 0;
-                                                                   let servicesHtml = '';
-
-                                                                   // Calculate services total
-                                                                   document.querySelectorAll('input[name="services"]:checked').forEach(checkbox => {
-                                                                       const servicePrice = parseFloat(checkbox.getAttribute('data-price'));
-                                                                       servicesTotal += servicePrice;
-
-                                                                       const serviceName = checkbox.parentElement.querySelector('.service-info strong').textContent;
-                                                                       servicesHtml += '<div class="price-row">' +
-                                                                               '<span>' + serviceName + '</span>' +
-                                                                               '<span>' + formatPrice(servicePrice) + '</span>' +
-                                                                               '</div>';
-                                                                   });
-
-                                                                   const total = roomPrice + tax + servicesTotal;
-
-                                                                   // Update display
-                                                                   document.getElementById('roomPriceDisplay').textContent = formatPrice(roomPrice);
-                                                                   document.getElementById('taxDisplay').textContent = formatPrice(tax);
-                                                                   document.getElementById('servicesDisplay').innerHTML = servicesHtml;
-                                                                   document.getElementById('totalPriceDisplay').textContent = formatPrice(total);
-                                                               }
-
-                                                               function formatPrice(price) {
-                                                                   return new Intl.NumberFormat('vi-VN').format(price) + '₫';
-                                                               }
-
-                                                               function validateBookingForm() {
-                                                                   console.log('Starting form validation...');
-
-                                                                   // Check terms and conditions
-                                                                   const termsCheck = document.getElementById('termsCheck');
-                                                                   if (!termsCheck) {
-                                                                       console.error('Terms checkbox not found');
-                                                                       showAlert('Error: Terms checkbox not found', 'error');
-                                                                       return false;
-                                                                   }
-
-                                                                   if (!termsCheck.checked) {
-                                                                       showAlert('Please accept the terms and conditions', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   // Check if room type is available (no need to select specific room)
-                                                                   const bookingBtn = document.querySelector('.book-now-btn');
-                                                                   if (bookingBtn && bookingBtn.disabled) {
-                                                                       showAlert('No rooms available for selected dates', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   // Validate dates
-                                                                   const checkinDateInput = document.querySelector('input[name="checkinDate"]');
-                                                                   const checkoutDateInput = document.querySelector('input[name="checkoutDate"]');
-
-                                                                   if (!checkinDateInput || !checkoutDateInput) {
-                                                                       console.error('Date inputs not found');
-                                                                       showAlert('Error: Date inputs not found', 'error');
-                                                                       return false;
-                                                                   }
-
-                                                                   const checkinDate = checkinDateInput.value;
-                                                                   const checkoutDate = checkoutDateInput.value;
-
-                                                                   if (!checkinDate || !checkoutDate) {
-                                                                       showAlert('Please select both check-in and check-out dates', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   // Validate guest information
-                                                                   const fullNameInput = document.querySelector('input[name="fullName"]');
-                                                                   const emailInput = document.querySelector('input[name="email"]');
-                                                                   const phoneInput = document.querySelector('input[name="phone"]');
-
-                                                                   if (!fullNameInput || !emailInput || !phoneInput) {
-                                                                       console.error('Contact info inputs not found');
-                                                                       showAlert('Error: Contact information inputs not found', 'error');
-                                                                       return false;
-                                                                   }
-
-                                                                   const fullName = fullNameInput.value.trim();
-                                                                   const email = emailInput.value.trim();
-                                                                   const phone = phoneInput.value.trim();
-
-                                                                   if (!fullName || !email || !phone) {
-                                                                       showAlert('Please fill in all required contact information', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   // Validate email format
-                                                                   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                                                                   if (!emailRegex.test(email)) {
-                                                                       showAlert('Please enter a valid email address', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   // Validate phone format (Vietnamese phone number)
-                                                                   const phoneRegex = /^(0|84|\+84)?[3456789]\d{8}$/;
-                                                                   if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
-                                                                       showAlert('Please enter a valid phone number', 'warning');
-                                                                       return false;
-                                                                   }
-
-                                                                   console.log('Form validation passed!');
-                                                                   return true;
-                                                               }
-
-                                                               function checkLoginAndProceed() {
-                                                                   showLoading(true);
-
-                                                                   const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
-                                                                   const url = contextPath + '/BookingServlet?action=checkLogin';
-
-                                                                   fetch(url)
-                                                                           .then(response => {
-                                                                               if (!response.ok) {
-                                                                                   throw new Error('Server responded with status: ' + response.status);
-                                                                               }
-                                                                               return response.json();
-                                                                           })
-                                                                           .then(data => {
-                                                                               if (data.isLoggedIn) {
-                                                                                   // User is logged in - update form with user data if needed
-                                                                                   updateFormWithUserData(data.user);
-                                                                                   submitBookingForm();
-                                                                               } else {
-                                                                                   // User not logged in - proceed with guest booking
-                                                                                   submitBookingForm();
-                                                                               }
-                                                                           })
-                                                                           .catch(error => {
-                                                                               showLoading(false);
-                                                                               console.error('Error:', error);
-                                                                               showAlert('An error occurred. Please try again.', 'error');
-                                                                           });
-                                                               }
-
-                                                               function updateFormWithUserData(user) {
-                                                                   if (user) {
-                                                                       // Update form fields with logged-in user data
-                                                                       if (user.fullName)
-                                                                           document.querySelector('input[name="fullName"]').value = user.fullName;
-                                                                       if (user.email)
-                                                                           document.querySelector('input[name="email"]').value = user.email;
-                                                                       if (user.phone)
-                                                                           document.querySelector('input[name="phone"]').value = user.phone;
-                                                                   }
-                                                               }
-
-                                                               function submitBookingForm() {
-                                                                   console.log('submitBookingForm called');
-
-                                                                   const form = document.getElementById('bookingForm');
-                                                                   if (!form) {
-                                                                       console.error('Form not found!');
-                                                                       showAlert('Error: Booking form not found', 'error');
-                                                                       return;
-                                                                   }
-
-                                                                   // Get form data manually
-                                                                   const formData = {
-                                                                       roomTypeId: form.roomTypeId.value,
-                                                                       basePrice: form.basePrice.value,
-                                                                       checkinDate: form.checkinDate.value,
-                                                                       checkoutDate: form.checkoutDate.value,
-                                                                       adults: form.adults.value,
-                                                                       children: form.children.value,
-                                                                       fullName: form.fullName.value,
-                                                                       email: form.email.value,
-                                                                       phone: form.phone.value,
-                                                                       nationality: form.nationality.value,
-                                                                       specialRequests: form.specialRequests.value,
-                                                                       paymentMethod: form.paymentMethod.value
-                                                                   };
-
-                                                                   // Get selected services
-                                                                   const selectedServices = [];
-                                                                   document.querySelectorAll('input[name="services"]:checked').forEach(checkbox => {
-                                                                       selectedServices.push(checkbox.value);
-                                                                   });
-
-                                                                   // Log form data for debugging
-                                                                   console.log('=== Form Data ===');
-                                                                   console.log(formData);
-                                                                   console.log('Services:', selectedServices);
-
-                                                                   // Check required fields
-                                                                   const requiredFields = ['roomTypeId', 'basePrice', 'checkinDate', 'checkoutDate',
-                                                                       'fullName', 'email', 'phone'];
-
-                                                                   for (let field of requiredFields) {
-                                                                       if (!formData[field]) {
-                                                                           console.error('Missing required field: ' + field);
-                                                                           showAlert('Missing required field: ' + field, 'error');
-                                                                           return;
-                                                                       }
-                                                                   }
-
-                                                                   // Calculate and add nights
-                                                                   const checkinDate = new Date(formData.checkinDate);
-                                                                   const checkoutDate = new Date(formData.checkoutDate);
-                                                                   const nights = Math.ceil((checkoutDate - checkinDate) / (1000 * 60 * 60 * 24));
-                                                                   formData.nights = nights;
-
-                                                                   // Build URL encoded string
-                                                                   let params = new URLSearchParams();
-                                                                   for (let key in formData) {
-                                                                       params.append(key, formData[key]);
-                                                                   }
-
-                                                                   // Add services
-                                                                   selectedServices.forEach(serviceId => {
-                                                                       params.append('services', serviceId);
-                                                                   });
-
-                                                                   console.log('Request params:', params.toString());
-
-                                                                   // Get context path
-                                                                   const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
-                                                                   const url = contextPath + '/BookingServlet';
-                                                                   console.log('Context path:', contextPath);
-                                                                   console.log('Posting to URL:', url);
-
-                                                                   fetch(url, {
-                                                                       method: 'POST',
-                                                                       headers: {
-                                                                           'Content-Type': 'application/x-www-form-urlencoded'
-                                                                       },
-                                                                       body: params.toString()
-                                                                   })
-                                                                           .then(response => {
-                                                                               console.log('Response status:', response.status);
-                                                                               console.log('Response headers:', response.headers);
-
-                                                                               // Read response text first
-                                                                               return response.text().then(text => {
-                                                                                   console.log('Response text:', text);
-
-                                                                                   // Check if response is OK
-                                                                                   if (!response.ok) {
-                                                                                       // Try to parse as JSON
-                                                                                       try {
-                                                                                           const errorData = JSON.parse(text);
-                                                                                           throw new Error(errorData.error || 'Server responded with status: ' + response.status);
-                                                                                       } catch (e) {
-                                                                                           throw new Error('Server responded with status: ' + response.status);
-                                                                                       }
-                                                                                   }
-
-                                                                                   // Parse as JSON
-                                                                                   return JSON.parse(text);
-                                                                               });
-                                                                           })
-                                                                           .then(data => {
-                                                                               showLoading(false);
-                                                                               console.log('Response data:', data);
-
-                                                                               if (data.requireOTP) {
-                                                                                   // Guest booking - show OTP modal
-                                                                                   showOTPModal(data.email);
-                                                                               } else if (data.success) {
-                                                                                   // Booking successful
-                                                                                   const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-                                                                                   handleBookingSuccess(data, paymentMethod);
-                                                                               } else {
-                                                                                   showAlert(data.error || 'Booking failed. Please try again.', 'error');
-                                                                               }
-                                                                           })
-                                                                           .catch(error => {
-                                                                               showLoading(false);
-                                                                               console.error('Error:', error);
-                                                                               showAlert(error.message || 'An error occurred while processing your booking. Please try again.', 'error');
-                                                                           });
-                                                               }
-
-                                                               function handleBookingSuccess(data, paymentMethod) {
-                                                                   if (paymentMethod === 'CASH') {
-                                                                       // For cash payment, redirect to confirmation page
-                                                                       window.location.href = 'BookingConfirmation?reservationId=' + data.reservationId;
-                                                                   } else {
-                                                                       // For online payment, redirect to payment gateway
-                                                                       window.location.href = 'PaymentGateway?reservationId=' + data.reservationId +
-                                                                               '&paymentId=' + data.paymentId +
-                                                                               '&method=' + paymentMethod;
-                                                                   }
-                                                               }
-
-                                                               // Add these functions to your roomDetail.jsp JavaScript section
-
-                                                          function showOTPModal(maskedEmail) {
-    // Create modal HTML with improved styling
-    const modalHTML = `
-        <div id="otpModal" class="modal" style="display: block; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-            <div class="modal-content" style="background-color: #fefefe; margin: 5% auto; padding: 0; border: 1px solid #888; width: 90%; max-width: 450px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;">
-                <div style="background: #ff6b6b; color: white; padding: 20px; border-radius: 10px 10px 0 0; position: sticky; top: 0; z-index: 1;">
-                    <h3 style="margin: 0; text-align: center;">Email Verification Required</h3>
-                </div>
-                <div style="padding: 30px;">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <i class="fa fa-envelope" style="font-size: 48px; color: #ff6b6b;"></i>
-                    </div>
-                    <p style="text-align: center; color: #333; margin-bottom: 10px;">
-                        We've sent a verification code to
-                    </p>
-                    <p style="text-align: center; font-weight: bold; color: #ff6b6b; font-size: 18px; margin-bottom: 20px;">
-                        ${maskedEmail}
-                    </p>
-                    <p style="text-align: center; color: #666; margin-bottom: 20px;">
-                        Please enter the 6-digit code below:
-                    </p>
-                    <input type="text" id="otpInput" maxlength="6" pattern="[0-9]{6}" 
-                           style="width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 10px; margin: 20px 0; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box;"
-                           placeholder="000000"
-                           onkeyup="handleOTPInput(event)">
-                    <div id="otpError" style="color: #dc3545; text-align: center; margin-bottom: 20px; display: none;"></div>
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <button type="button" onclick="verifyOTP()" class="btn" style="margin-right: 10px; padding: 10px 30px; background: #ff6b6b; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
-                            Verify Code
-                        </button>
-                        <button type="button" onclick="resendOTP()" class="btn btn-secondary" style="padding: 10px 30px; background: #6c757d; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
-                            Resend Code
-                        </button>
-                    </div>
-                    <div id="resendMessage" style="text-align: center; color: #28a745; display: none; margin-bottom: 10px;">
-                        <i class="fa fa-check-circle"></i> New code sent successfully!
-                    </div>
-                    <p style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
-                        <i class="fa fa-info-circle"></i> Didn't receive the code? Check your spam folder or click Resend Code.
-                    </p>
-                    
-                    <!-- Cancel button moved here for better visibility -->
-                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                        <button type="button" onclick="closeOTPModal()" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #6c757d; cursor: pointer; font-size: 14px; padding: 10px 30px; border-radius: 5px;">
-                            <i class="fa fa-times"></i> Cancel Booking
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-                                                                   document.body.insertAdjacentHTML('beforeend', modalHTML);
-                                                                   document.getElementById('otpInput').focus();
-
-                                                                   // Auto-submit when 6 digits are entered
-                                                                   document.getElementById('otpInput').addEventListener('input', function () {
-                                                                       if (this.value.length === 6) {
-                                                                           console.log('6 digits entered, auto-verifying...');
-                                                                           verifyOTP();
-                                                                       }
-                                                                   });
-
-                                                                   // Debug - check if functions are accessible
-                                                                   console.log('OTP Modal created. Functions available:');
-                                                                   console.log('verifyOTP:', typeof verifyOTP);
-                                                                   console.log('resendOTP:', typeof resendOTP);
-                                                                   console.log('closeOTPModal:', typeof closeOTPModal);
-                                                               }
-
-                                                               function handleOTPInput(event) {
-                                                                   const input = event.target;
-                                                                   // Only allow numbers
-                                                                   input.value = input.value.replace(/[^0-9]/g, '');
-
-                                                                   // Hide error message when typing
-                                                                   document.getElementById('otpError').style.display = 'none';
-                                                               }
-
-                                                               function closeOTPModal() {
-                                                                   const modal = document.getElementById('otpModal');
-                                                                   if (modal) {
-                                                                       modal.remove();
-                                                                   }
-                                                               }
-
-                                                               function verifyOTP() {
-                                                                   const otpInput = document.getElementById('otpInput');
-                                                                   const otp = otpInput.value;
-                                                                   const errorDiv = document.getElementById('otpError');
-
-                                                                   // Validate OTP
-                                                                   if (otp.length !== 6) {
-                                                                       errorDiv.textContent = 'Please enter a 6-digit code';
-                                                                       errorDiv.style.display = 'block';
-                                                                       return;
-                                                                   }
-
-                                                                   // Get the verify button
-                                                                   const verifyBtn = document.querySelector('button[onclick="verifyOTP()"]');
-                                                                   const originalText = verifyBtn.innerHTML;
-                                                                   verifyBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Verifying...';
-                                                                   verifyBtn.disabled = true;
-
-                                                                   const contextPath = getContextPath();
-                                                                   const url = contextPath + '/ValidateOTP';
-
-                                                                   fetch(url, {
-                                                                       method: 'POST',
-                                                                       headers: {
-                                                                           'Content-Type': 'application/x-www-form-urlencoded',
-                                                                       },
-                                                                       body: 'otp=' + otp
-                                                                   })
-                                                                           .then(response => {
-                                                                               if (!response.ok) {
-                                                                                   throw new Error('Server responded with status: ' + response.status);
-                                                                               }
-                                                                               return response.json();
-                                                                           })
-                                                                           .then(data => {
-                                                                               if (data.success) {
-                                                                                   // OTP validated successfully
-                                                                                   errorDiv.style.display = 'none';
-
-                                                                                   // Show success message
-                                                                                   verifyBtn.innerHTML = '<i class="fa fa-check"></i> Verified!';
-                                                                                   verifyBtn.style.background = '#28a745';
-
-                                                                                   // Close modal after a short delay
-                                                                                   setTimeout(() => {
-                                                                                       const modal = document.getElementById('otpModal');
-                                                                                       if (modal) {
-                                                                                           modal.remove();
-                                                                                       }
-                                                                                       // Resubmit the booking form
-                                                                                       submitBookingForm();
-                                                                                   }, 300);
-                                                                               } else {
-                                                                                   // Invalid OTP
-                                                                                   errorDiv.textContent = data.message || 'Invalid code. Please try again.';
-                                                                                   errorDiv.style.display = 'block';
-                                                                                   otpInput.value = '';
-                                                                                   otpInput.focus();
-
-                                                                                   // Restore button
-                                                                                   verifyBtn.innerHTML = originalText;
-                                                                                   verifyBtn.disabled = false;
-                                                                               }
-                                                                           })
-                                                                           .catch(error => {
-                                                                               console.error('Error:', error);
-                                                                               errorDiv.textContent = 'An error occurred. Please try again.';
-                                                                               errorDiv.style.display = 'block';
-
-                                                                               // Restore button
-                                                                               verifyBtn.innerHTML = originalText;
-                                                                               verifyBtn.disabled = false;
-                                                                           });
-                                                               }
-
-                                                               function resendOTP() {
-                                                                   const resendBtn = document.querySelector('button[onclick="resendOTP()"]');
-                                                                   const originalText = resendBtn.innerHTML;
-                                                                   const resendMessage = document.getElementById('resendMessage');
-
-                                                                   // Show loading on resend button
-                                                                   resendBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Sending...';
-                                                                   resendBtn.disabled = true;
-
-                                                                   const contextPath = getContextPath();
-                                                                   const url = contextPath + '/ResendOTP';
-
-                                                                   fetch(url, {
-                                                                       method: 'POST'
-                                                                   })
-                                                                           .then(response => {
-                                                                               if (!response.ok) {
-                                                                                   throw new Error('Server responded with status: ' + response.status);
-                                                                               }
-                                                                               return response.json();
-                                                                           })
-                                                                           .then(data => {
-                                                                               if (data.success) {
-                                                                                   // Show success message
-                                                                                   resendMessage.style.display = 'block';
-                                                                                   document.getElementById('otpInput').value = '';
-                                                                                   document.getElementById('otpInput').focus();
-
-                                                                                   // Hide error if any
-                                                                                   document.getElementById('otpError').style.display = 'none';
-
-                                                                                   // Hide success message after 3 seconds
-                                                                                   setTimeout(() => {
-                                                                                       resendMessage.style.display = 'none';
-                                                                                   }, 3000);
-
-                                                                                   // Restore button after delay
-                                                                                   setTimeout(() => {
-                                                                                       resendBtn.innerHTML = originalText;
-                                                                                       resendBtn.disabled = false;
-                                                                                   }, 30000); // 30 second cooldown
-
-                                                                               } else {
-                                                                                   // Show error
-                                                                                   document.getElementById('otpError').textContent = data.message || 'Failed to resend code. Please try again.';
-                                                                                   document.getElementById('otpError').style.display = 'block';
-
-                                                                                   // Restore button
-                                                                                   resendBtn.innerHTML = originalText;
-                                                                                   resendBtn.disabled = false;
-                                                                               }
-                                                                           })
-                                                                           .catch(error => {
-                                                                               console.error('Error:', error);
-                                                                               document.getElementById('otpError').textContent = 'An error occurred. Please try again.';
-                                                                               document.getElementById('otpError').style.display = 'block';
-
-                                                                               // Restore button
-                                                                               resendBtn.innerHTML = originalText;
-                                                                               resendBtn.disabled = false;
-                                                                           });
-                                                               }
-
-// Helper function to get context path
-                                                               const getContextPath = () => {
-                                                                   const path = '${pageContext.request.contextPath}';
-                                                                   return path || '';
-                                                               };
-
-                                                               function showLoading(show) {
-                                                                   const loadingDiv = document.getElementById('loading-icon-bx');
-                                                                   if (loadingDiv) {
-                                                                       loadingDiv.style.display = show ? 'block' : 'none';
-                                                                   }
-                                                               }
-
-                                                               function showAlert(message, type = 'info') {
-                                                                   // Create alert div
-                                                                   const alertDiv = document.createElement('div');
-                                                                   alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-                                                                   alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-
-                                                                   // Set icon based on type
-                                                                   let icon = 'fa-info-circle';
-                                                                   if (type === 'success')
-                                                                       icon = 'fa-check-circle';
-                                                                   else if (type === 'warning')
-                                                                       icon = 'fa-exclamation-triangle';
-                                                                   else if (type === 'error' || type === 'danger')
-                                                                       icon = 'fa-times-circle';
-
-                                                                   alertDiv.innerHTML = `
-                    <i class="fa \${icon}"></i> \${message}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                `;
-
-                                                                   document.body.appendChild(alertDiv);
-
-                                                                   // Auto-dismiss after 5 seconds
-                                                                   setTimeout(() => {
-                                                                       alertDiv.remove();
-                                                                   }, 5000);
-                                                               }
-
-                                                               // Initialize on page load
-                                                               document.addEventListener('DOMContentLoaded', function () {
-                                                                   console.log('Page loaded - initializing booking form');
-
-                                                                   // Check if form exists
-                                                                   const bookingForm = document.getElementById('bookingForm');
-                                                                   if (!bookingForm) {
-                                                                       console.error('Booking form not found!');
-                                                                       return;
-                                                                   }
-
-                                                                   console.log('Booking form found');
-
-                                                                   // Add form submit listener
-                                                                   bookingForm.addEventListener('submit', function (e) {
-                                                                       e.preventDefault();
-                                                                       console.log('Form submitted - starting validation');
-
-                                                                       // Validate form
-                                                                       if (!validateBookingForm()) {
-                                                                           console.log('Validation failed');
-                                                                           return;
-                                                                       }
-
-                                                                       console.log('Validation passed - checking login status');
-                                                                       // Check if user is logged in
-                                                                       checkLoginAndProceed();
-                                                                   });
-
-                                                                   // Check hidden inputs
-                                                                   const roomTypeIdInput = document.querySelector('input[name="roomTypeId"]');
-                                                                   const basePriceInput = document.querySelector('input[name="basePrice"]');
-
-                                                                   console.log('Hidden inputs check:');
-                                                                   console.log('roomTypeId input:', roomTypeIdInput);
-                                                                   console.log('roomTypeId value:', roomTypeIdInput ? roomTypeIdInput.value : 'NOT FOUND');
-                                                                   console.log('basePrice input:', basePriceInput);
-                                                                   console.log('basePrice value:', basePriceInput ? basePriceInput.value : 'NOT FOUND');
-
-                                                                   updateTotalPrice();
-                                                                   updateGuestsDisplay();
-
-                                                                   // Set today as minimum date for check-in
-                                                                   const today = new Date().toISOString().split('T')[0];
-                                                                   const checkinInput = document.querySelector('input[name="checkinDate"]');
-                                                                   if (checkinInput) {
-                                                                       checkinInput.setAttribute('min', today);
-                                                                   }
-
-                                                                   // Check if user is logged in and pre-fill form
-                                                                   checkUserLoginStatus();
-
-                                                                   // Add listeners for real-time validation
-                                                                   addFormValidationListeners();
-                                                               });
-
-                                                               function checkUserLoginStatus() {
-                                                                   const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
-                                                                   const url = contextPath + '/BookingServlet?action=checkLogin';
-
-                                                                   fetch(url)
-                                                                           .then(response => {
-                                                                               if (!response.ok) {
-                                                                                   throw new Error('Server responded with status: ' + response.status);
-                                                                               }
-                                                                               return response.json();
-                                                                           })
-                                                                           .then(data => {
-                                                                               if (data.isLoggedIn && data.user) {
-                                                                                   // Pre-fill form with user data
-                                                                                   updateFormWithUserData(data.user);
-
-                                                                                   // Show a welcome message
-                                                                                   const welcomeDiv = document.createElement('div');
-                                                                                   welcomeDiv.className = 'alert alert-info mb-3';
-                                                                                   welcomeDiv.innerHTML = '<i class="fa fa-user"></i> Booking as <strong>' + data.user.fullName + '</strong>';
-
-                                                                                   const contactSection = document.querySelector('h4').parentElement;
-                                                                                   if (contactSection) {
-                                                                                       contactSection.insertBefore(welcomeDiv, contactSection.firstChild);
-                                                                                   }
-                                                                               }
-                                                                           })
-                                                                           .catch(error => {
-                                                                               console.error('Error checking login status:', error);
-                                                                           });
-                                                               }
-
-                                                               function addFormValidationListeners() {
-                                                                   // Email validation on blur
-                                                                   const emailInput = document.querySelector('input[name="email"]');
-                                                                   emailInput.addEventListener('blur', function () {
-                                                                       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                                                                       if (this.value && !emailRegex.test(this.value)) {
-                                                                           this.classList.add('is-invalid');
-                                                                           showFieldError(this, 'Please enter a valid email address');
-                                                                       } else {
-                                                                           this.classList.remove('is-invalid');
-                                                                           hideFieldError(this);
-                                                                       }
-                                                                   });
-
-                                                                   // Phone validation on blur
-                                                                   const phoneInput = document.querySelector('input[name="phone"]');
-                                                                   phoneInput.addEventListener('blur', function () {
-                                                                       const phoneRegex = /^(0|84|\+84)?[3456789]\d{8}$/;
-                                                                       const cleanPhone = this.value.replace(/\s/g, '');
-                                                                       if (this.value && !phoneRegex.test(cleanPhone)) {
-                                                                           this.classList.add('is-invalid');
-                                                                           showFieldError(this, 'Please enter a valid phone number');
-                                                                       } else {
-                                                                           this.classList.remove('is-invalid');
-                                                                           hideFieldError(this);
-                                                                       }
-                                                                   });
-
-                                                                   // Clear validation on input
-                                                                   document.querySelectorAll('input, select, textarea').forEach(field => {
-                                                                       field.addEventListener('input', function () {
-                                                                           this.classList.remove('is-invalid');
-                                                                           hideFieldError(this);
-                                                                       });
-                                                                   });
-                                                               }
-
-                                                               function showFieldError(field, message) {
-                                                                   let errorDiv = field.nextElementSibling;
-                                                                   if (!errorDiv || !errorDiv.classList.contains('invalid-feedback')) {
-                                                                       errorDiv = document.createElement('div');
-                                                                       errorDiv.className = 'invalid-feedback';
-                                                                       field.parentNode.insertBefore(errorDiv, field.nextSibling);
-                                                                   }
-                                                                   errorDiv.textContent = message;
-                                                                   errorDiv.style.display = 'block';
-                                                               }
-
-                                                               function hideFieldError(field) {
-                                                                   const errorDiv = field.nextElementSibling;
-                                                                   if (errorDiv && errorDiv.classList.contains('invalid-feedback')) {
-                                                                       errorDiv.style.display = 'none';
-                                                                   }
-                                                               }
-        </script>
+   <script>
+         // Complete Optimized JavaScript for Room Booking Page
+
+const basePrice = <%= roomTypes.getBasePrice() %>;
+let nights = 1;
+let adults = 2;
+let children = 0;
+
+// ============================================================================
+// IMAGE GALLERY FUNCTIONS
+// ============================================================================
+
+function changeMainImage(img) {
+    document.getElementById('mainImage').src = img.src;
+    document.querySelectorAll('.room-thumbnails img').forEach(function(thumb) {
+        thumb.classList.remove('active');
+    });
+    img.classList.add('active');
+}
+
+// ============================================================================
+// DATE FUNCTIONS
+// ============================================================================
+
+function updateCheckoutMin() {
+    const checkinDate = document.querySelector('input[name="checkinDate"]').value;
+    const checkoutInput = document.querySelector('input[name="checkoutDate"]');
+
+    if (checkinDate) {
+        const checkin = new Date(checkinDate);
+        checkin.setDate(checkin.getDate() + 1);
+        const minCheckout = checkin.toISOString().split('T')[0];
+        checkoutInput.setAttribute('min', minCheckout);
+
+        if (checkoutInput.value && checkoutInput.value < minCheckout) {
+            checkoutInput.value = minCheckout;
+        }
+        
+        if (!checkoutInput.value) {
+            checkoutInput.value = minCheckout;
+        }
+    }
+    calculateNights();
+}
+
+function calculateNights() {
+    const checkinDate = document.querySelector('input[name="checkinDate"]').value;
+    const checkoutDate = document.querySelector('input[name="checkoutDate"]').value;
+
+    if (checkinDate && checkoutDate) {
+        const checkin = new Date(checkinDate);
+        const checkout = new Date(checkoutDate);
+        
+        if (checkout <= checkin) {
+            showDateValidationError();
+            return;
+        }
+        
+        nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+        
+        document.getElementById('nightsDisplay').textContent = nights;
+        document.getElementById('nightsText').textContent = nights;
+        
+        updateTotalPrice();
+        checkRoomAvailability(checkinDate, checkoutDate);
+    } else {
+        showAvailabilityPlaceholder();
+        enableBookingButton();
+    }
+}
+
+function calculateNightsBetweenDates(checkinDate, checkoutDate) {
+    const checkin = new Date(checkinDate);
+    const checkout = new Date(checkoutDate);
+    const timeDiff = checkout.getTime() - checkin.getTime();
+    return Math.ceil(timeDiff / (1000 * 3600 * 24));
+}
+
+function formatDateForDisplay(dateString) {
+    const date = new Date(dateString);
+    const options = { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    };
+    return date.toLocaleDateString('en-US', options);
+}
+
+// ============================================================================
+// ROOM AVAILABILITY FUNCTIONS
+// ============================================================================
+
+function showAvailabilityPlaceholder() {
+    const statusDiv = document.getElementById('availabilityStatus');
+    if (!statusDiv) return;
+
+    statusDiv.className = 'availability-status';
+    statusDiv.innerHTML = 
+        '<div class="availability-placeholder">' +
+            '<div class="text-center p-4">' +
+                '<i class="fa fa-calendar-check-o" style="font-size: 48px; color: #ddd;"></i>' +
+                '<h5 class="mt-3 mb-2">Check Room Availability</h5>' +
+                '<p class="text-muted mb-0">Please select your check-in and check-out dates to see available rooms</p>' +
+            '</div>' +
+        '</div>';
+}
+
+function showAvailabilityLoading() {
+    const statusDiv = document.getElementById('availabilityStatus');
+    if (!statusDiv) return;
+
+    statusDiv.innerHTML = 
+        '<div class="availability-loading">' +
+            '<i class="fa fa-spinner fa-spin" style="font-size: 48px; color: #ff6b6b;"></i>' +
+            '<p class="mt-3 mb-0">Checking room availability...</p>' +
+            '<small class="text-muted">Please wait while we search for available rooms</small>' +
+        '</div>';
+}
+
+function showAvailabilityError() {
+    const statusDiv = document.getElementById('availabilityStatus');
+    if (!statusDiv) return;
+
+    statusDiv.innerHTML = 
+        '<div class="availability-error text-center p-4">' +
+            '<i class="fa fa-exclamation-triangle" style="font-size: 48px; color: #dc3545;"></i>' +
+            '<h5 class="mt-3 mb-2 text-danger">Unable to Check Availability</h5>' +
+            '<p class="text-muted mb-3">There was an error checking room availability. Please try again.</p>' +
+            '<button type="button" class="btn btn-outline-primary btn-sm" onclick="retryAvailabilityCheck()">' +
+                '<i class="fa fa-refresh"></i> Try Again' +
+            '</button>' +
+        '</div>';
+}
+
+function showDateValidationError() {
+    const statusDiv = document.getElementById('availabilityStatus');
+    if (!statusDiv) return;
+
+    statusDiv.className = 'availability-status';
+    statusDiv.innerHTML = 
+        '<div class="availability-error text-center p-4">' +
+            '<i class="fa fa-exclamation-triangle" style="font-size: 48px; color: #ffc107;"></i>' +
+            '<h5 class="mt-3 mb-2 text-warning">Invalid Date Selection</h5>' +
+            '<p class="text-muted mb-0">Check-out date must be after check-in date. Please select valid dates.</p>' +
+        '</div>';
+    disableBookingButton();
+}
+
+function retryAvailabilityCheck() {
+    const checkinDate = document.querySelector('input[name="checkinDate"]').value;
+    const checkoutDate = document.querySelector('input[name="checkoutDate"]').value;
+    
+    if (checkinDate && checkoutDate) {
+        checkRoomAvailability(checkinDate, checkoutDate);
+    } else {
+        showAvailabilityPlaceholder();
+    }
+}
+
+function checkRoomAvailability(checkinDate, checkoutDate) {
+    const roomTypeId = document.querySelector('input[name="roomTypeId"]').value;
+    const contextPath = getContextPath();
+    const statusDiv = document.getElementById('availabilityStatus');
+    
+    if (!statusDiv) {
+        console.error('Availability status div not found');
+        return;
+    }
+
+    showAvailabilityLoading();
+    statusDiv.classList.add('checking');
+
+    fetch(contextPath + '/CheckRoomAvailability?roomTypeId=' + roomTypeId +
+            '&checkIn=' + checkinDate + '&checkOut=' + checkoutDate)
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        statusDiv.classList.remove('checking');
+        updateAvailabilityStatus(data);
+    })
+    .catch(function(error) {
+        console.error('Error checking availability:', error);
+        statusDiv.classList.remove('checking');
+        showAvailabilityError();
+    });
+}
+
+function updateAvailabilityStatus(data) {
+    const statusDiv = document.getElementById('availabilityStatus');
+    if (!statusDiv) return;
+
+    const checkinDate = document.querySelector('input[name="checkinDate"]').value;
+    const checkoutDate = document.querySelector('input[name="checkoutDate"]').value;
+    const roomTypeName = '<%= roomTypes.getName() %>';
+
+    if (data.available) {
+        statusDiv.className = 'availability-status available';
+        
+        const availableCount = data.availableCount || 'Multiple';
+        const nightsCount = calculateNightsBetweenDates(checkinDate, checkoutDate);
+        
+        statusDiv.innerHTML = 
+            '<div class="text-center pt-4">' +
+                '<div class="availability-badge available">' +
+                    '<i class="fa fa-check-circle"></i>' +
+                    '<span>Rooms Available!</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="availability-details">' +
+                '<h5><i class="fa fa-info-circle"></i> Booking Details</h5>' +
+                '<div class="availability-info">' +
+                    '<span>Room Type:</span>' +
+                    '<span>' + roomTypeName + '</span>' +
+                '</div>' +
+                '<div class="availability-info">' +
+                    '<span>Check-in Date:</span>' +
+                    '<span>' + formatDateForDisplay(checkinDate) + '</span>' +
+                '</div>' +
+                '<div class="availability-info">' +
+                    '<span>Check-out Date:</span>' +
+                    '<span>' + formatDateForDisplay(checkoutDate) + '</span>' +
+                '</div>' +
+                '<div class="availability-info">' +
+                    '<span>Duration:</span>' +
+                    '<span>' + nightsCount + ' night' + (nightsCount > 1 ? 's' : '') + '</span>' +
+                '</div>' +
+                '<div class="availability-info">' +
+                    '<span>Available Rooms:</span>' +
+                    '<span class="text-success"><strong>' + availableCount + ' rooms</strong></span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="availability-message success">' +
+                '<i class="fa fa-thumbs-up"></i>' +
+                'Great news! We have rooms available for your selected dates. You can proceed with your booking.' +
+            '</div>';
+
+        enableBookingButton();
+    } else {
+        statusDiv.className = 'availability-status unavailable';
+        
+        statusDiv.innerHTML = 
+            '<div class="text-center pt-4">' +
+                '<div class="availability-badge unavailable">' +
+                    '<i class="fa fa-times-circle"></i>' +
+                    '<span>No Rooms Available</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="availability-details">' +
+                '<h5><i class="fa fa-exclamation-triangle"></i> Booking Information</h5>' +
+                '<div class="availability-info">' +
+                    '<span>Room Type:</span>' +
+                    '<span>' + roomTypeName + '</span>' +
+                '</div>' +
+                '<div class="availability-info">' +
+                    '<span>Requested Dates:</span>' +
+                    '<span>' + formatDateForDisplay(checkinDate) + ' - ' + formatDateForDisplay(checkoutDate) + '</span>' +
+                '</div>' +
+                '<div class="availability-info">' +
+                    '<span>Status:</span>' +
+                    '<span class="text-danger"><strong>Fully Booked</strong></span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="availability-message error">' +
+                '<i class="fa fa-calendar-times-o"></i>' +
+                'Sorry, we don\'t have any ' + roomTypeName + ' rooms available for your selected dates. ' +
+                'Please try different dates or consider other room types.' +
+            '</div>' +
+            '<div class="availability-actions">' +
+                '<a href="' + getContextPath() + '/RoomListServlet" class="btn btn-primary">' +
+                    '<i class="fa fa-search"></i> View Other Room Types' +
+                '</a>' +
+            '</div>';
+
+        disableBookingButton();
+    }
+    
+    setTimeout(function() {
+        statusDiv.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'nearest' 
+        });
+    }, 100);
+}
+
+function enableBookingButton() {
+    const bookingBtn = document.querySelector('.book-now-btn');
+    if (bookingBtn) {
+        bookingBtn.disabled = false;
+        bookingBtn.textContent = 'Confirm Booking';
+        bookingBtn.style.backgroundColor = '#ff6b6b';
+        bookingBtn.style.cursor = 'pointer';
+    }
+}
+
+function disableBookingButton() {
+    const bookingBtn = document.querySelector('.book-now-btn');
+    if (bookingBtn) {
+        bookingBtn.disabled = true;
+        bookingBtn.textContent = 'No Rooms Available';
+        bookingBtn.style.backgroundColor = '#ccc';
+        bookingBtn.style.cursor = 'not-allowed';
+    }
+}
+
+// ============================================================================
+// GUEST FUNCTIONS
+// ============================================================================
+
+function updateGuests(type, change) {
+    if (type === 'adults') {
+        adults = Math.max(1, Math.min(4, adults + change));
+        document.getElementById('adultsCount').textContent = adults;
+        document.getElementById('adultsInput').value = adults;
+    } else {
+        children = Math.max(0, Math.min(3, children + change));
+        document.getElementById('childrenCount').textContent = children;
+        document.getElementById('childrenInput').value = children;
+    }
+    updateGuestsDisplay();
+}
+
+function updateGuestsDisplay() {
+    let guestText = adults + ' adult' + (adults > 1 ? 's' : '');
+    if (children > 0) {
+        guestText += ', ' + children + ' child' + (children > 1 ? 'ren' : '');
+    }
+    document.getElementById('guestsDisplay').textContent = guestText;
+}
+
+// ============================================================================
+// PRICE CALCULATION FUNCTIONS
+// ============================================================================
+
+function updateTotalPrice() {
+    const roomPrice = basePrice * nights;
+    const tax = roomPrice * 0.1;
+    let servicesTotal = 0;
+    let servicesHtml = '';
+
+    document.querySelectorAll('input[name="services"]:checked').forEach(function(checkbox) {
+        const servicePrice = parseFloat(checkbox.getAttribute('data-price'));
+        servicesTotal += servicePrice;
+
+        const serviceName = checkbox.parentElement.querySelector('.service-info strong').textContent.trim();
+        servicesHtml += '<div class="price-row service-row">' +
+                '<span><i class="fa fa-check-circle"></i> ' + serviceName + '</span>' +
+                '<span>' + formatPrice(servicePrice) + '</span>' +
+                '</div>';
+    });
+
+    const total = roomPrice + tax + servicesTotal;
+
+    document.getElementById('roomPriceDisplay').textContent = formatPrice(roomPrice);
+    document.getElementById('taxDisplay').textContent = formatPrice(tax);
+    document.getElementById('servicesDisplay').innerHTML = servicesHtml;
+    document.getElementById('totalPriceDisplay').textContent = formatPrice(total);
+}
+
+function formatPrice(price) {
+    return new Intl.NumberFormat('vi-VN').format(price) + '₫';
+}
+
+// ============================================================================
+// SERVICES FUNCTIONS
+// ============================================================================
+
+function filterServices(category) {
+    document.querySelectorAll('.category-tab').forEach(function(tab) {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    const servicesContainer = document.getElementById('servicesContainer');
+    servicesContainer.classList.add('services-filtered');
+    
+    const serviceItems = document.querySelectorAll('.service-item');
+    let visibleCount = 0;
+    
+    serviceItems.forEach(function(item) {
+        item.classList.add('filtering');
+    });
+    
+    setTimeout(function() {
+        serviceItems.forEach(function(item, index) {
+            setTimeout(function() {
+                item.classList.remove('filtering');
+                
+                if (category === 'all' || item.getAttribute('data-category') === category) {
+                    item.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            }, index * 20);
+        });
+        
+        setTimeout(function() {
+            showEmptyStateIfNeeded(category, visibleCount);
+            servicesContainer.classList.remove('services-filtered');
+        }, serviceItems.length * 20 + 100);
+    }, 100);
+}
+
+function showEmptyStateIfNeeded(category, visibleCount) {
+    const servicesContainer = document.getElementById('servicesContainer');
+    let emptyStateDiv = document.getElementById('servicesEmptyState');
+    
+    if (visibleCount === 0) {
+        if (!emptyStateDiv) {
+            emptyStateDiv = document.createElement('div');
+            emptyStateDiv.id = 'servicesEmptyState';
+            emptyStateDiv.className = 'services-empty';
+            servicesContainer.appendChild(emptyStateDiv);
+        }
+        
+        const categoryDisplay = category === 'all' ? 'All Categories' : category;
+        emptyStateDiv.innerHTML = 
+            '<i class="fa fa-search"></i>' +
+            '<p>No services found in <strong>' + categoryDisplay + '</strong> category.</p>' +
+            '<small class="text-muted">Try selecting a different category.</small>';
+        
+        emptyStateDiv.style.display = 'block';
+    } else {
+        if (emptyStateDiv) {
+            emptyStateDiv.style.display = 'none';
+        }
+    }
+}
+
+function scrollToServicesTop() {
+    const servicesSection = document.querySelector('.services-section');
+    if (servicesSection) {
+        servicesSection.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'nearest' 
+        });
+    }
+}
+
+function toggleServiceSelection(checkbox) {
+    const serviceItem = checkbox.closest('.service-item');
+    
+    if (checkbox.checked) {
+        serviceItem.classList.add('selected');
+        serviceItem.style.transform = 'scale(1.02)';
+        setTimeout(function() {
+            serviceItem.style.transform = 'translateY(-2px)';
+        }, 150);
+    } else {
+        serviceItem.classList.remove('selected');
+        serviceItem.style.transform = 'none';
+    }
+    
+    updateTotalPrice();
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const selectedCount = document.querySelectorAll('input[name="services"]:checked').length;
+    const countElement = document.getElementById('selectedServicesCount');
+    
+    if (selectedCount > 0) {
+        countElement.textContent = selectedCount + ' selected';
+        countElement.style.display = 'inline-block';
+    } else {
+        countElement.style.display = 'none';
+    }
+    
+    document.querySelectorAll('.service-item').forEach(function(item) {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        if (checkbox.checked) {
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
+    });
+}
+
+// ============================================================================
+// FORM VALIDATION FUNCTIONS
+// ============================================================================
+
+function validateBookingForm() {
+    const termsCheck = document.getElementById('termsCheck');
+    if (!termsCheck || !termsCheck.checked) {
+        showAlert('Please accept the terms and conditions', 'warning');
+        return false;
+    }
+
+    const bookingBtn = document.querySelector('.book-now-btn');
+    if (bookingBtn && bookingBtn.disabled) {
+        showAlert('No rooms available for selected dates', 'warning');
+        return false;
+    }
+
+    const checkinDate = document.querySelector('input[name="checkinDate"]').value;
+    const checkoutDate = document.querySelector('input[name="checkoutDate"]').value;
+    const fullName = document.querySelector('input[name="fullName"]').value.trim();
+    const email = document.querySelector('input[name="email"]').value.trim();
+    const phone = document.querySelector('input[name="phone"]').value.trim();
+
+    if (!checkinDate || !checkoutDate) {
+        showAlert('Please select both check-in and check-out dates', 'warning');
+        return false;
+    }
+
+    if (!fullName || !email || !phone) {
+        showAlert('Please fill in all required contact information', 'warning');
+        return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showAlert('Please enter a valid email address', 'warning');
+        return false;
+    }
+
+    const phoneRegex = /^(0|84|\+84)?[3456789]\d{8}$/;
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+        showAlert('Please enter a valid phone number', 'warning');
+        return false;
+    }
+
+    return true;
+}
+
+function addFormValidationListeners() {
+    const emailInput = document.querySelector('input[name="email"]');
+    const phoneInput = document.querySelector('input[name="phone"]');
+
+    if (emailInput) {
+        emailInput.addEventListener('blur', function () {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (this.value && !emailRegex.test(this.value)) {
+                this.classList.add('is-invalid');
+                showFieldError(this, 'Please enter a valid email address');
+            } else {
+                this.classList.remove('is-invalid');
+                hideFieldError(this);
+            }
+        });
+    }
+
+    if (phoneInput) {
+        phoneInput.addEventListener('blur', function () {
+            const phoneRegex = /^(0|84|\+84)?[3456789]\d{8}$/;
+            const cleanPhone = this.value.replace(/\s/g, '');
+            if (this.value && !phoneRegex.test(cleanPhone)) {
+                this.classList.add('is-invalid');
+                showFieldError(this, 'Please enter a valid phone number');
+            } else {
+                this.classList.remove('is-invalid');
+                hideFieldError(this);
+            }
+        });
+    }
+
+    document.querySelectorAll('input, select, textarea').forEach(function(field) {
+        field.addEventListener('input', function () {
+            this.classList.remove('is-invalid');
+            hideFieldError(this);
+        });
+    });
+}
+
+function showFieldError(field, message) {
+    let errorDiv = field.nextElementSibling;
+    if (!errorDiv || !errorDiv.classList.contains('invalid-feedback')) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback';
+        field.parentNode.insertBefore(errorDiv, field.nextSibling);
+    }
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+}
+
+function hideFieldError(field) {
+    const errorDiv = field.nextElementSibling;
+    if (errorDiv && errorDiv.classList.contains('invalid-feedback')) {
+        errorDiv.style.display = 'none';
+    }
+}
+
+// ============================================================================
+// BOOKING SUBMISSION FUNCTIONS
+// ============================================================================
+
+function checkLoginAndProceed() {
+    showLoading(true);
+    const url = getContextPath() + '/BookingServlet?action=checkLogin';
+
+    fetch(url)
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('Server responded with status: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.isLoggedIn) {
+            updateFormWithUserData(data.user);
+        }
+        submitBookingForm();
+    })
+    .catch(function(error) {
+        showLoading(false);
+        console.error('Error:', error);
+        showAlert('An error occurred. Please try again.', 'error');
+    });
+}
+
+function updateFormWithUserData(user) {
+    if (user) {
+        if (user.fullName) document.querySelector('input[name="fullName"]').value = user.fullName;
+        if (user.email) document.querySelector('input[name="email"]').value = user.email;
+        if (user.phone) document.querySelector('input[name="phone"]').value = user.phone;
+    }
+}
+
+function handleBookingButtonState(isLoading) {
+    const bookingBtn = document.querySelector('.book-now-btn');
+    if (!bookingBtn) return;
+
+    if (isLoading) {
+        bookingBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+        bookingBtn.disabled = true;
+        bookingBtn.style.background = '#ccc';
+    } else {
+        bookingBtn.innerHTML = 'Confirm Booking';
+        bookingBtn.disabled = false;
+        bookingBtn.style.background = '#ff6b6b';
+    }
+}
+
+function submitBookingForm() {
+    handleBookingButtonState(true);
+
+    const form = document.getElementById('bookingForm');
+    if (!form) {
+        showAlert('Error: Booking form not found', 'error');
+        handleBookingButtonState(false);
+        return;
+    }
+
+    const formData = {
+        roomTypeId: form.roomTypeId.value,
+        basePrice: form.basePrice.value,
+        checkinDate: form.checkinDate.value,
+        checkoutDate: form.checkoutDate.value,
+        adults: form.adults.value,
+        children: form.children.value,
+        fullName: form.fullName.value,
+        email: form.email.value,
+        phone: form.phone.value,
+        nationality: form.nationality.value,
+        specialRequests: form.specialRequests.value,
+        paymentMethod: form.paymentMethod.value,
+        nights: nights
+    };
+
+    const selectedServices = [];
+    document.querySelectorAll('input[name="services"]:checked').forEach(function(checkbox) {
+        selectedServices.push(checkbox.value);
+    });
+
+    let params = new URLSearchParams();
+    for (let key in formData) {
+        params.append(key, formData[key]);
+    }
+    selectedServices.forEach(function(serviceId) {
+        params.append('services', serviceId);
+    });
+
+    const url = getContextPath() + '/BookingServlet';
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+    })
+    .then(function(response) {
+        return response.text().then(function(text) {
+            if (!response.ok) {
+                try {
+                    const errorData = JSON.parse(text);
+                    throw new Error(errorData.error || 'Server responded with status: ' + response.status);
+                } catch (e) {
+                    throw new Error('Server responded with status: ' + response.status);
+                }
+            }
+            return JSON.parse(text);
+        });
+    })
+    .then(function(data) {
+        handleBookingButtonState(false);
+        showLoading(false);
+
+        if (data.requireOTP) {
+            showOTPModal(data.email);
+        } else if (data.success) {
+            showAlert('Booking confirmed! Redirecting...', 'success');
+            setTimeout(function() {
+                const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+                handleBookingSuccess(data, paymentMethod);
+            }, 1000);
+        } else {
+            showAlert(data.error || 'Booking failed. Please try again.', 'error');
+        }
+    })
+    .catch(function(error) {
+        handleBookingButtonState(false);
+        showLoading(false);
+        showAlert(error.message || 'An error occurred while processing your booking. Please try again.', 'error');
+    });
+}
+
+function handleBookingSuccess(data, paymentMethod) {
+    if (paymentMethod === 'CASH') {
+        window.location.href = 'BookingConfirmation?reservationId=' + data.reservationId;
+    } else {
+        window.location.href = 'PaymentGateway?reservationId=' + data.reservationId +
+                '&paymentId=' + data.paymentId + '&method=' + paymentMethod;
+    }
+}
+
+// ============================================================================
+// OTP FUNCTIONS
+// ============================================================================
+
+function showOTPModal(maskedEmail) {
+    const modalHTML = 
+        '<div id="otpModal" class="modal" style="display: block; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">' +
+            '<div class="modal-content" style="background-color: #fefefe; margin: 5% auto; padding: 0; border: 1px solid #888; width: 90%; max-width: 450px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;">' +
+                '<div style="background: #ff6b6b; color: white; padding: 20px; border-radius: 10px 10px 0 0; position: sticky; top: 0; z-index: 1;">' +
+                    '<h3 style="margin: 0; text-align: center;">Email Verification Required</h3>' +
+                '</div>' +
+                '<div style="padding: 30px;">' +
+                    '<div style="text-align: center; margin-bottom: 20px;">' +
+                        '<i class="fa fa-envelope" style="font-size: 48px; color: #ff6b6b;"></i>' +
+                    '</div>' +
+                    '<p style="text-align: center; color: #333; margin-bottom: 10px;">We\'ve sent a verification code to</p>' +
+                    '<p style="text-align: center; font-weight: bold; color: #ff6b6b; font-size: 18px; margin-bottom: 20px;">' + maskedEmail + '</p>' +
+                    '<p style="text-align: center; color: #666; margin-bottom: 20px;">Please enter the 6-digit code below:</p>' +
+                    '<input type="text" id="otpInput" maxlength="6" pattern="[0-9]{6}" ' +
+                           'style="width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 10px; margin: 20px 0; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box;" ' +
+                           'placeholder="000000" onkeyup="handleOTPInput(event)">' +
+                    '<div id="otpError" style="color: #dc3545; text-align: center; margin-bottom: 20px; display: none;"></div>' +
+                    '<div style="text-align: center; margin-bottom: 20px;">' +
+                        '<button type="button" onclick="verifyOTP()" class="btn" style="margin-right: 10px; padding: 10px 30px; background: #ff6b6b; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">Verify Code</button>' +
+                        '<button type="button" onclick="resendOTP()" class="btn btn-secondary" style="padding: 10px 30px; background: #6c757d; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">Resend Code</button>' +
+                    '</div>' +
+                    '<div id="resendMessage" style="text-align: center; color: #28a745; display: none; margin-bottom: 10px;"><i class="fa fa-check-circle"></i> New code sent successfully!</div>' +
+                    '<p style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;"><i class="fa fa-info-circle"></i> Didn\'t receive the code? Check your spam folder or click Resend Code.</p>' +
+                    '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">' +
+                        '<button type="button" onclick="closeOTPModal()" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #6c757d; cursor: pointer; font-size: 14px; padding: 10px 30px; border-radius: 5px;"><i class="fa fa-times"></i> Cancel Booking</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.getElementById('otpInput').focus();
+
+    document.getElementById('otpInput').addEventListener('input', function () {
+        if (this.value.length === 6) {
+            verifyOTP();
+        }
+    });
+}
+
+function handleOTPInput(event) {
+    const input = event.target;
+    input.value = input.value.replace(/[^0-9]/g, '');
+    document.getElementById('otpError').style.display = 'none';
+}
+
+function closeOTPModal() {
+    const modal = document.getElementById('otpModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function verifyOTP() {
+    const otpInput = document.getElementById('otpInput');
+    const otp = otpInput.value;
+    const errorDiv = document.getElementById('otpError');
+
+    if (otp.length !== 6) {
+        errorDiv.textContent = 'Please enter a 6-digit code';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    const verifyBtn = document.querySelector('button[onclick="verifyOTP()"]');
+    const originalText = verifyBtn.innerHTML;
+    verifyBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Verifying...';
+    verifyBtn.disabled = true;
+
+    const url = getContextPath() + '/ValidateOTP';
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'otp=' + otp
+    })
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('Server responded with status: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success) {
+            errorDiv.style.display = 'none';
+            verifyBtn.innerHTML = '<i class="fa fa-check"></i> Verified!';
+            verifyBtn.style.background = '#28a745';
+
+            setTimeout(function() {
+                closeOTPModal();
+                submitBookingForm();
+            }, 1000);
+        } else {
+            errorDiv.textContent = data.message || 'Invalid code. Please try again.';
+            errorDiv.style.display = 'block';
+            otpInput.value = '';
+            otpInput.focus();
+            verifyBtn.innerHTML = originalText;
+            verifyBtn.disabled = false;
+        }
+    })
+    .catch(function(error) {
+        console.error('Error:', error);
+        errorDiv.textContent = 'An error occurred. Please try again.';
+        errorDiv.style.display = 'block';
+        verifyBtn.innerHTML = originalText;
+        verifyBtn.disabled = false;
+    });
+}
+
+function resendOTP() {
+    const resendBtn = document.querySelector('button[onclick="resendOTP()"]');
+    const originalText = resendBtn.innerHTML;
+    const resendMessage = document.getElementById('resendMessage');
+
+    resendBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Sending...';
+    resendBtn.disabled = true;
+
+    const url = getContextPath() + '/ResendOTP';
+
+    fetch(url, { method: 'POST' })
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('Server responded with status: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success) {
+            resendMessage.style.display = 'block';
+            document.getElementById('otpInput').value = '';
+            document.getElementById('otpInput').focus();
+            document.getElementById('otpError').style.display = 'none';
+
+            setTimeout(function() {
+                resendMessage.style.display = 'none';
+            }, 3000);
+
+            setTimeout(function() {
+                resendBtn.innerHTML = originalText;
+                resendBtn.disabled = false;
+            }, 10000);
+        } else {
+            document.getElementById('otpError').textContent = data.message || 'Failed to resend code. Please try again.';
+            document.getElementById('otpError').style.display = 'block';
+            resendBtn.innerHTML = originalText;
+            resendBtn.disabled = false;
+        }
+    })
+    .catch(function(error) {
+        console.error('Error:', error);
+        document.getElementById('otpError').textContent = 'An error occurred. Please try again.';
+        document.getElementById('otpError').style.display = 'block';
+        resendBtn.innerHTML = originalText;
+        resendBtn.disabled = false;
+    });
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+function getContextPath() {
+    const path = '${pageContext.request.contextPath}';
+    return path || '';
+}
+
+function showLoading(show) {
+    const loadingDiv = document.getElementById('loading-icon-bx');
+    if (loadingDiv) {
+        loadingDiv.style.display = show ? 'block' : 'none';
+    }
+}
+
+function showAlert(message, type) {
+    if (!type) type = 'info';
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show';
+    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+
+    let icon = 'fa-info-circle';
+    if (type === 'success') icon = 'fa-check-circle';
+    else if (type === 'warning') icon = 'fa-exclamation-triangle';
+    else if (type === 'error' || type === 'danger') icon = 'fa-times-circle';
+
+    alertDiv.innerHTML = 
+        '<i class="fa ' + icon + '"></i> ' + message +
+        '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+            '<span aria-hidden="true">&times;</span>' +
+        '</button>';
+
+    document.body.appendChild(alertDiv);
+
+    setTimeout(function() {
+        if (alertDiv && alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 3000);
+
+    const closeBtn = alertDiv.querySelector('.close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            alertDiv.remove();
+        });
+    }
+}
+
+// ============================================================================
+// BOOKING SUMMARY ENHANCEMENT FUNCTIONS
+// ============================================================================
+
+function adjustBookingSummaryPosition() {
+    const bookingSummary = document.querySelector('.booking-summary');
+    if (!bookingSummary) return;
+
+    const header = document.querySelector('header') || 
+                  document.querySelector('.header') || 
+                  document.querySelector('#header') ||
+                  document.querySelector('nav') ||
+                  document.querySelector('.navbar') ||
+                  document.querySelector('.main-header');
+
+    if (header) {
+        const headerHeight = header.offsetHeight;
+        const topOffset = headerHeight + 20;
+        
+        bookingSummary.style.top = topOffset + 'px';
+        
+        const maxHeight = window.innerHeight - topOffset - 20;
+        bookingSummary.style.maxHeight = maxHeight + 'px';
+    } else {
+        bookingSummary.style.top = '120px';
+        bookingSummary.style.maxHeight = 'calc(100vh - 140px)';
+    }
+}
+
+function handleBookingSummaryScroll() {
+    const bookingSummary = document.querySelector('.booking-summary');
+    if (!bookingSummary) return;
+
+    let ticking = false;
+
+    function updateShadow() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > 50) {
+            bookingSummary.style.boxShadow = '0 8px 25px rgba(0,0,0,0.2)';
+        } else {
+            bookingSummary.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+        }
+        
+        ticking = false;
+    }
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(updateShadow);
+            ticking = true;
+        }
+    }
+
+    window.addEventListener('scroll', requestTick);
+}
+
+function handleWindowResize() {
+    let resizeTimeout;
+    
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            adjustBookingSummaryPosition();
+        }, 250);
+    });
+}
+
+// ============================================================================
+// INITIALIZATION FUNCTIONS
+// ============================================================================
+
+function initializeServicesSection() {
+    document.querySelectorAll('input[name="services"]').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            toggleServiceSelection(this);
+        });
+    });
+    
+    document.querySelectorAll('.service-item').forEach(function(item) {
+        item.setAttribute('tabindex', '0');
+        item.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+                toggleServiceSelection(checkbox);
+            }
+        });
+    });
+    
+    const servicesContainer = document.getElementById('servicesContainer');
+    if (servicesContainer) {
+        servicesContainer.addEventListener('scroll', function() {
+            if (this.scrollTop > 0) {
+                this.style.boxShadow = 'inset 0 10px 10px -10px rgba(0,0,0,0.1)';
+            } else {
+                this.style.boxShadow = 'none';
+            }
+        });
+    }
+}
+
+function initializeAvailabilitySection() {
+    showAvailabilityPlaceholder();
+    
+    const checkinInput = document.querySelector('input[name="checkinDate"]');
+    const checkoutInput = document.querySelector('input[name="checkoutDate"]');
+    
+    if (checkinInput) {
+        checkinInput.addEventListener('change', function() {
+            updateCheckoutMin();
+        });
+    }
+    
+    if (checkoutInput) {
+        checkoutInput.addEventListener('change', function() {
+            calculateNights();
+        });
+    }
+}
+
+function checkUserLoginStatus() {
+    const url = getContextPath() + '/BookingServlet?action=checkLogin';
+
+    fetch(url)
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('Server responded with status: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.isLoggedIn && data.user) {
+            updateFormWithUserData(data.user);
+
+            const welcomeDiv = document.createElement('div');
+            welcomeDiv.className = 'alert alert-info mb-3';
+            welcomeDiv.innerHTML = '<i class="fa fa-user"></i> Booking as <strong>' + data.user.fullName + '</strong>';
+
+            const contactSection = document.querySelector('h4').parentElement;
+            if (contactSection) {
+                contactSection.insertBefore(welcomeDiv, contactSection.firstChild);
+            }
+        }
+    })
+    .catch(function(error) {
+        console.error('Error checking login status:', error);
+    });
+}
+
+// ============================================================================
+// MAIN INITIALIZATION
+// ============================================================================
+
+document.addEventListener('DOMContentLoaded', function () {
+    const bookingForm = document.getElementById('bookingForm');
+    if (!bookingForm) {
+        console.error('Booking form not found!');
+        return;
+    }
+
+    bookingForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!validateBookingForm()) {
+            return;
+        }
+        checkLoginAndProceed();
+    });
+
+    updateTotalPrice();
+    updateGuestsDisplay();
+
+    const today = new Date().toISOString().split('T')[0];
+    const checkinInput = document.querySelector('input[name="checkinDate"]');
+    if (checkinInput) {
+        checkinInput.setAttribute('min', today);
+    }
+
+    checkUserLoginStatus();
+    addFormValidationListeners();
+    
+    setTimeout(function() {
+        initializeServicesSection();
+        initializeAvailabilitySection();
+        adjustBookingSummaryPosition();
+        handleBookingSummaryScroll();
+        handleWindowResize();
+    }, 100);
+});
+</script>
+<jsp:include page="footer.jsp" />
     </body>
 </html>

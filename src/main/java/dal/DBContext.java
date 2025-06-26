@@ -7,8 +7,9 @@ import java.sql.SQLException;
 public class DBContext {
     // Cách 1: tắt SSL
 
+
      private static final String URL = "jdbc:sqlserver://LAPTOP-SVEKADBK\\HIEUHE187201:1433;"
-             + "databaseName=HotelManagement;encrypt=false;";
+             + "databaseName=HotelManagement_newsql;encrypt=false;";
 
   
     private static final String USER = "sa";

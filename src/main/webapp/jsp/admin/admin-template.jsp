@@ -238,26 +238,28 @@
                    class="nav-item ${activePage == 'room-manage' ? 'active' : ''}">
                     <i class="fas fa-bed"></i> Rooms
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/users" 
-                   class="nav-item ${activePage == 'users' ? 'active' : ''}">
-                    <i class="fas fa-users"></i> Users
+                <a href="${pageContext.request.contextPath}/admin/customers" 
+                   class="nav-item ${activePage == 'customers' ? 'active' : ''}">
+                    <i class="fas fa-users"></i> Customers
                 </a>
-                <!--            <a href="${pageContext.request.contextPath}/admin/customers" 
-                               class="nav-item ${activePage == 'customers' ? 'active' : ''}">
-                                <i class="fas fa-users"></i> Customers
-                            </a>-->
+                <a href="${pageContext.request.contextPath}/admin/staff" 
+                   class="nav-item ${activePage == 'staff' ? 'active' : ''}">
+                    <i class="fas fa-user-tie"></i> Staff
+                </a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/change-request">
+        <i class="fas fa-clock"></i> Pending Changes
+        <span class="badge badge-warning ml-1">${pendingChangesCount}</span>
+    </a>
                 <a href="${pageContext.request.contextPath}/admin/bookings" 
                    class="nav-item ${activePage == 'bookings' ? 'active' : ''}">
                     <i class="fas fa-calendar-check"></i> Bookings
                 </a>
+                    
                 <a href="${pageContext.request.contextPath}/HouseKeeping" 
                    class="nav-item ${activePage == 'houseKeeping' ? 'active' : ''}">
                     <i class="fas fa-broom"></i> Housekeeping
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/receptionist" 
-                   class="nav-item ${activePage == 'reports' ? 'active' : ''}">
-                    <i class="fas fa-bell-concierge"></i> receptionist
-                </a>
+              
                 <a href="${pageContext.request.contextPath}/admin/reports" 
                    class="nav-item ${activePage == 'reports' ? 'active' : ''}">
                     <i class="fas fa-chart-bar"></i> Reports
@@ -287,9 +289,9 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
         <script>
-                    function toggleSidebar() {
-                        document.getElementById('sidebar').classList.toggle('active');
-                    }
+            function toggleSidebar() {
+                document.getElementById('sidebar').classList.toggle('active');
+            }
         </script>
 
         <script>

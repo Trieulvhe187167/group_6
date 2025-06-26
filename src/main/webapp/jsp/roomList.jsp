@@ -359,8 +359,7 @@
         <script src="${pageContext.request.contextPath}/assets/vendors/masonry/filter.js"></script>
         <script src="${pageContext.request.contextPath}/assets/vendors/owl-carousel/owl.carousel.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
-        <script src='${pageContext.request.contextPath}/assets/vendors/switcher/switcher.js'></script>
+        <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script> 
 
         <script>
                                                     // Auto-submit form when filter changes
