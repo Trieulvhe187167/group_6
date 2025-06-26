@@ -1,6 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ page import="java.util.List, model.Reservation" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -150,7 +152,33 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
-        /* Responsive */
+        /* Breadcrumb Styles */
+        .breadcrumb {
+            background: white;
+            border-radius: 8px;
+            padding: 12px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+            color: #6c757d;
+        }
+        
+        .breadcrumb-item a {
+            color: #5a2b81;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #7b3fa0;
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -188,45 +216,72 @@
     </header>
     
     <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <nav class="sidebar-nav">
-            <a href="${pageContext.request.contextPath}/admin-dashboard" class="nav-item">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/rooms" class="nav-item">
-                <i class="fas fa-bed"></i> Rooms
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/customers" class="nav-item">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/bookings" class="nav-item active">
-                <i class="fas fa-calendar-check"></i> Bookings
-            </a>
-            <a href="${pageContext.request.contextPath}/HouseKeeping" class="nav-item">
-                <i class="fas fa-broom"></i> Housekeeping
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item">
-                <i class="fas fa-chart-bar"></i> Reports
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item">
-                <i class="fas fa-blog"></i> Blog Posts
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/events" class="nav-item">
-                <i class="fas fa-calendar-alt"></i> Events
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/settings" class="nav-item">
-                <i class="fas fa-cog"></i> Settings
-            </a>
-        </nav>
-    </aside>
+    <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <nav class="sidebar-nav">
+                <a href="${pageContext.request.contextPath}/admin-dashboard" 
+                   class="nav-item ${activePage == 'dashboard' ? 'active' : ''}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/rooms" 
+                   class="nav-item ${activePage == 'rooms' ? 'active' : ''}">
+                    <i class="fas fa-bed"></i> Rooms
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/customers" 
+                   class="nav-item ${activePage == 'customers' ? 'active' : ''}">
+                    <i class="fas fa-users"></i> Customers
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/staff" 
+                   class="nav-item ${activePage == 'staff' ? 'active' : ''}">
+                    <i class="fas fa-user-tie"></i> Staff
+                </a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/change-request">
+        <i class="fas fa-clock"></i> Pending Changes
+        <span class="badge badge-warning ml-1">${pendingChangesCount}</span>
+    </a>
+                <a href="${pageContext.request.contextPath}/jsp/admin/booking-list.jsp" 
+                   class="nav-item ${activePage == 'bookings' ? 'active' : ''}">
+                    <i class="fas fa-calendar-check"></i> Bookings
+                </a>
+                    
+                <a href="${pageContext.request.contextPath}/HouseKeeping" 
+                   class="nav-item ${activePage == 'houseKeeping' ? 'active' : ''}">
+                    <i class="fas fa-broom"></i> Housekeeping
+                </a>
+              
+                <a href="${pageContext.request.contextPath}/admin/reports" 
+                   class="nav-item ${activePage == 'reports' ? 'active' : ''}">
+                    <i class="fas fa-chart-bar"></i> Reports
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/blogs" 
+                   class="nav-item ${activePage == 'blogs' ? 'active' : ''}">
+                    <i class="fas fa-blog"></i> Blog Posts
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/events" 
+                   class="nav-item ${activePage == 'events' ? 'active' : ''}">
+                    <i class="fas fa-calendar-alt"></i> Events
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/settings" 
+                   class="nav-item ${activePage == 'settings' ? 'active' : ''}">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </nav>
+        </aside>
     
     <!-- Main Content -->
     <main class="main-content">
         <div class="container-fluid">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin-dashboard">Home</a></li>
-                    <li class="breadcrumb-item active">Bookings</li>
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-white shadow-sm rounded px-3 py-2">
+                    <li class="breadcrumb-item">
+                        <a href="${pageContext.request.contextPath}/admin-dashboard" class="text-decoration-none">
+                            <i class="fas fa-home"></i> Home Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="fas fa-calendar-check"></i> Booking Management
+                    </li>
                 </ol>
             </nav>
             
@@ -239,19 +294,19 @@
                         <label for="status">Status</label>
                         <select class="form-control" id="status" name="status">
                             <option value="">All Status</option>
-                            <option value="PENDING">Pending</option>
-                            <option value="CONFIRMED">Confirmed</option>
-                            <option value="CANCELLED">Cancelled</option>
-                            <option value="COMPLETED">Completed</option>
+                            <option value="PENDING" ${param.status == 'PENDING' ? 'selected' : ''}>Pending</option>
+                            <option value="CONFIRMED" ${param.status == 'CONFIRMED' ? 'selected' : ''}>Confirmed</option>
+                            <option value="CANCELLED" ${param.status == 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                            <option value="COMPLETED" ${param.status == 'COMPLETED' ? 'selected' : ''}>Completed</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label for="fromDate">From Date</label>
-                        <input type="date" class="form-control" id="fromDate" name="fromDate">
+                        <input type="date" class="form-control" id="fromDate" name="fromDate" value="${param.fromDate}">
                     </div>
                     <div class="col-md-3">
                         <label for="toDate">To Date</label>
-                        <input type="date" class="form-control" id="toDate" name="toDate">
+                        <input type="date" class="form-control" id="toDate" name="toDate" value="${param.toDate}">
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary mr-2">
@@ -268,7 +323,6 @@
             <div class="table-responsive">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="mb-0">All Bookings</h5>
-                   
                 </div>
                 
                 <table class="table table-bordered table-hover">
@@ -283,6 +337,7 @@
                             <th>Status</th>
                             <th>Total Amount</th>
                             <th>Created At</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -326,22 +381,11 @@
                                         <td><fmt:formatDate value="${b.createdAt}" pattern="dd/MM/yyyy HH:mm"/></td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <a href="${pageContext.request.contextPath}/admin/booking-detail?id=${b.id}" 
-                                                   class="btn btn-sm btn-info" title="View Details">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <c:if test="${b.status == 'PENDING'}">
-                                                    <button class="btn btn-sm btn-success" 
-                                                            onclick="updateBookingStatus(${b.id}, 'CONFIRMED')" 
-                                                            title="Confirm Booking">
-                                                        <i class="fas fa-check"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-danger" 
-                                                            onclick="updateBookingStatus(${b.id}, 'CANCELLED')" 
-                                                            title="Cancel Booking">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </c:if>
+                                                <button type="button" class="btn btn-sm btn-info" title="View Details"
+                                                     onclick="viewBookingDetail(${b.id})">
+                                                        <i class="fas fa-eye"></i>
+                                                </button>
+
                                             </div>
                                         </td>
                                     </tr>
@@ -432,5 +476,87 @@
             window.location.href = '${pageContext.request.contextPath}/admin/export-bookings?format=excel';
         }
     </script>
+    <script>
+function viewBookingDetail(id) {
+  fetch('${pageContext.request.contextPath}/admin/api/booking-detail?id=' + id)
+    .then(res => res.json())
+    .then(data => {
+  console.log("📦 Booking data:", data); // debug console
+
+  document.getElementById("customerName").innerText = data.userFullName;
+  document.getElementById("customerPhone").innerText = data.customerPhone;  // ✅ sửa
+  document.getElementById("customerEmail").innerText = data.customerEmail;  // ✅ sửa
+
+  document.getElementById("bookingId").innerText = "#" + data.id;
+  document.getElementById("bookingStatus").innerText = data.status;
+  document.getElementById("bookingStatus").className = "badge " +
+    (data.status === 'CONFIRMED' ? 'badge-success' : 'badge-secondary');
+
+  document.getElementById("bookingCreated").innerText = data.createdAt;
+  document.getElementById("roomNumber").innerText = data.roomNumber;
+  document.getElementById("roomType").innerText = data.roomTypeName; // ✅ sửa
+  document.getElementById("checkInDate").innerText = data.checkIn;
+  document.getElementById("checkOutDate").innerText = data.checkOut;
+  document.getElementById("nights").innerText = data.nights;
+
+  document.getElementById("totalAmount").innerText = data.totalAmount;
+  document.getElementById("paymentStatus").innerText = data.paymentStatus;
+  document.getElementById("paymentStatus").className = "badge " +
+    (data.paymentStatus === 'Paid' ? 'badge-success' : 'badge-warning');
+
+  $('#bookingDetailModal').modal('show');
+});
+}
+</script>
+
 </body>
+<!-- Booking Detail Modal -->
+<div class="modal fade" id="bookingDetailModal" tabindex="-1" role="dialog" aria-labelledby="bookingDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reservation Details</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body row">
+        <!-- Customer Information -->
+        <div class="col-md-6">
+          <h6>Customer Information</h6>
+          <p><strong>Name:</strong> <span id="customerName"></span></p>
+          <p><strong>Phone:</strong> <span id="customerPhone"></span></p>
+          <p><strong>Email:</strong> <span id="customerEmail"></span></p>
+
+          <h6>Booking Information</h6>
+          <p><strong>ID:</strong> <span id="bookingId"></span></p>
+          <p><strong>Status:</strong> <span id="bookingStatus" class="badge"></span></p>
+          <p><strong>Created:</strong> <span id="bookingCreated"></span></p>
+        </div>
+
+        <!-- Room & Payment Info -->
+        <div class="col-md-6">
+          <h6>Room Information</h6>
+          <p><strong>Room:</strong> <span id="roomNumber"></span></p>
+          <p><strong>Type:</strong> <span id="roomType"></span></p>
+          <p><strong>Check-in:</strong> <span id="checkInDate"></span></p>
+          <p><strong>Check-out:</strong> <span id="checkOutDate"></span></p>
+          <p><strong>Nights:</strong> <span id="nights"></span></p>
+
+          <h6>Payment</h6>
+          <p><strong>Total:</strong> <span id="totalAmount"></span></p>
+          <p><strong>Payment Status:</strong> <span id="paymentStatus" class="badge"></span></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button class="btn btn-primary" onclick="window.print()">Print</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </html>
+
+</html>
+

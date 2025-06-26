@@ -357,7 +357,7 @@
                                                 <c:choose>
                                                     <c:when test="${not empty e.imageUrl}">
                                                         <img src="${pageContext.request.contextPath}/assets/images/uploads/events/${e.imageUrl}"
-                                                             alt="${e.title}" 
+                                                             alt="${e.title}"
                                                              class="img-fluid" />
                                                     </c:when>
                                                     <c:otherwise>
@@ -379,7 +379,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="event-info">
-                                                    <h4 class="event-title"><a href="#">${e.title}</a></h4>
+                                                    <h4 class="event-title"><a href="${pageContext.request.contextPath}/event/detail/${e.id}">${e.title}</a></h4>
                                                     <ul class="media-post">
                                                         <li>
                                                             <a href="#"><i class="fa fa-clock-o"></i>
@@ -389,7 +389,7 @@
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a href="#"><i class="fa fa-map-marker"></i> ${e.location}</a>
+                                                            <a><i class="fa fa-map-marker"></i> ${e.location}</a>
                                                         </li>
                                                     </ul>
                                                     <p>${e.description}</p>
@@ -402,7 +402,7 @@
                         </div>
                         
                         <div class="text-center">
-                            <a href="${pageContext.request.contextPath}/EventServlet" class="btn">View All Event</a>
+                            <a href="${pageContext.request.contextPath}/events" class="btn">View All Event</a>
                         </div>
                     </div>
                 </div>
