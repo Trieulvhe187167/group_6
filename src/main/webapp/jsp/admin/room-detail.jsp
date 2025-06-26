@@ -3,6 +3,12 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<%@ page import="model.RoomType" %>
+<%@ page import="java.io.File" %>
+<%@ page import="java.util.*" %>
+
+
+
 <div class="container-fluid">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
@@ -12,7 +18,7 @@
             <li class="breadcrumb-item active">Room Type Details</li>
         </ol>
     </nav>
-    
+
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Room Type Details</h1>
@@ -26,7 +32,7 @@
             </a>
         </div>
     </div>
-    
+
     <!-- Alert Messages -->
     <c:if test="${not empty sessionScope.success}">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -37,7 +43,7 @@
         </div>
         <c:remove var="success" scope="session"/>
     </c:if>
-    
+
     <c:if test="${not empty sessionScope.error}">
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             ${sessionScope.error}
@@ -47,7 +53,7 @@
         </div>
         <c:remove var="error" scope="session"/>
     </c:if>
-    
+
     <div class="row">
         <!-- Room Type Information -->
         <div class="col-md-8">
@@ -62,10 +68,76 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="room-image-container" style="position: relative;">
-                                <img src="${pageContext.request.contextPath}/assets/images/uploads/${roomType.imageUrl}" 
-                                     class="img-fluid rounded shadow" 
-                                     alt="Room Type Image"
-                                     style="width: 100%; height: 200px; object-fit: cover;">
+                                <!--images-->
+                                <%
+                                    RoomType roomType = (RoomType) request.getAttribute("roomType");
+                                    String folderPath = application.getRealPath("/") + "assets/images/room-type/" + roomType.getImageUrl();
+                                    File imageFolder = new File(folderPath);
+                                    File[] imageFiles = imageFolder.exists() ? imageFolder.listFiles() : new File[0];
+                                    
+                                    List<File> fileList = Arrays.asList(imageFiles);
+
+                                    // Danh sách thứ tự ưu tiên theo từ khóa
+                                    List<String> priority = Arrays.asList("overview", "livingroom", "window", "bed", "bathroom", "table");
+
+                                    // Sắp xếp ảnh theo thứ tự ưu tiên
+                                    fileList.sort((f1, f2) -> {
+                                        String name1 = f1.getName().toLowerCase();
+                                        String name2 = f2.getName().toLowerCase();
+
+                                        int index1 = priority.size(); // mặc định là cuối
+                                        int index2 = priority.size();
+
+                                        for (int i = 0; i < priority.size(); i++) {
+                                            if (name1.contains(priority.get(i))) index1 = i;
+                                            if (name2.contains(priority.get(i))) index2 = i;
+                                        }
+
+                                        // Nếu cả hai đều không nằm trong danh sách -> sắp tên bình thường
+                                        if (index1 == index2) return name1.compareTo(name2);
+
+                                        return Integer.compare(index1, index2);
+                                    });
+                                %>
+
+                                <div id="roomTypeCarousel" class="carousel slide" data-ride="carousel" style="width: 100%; height: 200px; position: relative;">
+                                    <div class="carousel-inner" style="height: 100%;">
+                                        <%
+                                            for (int i = 0; i < imageFiles.length; i++) {
+                                                String imageName = imageFiles[i].getName();
+                                                String active = (i == 0) ? "active" : "";
+                                        %>
+                                        <div class="carousel-item <%= active %>" style="height: 100%;">
+                                            <!-- Link Lightbox -->
+                                            <a href="${pageContext.request.contextPath}/assets/images/room-type/<%= roomType.getImageUrl() %>/<%= imageName %>"
+                                               data-lightbox="room-gallery"
+                                               data-title="<%= imageName.replace(".jpg", "").replace("-", " ") %>">
+                                                <img src="${pageContext.request.contextPath}/assets/images/room-type/<%= roomType.getImageUrl() %>/<%= imageName %>"
+                                                     class="d-block w-100 rounded shadow"
+                                                     alt="RoomType Image"
+                                                     style="height: 100%; object-fit: cover;" />
+                                            </a>
+
+                                        </div>
+                                        <%
+                                            }
+                                        %>
+                                    </div>
+                                    <a class="carousel-control-prev" href="#roomTypeCarousel" role="button" data-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    </a>
+                                    <a class="carousel-control-next" href="#roomTypeCarousel" role="button" data-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    </a>
+
+                                    <!-- Status badge -->
+                                    <div class="status-badge" style="position: absolute; top: 10px; right: 10px;">
+                                        <span class="badge badge-${roomType.status == 'active' ? 'success' : 'danger'} badge-lg">
+                                            ${roomType.status == 'active' ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </div>
+                                </div>
+
                                 <div class="status-badge" style="position: absolute; top: 10px; right: 10px;">
                                     <span class="badge badge-${roomType.status == 'active' ? 'success' : 'danger'} badge-lg">
                                         ${roomType.status == 'active' ? 'Active' : 'Inactive'}
@@ -133,7 +205,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Description and Features Card -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -143,7 +215,7 @@
                 </div>
                 <div class="card-body">
                     <c:set var="descriptionParts" value="${fn:split(roomType.description, ',')}" />
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <h6><i class="fas fa-info-circle text-primary"></i> Description</h6>
@@ -156,20 +228,20 @@
                                 </c:otherwise>
                             </c:choose>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <h6><i class="fas fa-bed text-primary"></i> Bed Type</h6>
                             <c:choose>
                                 <c:when test="${fn:length(descriptionParts) > 1}">
                                     <p><span class="badge badge-secondary">${fn:trim(descriptionParts[1])}</span></p>
-                                </c:when>
-                                <c:otherwise>
+                                    </c:when>
+                                    <c:otherwise>
                                     <p class="text-muted">Not specified</p>
                                 </c:otherwise>
                             </c:choose>
                         </div>
                     </div>
-                    
+
                     <c:if test="${fn:length(descriptionParts) > 2}">
                         <hr>
                         <h6><i class="fas fa-star text-primary"></i> Special Features</h6>
@@ -185,7 +257,7 @@
                             </c:forEach>
                         </div>
                     </c:if>
-                    
+
                     <hr>
                     <h6><i class="fas fa-file-alt text-primary"></i> Full Description</h6>
                     <div class="bg-light p-3 rounded">
@@ -193,7 +265,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Room Statistics Card -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -230,7 +302,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Rooms List Card -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -331,7 +403,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Quick Actions Sidebar -->
         <div class="col-md-4">
             <!-- Quick Actions Card -->
@@ -346,30 +418,30 @@
                        class="btn btn-warning btn-block mb-2">
                         <i class="fas fa-edit"></i> Edit Room Type
                     </a>
-                    
+
                     <button onclick="confirmStatusChange(${roomType.id}, '${roomType.status}', '${roomType.name}')" 
                             class="btn btn-${roomType.status == 'active' ? 'danger' : 'success'} btn-block mb-2">
                         <i class="fas fa-${roomType.status == 'active' ? 'ban' : 'check'}"></i> 
                         ${roomType.status == 'active' ? 'Deactivate' : 'Activate'}
                     </button>
-                    
+
                     <a href="${pageContext.request.contextPath}/admin/rooms?action=form" 
                        class="btn btn-success btn-block mb-2">
                         <i class="fas fa-plus"></i> Create New Type
                     </a>
-                    
+
                     <hr>
-                    
+
                     <button class="btn btn-info btn-block mb-2">
                         <i class="fas fa-eye"></i> View All Rooms
                     </button>
-                    
+
                     <button class="btn btn-secondary btn-block">
                         <i class="fas fa-chart-line"></i> View Reports
                     </button>
                 </div>
             </div>
-            
+
             <!-- Price Information Card -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -401,7 +473,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Room Type Info Card -->
             <div class="card">
                 <div class="card-header">
@@ -414,7 +486,7 @@
                         <h6 class="text-muted mb-1">Created By</h6>
                         <p class="mb-0">System Administrator</p>
                     </div>
-                    
+
                     <div class="info-item mb-3">
                         <h6 class="text-muted mb-1">Category</h6>
                         <p class="mb-0">
@@ -431,7 +503,7 @@
                             </c:choose>
                         </p>
                     </div>
-                    
+
                     <div class="info-item mb-3">
                         <h6 class="text-muted mb-1">Occupancy Rate</h6>
                         <div class="progress" style="height: 20px;">
@@ -441,7 +513,7 @@
                         </div>
                         <small class="text-muted">Average occupancy this month</small>
                     </div>
-                    
+
                     <div class="info-item">
                         <h6 class="text-muted mb-1">Last Booking</h6>
                         <p class="mb-0">2 days ago</p>
@@ -483,218 +555,218 @@
 </div>
 
 <style>
-.stat-box {
-    padding: 20px;
-    border-radius: 8px;
-    background: #f8f9fa;
-    text-align: center;
-}
-
-.stat-box h3 {
-    margin-bottom: 10px;
-    font-weight: 600;
-}
-
-.badge-lg {
-    font-size: 0.9rem;
-    padding: 0.5rem 0.75rem;
-}
-
-.badge-outline-primary {
-    color: #5a2b81;
-    border: 1px solid #5a2b81;
-    background: transparent;
-}
-
-.price-breakdown {
-    font-size: 0.9rem;
-}
-
-.info-item h6 {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.room-image-container:hover img {
-    transform: scale(1.05);
-    transition: transform 0.3s ease;
-}
-
-.table-responsive {
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.table th {
-    background-color: #f8f9fa;
-    border-top: none;
-    font-weight: 600;
-    color: #495057;
-    padding: 12px;
-}
-
-.table td {
-    padding: 12px;
-    vertical-align: middle;
-}
-
-.table tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
-.btn-group .btn {
-    margin-right: 2px;
-}
-
-.btn-group .btn:last-child {
-    margin-right: 0;
-}
-
-.stat-box:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-
-.card-header {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-
-.badge {
-    font-size: 0.75rem;
-    padding: 0.375rem 0.5rem;
-}
-
-@media (max-width: 768px) {
     .stat-box {
-        margin-bottom: 15px;
+        padding: 20px;
+        border-radius: 8px;
+        background: #f8f9fa;
+        text-align: center;
     }
-    
+
+    .stat-box h3 {
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .badge-lg {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .badge-outline-primary {
+        color: #5a2b81;
+        border: 1px solid #5a2b81;
+        background: transparent;
+    }
+
+    .price-breakdown {
+        font-size: 0.9rem;
+    }
+
+    .info-item h6 {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .room-image-container:hover img {
+        transform: scale(1.05);
+        transition: transform 0.3s ease;
+    }
+
     .table-responsive {
-        font-size: 0.875rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    
+
+    .table th {
+        background-color: #f8f9fa;
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+        padding: 12px;
+    }
+
+    .table td {
+        padding: 12px;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
     .btn-group .btn {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
+        margin-right: 2px;
     }
-}
+
+    .btn-group .btn:last-child {
+        margin-right: 0;
+    }
+
+    .stat-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .stat-box {
+            margin-bottom: 15px;
+        }
+
+        .table-responsive {
+            font-size: 0.875rem;
+        }
+
+        .btn-group .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+    }
 </style>
 
 <script>
-function confirmStatusChange(roomTypeId, currentStatus, roomTypeName) {
-    var newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    var action = newStatus === 'active' ? 'activate' : 'deactivate';
-    
-    document.getElementById('statusAction').textContent = action;
-    document.getElementById('roomTypeName').textContent = roomTypeName;
-    document.getElementById('statusRoomTypeId').value = roomTypeId;
-    document.getElementById('statusValue').value = newStatus;
-    
-    $('#statusModal').modal('show');
-}
+    function confirmStatusChange(roomTypeId, currentStatus, roomTypeName) {
+        var newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        var action = newStatus === 'active' ? 'activate' : 'deactivate';
+
+        document.getElementById('statusAction').textContent = action;
+        document.getElementById('roomTypeName').textContent = roomTypeName;
+        document.getElementById('statusRoomTypeId').value = roomTypeId;
+        document.getElementById('statusValue').value = newStatus;
+
+        $('#statusModal').modal('show');
+    }
 
 // Room management functions
-function viewRoomDetails(roomId, roomNumber) {
-    // Redirect to room details page (if you have one)
-    window.location.href = '${pageContext.request.contextPath}/admin/rooms/detail?roomId=' + roomId;
-}
-
-function scheduleClean(roomId, roomNumber) {
-    if (confirm('Schedule cleaning for room ' + roomNumber + '?')) {
-        // Create housekeeping task
-        var form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '${pageContext.request.contextPath}/HouseKeeping';
-        
-        var actionInput = document.createElement('input');
-        actionInput.type = 'hidden';
-        actionInput.name = 'action';
-        actionInput.value = 'create';
-        
-        var roomIdInput = document.createElement('input');
-        roomIdInput.type = 'hidden';
-        roomIdInput.name = 'roomId';
-        roomIdInput.value = roomId;
-        
-        var notesInput = document.createElement('input');
-        notesInput.type = 'hidden';
-        notesInput.name = 'notes';
-        notesInput.value = 'Cleaning scheduled from room type management';
-        
-        var statusInput = document.createElement('input');
-        statusInput.type = 'hidden';
-        statusInput.name = 'status';
-        statusInput.value = 'PENDING';
-        
-        form.appendChild(actionInput);
-        form.appendChild(roomIdInput);
-        form.appendChild(notesInput);
-        form.appendChild(statusInput);
-        document.body.appendChild(form);
-        form.submit();
+    function viewRoomDetails(roomId, roomNumber) {
+        // Redirect to room details page (if you have one)
+        window.location.href = '${pageContext.request.contextPath}/admin/rooms/detail?roomId=' + roomId;
     }
-}
 
-function markOccupied(roomId, roomNumber) {
-    if (confirm('Mark room ' + roomNumber + ' as occupied?')) {
-        // Update room status
-        var form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '${pageContext.request.contextPath}/admin/rooms/updateStatus';
-        
-        var roomIdInput = document.createElement('input');
-        roomIdInput.type = 'hidden';
-        roomIdInput.name = 'roomId';
-        roomIdInput.value = roomId;
-        
-        var statusInput = document.createElement('input');
-        statusInput.type = 'hidden';
-        statusInput.name = 'status';
-        statusInput.value = 'OCCUPIED';
-        
-        form.appendChild(roomIdInput);
-        form.appendChild(statusInput);
-        document.body.appendChild(form);
-        form.submit();
+    function scheduleClean(roomId, roomNumber) {
+        if (confirm('Schedule cleaning for room ' + roomNumber + '?')) {
+            // Create housekeeping task
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '${pageContext.request.contextPath}/HouseKeeping';
+
+            var actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'create';
+
+            var roomIdInput = document.createElement('input');
+            roomIdInput.type = 'hidden';
+            roomIdInput.name = 'roomId';
+            roomIdInput.value = roomId;
+
+            var notesInput = document.createElement('input');
+            notesInput.type = 'hidden';
+            notesInput.name = 'notes';
+            notesInput.value = 'Cleaning scheduled from room type management';
+
+            var statusInput = document.createElement('input');
+            statusInput.type = 'hidden';
+            statusInput.name = 'status';
+            statusInput.value = 'PENDING';
+
+            form.appendChild(actionInput);
+            form.appendChild(roomIdInput);
+            form.appendChild(notesInput);
+            form.appendChild(statusInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
     }
-}
 
-function createRoom() {
-    // Redirect to room creation page with room type pre-selected
-    window.location.href = '${pageContext.request.contextPath}/admin/rooms/create?roomTypeId=${roomType.id}';
-}
+    function markOccupied(roomId, roomNumber) {
+        if (confirm('Mark room ' + roomNumber + ' as occupied?')) {
+            // Update room status
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '${pageContext.request.contextPath}/admin/rooms/updateStatus';
+
+            var roomIdInput = document.createElement('input');
+            roomIdInput.type = 'hidden';
+            roomIdInput.name = 'roomId';
+            roomIdInput.value = roomId;
+
+            var statusInput = document.createElement('input');
+            statusInput.type = 'hidden';
+            statusInput.name = 'status';
+            statusInput.value = 'OCCUPIED';
+
+            form.appendChild(roomIdInput);
+            form.appendChild(statusInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    function createRoom() {
+        // Redirect to room creation page with room type pre-selected
+        window.location.href = '${pageContext.request.contextPath}/admin/rooms/create?roomTypeId=${roomType.id}';
+            }
 
 // Add some interactive effects
-$(document).ready(function() {
-    // Animate statistics on page load
-    $('.stat-box h3').each(function() {
-        var $this = $(this);
-        var countTo = parseInt($this.text()) || 0;
-        
-        if (countTo > 0) {
-            $({ countNum: 0 }).animate({
-                countNum: countTo
-            }, {
-                duration: 1500,
-                easing: 'linear',
-                step: function() {
-                    $this.text(Math.floor(this.countNum));
-                },
-                complete: function() {
-                    $this.text(this.countNum);
-                }
+            $(document).ready(function () {
+                // Animate statistics on page load
+                $('.stat-box h3').each(function () {
+                    var $this = $(this);
+                    var countTo = parseInt($this.text()) || 0;
+
+                    if (countTo > 0) {
+                        $({countNum: 0}).animate({
+                            countNum: countTo
+                        }, {
+                            duration: 1500,
+                            easing: 'linear',
+                            step: function () {
+                                $this.text(Math.floor(this.countNum));
+                            },
+                            complete: function () {
+                                $this.text(this.countNum);
+                            }
+                        });
+                    }
+                });
+
+                // Tooltip for badges
+                $('[data-toggle="tooltip"]').tooltip();
+
+                // Auto-refresh room statuses every 30 seconds
+                setInterval(function () {
+                    // You can implement auto-refresh here if needed
+                }, 30000);
             });
-        }
-    });
-    
-    // Tooltip for badges
-    $('[data-toggle="tooltip"]').tooltip();
-    
-    // Auto-refresh room statuses every 30 seconds
-    setInterval(function() {
-        // You can implement auto-refresh here if needed
-    }, 30000);
-});
 </script>
