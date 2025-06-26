@@ -32,6 +32,7 @@
                                 <label for="calendarDatePicker">Select a date:</label>
                                 <input type="date" id="calendarDatePicker" class="form-control form-control-sm">
                                 <div class="mt-2 text-right">
+                                    <button type="button" class="btn btn-sm btn-secondary mr-1" onclick="goToToday()">Today</button>
                                     <button type="button" class="btn btn-sm btn-info" onclick="goToSelectedDate()">Go</button>
                                 </div>
                             </div>
@@ -626,5 +627,10 @@
         if (selectedDate) {
             window.location.href = '?selectedDate=' + selectedDate;
         }
+    }
+    
+    // Function to go to today
+    function goToToday() {
+        window.location.href = '?weekOffset=0';
     }
 </script>
