@@ -336,6 +336,81 @@
             background: rgba(255, 255, 255, 0.25);
         }
     }
+        /* Blog dropdown styles */
+    .menu-links .dropdown-toggle::after {
+        display: inline-block;
+        margin-left: 5px;
+        vertical-align: middle;
+        content: "";
+        border-top: 4px solid;
+        border-right: 4px solid transparent;
+        border-bottom: 0;
+        border-left: 4px solid transparent;
+    }
+    
+    .menu-links .dropdown-menu {
+        background-color: rgba(0, 0, 0, 0.9);
+        border: none;
+        border-radius: 0;
+        margin-top: 0;
+        padding: 0;
+    }
+    
+    .menu-links .dropdown-item {
+        color: #fff;
+        padding: 10px 20px;
+        font-size: 14px;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+    }
+    
+    .menu-links .dropdown-item:hover,
+    .menu-links .dropdown-item:focus {
+        background-color: #FFD700;
+        color: #000;
+        text-decoration: none;
+    }
+    
+    /* Active state for dropdown items */
+    .menu-links .dropdown-item.active {
+        background-color: #FFD700;
+        color: #000;
+    }
+    
+    /* Ensure dropdown shows on hover for desktop */
+    @media (min-width: 992px) {
+        .menu-links .nav-item.dropdown:hover .dropdown-menu {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+    }
+    
+    /* Fade in animation */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Mobile responsive dropdown */
+    @media (max-width: 991px) {
+        .menu-links .dropdown-menu {
+            position: static;
+            background-color: rgba(0, 0, 0, 0.8);
+            margin-left: 20px;
+        }
+        
+        .menu-links .dropdown-toggle::after {
+            float: right;
+            margin-top: 8px;
+        }
+    }
+
 </style>
 
 <header class="header rs-nav header-transparent">
@@ -519,26 +594,32 @@
                 </form>
             </div>
 
-            <!-- Menu Links -->
-            <nav class="menu-links collapse navbar-collapse" id="menuDropdown">
-                <ul class="nav navbar-nav">
-                    <li class="nav-item ${fn:endsWith(currentUrl,'/index.jsp') ? 'active' : ''}">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/index.jsp">HOME</a>
-                    </li>
-                    <li class="nav-item ${fn:endsWith(currentUrl,'/About.jsp') ? 'active' : ''}">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/jsp/About.jsp">ABOUT</a>
-                    </li>
-                    <li class="nav-item ${fn:endsWith(currentUrl,'/roomList.jsp') ? 'active' : ''}">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/RoomListServlet">LIST ROOM</a>
-                    </li>
-                    <li class="nav-item ${fn:endsWith(currentUrl,'/contact.jsp') ? 'active' : ''}">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/jsp/contact.jsp">CONTACT</a>
-                    </li>
-                    <li class="nav-item ${fn:endsWith(currentUrl,'/blog.jsp') ? 'active' : ''}">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/BlogListServlet">BLOG</a>
-                    </li>
-                </ul>
-            </nav>
+         <!-- Menu Links -->
+<nav class="menu-links collapse navbar-collapse" id="menuDropdown">
+    <ul class="nav navbar-nav">
+        <li class="nav-item ${fn:endsWith(currentUrl,'/index.jsp') ? 'active' : ''}">
+            <a class="nav-link" href="${pageContext.request.contextPath}/index.jsp">HOME</a>
+        </li>
+        <li class="nav-item ${fn:endsWith(currentUrl,'/About.jsp') ? 'active' : ''}">
+            <a class="nav-link" href="${pageContext.request.contextPath}/jsp/About.jsp">ABOUT</a>
+        </li>
+        <li class="nav-item ${fn:endsWith(currentUrl,'/roomList.jsp') ? 'active' : ''}">
+            <a class="nav-link" href="${pageContext.request.contextPath}/RoomListServlet">LIST ROOM</a>
+        </li>
+        <li class="nav-item ${fn:endsWith(currentUrl,'/contact.jsp') ? 'active' : ''}">
+            <a class="nav-link" href="${pageContext.request.contextPath}/jsp/contact.jsp">CONTACT</a>
+        </li>
+        <li class="nav-item dropdown ${fn:endsWith(currentUrl,'/blog.jsp') || fn:endsWith(currentUrl,'/events.jsp') ? 'active' : ''}">
+            <a class="nav-link dropdown-toggle" href="#" id="blogDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                BLOG 
+            </a>
+            <div class="dropdown-menu" aria-labelledby="blogDropdown">
+                <a class="dropdown-item" href="${pageContext.request.contextPath}/BlogListServlet">BLOG</a>
+                <a class="dropdown-item" href="${pageContext.request.contextPath}/events">EVENTS</a>
+            </div>
+        </li>
+    </ul>
+</nav>
         </div>
     </div>
 </header>
