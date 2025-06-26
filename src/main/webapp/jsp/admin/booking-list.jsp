@@ -248,10 +248,7 @@
                    class="nav-item ${activePage == 'houseKeeping' ? 'active' : ''}">
                     <i class="fas fa-broom"></i> Housekeeping
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/receptionist" 
-                   class="nav-item ${activePage == 'receptionist' ? 'active' : ''}">
-                    <i class="fas fa-bell-concierge"></i> Receptionist
-                </a>
+              
                 <a href="${pageContext.request.contextPath}/admin/reports" 
                    class="nav-item ${activePage == 'reports' ? 'active' : ''}">
                     <i class="fas fa-chart-bar"></i> Reports
