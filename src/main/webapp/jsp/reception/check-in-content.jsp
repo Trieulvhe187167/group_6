@@ -72,17 +72,17 @@
                                 <c:if test="${room.roomTypeName != currentRoomType}">
                                     <c:set var="currentRoomType" value="${room.roomTypeName}" />
                                     <c:set var="roomTypeId" value="${fn:replace(room.roomTypeName, ' ', '-')}" />
-                                    <tr class="room-type-header" data-room-type="${roomTypeId}" id="header-${roomTypeId}">
+                                    <tr class="room-type-header collapsed" data-room-type="${roomTypeId}" id="header-${roomTypeId}">
                                         <td colspan="${calendarDates.size() + 1}" class="bg-secondary text-white">
                                             <div class="d-flex justify-content-between align-items-center" 
                                                  onclick="toggleRoomType('${roomTypeId}')">
                                                 <strong>${room.roomTypeName}</strong>
-                                                <i class="fas fa-chevron-down toggle-icon"></i>
+                                                <i class="fas fa-chevron-up toggle-icon"></i>
                                             </div>
                                         </td>
                                     </tr>
                                 </c:if>
-                                <tr class="room-row" id="room-${room.id}" data-room-type="${fn:replace(room.roomTypeName, ' ', '-')}">
+                                <tr class="room-row room-hidden" id="room-${room.id}" data-room-type="${fn:replace(room.roomTypeName, ' ', '-')}" style="display: none;">
                                     <td class="align-middle">
                                         <div class="font-weight-bold">${room.roomNumber}</div>
                                         <span class="badge badge-${room.status == 'AVAILABLE' ? 'success' : (room.status == 'OCCUPIED' ? 'info' : (room.status == 'MAINTENANCE' ? 'danger' : 'warning'))}">${room.status}</span>
@@ -348,6 +348,7 @@
 <style>
     .calendar-container {
         overflow-x: auto;
+        position: relative;
     }
     .calendar-table {
         border-collapse: separate;
@@ -384,6 +385,41 @@
     .room-hidden {
         display: none !important;
     }
+    
+    /* Current time indicator */
+    .current-time-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #28a745;
+        z-index: 1000;
+        pointer-events: none;
+    }
+    
+    .current-time-marker {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #28a745;
+        top: 0;
+        transform: translate(-4px, -5px);
+        z-index: 1001;
+    }
+    
+    .current-time-label {
+        position: absolute;
+        background-color: #28a745;
+        color: #fff;
+        font-size: 12px;
+        padding: 2px 5px;
+        border-radius: 3px;
+        top: 0;
+        transform: translateX(-50%);
+        z-index: 1001;
+        white-space: nowrap;
+    }
 </style>
 
 <script>
@@ -394,7 +430,82 @@
         console.log("DOM loaded - initialization complete");
         // Set default date for calendar picker to today
         document.getElementById('calendarDatePicker').valueAsDate = new Date();
+        
+        // Set up current time indicator
+        setupCurrentTimeIndicator();
+        
+        // Update the current time indicator every minute
+        setInterval(updateCurrentTimeIndicator, 60000);
     });
+    
+    // Set up current time indicator
+    function setupCurrentTimeIndicator() {
+        const calendarContainer = document.querySelector('.calendar-container');
+        
+        // Create current time line element
+        const timeLine = document.createElement('div');
+        timeLine.classList.add('current-time-line');
+        timeLine.id = 'currentTimeLine';
+        
+        // Create time marker (circle)
+        const timeMarker = document.createElement('div');
+        timeMarker.classList.add('current-time-marker');
+        timeMarker.id = 'currentTimeMarker';
+        
+        // Create time label
+        const timeLabel = document.createElement('div');
+        timeLabel.classList.add('current-time-label');
+        timeLabel.id = 'currentTimeLabel';
+        
+        // Append to container
+        calendarContainer.appendChild(timeLine);
+        timeLine.appendChild(timeMarker);
+        timeLine.appendChild(timeLabel);
+        
+        // Update position initially
+        updateCurrentTimeIndicator();
+    }
+    
+    // Update the position of the current time indicator
+    function updateCurrentTimeIndicator() {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentDay = now.getDay(); // 0 (Sunday) to 6 (Saturday)
+        
+        // Format time for display
+        const timeString = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+        
+        // Get calendar table
+        const calendarTable = document.querySelector('.calendar-table');
+        if (!calendarTable) return;
+        
+        // Find the column for today
+        const headers = calendarTable.querySelectorAll('thead th');
+        const todayColumnIndex = Array.from(headers).findIndex(th => th.classList.contains('bg-warning'));
+        
+        if (todayColumnIndex < 1) return; // Today column not found or is the first (room) column
+        
+        // Calculate the column and position
+        const cellWidth = headers[todayColumnIndex].offsetWidth;
+        const tableRect = calendarTable.getBoundingClientRect();
+        const headerRect = headers[todayColumnIndex].getBoundingClientRect();
+        
+        // Calculate left position relative to the calendar container
+        const leftPosition = headerRect.left - tableRect.left + (cellWidth / 2);
+        
+        // Update line position
+        const timeLine = document.getElementById('currentTimeLine');
+        const timeMarker = document.getElementById('currentTimeMarker');
+        const timeLabel = document.getElementById('currentTimeLabel');
+        
+        if (timeLine && timeMarker && timeLabel) {
+            timeLine.style.left = `${leftPosition}px`;
+            timeMarker.style.left = `${leftPosition}px`;
+            timeLabel.style.left = `${leftPosition}px`;
+            timeLabel.textContent = timeString;
+        }
+    }
     
     // Function to toggle room type visibility
     function toggleRoomType(roomTypeId) {
@@ -430,11 +541,11 @@
         const toggleIcon = headerRow.querySelector('.toggle-icon');
         if (toggleIcon) {
             if (isCollapsed) {
-                toggleIcon.classList.remove('fa-chevron-down');
-                toggleIcon.classList.add('fa-chevron-up');
-            } else {
                 toggleIcon.classList.remove('fa-chevron-up');
                 toggleIcon.classList.add('fa-chevron-down');
+            } else {
+                toggleIcon.classList.remove('fa-chevron-down');
+                toggleIcon.classList.add('fa-chevron-up');
             }
         }
         
