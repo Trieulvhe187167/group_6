@@ -182,6 +182,24 @@
                     margin-left: 0;
                 }
             }
+
+            .lightbox .lb-image {
+                width: auto ;
+                height: auto ;
+                max-width: 100% ;
+                max-height: 90vh ;
+                object-fit: contain;
+            }
+
+            .lightbox .lb-outerContainer {
+                width: auto ;
+                height: auto ;
+            }
+
+            .lightbox .lb-data {
+                text-align: center;
+                font-size: 16px;
+            }
         </style>
     </head>
     <body>
@@ -273,5 +291,22 @@
                         document.getElementById('sidebar').classList.toggle('active');
                     }
         </script>
+
+        <script>
+            lightbox.option({
+                'resizeDuration': 200,
+                'wrapAround': true,
+                'fadeDuration': 300,
+                'imageFadeDuration': 300,
+                'showImageNumberLabel': true
+            })
+        </script>
+        <!-- Lightbox2 CSS -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet" />
+
+        <!-- Lightbox2 JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+
+
     </body>
 </html>

@@ -154,45 +154,44 @@ public class AdminRoom2Servlet extends HttpServlet {
 
         List<Room> rooms = new ArrayList<>();
 
-        // Lấy tham số lọc
+        // Lấy tham số và chuẩn hóa
         String keyword = request.getParameter("keyword");
         String roomTypeIdStr = request.getParameter("roomTypeId");
         String capacityStr = request.getParameter("capacity");
         String status = request.getParameter("status");
 
-        // Parse giá trị lọc
-        Integer roomTypeId = (roomTypeIdStr != null && !roomTypeIdStr.isEmpty()) ? Integer.parseInt(roomTypeIdStr) : -1;
-        Integer capacity = (capacityStr != null && !capacityStr.isEmpty()) ? Integer.parseInt(capacityStr) : -1;
+        keyword = (keyword != null) ? keyword.trim() : null;
+        roomTypeIdStr = (roomTypeIdStr != null) ? roomTypeIdStr.trim() : "";
+        capacityStr = (capacityStr != null) ? capacityStr.trim() : "";
+        status = (status != null) ? status.trim() : null;
 
-        // Lấy trang hiện tại
+        if ("all".equalsIgnoreCase(status) || "".equals(status)) {
+            status = null;
+        }
+
+        Integer roomTypeId = (!roomTypeIdStr.isEmpty()) ? Integer.parseInt(roomTypeIdStr) : -1;
+        Integer capacity = (!capacityStr.isEmpty()) ? Integer.parseInt(capacityStr) : -1;
+
+        // Phân trang
         int page = 1;
         try {
             String pageStr = request.getParameter("page");
             if (pageStr != null) {
-                page = Integer.parseInt(pageStr);
+                page = Integer.parseInt(pageStr.trim());
             }
         } catch (NumberFormatException e) {
             page = 1;
         }
 
-        // Lọc / tìm kiếm
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            // Dùng searchRooms(keyword, status)
-            rooms = roomDAO.searchRooms(keyword.trim(), status);
-            request.setAttribute("keyword", keyword);
-            request.setAttribute("selectedStatus", status);
-        } else if (roomTypeId != -1 || capacity != -1 || (status != null && !status.isEmpty())) {
-            // Dùng filterRooms nếu không có keyword
-            rooms = roomDAO.filterRooms(roomTypeId, capacity, status);
-            request.setAttribute("selectedRoomTypeId", roomTypeId);
-            request.setAttribute("selectedCapacity", capacity);
-            request.setAttribute("selectedStatus", status);
-        } else {
-            // Không lọc, không tìm kiếm
-            rooms = roomDAO.getAllRooms();
-        }
+        // Tìm + lọc
+        rooms = roomDAO.searchAndFilterRooms(
+                (keyword != null && !keyword.isEmpty()) ? keyword : null,
+                roomTypeId,
+                capacity,
+                status
+        );
 
-        // Phân trang
+        // Phân trang thủ công
         int totalRecords = rooms.size();
         int totalPages = (int) Math.ceil(totalRecords * 1.0 / RECORDS_PER_PAGE);
         int startIndex = (page - 1) * RECORDS_PER_PAGE;
@@ -200,9 +199,14 @@ public class AdminRoom2Servlet extends HttpServlet {
 
         List<Room> paginatedRooms = rooms.subList(startIndex, endIndex);
 
-        // Gửi dữ liệu cho JSP
+        // Set về JSP
         request.setAttribute("rooms", paginatedRooms);
-        request.setAttribute("roomTypes", roomTypeDAO.getAllRoomTypes()); // dùng cho dropdown lọc roomType
+        request.setAttribute("roomTypes", roomTypeDAO.getAllRoomTypes());
+
+        request.setAttribute("keyword", keyword);
+        request.setAttribute("selectedRoomTypeId", roomTypeId);
+        request.setAttribute("selectedCapacity", capacity);
+        request.setAttribute("selectedStatus", status);
 
         request.setAttribute("currentPage", page);
         request.setAttribute("recordsPerPage", RECORDS_PER_PAGE);

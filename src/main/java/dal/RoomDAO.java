@@ -516,58 +516,57 @@ public class RoomDAO {
     }
 
 // Get rooms by floor
-public List<Room> getRoomsByFloor(int floor) {
-    List<Room> rooms = new ArrayList<>();
-    String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, " +
-                "rt.Capacity, rt.Description, rt.imageUrl " +
-                "FROM Rooms r " +
-                "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
-                "WHERE LEFT(r.RoomNumber, 1) = ? " +
-                "ORDER BY r.RoomNumber";
-    
-    try (Connection conn = DBContext.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-        
-        ps.setString(1, String.valueOf(floor));
-        ResultSet rs = ps.executeQuery();
-        
-        while (rs.next()) {
-            rooms.add(mapResultSetToRoom(rs));
-        }
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
-    return rooms;
-}
+    public List<Room> getRoomsByFloor(int floor) {
+        List<Room> rooms = new ArrayList<>();
+        String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, "
+                + "rt.Capacity, rt.Description, rt.imageUrl "
+                + "FROM Rooms r "
+                + "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id "
+                + "WHERE LEFT(r.RoomNumber, 1) = ? "
+                + "ORDER BY r.RoomNumber";
 
-public List<Room> getAvailableRoomsByTypeNoDateCheck(int roomTypeId) {
-    List<Room> rooms = new ArrayList<>();
-    String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, " +
-                "rt.Capacity, rt.Description, rt.imageUrl " +
-                "FROM Rooms r " +
-                "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
-                "WHERE r.Status = 'AVAILABLE' " +
-                "AND r.RoomTypeId = ? " +
-                "ORDER BY r.RoomNumber";
-    
-    try (Connection conn = DBContext.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-        
-        ps.setInt(1, roomTypeId);
-        
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            rooms.add(mapResultSetToRoom(rs));
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, String.valueOf(floor));
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                rooms.add(mapResultSetToRoom(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        
-        System.out.println("DEBUG: Found " + rooms.size() + " AVAILABLE rooms for type " + roomTypeId + " (no date check)");
-            
-    } catch (SQLException e) {
-        System.err.println("Error in getAvailableRoomsByTypeNoDateCheck: " + e.getMessage());
-        e.printStackTrace();
+        return rooms;
     }
-    return rooms;
-}
+
+    public List<Room> getAvailableRoomsByTypeNoDateCheck(int roomTypeId) {
+        List<Room> rooms = new ArrayList<>();
+        String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, "
+                + "rt.Capacity, rt.Description, rt.imageUrl "
+                + "FROM Rooms r "
+                + "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id "
+                + "WHERE r.Status = 'AVAILABLE' "
+                + "AND r.RoomTypeId = ? "
+                + "ORDER BY r.RoomNumber";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, roomTypeId);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                rooms.add(mapResultSetToRoom(rs));
+            }
+
+            System.out.println("DEBUG: Found " + rooms.size() + " AVAILABLE rooms for type " + roomTypeId + " (no date check)");
+
+        } catch (SQLException e) {
+            System.err.println("Error in getAvailableRoomsByTypeNoDateCheck: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return rooms;
+    }
+
     public List<Room> getAvailableRoomsByTypeAndDate(int roomTypeId, Date checkIn, Date checkOut) {
         List<Room> rooms = new ArrayList<>();
         String sql = "SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, "
@@ -696,6 +695,57 @@ public List<Room> getAvailableRoomsByTypeNoDateCheck(int roomTypeId) {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return rooms;
+    }
+
+    public List<Room> searchAndFilterRooms(String keyword, Integer roomTypeId, Integer capacity, String status) {
+        List<Room> rooms = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder("SELECT r.*, rt.Name as RoomTypeName, rt.BasePrice, rt.Capacity, rt.Description, rt.imageUrl "
+                + "FROM Rooms r "
+                + "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id WHERE 1=1");
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (r.RoomNumber LIKE ? OR rt.Name LIKE ?)");
+        }
+        if (roomTypeId != null && roomTypeId != -1) {
+            sql.append(" AND r.RoomTypeId = ?");
+        }
+        if (capacity != null && capacity != -1) {
+            sql.append(" AND rt.Capacity = ?");
+        }
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append(" AND r.Status = ?");
+        }
+
+        sql.append(" ORDER BY r.RoomNumber");
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int index = 1;
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String search = "%" + keyword + "%";
+                ps.setString(index++, search);
+                ps.setString(index++, search);
+            }
+            if (roomTypeId != null && roomTypeId != -1) {
+                ps.setInt(index++, roomTypeId);
+            }
+            if (capacity != null && capacity != -1) {
+                ps.setInt(index++, capacity);
+            }
+            if (status != null && !status.trim().isEmpty()) {
+                ps.setString(index++, status);
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                rooms.add(mapResultSetToRoom(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return rooms;
     }
 

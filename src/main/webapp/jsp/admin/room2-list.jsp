@@ -46,7 +46,7 @@
                 </select>
 
                 <select name="status" class="form-control mr-2">
-                    <option value="">All Status</option>
+                    <option value="all">All Status</option>
                     <option value="available" ${selectedStatus == 'available' ? 'selected' : ''}>Available</option>
                     <option value="occupied" ${selectedStatus == 'occupied' ? 'selected' : ''}>Occupied</option>
                     <option value="maintenance" ${selectedStatus == 'maintenance' ? 'selected' : ''}>Maintenance</option>
@@ -70,6 +70,17 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
+                
+                <!-- Pagination summary -->
+                <div class="mb-3 text-muted">
+                    <small>
+                        Showing ${(currentPage - 1) * recordsPerPage + 1}
+                        -
+                        ${currentPage * recordsPerPage > totalRecords ? totalRecords : currentPage * recordsPerPage}
+                        of ${totalRecords} rooms
+                    </small>
+                </div>
+                    
                 <table class="table table-hover align-middle">
                     <thead class="thead-light">
                         <tr>
@@ -133,64 +144,73 @@
     </div>
 
     <!-- Pagination -->
+    <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
     <c:if test="${totalPages > 1}">
         <nav class="mt-4">
             <ul class="pagination justify-content-center">
+
                 <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="?page=${currentPage - 1}">Previous</a>
+                    <a class="page-link"
+                       href="?page=${currentPage - 1}&keyword=${fn:escapeXml(fn:trim(keyword))}&roomTypeId=${selectedRoomTypeId}&capacity=${selectedCapacity}&status=${selectedStatus}">
+                        Previous
+                    </a>
                 </li>
+
                 <c:forEach begin="1" end="${totalPages}" var="i">
                     <li class="page-item ${i == currentPage ? 'active' : ''}">
-                        <a class="page-link" href="?page=${i}">${i}</a>
+                        <a class="page-link"
+                           href="?page=${i}&keyword=${fn:escapeXml(fn:trim(keyword))}&roomTypeId=${selectedRoomTypeId}&capacity=${selectedCapacity}&status=${selectedStatus}">
+                            ${i}
+                        </a>
                     </li>
                 </c:forEach>
+
                 <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                    <a class="page-link" href="?page=${currentPage + 1}">Next</a>
+                    <a class="page-link"
+                       href="?page=${currentPage + 1}&keyword=${fn:escapeXml(fn:trim(keyword))}&roomTypeId=${selectedRoomTypeId}&capacity=${selectedCapacity}&status=${selectedStatus}">
+                        Next
+                    </a>
                 </li>
+
             </ul>
         </nav>
-        <div class="text-center text-muted">
-            <small>
-                Showing ${(currentPage - 1) * recordsPerPage + 1}
-                -
-                ${currentPage * recordsPerPage > totalRecords ? totalRecords : currentPage * recordsPerPage}
-                of ${totalRecords} rooms
-            </small>
-        </div>
-    </c:if>
-</div>
 
-<!-- Modal -->
-<div class="modal fade" id="statusModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Room Deactivation</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to set room "<span id="roomName"></span>" to <strong>maintenance</strong> mode?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <form method="post" action="${pageContext.request.contextPath}/admin/rooms2" style="display:inline;">
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" id="roomIdToDelete">
-                    <input type="hidden" name="status" value="maintenance">
-                    <button type="submit" class="btn btn-primary">Confirm</button>
-                </form>
+
+    </c:if>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Room Deactivation</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to set room "<span id="roomName"></span>" to <strong>maintenance</strong> mode?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <form method="post" action="${pageContext.request.contextPath}/admin/rooms2" style="display:inline;">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" id="roomIdToDelete">
+                        <input type="hidden" name="status" value="maintenance">
+                        <button type="submit" class="btn btn-primary">Confirm</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    function confirmStatusChange(roomId, currentStatus, roomNumber) {
-        document.getElementById('roomIdToDelete').value = roomId;
-        document.getElementById('roomName').textContent = roomNumber;
-        $('#statusModal').modal('show');
-    }
-</script>
+    <script>
+        function confirmStatusChange(roomId, currentStatus, roomNumber) {
+            document.getElementById('roomIdToDelete').value = roomId;
+            document.getElementById('roomName').textContent = roomNumber;
+            $('#statusModal').modal('show');
+        }
+    </script>
 
