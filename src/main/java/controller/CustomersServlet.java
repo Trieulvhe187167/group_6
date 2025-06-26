@@ -87,7 +87,7 @@ public class CustomersServlet extends HttpServlet {
             // Set template attributes
             request.setAttribute("pageTitle", "Customers Management");
             request.setAttribute("activePage", "customers");
-            request.setAttribute("contentPage", "/jsp/reception/customers-content.jsp");
+            // No need to set contentPage anymore as we're using direct includes
             
             System.out.println("DEBUG: Forwarding to template");
             
