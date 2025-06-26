@@ -235,10 +235,7 @@
                    class="nav-item ${activePage == 'staff' ? 'active' : ''}">
                     <i class="fas fa-user-tie"></i> Staff
                 </a>
-                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/change-request">
-        <i class="fas fa-clock"></i> Pending Changes
-        <span class="badge badge-warning ml-1">${pendingChangesCount}</span>
-    </a>
+  
                 <a href="${pageContext.request.contextPath}/jsp/admin/booking-list.jsp" 
                    class="nav-item ${activePage == 'bookings' ? 'active' : ''}">
                     <i class="fas fa-calendar-check"></i> Bookings

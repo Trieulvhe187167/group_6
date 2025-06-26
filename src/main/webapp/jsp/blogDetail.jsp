@@ -144,7 +144,7 @@
                                     <div class="action-box blog-lg">
                                         <c:choose>
                                             <c:when test="${not empty blog.imageUrl}">
-                                                <img src="${pageContext.request.contextPath}/uploads/${blog.imageUrl}"
+                                                <img src="${pageContext.request.contextPath}/assets/images/blog/${blog.imageUrl}"
                                                      alt="${blog.title}" class="blog-detail-image" />
                                             </c:when>
                                             <c:otherwise>
