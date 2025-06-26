@@ -55,7 +55,7 @@ public class PaymentsServlet extends HttpServlet {
             // Set template attributes
             request.setAttribute("pageTitle", "Payments Management");
             request.setAttribute("activePage", "payments");
-            request.setAttribute("contentPage", "/jsp/reception/payments-content.jsp");
+            // No need to set contentPage anymore as we're using direct includes
             
             request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
             

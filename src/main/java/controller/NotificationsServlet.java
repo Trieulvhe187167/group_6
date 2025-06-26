@@ -48,7 +48,7 @@ public class NotificationsServlet extends HttpServlet {
             // Set template attributes
             request.setAttribute("pageTitle", "Notifications Management");
             request.setAttribute("activePage", "notifications");
-            request.setAttribute("contentPage", "/jsp/reception/notifications-content.jsp");
+            // No need to set contentPage anymore as we're using direct includes
             
             request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
             

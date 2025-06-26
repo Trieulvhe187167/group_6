@@ -77,7 +77,7 @@ public class ReceptionDashboardServlet extends HttpServlet {
             // Set template attributes
             request.setAttribute("pageTitle", "Dashboard");
             request.setAttribute("activePage", "dashboard");
-            request.setAttribute("contentPage", "/jsp/reception/dashboard-content.jsp");
+            // No need to set contentPage anymore as we're using direct includes
             
             // Forward to template
             request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);

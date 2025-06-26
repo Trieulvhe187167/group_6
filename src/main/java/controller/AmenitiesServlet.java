@@ -42,7 +42,7 @@ public class AmenitiesServlet extends HttpServlet {
             // Set template attributes
             request.setAttribute("pageTitle", "Room Amenities Management");
             request.setAttribute("activePage", "amenities");
-            request.setAttribute("contentPage", "/jsp/reception/amenities-content.jsp");
+            // No need to set contentPage anymore as we're using direct includes
             
             // Forward to template
             request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);

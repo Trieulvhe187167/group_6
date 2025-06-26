@@ -53,7 +53,6 @@ public class CheckInServlet extends HttpServlet {
             // Set template attributes
             request.setAttribute("pageTitle", "Check-in Management");
             request.setAttribute("activePage", "checkin");
-            request.setAttribute("contentPage", "/jsp/reception/check-in-content.jsp");
             
               // Forward to template
             request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);

@@ -50,7 +50,7 @@ public class ServicesServlet extends HttpServlet {
             // Set template attributes
             request.setAttribute("pageTitle", "Services Management");
             request.setAttribute("activePage", "services");
-            request.setAttribute("contentPage", "/jsp/reception/services-content.jsp");
+            // No need to set contentPage anymore as we're using direct includes
             
             // Forward to template
             request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
