@@ -17,11 +17,6 @@
         <a href="#" class="btn btn-outline-primary" onclick="toggleCalendar(); return false;">
             <i class="fas fa-calendar-alt"></i> Toggle Calendar View
         </a>
-        
-        <!-- Debug button -->
-        <button type="button" class="btn btn-sm btn-warning ml-2" onclick="testCollapse()">
-            Test Collapse
-        </button>
     </div>
 
     <!-- Calendar View -->
@@ -388,20 +383,6 @@
             calendarView.style.display = 'block';
         } else {
             calendarView.style.display = 'none';
-        }
-    }
-    
-    // Test function to validate collapsing works
-    function testCollapse() {
-        console.log("Testing collapse functionality");
-        const firstHeader = document.querySelector('.room-type-header');
-        if (firstHeader) {
-            const roomType = firstHeader.getAttribute('data-room-type');
-            console.log("Found header with room type: " + roomType);
-            toggleRoomType(roomType);
-        } else {
-            console.error("No room type headers found!");
-            alert("No room type headers found!");
         }
     }
     
