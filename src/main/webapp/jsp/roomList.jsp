@@ -233,7 +233,7 @@
                                                 <div class="action-box">
                                                     <img src="${pageContext.request.contextPath}/assets/images/uploads/<%= type.getImageUrl() %>" 
                                                          alt="<%= type.getName() %>" style="height: 200px; object-fit: cover;">
-                                                    <a href="RoomDetailServlet?id=<%= type.getId() %>" class="btn">View Details</a>
+                                                    <a href="RoomDetailServlet?id=<%= type.getId() %>" class="btn">Booking Room</a>
                                                 </div>
                                                 <div class="info-bx text-center">
                                                     <h5><a href="RoomDetailServlet?id=<%= type.getId() %>"><%= type.getName() %></a></h5>
