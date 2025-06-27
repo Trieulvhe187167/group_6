@@ -22,12 +22,12 @@ public class BookingDAO {
 sql.append("SELECT r.Id, r.UserId, r.GroupBookingId, r.CreatedBy, r.RoomId, r.RoomTypeId, ");
 sql.append("r.CheckIn, r.CheckOut, r.Status, r.TotalAmount, r.Notes, r.SpecialRequests, ");
 sql.append("r.NumberOfCustomers, r.CreatedAt, r.UpdatedAt, ");
-sql.append("u.FullName as UserFullName, u.Email as CustomerEmail, u.Phone as UserPhone, ");
+sql.append("u.FullName as UserFullName, u.Email as UserEmail, u.Phone as UserPhone, ");
 sql.append("room.RoomNumber, rt.Name as RoomTypeName ");
 sql.append("FROM reservations r ");
 sql.append("LEFT JOIN Users u ON r.UserId = u.Id ");
 sql.append("LEFT JOIN rooms room ON r.RoomId = room.Id ");
-sql.append("LEFT JOIN roomtypes rt ON r.Id = rt.Id ");
+sql.append("LEFT JOIN roomtypes rt ON r.RoomTypeId = rt.Id ");
 sql.append("WHERE 1=1 ");
         List<Object> parameters = new ArrayList<>();
         
@@ -121,14 +121,14 @@ try (Connection conn = DBContext.getConnection();
     SELECT r.Id, r.UserId, r.GroupBookingId, r.CreatedBy, r.RoomId, r.RoomTypeId,
            r.CheckIn, r.CheckOut, r.Status, r.TotalAmount, r.Notes, r.SpecialRequests,
            r.NumberOfCustomers, r.CreatedAt, r.UpdatedAt,
-           u.FullName AS UserFullName, u.Email AS CustomerEmail, u.Phone AS UserPhone,
+           u.FullName AS UserFullName, u.Email AS UserEmail, u.Phone AS UserPhone,
            room.RoomNumber, rt.Name AS RoomTypeName,
            DATEDIFF(DAY, r.CheckIn, r.CheckOut) AS Nights,
            p.Status AS PaymentStatus
     FROM reservations r
     LEFT JOIN Users u ON r.UserId = u.Id
     LEFT JOIN rooms room ON r.RoomId = room.Id
-    LEFT JOIN roomtypes rt ON r.Id = rt.Id
+    LEFT JOIN roomtypes rt ON r.RoomTypeId = rt.Id
     LEFT JOIN payments p ON r.Id = p.ReservationId
     WHERE r.Id = ?
 """;
@@ -160,7 +160,7 @@ try (Connection conn = DBContext.getConnection();
                 
                 // Thêm thông tin cho popup
                 res.setUserFullName(rs.getString("UserFullName"));
-                res.setUserEmail(rs.getString("CustomerEmail"));
+                res.setUserEmail(rs.getString("UserEmail"));
                 res.setCustomerPhone(rs.getString("UserPhone"));
 
                 res.setRoomNumber(rs.getString("RoomNumber"));
@@ -202,12 +202,12 @@ try (Connection conn = DBContext.getConnection();
     "SELECT r.Id, r.UserId, r.GroupBookingId, r.CreatedBy, r.RoomId, r.RoomTypeId, " +
     "r.CheckIn, r.CheckOut, r.Status, r.TotalAmount, r.Notes, r.SpecialRequests, " +
     "r.NumberOfCustomers, r.CreatedAt, r.UpdatedAt, " +
-    "u.FullName AS UserFullName, u.Email AS CustomerEmail, " +
-    "room.RoomNumber, rt.Name AS RoomTypeName " +
+    "u.FullName AS UserFullName, u.Email AS UserEmail, " +
+    "room.RoomNumber, rt.TypeName AS RoomTypeName " +
     "FROM reservations r " +
     "LEFT JOIN Users u ON r.UserId = u.Id " +
     "LEFT JOIN rooms room ON r.RoomId = room.Id " +
-    "LEFT JOIN roomtypes rt ON r.Id = rt.Id " +
+    "LEFT JOIN roomtypes rt ON r.RoomTypeId = rt.Id " +
     "WHERE r.UserId = ? " +
     "ORDER BY r.CreatedAt DESC";
         try (Connection conn = DBContext.getConnection();
@@ -374,11 +374,11 @@ try (Connection conn = DBContext.getConnection();
         reservation.setCreatedAt(rs.getTimestamp("CreatedAt"));
         reservation.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
         reservation.setCustomerPhone(rs.getString("UserPhone"));
-        reservation.setCustomerEmail(rs.getString("CustomerEmail"));
+        reservation.setCustomerEmail(rs.getString("UserEmail"));
         reservation.setRoomTypeName(rs.getString("RoomTypeName"));
         // Set additional fields for display
         reservation.setUserFullName(rs.getString("UserFullName"));
-        reservation.setUserEmail(rs.getString("CustomerEmail"));
+        reservation.setUserEmail(rs.getString("UserEmail"));
         reservation.setRoomNumber(rs.getString("RoomNumber"));
         reservation.setRoomName(rs.getString("RoomTypeName"));
         
