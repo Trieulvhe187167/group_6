@@ -8,8 +8,11 @@ public class DBContext {
     // Cách 1: tắt SSL
 
 
+
      private static final String URL = "jdbc:sqlserver://ZIG:1433;"
              + "databaseName=HotelManagement;encrypt=false;";
+
+
 
   
     private static final String USER = "sa";
