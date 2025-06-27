@@ -282,9 +282,47 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <c:if test="${not empty contentPage}">
-            <jsp:include page="${contentPage}" />
-        </c:if>
+        <c:choose>
+            <c:when test="${activePage == 'checkin'}">
+                <jsp:include page="check-in-content.jsp" />
+            </c:when>
+            <c:when test="${activePage == 'checkout'}">
+                <jsp:include page="check-out-content.jsp" />
+            </c:when>
+            <c:when test="${activePage == 'dashboard'}">
+                <jsp:include page="dashboard-content.jsp" />
+            </c:when>
+            <c:when test="${activePage == 'customers'}">
+                <jsp:include page="customers-content.jsp" />
+            </c:when>
+            <c:when test="${activePage == 'payments'}">
+                <jsp:include page="payments-content.jsp" />
+            </c:when>
+            <c:when test="${activePage == 'services'}">
+                <jsp:include page="services-content.jsp" />
+            </c:when>
+            <c:when test="${activePage == 'amenities'}">
+                <jsp:include page="amenities-content.jsp" />
+            </c:when>
+            <c:when test="${activePage == 'notifications'}">
+                <jsp:include page="notifications-content.jsp" />
+            </c:when>
+            <c:when test="${activePage == 'activitylog'}">
+                <jsp:include page="activity-log-content.jsp" />
+            </c:when>
+            <c:when test="${activePage == 'booking'}">
+                <jsp:include page="booking-form.jsp" />
+            </c:when>
+            <c:when test="${activePage == 'reservations'}">
+                <jsp:include page="reservations-content.jsp" />
+            </c:when>
+            <c:when test="${not empty contentPage}">
+                <jsp:include page="${contentPage}" />
+            </c:when>
+            <c:otherwise>
+                <div class="alert alert-warning">No content to display</div>
+            </c:otherwise>
+        </c:choose>
         <c:if test="${not empty error}">
             <div class="alert alert-danger" role="alert">
                 ${error}

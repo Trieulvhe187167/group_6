@@ -116,6 +116,15 @@
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <div class="table-responsive">
+
+                            <div class="mb-3 text-muted">
+                                <small>
+                                    Showing ${(currentPage - 1) * recordsPerPage + 1} - 
+                                    ${currentPage * recordsPerPage > totalRecords ? totalRecords : currentPage * recordsPerPage} 
+                                    of ${totalRecords} room types
+                                </small>
+                            </div>
+
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
                                     <tr>

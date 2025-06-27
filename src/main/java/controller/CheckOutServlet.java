@@ -62,7 +62,6 @@ public class CheckOutServlet extends HttpServlet {
             // Set template attributes
             request.setAttribute("pageTitle", "Check-out Management");
             request.setAttribute("activePage", "checkout");
-            request.setAttribute("contentPage", "/jsp/reception/check-out-content.jsp");
             
             // Forward to template
             request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
