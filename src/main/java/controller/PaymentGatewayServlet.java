@@ -2,18 +2,20 @@ package controller;
 
 import dal.*;
 import model.*;
+import service.EmailNotificationService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.Random;
 
-@WebServlet(name = "PaymentGatewayServlet", urlPatterns = {"/PaymentGateway"})
+@WebServlet(name = "PaymentGateway", urlPatterns = {"/PaymentGateway"})
 public class PaymentGatewayServlet extends HttpServlet {
     
     private final PaymentDAO paymentDAO = new PaymentDAO();
     private final ReservationDAO reservationDAO = new ReservationDAO();
     private final ActivityDAO activityDAO = new ActivityDAO();
+    private final EmailNotificationService emailService = new EmailNotificationService(); // Thêm EmailNotificationService
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -21,54 +23,50 @@ public class PaymentGatewayServlet extends HttpServlet {
         
         System.out.println("=== PaymentGatewayServlet.doGet() START ===");
         
-        HttpSession session = request.getSession();
-        String reservationIdStr = request.getParameter("reservationId");
-        String paymentIdStr = request.getParameter("paymentId");
-        String method = request.getParameter("method");
-        
-        System.out.println("Parameters received:");
-        System.out.println("- reservationId: " + reservationIdStr);
-        System.out.println("- paymentId: " + paymentIdStr);
-        System.out.println("- method: " + method);
-        System.out.println("- Session user: " + session.getAttribute("user"));
-        
-        // Validate parameters
-        if (reservationIdStr == null || paymentIdStr == null || method == null) {
-            System.out.println("ERROR: Missing required parameters!");
-            response.sendRedirect("RoomListServlet");
-            return;
-        }
-        
         try {
-            int reservationId = Integer.parseInt(reservationIdStr);
-            int paymentId = Integer.parseInt(paymentIdStr);
+            // Get parameters
+            String reservationIdStr = request.getParameter("reservationId");
+            String method = request.getParameter("method");
             
-            System.out.println("Parsed successfully:");
-            System.out.println("- reservationId: " + reservationId);
-            System.out.println("- paymentId: " + paymentId);
+            System.out.println("Received parameters:");
+            System.out.println("- reservationId: " + reservationIdStr);
+            System.out.println("- method: " + method);
             
-            // Get reservation details
-            Reservation reservation = reservationDAO.getReservationById(reservationId);
-            
-            if (reservation == null) {
-                System.out.println("ERROR: Reservation not found for ID: " + reservationId);
+            if (reservationIdStr == null || method == null) {
+                System.out.println("ERROR: Missing required parameters");
                 response.sendRedirect("RoomListServlet");
                 return;
             }
             
-            System.out.println("Reservation found:");
-            System.out.println("- ID: " + reservation.getId());
-            System.out.println("- Customer: " + reservation.getCustomerName());
-            System.out.println("- Amount: " + reservation.getTotalAmount());
-            System.out.println("- Room: " + reservation.getRoomNumber());
-            System.out.println("- Status: " + reservation.getStatus());
+            int reservationId = Integer.parseInt(reservationIdStr);
+            
+            // Get reservation details
+            Reservation reservation = reservationDAO.getReservationById(reservationId);
+            if (reservation == null) {
+                System.out.println("ERROR: Reservation not found with ID: " + reservationId);
+                response.sendRedirect("RoomListServlet");
+                return;
+            }
+            
+            System.out.println("Found reservation: #" + reservation.getId() + 
+                             " - Total: " + reservation.getTotalAmount());
+            
+            // Get existing payment record
+            Payment payment = paymentDAO.getPaymentByReservationId(reservationId);
+            if (payment == null) {
+                System.out.println("ERROR: No payment record found for reservation: " + reservationId);
+                response.sendRedirect("RoomListServlet");
+                return;
+            }
+            
+            System.out.println("Found payment record: #" + payment.getId());
             
             // Calculate deposit amount (10% of total)
             double depositAmount = reservation.getTotalAmount() * 0.1;
             
-            // Set attributes for payment page
+            // Set request attributes
             request.setAttribute("reservation", reservation);
-            request.setAttribute("paymentId", paymentId);
+            request.setAttribute("paymentId", payment.getId());
             request.setAttribute("method", method);
             request.setAttribute("amount", reservation.getTotalAmount());
             request.setAttribute("depositAmount", depositAmount);
@@ -187,6 +185,16 @@ public class PaymentGatewayServlet extends HttpServlet {
                 activity.setAmount(depositAmount);
                 activity.setIpAddress(request.getRemoteAddr());
                 activityDAO.logActivity(activity);
+                
+                // GỬI EMAIL XÁC NHẬN THANH TOÁN
+                try {
+                    emailService.sendPaymentConfirmation(reservation, payment);
+                    System.out.println("Payment confirmation email sent to: " + reservation.getCustomerEmail());
+                } catch (Exception e) {
+                    // Log lỗi nhưng không làm thất bại quá trình thanh toán
+                    System.err.println("Failed to send payment confirmation email: " + e.getMessage());
+                    e.printStackTrace();
+                }
                 
                 // Clear session booking data
                 session.removeAttribute("pendingBookingData");
