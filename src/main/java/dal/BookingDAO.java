@@ -10,6 +10,67 @@ import java.sql.Date;
 import model.Reservation;
 
 public class BookingDAO {
+    public List<Reservation> getUpcomingBookings(int userId) {
+    String sql = """
+        SELECT r.*, room.RoomNumber, 
+               rt.Name AS roomTypeName, rt.BasePrice,
+               u.Phone AS UserPhone,
+               u.Email AS CustomerEmail,
+               u.FullName AS UserFullName
+        FROM Reservations r
+        JOIN Rooms room ON r.RoomId = room.Id
+        JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
+        JOIN Users u ON r.UserId = u.Id
+        WHERE r.UserId = ? 
+          AND r.Status IN ('PENDING', 'CONFIRMED', 'CHECKIN') 
+          AND r.CheckOut >= CAST(GETDATE() AS DATE)
+    """;
+    return executeBookingQuery(sql, userId);
+}
+
+public List<Reservation> getPastBookings(int userId) {
+    String sql = """
+        SELECT r.*, room.RoomNumber, 
+               rt.Name AS roomTypeName, rt.BasePrice,
+               u.Phone AS UserPhone,
+               u.Email AS CustomerEmail,
+               u.FullName AS UserFullName
+        FROM Reservations r
+        JOIN Rooms room ON r.RoomId = room.Id
+        JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
+        JOIN Users u ON r.UserId = u.Id
+        WHERE r.UserId = ? 
+          AND (r.Status IN ('COMPLETED', 'CANCELLED') 
+               OR (r.Status = 'CHECKIN' AND r.CheckOut < CAST(GETDATE() AS DATE)))
+    """;
+    return executeBookingQuery(sql, userId);
+}
+private List<Reservation> executeBookingQuery(String sql, int userId) {
+    List<Reservation> list = new ArrayList<>();
+    try (Connection con = DBContext.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+            Reservation r = mapResultSetToReservation(rs);
+            r.setRoomName(rs.getString("roomNumber"));
+            r.setRoomTypeName(rs.getString("roomTypeName"));
+            r.setBasePrice(rs.getDouble("BasePrice"));
+            r.setCustomerPhone(rs.getString("UserPhone")); // <== Đọc alias vừa thêm
+            r.setCustomerEmail(rs.getString("CustomerEmail"));
+            r.setUserFullName(rs.getString("UserFullName"));
+
+            list.add(r);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
+}
+
     
     /**
      * Get reservations with filtering and pagination
@@ -22,12 +83,12 @@ public class BookingDAO {
 sql.append("SELECT r.Id, r.UserId, r.GroupBookingId, r.CreatedBy, r.RoomId, r.RoomTypeId, ");
 sql.append("r.CheckIn, r.CheckOut, r.Status, r.TotalAmount, r.Notes, r.SpecialRequests, ");
 sql.append("r.NumberOfCustomers, r.CreatedAt, r.UpdatedAt, ");
-sql.append("u.FullName as UserFullName, u.Email as UserEmail, u.Phone as UserPhone, ");
+sql.append("u.FullName as UserFullName, u.Email as CustomerEmail, u.Phone as UserPhone, ");
 sql.append("room.RoomNumber, rt.Name as RoomTypeName ");
 sql.append("FROM reservations r ");
 sql.append("LEFT JOIN Users u ON r.UserId = u.Id ");
 sql.append("LEFT JOIN rooms room ON r.RoomId = room.Id ");
-sql.append("LEFT JOIN roomtypes rt ON r.RoomTypeId = rt.Id ");
+sql.append("LEFT JOIN roomtypes rt ON r.Id = rt.Id ");
 sql.append("WHERE 1=1 ");
         List<Object> parameters = new ArrayList<>();
         
@@ -121,14 +182,14 @@ try (Connection conn = DBContext.getConnection();
     SELECT r.Id, r.UserId, r.GroupBookingId, r.CreatedBy, r.RoomId, r.RoomTypeId,
            r.CheckIn, r.CheckOut, r.Status, r.TotalAmount, r.Notes, r.SpecialRequests,
            r.NumberOfCustomers, r.CreatedAt, r.UpdatedAt,
-           u.FullName AS UserFullName, u.Email AS UserEmail, u.Phone AS UserPhone,
+           u.FullName AS UserFullName, u.Email AS CustomerEmail, u.Phone AS UserPhone,
            room.RoomNumber, rt.Name AS RoomTypeName,
            DATEDIFF(DAY, r.CheckIn, r.CheckOut) AS Nights,
            p.Status AS PaymentStatus
     FROM reservations r
     LEFT JOIN Users u ON r.UserId = u.Id
     LEFT JOIN rooms room ON r.RoomId = room.Id
-    LEFT JOIN roomtypes rt ON r.RoomTypeId = rt.Id
+    LEFT JOIN roomtypes rt ON r.Id = rt.Id
     LEFT JOIN payments p ON r.Id = p.ReservationId
     WHERE r.Id = ?
 """;
@@ -160,7 +221,7 @@ try (Connection conn = DBContext.getConnection();
                 
                 // Thêm thông tin cho popup
                 res.setUserFullName(rs.getString("UserFullName"));
-                res.setUserEmail(rs.getString("UserEmail"));
+                res.setUserEmail(rs.getString("CustomerEmail"));
                 res.setCustomerPhone(rs.getString("UserPhone"));
 
                 res.setRoomNumber(rs.getString("RoomNumber"));
@@ -202,12 +263,12 @@ try (Connection conn = DBContext.getConnection();
     "SELECT r.Id, r.UserId, r.GroupBookingId, r.CreatedBy, r.RoomId, r.RoomTypeId, " +
     "r.CheckIn, r.CheckOut, r.Status, r.TotalAmount, r.Notes, r.SpecialRequests, " +
     "r.NumberOfCustomers, r.CreatedAt, r.UpdatedAt, " +
-    "u.FullName AS UserFullName, u.Email AS UserEmail, " +
-    "room.RoomNumber, rt.TypeName AS RoomTypeName " +
+    "u.FullName AS UserFullName, u.Email AS CustomerEmail, " +
+    "room.RoomNumber, rt.Name AS RoomTypeName " +
     "FROM reservations r " +
     "LEFT JOIN Users u ON r.UserId = u.Id " +
     "LEFT JOIN rooms room ON r.RoomId = room.Id " +
-    "LEFT JOIN roomtypes rt ON r.RoomTypeId = rt.Id " +
+    "LEFT JOIN roomtypes rt ON r.Id = rt.Id " +
     "WHERE r.UserId = ? " +
     "ORDER BY r.CreatedAt DESC";
         try (Connection conn = DBContext.getConnection();
@@ -374,11 +435,11 @@ try (Connection conn = DBContext.getConnection();
         reservation.setCreatedAt(rs.getTimestamp("CreatedAt"));
         reservation.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
         reservation.setCustomerPhone(rs.getString("UserPhone"));
-        reservation.setCustomerEmail(rs.getString("UserEmail"));
+        reservation.setCustomerEmail(rs.getString("CustomerEmail"));
         reservation.setRoomTypeName(rs.getString("RoomTypeName"));
         // Set additional fields for display
         reservation.setUserFullName(rs.getString("UserFullName"));
-        reservation.setUserEmail(rs.getString("UserEmail"));
+        reservation.setUserEmail(rs.getString("CustomerEmail"));
         reservation.setRoomNumber(rs.getString("RoomNumber"));
         reservation.setRoomName(rs.getString("RoomTypeName"));
         
