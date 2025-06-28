@@ -1,328 +1,354 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ page import="model.Reservation" %>
-<%@ page import="java.text.DecimalFormat" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<%
+    // Debug logging
+    System.out.println("=== CREDIT-CARD.JSP DEBUG ===");
+    
+    // Get reservation and payment info with null checking
+    model.Reservation reservation = (model.Reservation) request.getAttribute("reservation");
+    String paymentId = request.getAttribute("paymentId") != null ? request.getAttribute("paymentId").toString() : null;
+    String method = (String) request.getAttribute("method");
+    Double fullAmount = (Double) request.getAttribute("amount");
+    
+    // Debug print
+    System.out.println("Reservation: " + (reservation != null ? reservation.getId() : "NULL"));
+    System.out.println("PaymentId: " + paymentId);
+    System.out.println("Method: " + method);
+    System.out.println("Amount: " + fullAmount);
+    
+    // Check if required data is missing
+    if (reservation == null || paymentId == null || fullAmount == null) {
+        System.out.println("ERROR: Missing required data in credit-card.jsp");
+        // Log what's missing
+        if (reservation == null) System.out.println("- Reservation is NULL");
+        if (paymentId == null) System.out.println("- PaymentId is NULL");
+        if (fullAmount == null) System.out.println("- Amount is NULL");
+        
+        // Redirect with error message
+        response.sendRedirect(request.getContextPath() + "/RoomListServlet?error=payment_data_missing");
+        return;
+    }
+    
+    // Calculate deposit amount (10%)
+    double depositAmount = fullAmount * 0.1;
+    
+    // Format amounts
+    java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
+    String formattedFullAmount = formatter.format(fullAmount);
+    String formattedDepositAmount = formatter.format(depositAmount);
+    String formattedRemainingAmount = formatter.format(fullAmount - depositAmount);
+    
+    // Get customer email safely
+    String customerEmail = "";
+    try {
+        if (reservation.getCustomerEmail() != null) {
+            customerEmail = reservation.getCustomerEmail();
+        } else if (reservation.getUserEmail() != null) {
+            customerEmail = reservation.getUserEmail();
+        }
+    } catch (Exception e) {
+        System.out.println("Error getting customer email: " + e.getMessage());
+    }
+    
+    System.out.println("Customer Email: " + customerEmail);
+    System.out.println("=== END CREDIT-CARD.JSP DEBUG ===");
+%>
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <title>LuxuryHotel - Secure Payment</title>
-    
-    <!-- Favicons -->
-    <link rel="icon" href="${pageContext.request.contextPath}/assets/images/favicon.ico" type="image/x-icon" />
-    <link rel="shortcut icon" type="image/x-icon" href="${pageContext.request.contextPath}/assets/images/favicon.png" />
-    
-    <!-- CSS -->
-    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/assets.css">
-    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/typography.css">
-    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/shortcodes/shortcodes.css">
-    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/style.css">
-    <link class="skin" rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/assets/css/color/color-1.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Payment - Luxury Hotel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
         .payment-container {
-            max-width: 800px;
-            margin: 50px auto;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 100%;
             overflow: hidden;
         }
         
         .payment-header {
-            background: #ff6b6b;
-            color: white;
-            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
             text-align: center;
+            color: white;
         }
         
-        .payment-header h2 {
+        .payment-header h3 {
             margin: 0;
-            font-size: 28px;
-            font-weight: 600;
-        }
-        
-        .payment-header p {
-            margin: 10px 0 0;
-            opacity: 0.9;
+            font-weight: 300;
         }
         
         .payment-body {
-            padding: 40px;
+            padding: 2rem;
         }
         
-        .order-summary {
+        .deposit-notice {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .deposit-notice h5 {
+            color: #2e7d32;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .deposit-notice ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .deposit-notice li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .amount-breakdown {
             background: #f8f9fa;
-            padding: 25px;
-            border-radius: 8px;
-            margin-bottom: 30px;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
         }
         
-        .order-summary h4 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
-        .summary-row {
+        .amount-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            color: #666;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0;
         }
         
-        .summary-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-            padding-top: 15px;
+        .amount-row:last-child {
             border-top: 2px solid #dee2e6;
-            margin-top: 15px;
+            padding-top: 1rem;
+            margin-bottom: 0;
+        }
+        
+        .amount-highlight {
+            background: #fff3cd;
+            padding: 0.25rem 0.75rem;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #856404;
+        }
+        
+        .credit-card-preview {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+        }
+        
+        .credit-card-preview:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+        
+        .card-number-display {
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            margin: 2rem 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .card-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        
+        .card-holder {
+            text-transform: uppercase;
         }
         
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 1.5rem;
         }
         
         .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
+            font-weight: 600;
             color: #333;
+            margin-bottom: 0.5rem;
         }
         
         .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 15px;
-            transition: border-color 0.3s;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s;
         }
         
         .form-control:focus {
-            outline: none;
-            border-color: #ff6b6b;
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
         }
         
         .form-row {
             display: flex;
-            gap: 20px;
+            gap: 1rem;
         }
         
         .form-row .form-group {
             flex: 1;
         }
         
-        .card-preview {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            position: relative;
-            min-height: 200px;
-        }
-        
-        .card-number-display {
-            font-size: 22px;
-            letter-spacing: 3px;
-            margin: 30px 0;
-        }
-        
-        .card-details {
+        .accepted-cards {
             display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-        }
-        
-        .card-holder {
-            text-transform: uppercase;
-            font-size: 14px;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 1.5rem;
         }
         
         .security-badges {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin: 20px 0;
+            gap: 1rem;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
         }
         
         .security-badges img {
             height: 30px;
+            opacity: 0.7;
         }
         
         .payment-buttons {
             display: flex;
-            gap: 15px;
-            margin-top: 30px;
+            gap: 1rem;
+            margin-top: 2rem;
         }
         
         .btn-pay {
             flex: 1;
-            padding: 15px;
-            background: #ff6b6b;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
         }
         
         .btn-pay:hover {
-            background: #e85555;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
         
         .btn-cancel {
             flex: 1;
-            padding: 15px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e0e0e0;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
         }
         
         .btn-cancel:hover {
-            background: #5a6268;
+            background: #e9ecef;
         }
         
-        .secure-notice {
-            background: #e8f5e9;
-            border-left: 4px solid #4caf50;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-        
-        .secure-notice i {
-            color: #4caf50;
-            margin-right: 8px;
-        }
-        
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .loading-content {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #ff6b6b;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .accepted-cards {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .accepted-cards i {
-            font-size: 30px;
-            color: #666;
+        @media (max-width: 768px) {
+            .payment-container {
+                margin: 1rem;
+            }
+            
+            .credit-card-preview {
+                font-size: 0.9rem;
+            }
+            
+            .card-number-display {
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <%
-        Reservation reservation = (Reservation) request.getAttribute("reservation");
-        Integer paymentId = (Integer) request.getAttribute("paymentId");
-        String method = (String) request.getAttribute("method");
-        Double amount = (Double) request.getAttribute("amount");
-        
-        DecimalFormat df = new DecimalFormat("#,###");
-        String formattedAmount = df.format(amount);
-    %>
-    
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-content">
-            <div class="spinner"></div>
-            <h3>Processing Payment...</h3>
-            <p>Please do not close this window</p>
-        </div>
-    </div>
-    
     <div class="payment-container">
         <!-- Header -->
         <div class="payment-header">
-            <h2><i class="fa fa-lock"></i> Secure Payment</h2>
-            <p>Complete your booking payment</p>
+            <h3><i class="fas fa-credit-card me-2"></i>Credit Card Payment</h3>
+            <p class="mb-0">Secure payment processing</p>
         </div>
         
-        <!-- Body -->
         <div class="payment-body">
-            <!-- Security Notice -->
-            <div class="secure-notice">
-                <i class="fa fa-shield"></i>
-                <strong>Secure Payment:</strong> Your payment information is encrypted and secure. We never store your card details.
+            <!-- Deposit Notice -->
+            <div class="deposit-notice">
+                <h5><i class="fas fa-info-circle me-2"></i>10% Deposit Payment</h5>
+                <ul>
+                    <li>You only need to pay <strong>10% deposit</strong> now to secure your reservation</li>
+                    <li>Deposit amount: <strong><%= formattedDepositAmount %>₫</strong></li>
+                    <li>This deposit will be <strong>fully refunded</strong> at check-out</li>
+                    <li>Remaining balance can be paid during your stay</li>
+                </ul>
             </div>
             
-            <!-- Order Summary -->
-            <div class="order-summary">
-                <h4>Order Summary</h4>
-                <div class="summary-row">
-                    <span>Booking ID:</span>
-                    <strong>#<%= reservation.getId() %></strong>
+            <!-- Amount Breakdown -->
+            <div class="amount-breakdown">
+                <div class="amount-row">
+                    <span>Total Booking Amount:</span>
+                    <span><%= formattedFullAmount %>₫</span>
                 </div>
-                <div class="summary-row">
-                    <span>Room:</span>
-                    <strong><%= reservation.getRoomNumber() %> - <%= reservation.getRoomTypeName() %></strong>
+                <div class="amount-row">
+                    <span>Deposit Required (10%):</span>
+                    <span class="amount-highlight"><%= formattedDepositAmount %>₫</span>
                 </div>
-                <div class="summary-row">
-                    <span>Check-in:</span>
-                    <strong><%= reservation.getCheckIn() %></strong>
+                <div class="amount-row">
+                    <span>Remaining Balance:</span>
+                    <span><%= formattedRemainingAmount %>₫</span>
                 </div>
-                <div class="summary-row">
-                    <span>Check-out:</span>
-                    <strong><%= reservation.getCheckOut() %></strong>
-                </div>
-                <div class="summary-row">
-                    <span>Nights:</span>
-                    <strong><%= reservation.calculateNights() %></strong>
-                </div>
-                <div class="summary-total">
-                    <span>Total Amount:</span>
-                    <span><%= formattedAmount %>₫</span>
+                <div class="amount-row">
+                    <strong>Amount to Pay Now:</strong>
+                    <strong class="text-success"><%= formattedDepositAmount %>₫</strong>
                 </div>
             </div>
             
-            <!-- Card Preview -->
-            <div class="card-preview">
-                <div style="text-align: right; margin-bottom: 20px;">
-                    <img src="${pageContext.request.contextPath}/assets/images/chip.png" alt="Chip" style="height: 40px;">
+            <!-- Credit Card Preview -->
+            <div class="credit-card-preview">
+                <div style="text-align: right;">
+                    <i class="fab fa-cc-visa fa-2x"></i>
                 </div>
                 <div class="card-number-display" id="cardNumberDisplay">
                     •••• •••• •••• ••••
@@ -345,16 +371,17 @@
                 <input type="hidden" name="paymentId" value="<%= paymentId %>">
                 <input type="hidden" name="reservationId" value="<%= reservation.getId() %>">
                 <input type="hidden" name="method" value="<%= method %>">
+                <input type="hidden" name="depositAmount" value="<%= depositAmount %>">
                 
                 <div class="form-group">
                     <label>Card Number</label>
                     <input type="text" class="form-control" id="cardNumber" name="cardNumber" 
                            placeholder="1234 5678 9012 3456" maxlength="19" required>
                     <div class="accepted-cards">
-                        <i class="fa fa-cc-visa"></i>
-                        <i class="fa fa-cc-mastercard"></i>
-                        <i class="fa fa-cc-amex"></i>
-                        <i class="fa fa-cc-discover"></i>
+                        <i class="fab fa-cc-visa"></i>
+                        <i class="fab fa-cc-mastercard"></i>
+                        <i class="fab fa-cc-amex"></i>
+                        <i class="fab fa-cc-discover"></i>
                     </div>
                 </div>
                 
@@ -380,13 +407,13 @@
                 <div class="form-group">
                     <label>Email (for receipt)</label>
                     <input type="email" class="form-control" name="email" 
-                           value="<%= reservation.getCustomerEmail() %>" required>
+                           value="<%= customerEmail %>" required>
                 </div>
                 
                 <div class="form-group">
                     <label>
                         <input type="checkbox" required> 
-                        I agree to the <a href="#" style="color: #ff6b6b;">terms and conditions</a>
+                        I agree to pay the 10% deposit amount and understand it will be refunded at check-out
                     </label>
                 </div>
                 
@@ -397,13 +424,19 @@
                     <img src="${pageContext.request.contextPath}/assets/images/ssl-secure.png" alt="SSL Secure">
                 </div>
                 
+                <!-- Alert for deposit information -->
+                <div class="alert alert-info">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <strong>Secure Payment:</strong> Your deposit of <%= formattedDepositAmount %>₫ will be fully refunded when you check out.
+                </div>
+                
                 <!-- Payment Buttons -->
                 <div class="payment-buttons">
                     <button type="button" class="btn-cancel" onclick="cancelPayment()">
-                        <i class="fa fa-times"></i> Cancel
+                        <i class="fas fa-times me-2"></i>Cancel
                     </button>
                     <button type="submit" class="btn-pay">
-                        <i class="fa fa-lock"></i> Pay <%= formattedAmount %>₫
+                        <i class="fas fa-lock me-2"></i>Pay Deposit <%= formattedDepositAmount %>₫
                     </button>
                 </div>
             </form>
@@ -419,47 +452,37 @@
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
             e.target.value = formattedValue;
             
-            // Update card preview
-            if (value.length >= 4) {
-                let display = '';
-                for (let i = 0; i < value.length; i++) {
-                    if (i < value.length - 4) {
-                        display += '•';
-                    } else {
-                        display += value[i];
-                    }
-                    if ((i + 1) % 4 === 0 && i < value.length - 1) {
-                        display += ' ';
-                    }
-                }
-                document.getElementById('cardNumberDisplay').textContent = display;
+            // Update preview
+            if (value.length > 0) {
+                let preview = value.substring(0, 4) + ' •••• •••• ' + value.substring(value.length - 4);
+                document.getElementById('cardNumberDisplay').textContent = preview;
+            } else {
+                document.getElementById('cardNumberDisplay').textContent = '•••• •••• •••• ••••';
             }
         });
         
         // Update cardholder name preview
         document.getElementById('cardHolder').addEventListener('input', function(e) {
-            const display = document.getElementById('cardHolderDisplay');
-            display.textContent = e.target.value.toUpperCase() || 'YOUR NAME';
+            let value = e.target.value.toUpperCase();
+            document.getElementById('cardHolderDisplay').textContent = value || 'YOUR NAME';
         });
         
         // Format expiry date
         document.getElementById('cardExpiry').addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length >= 2) {
-                value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
             }
             e.target.value = value;
-            
-            // Update card preview
             document.getElementById('cardExpiryDisplay').textContent = value || 'MM/YY';
         });
         
-        // Allow only numbers for CVV
+        // Only allow numbers for CVV
         document.getElementById('cardCVV').addEventListener('input', function(e) {
             e.target.value = e.target.value.replace(/\D/g, '');
         });
         
-        // Form submission
+        // Form validation
         document.getElementById('paymentForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -471,9 +494,8 @@
             }
             
             const expiry = document.getElementById('cardExpiry').value;
-            const [month, year] = expiry.split('/');
-            if (!month || !year || month < 1 || month > 12) {
-                alert('Please enter a valid expiry date');
+            if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+                alert('Please enter expiry date in MM/YY format');
                 return;
             }
             
@@ -483,11 +505,13 @@
                 return;
             }
             
-            // Show loading overlay
-            document.getElementById('loadingOverlay').style.display = 'flex';
+            // Show loading
+            const submitBtn = e.target.querySelector('.btn-pay');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            submitBtn.disabled = true;
             
             // Submit form
-            this.submit();
+            e.target.submit();
         });
         
         function cancelPayment() {

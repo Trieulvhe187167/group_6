@@ -91,7 +91,7 @@
                     <!-- Featured Image -->
                     <c:if test="${not empty blog.imageUrl}">
                         <div class="mb-4">
-                            <img src="${pageContext.request.contextPath}/uploads/${blog.imageUrl}" 
+                            <img src="${pageContext.request.contextPath}/assets/images/blog/${blog.imageUrl}"  
                                  alt="${blog.title}" class="img-fluid rounded">
                         </div>
                     </c:if>

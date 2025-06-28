@@ -5,6 +5,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import model.Payment;
+import model.Reservation;
 
 public class PaymentDAO {
     
@@ -359,5 +360,175 @@ private Payment mapResultSetToPayment(ResultSet rs) throws SQLException {
     payment.setTransactionId(rs.getString("TransactionId"));
     payment.setCreatedAt(rs.getTimestamp("CreatedAt"));
     return payment;
+}
+public Payment getPaymentById(int paymentId) {
+    String sql = "SELECT * FROM Payments WHERE Id = ?";
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, paymentId);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            Payment payment = new Payment();
+            payment.setId(rs.getInt("Id"));
+            payment.setReservationId(rs.getInt("ReservationId"));
+            payment.setAmount(rs.getDouble("Amount"));
+            payment.setMethod(rs.getString("Method"));
+            payment.setStatus(rs.getString("Status"));
+            payment.setTransactionId(rs.getString("TransactionId"));
+            payment.setPaymentType(rs.getString("PaymentType"));
+            payment.setCreatedAt(rs.getTimestamp("CreatedAt"));
+            return payment;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+public boolean updatePayment(Payment payment) {
+    String sql = "UPDATE Payments SET Amount = ?, Status = ?, TransactionId = ?, " +
+                "PaymentType = ? WHERE Id = ?";
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setDouble(1, payment.getAmount());
+        ps.setString(2, payment.getStatus());
+        ps.setString(3, payment.getTransactionId());
+        ps.setString(4, payment.getPaymentType());
+        ps.setInt(5, payment.getId());
+        
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+public int createDepositPayment(int reservationId, double amount, String method, String transactionId) {
+    String sql = "INSERT INTO Payments (ReservationId, Amount, Method, Status, " +
+                "TransactionId, PaymentType, CreatedAt) " +
+                "VALUES (?, ?, ?, 'SUCCESS', ?, 'DEPOSIT', GETDATE())";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        
+        ps.setInt(1, reservationId);
+        ps.setDouble(2, amount);
+        ps.setString(3, method);
+        ps.setString(4, transactionId);
+        
+        int affectedRows = ps.executeUpdate();
+        
+        if (affectedRows > 0) {
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return 0;
+}
+
+public boolean createRefundPayment(int reservationId, double amount, String method) {
+    String sql = "INSERT INTO Payments (ReservationId, Amount, Method, Status, " +
+                "TransactionId, PaymentType, CreatedAt) " +
+                "VALUES (?, ?, ?, 'SUCCESS', ?, 'REFUND', GETDATE())";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, reservationId);
+        ps.setDouble(2, amount);
+        ps.setString(3, method);
+        ps.setString(4, "REFUND-" + reservationId + "-" + System.currentTimeMillis());
+        
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+public double getTotalDepositPaid(int reservationId) {
+    String sql = "SELECT COALESCE(SUM(Amount), 0) as TotalDeposit " +
+                "FROM Payments WHERE ReservationId = ? AND PaymentType = 'DEPOSIT' " +
+                "AND Status = 'SUCCESS'";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, reservationId);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            return rs.getDouble("TotalDeposit");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return 0.0;
+}
+
+// Add these methods to ReservationDAO.java
+
+public boolean updateReservationDeposit(int reservationId, double depositAmount, String depositStatus) {
+    String sql = "UPDATE Reservations SET DepositAmount = ?, DepositPaidDate = ?, " +
+                "DepositStatus = ? WHERE Id = ?";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setDouble(1, depositAmount);
+        ps.setDate(2, new java.sql.Date(System.currentTimeMillis()));
+        ps.setString(3, depositStatus);
+        ps.setInt(4, reservationId);
+        
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+public Reservation getReservationWithDeposit(int reservationId) {
+    String sql = "SELECT r.*, u.FullName as CustomerName, rm.RoomNumber, " +
+                "rt.TypeName as RoomTypeName, r.DepositAmount, r.DepositPaidDate, " +
+                "r.DepositStatus FROM Reservations r " +
+                "INNER JOIN Users u ON r.UserId = u.Id " +
+                "LEFT JOIN Rooms rm ON r.RoomId = rm.Id " +
+                "LEFT JOIN RoomTypes rt ON r.RoomTypeId = rt.Id " +
+                "WHERE r.Id = ?";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, reservationId);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            Reservation reservation = new Reservation();
+            reservation.setId(rs.getInt("Id"));
+            reservation.setUserId(rs.getInt("UserId"));
+            reservation.setRoomId(rs.getInt("RoomId"));
+            reservation.setCheckIn(rs.getDate("CheckIn"));
+            reservation.setCheckOut(rs.getDate("CheckOut"));
+            reservation.setStatus(rs.getString("Status"));
+            reservation.setTotalAmount(rs.getDouble("TotalAmount"));
+            reservation.setCustomerName(rs.getString("CustomerName"));
+            reservation.setRoomNumber(rs.getString("RoomNumber"));
+            reservation.setDepositAmount(rs.getDouble("DepositAmount"));
+            reservation.setDepositPaidDate(rs.getDate("DepositPaidDate"));
+            reservation.setDepositStatus(rs.getString("DepositStatus"));
+            return reservation;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
 }
 }

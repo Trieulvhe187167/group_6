@@ -9,21 +9,17 @@ public class Payment {
     private String method;
     private String status;
     private String transactionId;
+    private String paymentType; // New field: DEPOSIT, FULL_PAYMENT, REMAINING_BALANCE, REFUND
     private Timestamp createdAt;
     
-    // Additional fields for display
+    // Additional fields for joins
     private String customerName;
     private String roomNumber;
     private String reservationStatus;
     
-    // Constructors
-    public Payment() {}
-    
-    public Payment(int reservationId, double amount, String method, String status) {
-        this.reservationId = reservationId;
-        this.amount = amount;
-        this.method = method;
-        this.status = status;
+    // Constructor
+    public Payment() {
+        this.paymentType = "FULL_PAYMENT"; // Default value
     }
     
     // Getters and Setters
@@ -75,6 +71,14 @@ public class Payment {
         this.transactionId = transactionId;
     }
     
+    public String getPaymentType() {
+        return paymentType;
+    }
+    
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
+    }
+    
     public Timestamp getCreatedAt() {
         return createdAt;
     }
@@ -83,6 +87,7 @@ public class Payment {
         this.createdAt = createdAt;
     }
     
+    // Additional getters/setters for join fields
     public String getCustomerName() {
         return customerName;
     }
@@ -120,6 +125,17 @@ public class Payment {
         }
     }
     
+    public String getPaymentTypeDisplayName() {
+        if (paymentType == null) return "";
+        switch (paymentType) {
+            case "DEPOSIT": return "Deposit (10%)";
+            case "FULL_PAYMENT": return "Full Payment";
+            case "REMAINING_BALANCE": return "Remaining Balance";
+            case "REFUND": return "Refund";
+            default: return paymentType;
+        }
+    }
+    
     public String getStatusBadgeClass() {
         if (status == null) return "badge-secondary";
         switch (status) {
@@ -140,5 +156,13 @@ public class Payment {
     
     public boolean isFailed() {
         return "FAILED".equals(status);
+    }
+    
+    public boolean isDeposit() {
+        return "DEPOSIT".equals(paymentType);
+    }
+    
+    public boolean isRefund() {
+        return "REFUND".equals(paymentType);
     }
 }
