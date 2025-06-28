@@ -531,4 +531,23 @@ public Reservation getReservationWithDeposit(int reservationId) {
     }
     return null;
 }
+public Payment getPaymentByReservationId(int reservationId) {
+    String sql = "SELECT TOP 1 * FROM Payments " +
+                "WHERE ReservationId = ? " +
+                "ORDER BY CreatedAt DESC";
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, reservationId);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            return mapResultSetToPayment(rs);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
 }

@@ -12,7 +12,7 @@ public class SecureMailUtil {
     private static final String SMTP_HOST = "smtp.gmail.com";
     private static final String SMTP_PORT = "587";
     private static final String USERNAME = "luxuryhotel999@gmail.com"; // Email của bạn
-    private static final String PASSWORD = "ycby ivph hzcf jnqa";     // App password
+    private static final String PASSWORD = "pzpz xjld nsdg hfsf";     // App password
     
     public static void sendEmail(String to, String subject, String content) throws MessagingException {
         Properties props = new Properties();

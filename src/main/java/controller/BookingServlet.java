@@ -30,7 +30,7 @@ public class BookingServlet extends HttpServlet {
     private final ActivityDAO activityDAO = new ActivityDAO();
     private final NotificationDAO notificationDAO = new NotificationDAO();
     private final CustomerDAO customerDAO = new CustomerDAO();
-    
+    private EmailNotificationService emailService = new EmailNotificationService();
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -368,10 +368,12 @@ public class BookingServlet extends HttpServlet {
         return total;
     }
     
-    private int createGuestAccount(BookingFormData formData) throws Exception {
+   private int createGuestAccount(BookingFormData formData) throws Exception {
+    try {
         // Check if email already exists
         User existingUser = userDAO.getUserByEmail(formData.email);
         if (existingUser != null) {
+            System.out.println("User already exists with email: " + formData.email);
             return existingUser.getId();
         }
         
@@ -384,25 +386,44 @@ public class BookingServlet extends HttpServlet {
         guestUser.setRole("CUSTOMER");
         guestUser.setStatus(true);
         
+        System.out.println("Creating guest account for: " + formData.email);
+        
         int userId = userDAO.createUserAndGetId(guestUser);
         if (userId == 0) {
             throw new Exception("Failed to create guest account in database");
         }
         
-        // Create CustomerDetails with IsGuest flag
+        System.out.println("Guest account created with ID: " + userId);
+        
+      
         try {
+            // Kiểm tra CustomerDetails table có tồn tại không
+            System.out.println("Creating customer details for user ID: " + userId);
+            
             Customer customer = new Customer();
             customer.setId(userId);
             customer.setIsGuest(true);
-            customerDAO.updateCustomerDetails(customer);
+            
+            // Nếu updateCustomerDetails fail, có thể cần createCustomerDetails
+            boolean success = customerDAO.updateCustomerDetails(customer);
+            if (!success) {
+                System.err.println("Failed to update customer details, trying to create new...");
+                // Có thể cần method createCustomerDetails thay vì update
+            }
         } catch (Exception e) {
-            // Log but don't fail if customer details creation fails
+            System.err.println("Error creating customer details: " + e.getMessage());
             e.printStackTrace();
+            // Không throw exception vì user đã được tạo
         }
         
         return userId;
+        
+    } catch (Exception e) {
+        System.err.println("Error in createGuestAccount: " + e.getMessage());
+        e.printStackTrace();
+        throw e;
     }
-    
+}
     private Reservation createReservation(BookingFormData formData, int userId, User currentUser) {
         Reservation reservation = new Reservation();
         reservation.setUserId(userId);
@@ -449,10 +470,10 @@ public class BookingServlet extends HttpServlet {
                                       RoomType roomType, boolean isGuest, BookingFormData formData) {
         try {
             // For now, send a simple confirmation email
-            String subject = "Luxury Hotel - Booking Confirmation #" + reservation.getId();
+            String subject = "Luxury Hotel - Booking Pending #" + reservation.getId();
             String content = String.format(
                 "Dear %s,\n\n" +
-                "Your booking has been confirmed!\n\n" +
+                "Your booking has been Pending can you payment 10% to confirmed!\n\n" +
                 "Booking Details:\n" +
                 "- Booking ID: #%d\n" +
                 "- Room: %s (%s)\n" +
@@ -478,7 +499,9 @@ public class BookingServlet extends HttpServlet {
                 sendAccountCompletionEmail(reservation, formData);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+              System.err.println("✗ FAILED to send email to: " + formData.email);
+        System.err.println("Error: " + e.getMessage());
+        e.printStackTrace();
         }
     }
     

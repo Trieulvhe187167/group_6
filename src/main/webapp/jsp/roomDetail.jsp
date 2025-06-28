@@ -1456,8 +1456,9 @@
      
             <!-- Footer END ==== -->
             <button class="back-to-top fa fa-chevron-up" ></button>
+           
         </div>
-       
+        <jsp:include page="footer.jsp" />
         <!-- External JavaScripts -->
         <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
         <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/popper.min.js"></script>
@@ -2611,6 +2612,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 100);
 });
 </script>
-<jsp:include page="footer.jsp" />
+
     </body>
 </html>
