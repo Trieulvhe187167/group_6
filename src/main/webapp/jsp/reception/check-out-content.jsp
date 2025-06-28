@@ -169,7 +169,23 @@
         color: #c92a2a;
     }
 </style>
-
+<!-- Print Styles -->
+<style media="print">
+    body * {
+        visibility: hidden;
+    }
+    #checkOutModal, #checkOutModal * {
+        visibility: visible;
+    }
+    #checkOutModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    .modal-footer, .btn {
+        display: none !important;
+    }
+</style>
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="row mb-4">
@@ -910,10 +926,28 @@ function formatDate(dateString) {
 }
 
 function formatDateTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleString('vi-VN');
+    if (!dateString) return 'N/A';
+    
+    try {
+        const date = new Date(dateString);
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+            return 'Invalid Date';
+        }
+        // Use Vietnamese locale with specific format
+        return date.toLocaleString('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    } catch (error) {
+        console.error('Error formatting date:', error);
+        return 'Error';
+    }
 }
-
 function formatCurrency(amount) {
     return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
@@ -971,22 +1005,198 @@ $('#checkOutForm').submit(function(e) {
         }
     });
 });
+// Function to calculate final amount considering deposit
+function calculateFinalAmountWithDeposit() {
+    const roomCharges = parseFloat($('#roomCharges').text().replace(/[₫,]/g, '')) || 0;
+    const serviceCharges = parseFloat($('#serviceCharges').text().replace(/[₫,]/g, '')) || 0;
+    const amenityCharges = parseFloat($('#amenityCharges').text().replace(/[₫,]/g, '')) || 0;
+    const damageCharges = parseFloat($('#damageCharges').val()) || 0;
+    const depositPaid = parseFloat($('#depositPaid').val()) || 0;
+    
+    // Total charges
+    const totalCharges = roomCharges + serviceCharges + amenityCharges + damageCharges;
+    
+    // Amount already paid (deposit)
+    const amountPaid = depositPaid;
+    
+    // Final amount to pay (can be negative if deposit covers all charges)
+    const finalAmount = totalCharges - amountPaid;
+    
+    // Update display
+    $('#totalCharges').text(formatCurrency(totalCharges));
+    $('#depositAmount').text(formatCurrency(depositPaid));
+    
+    if (finalAmount < 0) {
+        // Customer gets refund
+        $('#finalAmount').html(`<span class="text-success">Refund: ${formatCurrency(Math.abs(finalAmount))}</span>`);
+        $('#refundAmount').val(Math.abs(finalAmount));
+        $('#paymentMethodSection').hide();
+        $('#refundSection').show();
+    } else if (finalAmount > 0) {
+        // Customer needs to pay more
+        $('#finalAmount').html(`<span class="text-danger">To Pay: ${formatCurrency(finalAmount)}</span>`);
+        $('#refundAmount').val(0);
+        $('#paymentMethodSection').show();
+        $('#refundSection').hide();
+    } else {
+        // Exact amount - no payment needed
+        $('#finalAmount').html(`<span class="text-info">No Payment Required</span>`);
+        $('#refundAmount').val(0);
+        $('#paymentMethodSection').hide();
+        $('#refundSection').hide();
+    }
+    
+    return finalAmount;
+}
+
+// Function to process check-out with deposit handling
+function processCheckOutWithDeposit() {
+    const reservationId = $('#reservationSelect').val();
+    
+    if (!reservationId) {
+        showAlert('error', 'Please select a reservation to check out');
+        return;
+    }
+    
+    // Get all values
+    const roomCondition = $('input[name="roomCondition"]:checked').val();
+    const damageCharges = parseFloat($('#damageCharges').val()) || 0;
+    const damageDescription = $('#damageDescription').val();
+    const checkOutNotes = $('#checkOutNotes').val();
+    const paymentMethod = $('input[name="paymentMethod"]:checked').val();
+    const refundAmount = parseFloat($('#refundAmount').val()) || 0;
+    const finalAmount = calculateFinalAmountWithDeposit();
+    
+    // Validate room condition
+    if (!roomCondition) {
+        showAlert('error', 'Please select room condition');
+        return;
+    }
+    
+    // If customer needs to pay and no payment method selected
+    if (finalAmount > 0 && !paymentMethod) {
+        showAlert('error', 'Please select a payment method');
+        return;
+    }
+    
+    // Prepare data
+    const checkOutData = {
+        reservationId: reservationId,
+        roomCondition: roomCondition,
+        damageCharges: damageCharges,
+        damageDescription: damageDescription,
+        checkOutNotes: checkOutNotes,
+        paymentMethod: paymentMethod || 'NONE',
+        finalAmount: Math.abs(finalAmount),
+        isRefund: finalAmount < 0,
+        refundAmount: refundAmount
+    };
+    
+    // Confirm action
+    let confirmMessage = 'Are you sure you want to complete check-out?';
+    if (finalAmount < 0) {
+        confirmMessage += `\n\nRefund Amount: ${formatCurrency(Math.abs(finalAmount))}`;
+    } else if (finalAmount > 0) {
+        confirmMessage += `\n\nAmount to Collect: ${formatCurrency(finalAmount)}`;
+    }
+    
+    if (confirm(confirmMessage)) {
+        // Show loading
+        showLoading('Processing check-out with deposit handling...');
+        
+        // Send AJAX request
+        $.ajax({
+            url: 'check-out',
+            type: 'POST',
+            data: JSON.stringify(checkOutData),
+            contentType: 'application/json',
+            success: function(response) {
+                hideLoading();
+                if (response.success) {
+                    showAlert('success', 'Check-out completed successfully!');
+                    
+                    // If there's a refund, show refund receipt
+                    if (finalAmount < 0) {
+                        showRefundReceipt(reservationId, Math.abs(finalAmount));
+                    }
+                    
+                    // Reset form after 2 seconds
+                    setTimeout(() => {
+                        resetCheckOutForm();
+                        loadReservations();
+                    }, 2000);
+                } else {
+                    showAlert('error', response.message || 'Failed to process check-out');
+                }
+            },
+            error: function(xhr, status, error) {
+                hideLoading();
+                showAlert('error', 'Error processing check-out: ' + error);
+            }
+        });
+    }
+}
+
+// Function to show refund receipt
+function showRefundReceipt(reservationId, refundAmount) {
+    // Sử dụng locale vi-VN cho date
+    const currentDateTime = new Date().toLocaleString('vi-VN');
+    
+    const modal = `
+        <div class="modal fade" id="refundReceiptModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-receipt"></i> Deposit Refund Receipt
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3">Refund Processed</h4>
+                        </div>
+                        
+                        <div class="receipt-details">
+                            <div class="row mb-2">
+                                <div class="col-6">Reservation ID:</div>
+                                <div class="col-6"><strong>#${reservationId}</strong></div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-6">Refund Amount:</div>
+                                <div class="col-6"><strong class="text-success">${formatCurrency(refundAmount)}</strong></div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-6">Date:</div>
+                                <div class="col-6">${currentDateTime}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle"></i>
+                            The deposit refund will be processed within 3-5 business days.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="printRefundReceipt()">
+                            <i class="fas fa-print"></i> Print Receipt
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('body').append(modal);
+    $('#refundReceiptModal').modal('show');
+    
+    $('#refundReceiptModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+    });
+}
 </script>
 
-<!-- Print Styles -->
-<style media="print">
-    body * {
-        visibility: hidden;
-    }
-    #checkOutModal, #checkOutModal * {
-        visibility: visible;
-    }
-    #checkOutModal {
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
-    .modal-footer, .btn {
-        display: none !important;
-    }
-</style>

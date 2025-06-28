@@ -29,7 +29,7 @@ public class AdminBlogServlet extends HttpServlet {
     private UserDAO userDAO = new UserDAO();
     private CommentDAO commentDAO = new CommentDAO();
     private static final int RECORDS_PER_PAGE = 3;
-    private static final String UPLOAD_DIR = "uploads";
+    private static final String UPLOAD_DIR = "assets" + File.separator + "images" + File.separator + "blog";
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

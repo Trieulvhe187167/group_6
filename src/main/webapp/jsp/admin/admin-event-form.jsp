@@ -100,10 +100,10 @@
                         <!-- Featured Image -->
                         <div class="form-group">
                             <label for="image">Event Image</label>
-                            
+                                 
                             <c:if test="${isEdit && not empty event.imageUrl}">
                                 <div class="mb-2">
-                                    <img src="${pageContext.request.contextPath}/uploads/${event.imageUrl}" 
+                                    <img src="${pageContext.request.contextPath}/assets/images/uploads/events/${event.imageUrl}" 
                                          alt="Current image" class="img-fluid img-thumbnail">
                                     <small class="d-block text-muted mt-1">Current image</small>
                                 </div>

@@ -900,6 +900,97 @@
     font-weight: 600;
     margin-bottom: 8px;
 }
+    .payment-option-card {
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .payment-option-card:hover {
+        border-color: #007bff;
+        box-shadow: 0 0 10px rgba(0,123,255,0.2);
+    }
+    
+    .payment-option-card.selected {
+        border-color: #28a745;
+        background: #f0f9ff;
+        box-shadow: 0 0 15px rgba(40,167,69,0.3);
+    }
+    
+    .payment-option-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .payment-option-radio {
+        width: 20px;
+        height: 20px;
+        margin-right: 15px;
+    }
+    
+    .payment-option-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin: 0;
+    }
+    
+    .payment-option-amount {
+        font-size: 1.5rem;
+        color: #28a745;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+    
+    .payment-option-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
+    
+    .payment-option-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-left: 10px;
+    }
+    
+    .badge-recommended {
+        background: #28a745;
+        color: white;
+    }
+    
+    .badge-info {
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .payment-breakdown {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+    }
+    
+    .breakdown-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .breakdown-row:last-child {
+        border-bottom: none;
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #28a745;
+    }
         </style>
     </head>
     <body id="bg">
@@ -1288,12 +1379,15 @@
                                                 </label>
                                             </div>
                                         </div>
+                                        
                                     </form>
                                 </div>
+    
                             </div>
 
                             <!-- Right Column - Booking Summary -->
                             <div class="col-lg-4">
+                                
                                 <div class="booking-summary">
                                     <h4 class="mb-4">Booking Summary</h4>
 

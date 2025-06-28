@@ -87,7 +87,7 @@
                     <!-- Event Image -->
                     <c:if test="${not empty event.imageUrl}">
                         <div class="mb-4">
-                            <img src="${pageContext.request.contextPath}/uploads/${event.imageUrl}" 
+                            <img src="${pageContext.request.contextPath}/assets/images/uploads/events/${event.imageUrl}" 
                                  alt="${event.title}" class="event-image">
                         </div>
                     </c:if>
