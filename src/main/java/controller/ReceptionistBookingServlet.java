@@ -1,6 +1,5 @@
 package controller;
 
-
 import dal.*;
 import model.*;
 import jakarta.servlet.ServletException;
@@ -11,6 +10,10 @@ import java.sql.Date;
 import java.util.*;
 import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
+import dal.ServiceDAO;
+import model.Service;
+import model.ServiceOrder;
+import model.ReservationService;
 
 @WebServlet(name = "ReceptionistBookingServlet", urlPatterns = {"/receptionist/booking"})
 public class ReceptionistBookingServlet extends HttpServlet {
@@ -19,7 +22,8 @@ public class ReceptionistBookingServlet extends HttpServlet {
     private RoomTypeDAO roomTypeDAO = new RoomTypeDAO();
     private UserDAO userDAO = new UserDAO();
     private ReservationDAO reservationDAO = new ReservationDAO();
-    
+    private ServiceDAO serviceDAO = new ServiceDAO();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -70,11 +74,23 @@ public class ReceptionistBookingServlet extends HttpServlet {
             // Get all customers
             List<User> customers = userDAO.getUsersByRole("CUSTOMER");
             
+            // Get all available services
+            List<Service> services = serviceDAO.getAllActiveServices();
+            
+            // Optional: Group services by category if needed
+            Map<String, List<Service>> servicesByCategory = new HashMap<>();
+            if (services != null) {
+                for (Service service : services) {
+                    String category = service.getCategory() != null ? service.getCategory() : "OTHER";
+                    servicesByCategory.computeIfAbsent(category, k -> new ArrayList<>()).add(service);
+                }
+            }
+            
             request.setAttribute("roomTypes", roomTypes);
             request.setAttribute("customers", customers);
+            request.setAttribute("services", services);
             request.setAttribute("pageTitle", "New Booking");
             request.setAttribute("activePage", "booking");
-            // No need to set contentPage anymore as we're using direct includes
             
             request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
             
@@ -156,7 +172,7 @@ public class ReceptionistBookingServlet extends HttpServlet {
         
         try {
             // Get parameters
-            String customerType = request.getParameter("customerType");
+            String guestType = request.getParameter("guestType");
             String customerIdStr = request.getParameter("customerId");
             String newCustomerName = request.getParameter("newCustomerName");
             String newCustomerEmail = request.getParameter("newCustomerEmail");
@@ -165,6 +181,9 @@ public class ReceptionistBookingServlet extends HttpServlet {
             String checkInStr = request.getParameter("checkIn");
             String checkOutStr = request.getParameter("checkOut");
             String notes = request.getParameter("notes");
+            
+            // Get selected services
+            String[] serviceIds = request.getParameterValues("services");
             
             // Validate required parameters
             if (roomIdStr == null || roomIdStr.isEmpty()) {
@@ -178,7 +197,7 @@ public class ReceptionistBookingServlet extends HttpServlet {
             int customerId;
             
             // Handle customer creation/selection
-            if ("new".equals(customerType)) {
+            if ("new".equals(guestType)) {
                 // Validate new customer information
                 if (newCustomerName == null || newCustomerName.trim().isEmpty() ||
                     newCustomerEmail == null || newCustomerEmail.trim().isEmpty() ||
@@ -254,21 +273,37 @@ public class ReceptionistBookingServlet extends HttpServlet {
             reservation.setCreatedBy(receptionist.getId());
             reservation.setNotes(notes != null ? notes.trim() : null);
             
-            // Calculate total amount
+            // Calculate room total
             long days = (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24);
             if (days <= 0) {
                 throw new Exception("Invalid date range");
             }
             
-            reservation.setTotalAmount(room.getBasePrice() * days);
+            double roomTotal = room.getBasePrice() * days;
+            
+            // Calculate services total
+            double servicesTotal = calculateServicesTotal(serviceIds);
+            
+            // Set total amount (room + services)
+            reservation.setTotalAmount(roomTotal + servicesTotal);
             
             // Create the reservation
-            if (reservationDAO.createReservation(reservation)) {
-                // Update room status to occupied (optional - depends on business logic)
-                // roomDAO.updateRoomStatus(roomId, "OCCUPIED");
+            int reservationId = reservationDAO.createReservationAndGetId(reservation);
+            
+            if (reservationId > 0) {
+                reservation.setId(reservationId);
                 
-                request.getSession().setAttribute("success", "Booking created successfully! Reservation ID: #" + reservation.getId());
+                // Add selected services to reservation
+                if (serviceIds != null && serviceIds.length > 0) {
+                    addServicesToReservation(reservationId, serviceIds, receptionist.getId());
+                }
+                
+                request.getSession().setAttribute("success", 
+                    String.format("Booking created successfully! Reservation ID: #%d (Total: %,.0f₫)", 
+                    reservationId, reservation.getTotalAmount()));
+                
                 response.sendRedirect(request.getContextPath() + "/receptionist/check-in");
+                
             } else {
                 throw new Exception("Failed to create reservation in database");
             }
@@ -283,6 +318,57 @@ public class ReceptionistBookingServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("error", "Error creating booking: " + e.getMessage());
             showBookingForm(request, response);
+        }
+    }
+    
+    // Helper method to calculate total for selected services
+    private double calculateServicesTotal(String[] serviceIds) {
+        double total = 0;
+        if (serviceIds != null) {
+            for (String serviceId : serviceIds) {
+                try {
+                    Service service = serviceDAO.getServiceById(Integer.parseInt(serviceId));
+                    if (service != null && service.isActive()) {
+                        total += service.getPrice();
+                    }
+                } catch (NumberFormatException e) {
+                    // Skip invalid service ID
+                    System.err.println("Invalid service ID: " + serviceId);
+                }
+            }
+        }
+        return total;
+    }
+    
+    // Helper method to add services to reservation
+    private void addServicesToReservation(int reservationId, String[] serviceIds, int createdBy) {
+        if (serviceIds != null) {
+            for (String serviceId : serviceIds) {
+                try {
+                    Service service = serviceDAO.getServiceById(Integer.parseInt(serviceId));
+                    if (service != null && service.isActive()) {
+                        ReservationService rs = new ReservationService();
+                        rs.setReservationId(reservationId);
+                        rs.setServiceId(service.getId());
+                        rs.setQuantity(1);
+                        rs.setUnitPrice(service.getPrice()); // Store price at time of booking
+                        rs.setCreatedBy(createdBy);
+                        
+                        boolean success = serviceDAO.addServiceToReservation(rs);
+                        if (success) {
+                            System.out.println("Added service " + service.getName() + 
+                                             " to reservation " + reservationId);
+                        } else {
+                            System.err.println("Failed to add service " + service.getName() + 
+                                              " to reservation " + reservationId);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.err.println("Error adding service ID " + serviceId + 
+                                      " to reservation: " + e.getMessage());
+                }
+            }
         }
     }
     

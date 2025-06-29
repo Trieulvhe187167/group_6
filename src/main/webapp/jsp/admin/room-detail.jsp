@@ -71,7 +71,7 @@
                                 <!--images-->
                                 <%
                                     RoomType roomType = (RoomType) request.getAttribute("roomType");
-                                    String folderPath = application.getRealPath("/") + "assets/images/room-type/" + roomType.getImageUrl();
+                                    String folderPath = application.getRealPath("/") + "assets/images/room-type/" + roomType.getName();
                                     File imageFolder = new File(folderPath);
                                     File[] imageFiles = imageFolder.exists() ? imageFolder.listFiles() : new File[0];
                                     
@@ -109,10 +109,10 @@
                                         %>
                                         <div class="carousel-item <%= active %>" style="height: 100%;">
                                             <!-- Link Lightbox -->
-                                            <a href="${pageContext.request.contextPath}/assets/images/room-type/<%= roomType.getImageUrl() %>/<%= imageName %>"
+                                            <a href="${pageContext.request.contextPath}/assets/images/room-type/<%= roomType.getName() %>/<%= imageName %>"
                                                data-lightbox="room-gallery"
                                                data-title="<%= imageName.replace(".jpg", "").replace("-", " ") %>">
-                                                <img src="${pageContext.request.contextPath}/assets/images/room-type/<%= roomType.getImageUrl() %>/<%= imageName %>"
+                                                <img src="${pageContext.request.contextPath}/assets/images/room-type/<%= roomType.getName() %>/<%= imageName %>"
                                                      class="d-block w-100 rounded shadow"
                                                      alt="RoomType Image"
                                                      style="height: 100%; object-fit: cover;" />

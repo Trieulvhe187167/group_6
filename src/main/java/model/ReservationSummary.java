@@ -22,6 +22,13 @@ public class ReservationSummary {
     private boolean late;
     private String paymentStatus;
     private int roomId;
+    private String inspectionStatus;
+    private double additionalCharges;
+    
+    // Payment-related fields
+    private double amountPaid;
+    private double balance;
+    private boolean depositPaid;
     
     // Constructors
     public ReservationSummary() {}
@@ -182,5 +189,52 @@ public class ReservationSummary {
     // Alias for getCheckIn() to maintain consistency
     public Date getCheckInDate() {
         return checkIn;
+    }
+    public void setInspectionStatus(String inspectionStatus) {
+        this.inspectionStatus = inspectionStatus;
+    }
+    
+    public double getAdditionalCharges() {
+        return additionalCharges;
+    }
+    
+    public void setAdditionalCharges(double additionalCharges) {
+        this.additionalCharges = additionalCharges;
+    }
+    
+    // Payment-related getters and setters
+    public double getAmountPaid() {
+        return amountPaid;
+    }
+    
+    public void setAmountPaid(double amountPaid) {
+        this.amountPaid = amountPaid;
+    }
+    
+    public double getBalance() {
+        return balance;
+    }
+    
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+    
+    public boolean isDepositPaid() {
+        return depositPaid;
+    }
+    
+    public void setDepositPaid(boolean depositPaid) {
+        this.depositPaid = depositPaid;
+    }
+    
+    // Utility methods
+    public boolean canCheckOut() {
+        return checkedIn && !checkedOut && 
+               ("APPROVED".equals(inspectionStatus) || "COMPLETED".equals(inspectionStatus));
+    }
+    
+    public boolean needsInspection() {
+        return checkedIn && !checkedOut && 
+               (inspectionStatus == null || "PENDING".equals(inspectionStatus));
     }
 }

@@ -216,8 +216,7 @@
     </header>
     
     <!-- Sidebar -->
-    <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar">
             <nav class="sidebar-nav">
                 <a href="${pageContext.request.contextPath}/admin-dashboard" 
                    class="nav-item ${activePage == 'dashboard' ? 'active' : ''}">
@@ -225,6 +224,10 @@
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/rooms" 
                    class="nav-item ${activePage == 'rooms' ? 'active' : ''}">
+                    <i class="fas fa-bed"></i> RoomTypes
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/rooms2" 
+                   class="nav-item ${activePage == 'room-manage' ? 'active' : ''}">
                     <i class="fas fa-bed"></i> Rooms
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/customers" 
@@ -235,8 +238,11 @@
                    class="nav-item ${activePage == 'staff' ? 'active' : ''}">
                     <i class="fas fa-user-tie"></i> Staff
                 </a>
-  
-                <a href="${pageContext.request.contextPath}/jsp/admin/booking-list.jsp" 
+                   <%--                 <a class="nav-link" href="${pageContext.request.contextPath}/admin/change-request">
+        <i class="fas fa-clock"></i> Pending Changes
+        <span class="badge badge-warning ml-1">${pendingChangesCount}</span>
+    </a>--%>
+                <a href="${pageContext.request.contextPath}/admin/bookings" 
                    class="nav-item ${activePage == 'bookings' ? 'active' : ''}">
                     <i class="fas fa-calendar-check"></i> Bookings
                 </a>
@@ -264,6 +270,7 @@
                 </a>
             </nav>
         </aside>
+
     
     <!-- Main Content -->
     <main class="main-content">
