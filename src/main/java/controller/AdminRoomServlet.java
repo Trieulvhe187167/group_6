@@ -9,22 +9,34 @@ import dal.RoomDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Part;
+import java.io.File;
 import java.math.BigDecimal;
+import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import model.RoomType;
 import model.Room;
+import model.RoomTypeImage;
 import model.User;
 
 /**
  *
  * @author ASUS
  */
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+        maxFileSize = 1024 * 1024 * 10, // 10MB
+        maxRequestSize = 1024 * 1024 * 50 // 50MB
+)
 @WebServlet(name = "AdminRoomServlet", urlPatterns = {"/admin/rooms"})
 public class AdminRoomServlet extends HttpServlet {
 
@@ -250,10 +262,13 @@ public class AdminRoomServlet extends HttpServlet {
                 return;
             }
 
-            // Get rooms for this room type
             List<Room> rooms = roomDAO.getRoomsByType(id);
 
-            // Calculate room statistics for this room type
+            // === Thêm: Lấy ảnh từ RoomTypeImages ===
+            List<RoomTypeImage> imageList = roomTypeDAO.getImagesByRoomTypeId(id);
+            String imageFolder = roomTypeDAO.getRoomImageFolderUrl(id); // thư mục ảnh VD: "Single"
+
+            // Thống kê số lượng trạng thái phòng
             int availableCount = 0, occupiedCount = 0, maintenanceCount = 0, dirtyCount = 0;
             for (Room room : rooms) {
                 switch (room.getStatus()) {
@@ -279,6 +294,10 @@ public class AdminRoomServlet extends HttpServlet {
             request.setAttribute("occupiedRooms", occupiedCount);
             request.setAttribute("maintenanceRooms", maintenanceCount);
             request.setAttribute("dirtyRooms", dirtyCount);
+
+            // Truyền ảnh
+            request.setAttribute("roomTypeImages", imageList);
+            request.setAttribute("imageFolder", imageFolder);
 
             request.setAttribute("pageTitle", "Room Type Details");
             request.setAttribute("activePage", "rooms");
@@ -338,8 +357,10 @@ public class AdminRoomServlet extends HttpServlet {
         String imageUrl = request.getParameter("imageUrl").trim();
 
         String error = null;
+        BigDecimal basePrice = BigDecimal.ZERO;
+        int capacity = 0;
 
-        // Validate chuỗi
+        // Validate
         if (name.length() > 100) {
             error = "Room type name must be less than 100 characters.";
         } else if (dao.isRoomTypeNameExists(name, 0)) {
@@ -349,9 +370,6 @@ public class AdminRoomServlet extends HttpServlet {
         } else if (imageUrl.length() > 255) {
             error = "Image URL is too long.";
         }
-
-        BigDecimal basePrice = BigDecimal.ZERO;
-        int capacity = 0;
 
         try {
             basePrice = new BigDecimal(basePriceStr);
@@ -372,7 +390,6 @@ public class AdminRoomServlet extends HttpServlet {
         }
 
         if (error != null) {
-            // Gửi lại dữ liệu cũ
             RoomType roomType = new RoomType();
             roomType.setName(name);
             roomType.setDescription(description + "," + bed + "," + special);
@@ -382,27 +399,52 @@ public class AdminRoomServlet extends HttpServlet {
 
             request.setAttribute("error", error);
             request.setAttribute("roomType", roomType);
-            request.setAttribute("isEdit", false); // Chế độ tạo
+            request.setAttribute("isEdit", false);
             request.setAttribute("pageTitle", "Create Room Type");
             request.setAttribute("activePage", "rooms");
             request.setAttribute("contentPage", "/jsp/admin/room-form.jsp");
-
-            // Forward thẳng (không dùng showRoomTypeForm để tránh ghi đè)
             request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
             return;
         }
 
         try {
+            // Gộp description
+            String fullDescription = description + "," + bed + "," + special;
+
             RoomType roomType = new RoomType();
             roomType.setName(name);
-            roomType.setDescription(description + "," + bed + "," + special);
+            roomType.setDescription(fullDescription);
             roomType.setImageUrl(imageUrl);
+            String imageFolder = request.getParameter("imageFolder").trim(); // thư mục ảnh, ví dụ: "Single
             roomType.setBasePrice(basePrice);
             roomType.setCapacity(capacity);
+            roomType.setStatus("active");
             roomType.setCreatedAt(new Date());
             roomType.setUpdatedAt(new Date());
 
-            dao.insert(roomType);
+            int roomTypeId = dao.insert(roomType); // insert và lấy ID
+
+            // === [Upload ảnh nếu có] ===
+            Collection<Part> parts = request.getParts();
+            for (Part part : parts) {
+                if (part.getName().equals("imageFiles") && part.getSize() > 0) {
+                    String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+
+                    // Đường dẫn upload
+                    String uploadPath = getServletContext().getRealPath("/assets/images/room-type/" + imageFolder);
+                    File uploadDir = new File(uploadPath);
+                    if (!uploadDir.exists()) {
+                        uploadDir.mkdirs();
+                    }
+
+                    // Ghi ảnh vào thư mục
+                    part.write(uploadPath + File.separator + fileName);
+
+                    // Thêm vào DB
+                    dao.insertRoomTypeImage(roomTypeId, fileName, imageFolder);
+                }
+            }
+
             request.getSession().setAttribute("success", "Room type created successfully");
             response.sendRedirect("rooms");
         } catch (Exception e) {
@@ -438,7 +480,7 @@ public class AdminRoomServlet extends HttpServlet {
         String originalName = request.getParameter("originalName").trim();
         String description = request.getParameter("description").trim();
         String basePriceStr = request.getParameter("basePrice").trim();
-        String imageUrl = request.getParameter("imageUrl").trim();
+        String imageUrl = request.getParameter("imageUrl").trim(); // folder name (e.g., "Single")
         String capacityStr = request.getParameter("capacity").trim();
         String status = request.getParameter("status").trim();
 
@@ -446,7 +488,7 @@ public class AdminRoomServlet extends HttpServlet {
         BigDecimal basePrice = BigDecimal.ZERO;
         int capacity = 0;
 
-        // Validate name
+        // Validate fields
         if (name.length() > 100) {
             error = "Room type name must be less than 100 characters.";
         } else if (!name.equalsIgnoreCase(originalName) && dao.isRoomTypeNameExists(name, id)) {
@@ -484,7 +526,6 @@ public class AdminRoomServlet extends HttpServlet {
             request.setAttribute("activePage", "rooms");
             request.setAttribute("contentPage", "/jsp/admin/room-form.jsp");
 
-            // KHÔNG GỌI showRoomTypeForm để tránh load lại DB → ghi đè dữ liệu nhập tay
             request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
             return;
         }
@@ -497,16 +538,57 @@ public class AdminRoomServlet extends HttpServlet {
             roomType.setDescription(description);
             roomType.setBasePrice(basePrice);
             roomType.setImageUrl(imageUrl);
+            String imageFolder = request.getParameter("imageFolder").trim(); // thư mục ảnh, ví dụ: "Single
             roomType.setCapacity(capacity);
             roomType.setStatus(status);
             roomType.setUpdatedAt(new Date());
 
             dao.updateRoomType(roomType);
+
+            // === [Thêm ảnh nếu có upload] ===
+            Collection<Part> parts = request.getParts();
+            for (Part part : parts) {
+                if (part.getName().equals("imageFiles") && part.getSize() > 0) {
+                    String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+
+                    // Đường dẫn upload
+                    String uploadPath = getServletContext().getRealPath("/assets/images/room-type/" + imageFolder);
+                    File uploadDir = new File(uploadPath);
+                    if (!uploadDir.exists()) {
+                        uploadDir.mkdirs();
+                    }
+
+                    // Ghi ảnh vào thư mục
+                    part.write(uploadPath + File.separator + fileName);
+
+                    // Thêm vào DB
+                    dao.insertRoomTypeImage(id, fileName, imageFolder);
+                }
+            }
+
             request.getSession().setAttribute("success", "Room type updated successfully");
             response.sendRedirect("rooms");
         } catch (Exception e) {
             request.setAttribute("error", "Error updating room type: " + e.getMessage());
             request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
+        }
+    }
+
+    private String getMimeExtension(String contentType) {
+        if (contentType == null) {
+            return "jpg"; // mặc định
+        }
+        switch (contentType) {
+            case "image/jpeg":
+                return "jpg";
+            case "image/png":
+                return "png";
+            case "image/gif":
+                return "gif";
+            case "image/webp":
+                return "webp";
+            default:
+                return "jpg"; // fallback
         }
     }
 

@@ -178,7 +178,7 @@
                     </div>
                 </c:if>
 
-                <form method="post" action="${pageContext.request.contextPath}/admin/rooms" id="roomTypeForm">
+                <form method="post" action="${pageContext.request.contextPath}/admin/rooms" id="roomTypeForm" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="${isEdit ? 'update' : 'create'}">
                     <c:if test="${isEdit}">
                         <input type="hidden" name="id" value="${roomType.id}">
@@ -193,7 +193,7 @@
                             <input name="name" type="text" required 
                                    class="form-control" id="name"
                                    placeholder="Enter room type name"
-                                   maxlength="50"
+                                   maxlength="31"
                                    value="${roomType != null ? roomType.name : ''}">
                             <small class="form-text text-muted">
                                 Name must be between 1 and 30 characters.
@@ -206,10 +206,12 @@
                             <!-- Base Price -->
                             <div class="form-group col-md-6">
                                 <label for="basePrice">Base Price (₫/night) <span class="text-danger">*</span></label>
-                                <input name="basePrice" type="number" required 
+                                <input name="basePrice" type="text" required 
                                        class="form-control" id="basePrice"
                                        placeholder="Enter base price"
                                        min="0" max="100000000" step="1000"
+                                       maxlength="9"
+                                       onkeypress="return (event.charCode >= 48 && event.charCode <= 57)"
                                        value="${roomType != null ? roomType.basePrice : ''}">
                                 <small class="form-text text-muted">
                                     Must be between 0 and 100,000,000 VND.
@@ -223,6 +225,7 @@
                                        class="form-control" id="capacity"
                                        placeholder="Enter max capacity"
                                        min="1" max="10"
+                                       maxlength="2"
                                        value="${roomType != null ? roomType.capacity : ''}">
                                 <small class="form-text text-muted">
                                     Must be between 1 and 10 guests.
@@ -243,7 +246,7 @@
 
                     <!-- Room Details -->
                     <div class="form-section">
-                        <h3><i class="fas fa-bed"></i> Room Details</h3>
+                        <h3><i class="fas fa-image"></i> Upload Room Type Images</h3>
 
                         <div class="form-group">
                             <label for="imageUrl">Image URL <span class="text-danger">*</span></label>
@@ -253,6 +256,27 @@
                                    value="${roomType != null ? roomType.imageUrl : ''}">
                             <small class="text-muted">Image should be placed in /assets/images/uploads/ folder</small>
                         </div>
+
+                        <!-- Tên thư mục chứa ảnh (imageType) -->
+                        <div class="form-group">
+                            <label for="imageFolder">Image Folder Name <span class="text-danger">*</span></label>
+                            <input name="imageFolder" type="text" required 
+                                   class="form-control" id="imageFolder"
+                                   placeholder="Enter folder name (e.g., Single)"
+                                   value="${roomType != null ? roomType.imageUrl : ''}">
+                            <small class="text-muted">All uploaded images will be stored in /assets/images/room-type/[folder]</small>
+                        </div>
+
+                        <!-- Upload nhiều ảnh -->
+                        <div class="form-group">
+                            <label>Upload Gallery Images</label>
+                            <input type="file" name="imageFiles" multiple class="form-control" />
+                            <small class="text-muted">You can select multiple images for this room type gallery.</small>
+                        </div>
+
+
+
+                        <h3><i class="fas fa-bed"></i> Room Details</h3>
 
                         <div class="form-group">
                             <label for="bed">Bed Type <span class="text-danger">*</span></label>
@@ -357,6 +381,23 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<img id="previewImage" style="max-width:200px; display:none; margin-top:10px;" />
+
+<script>
+                                           document.getElementById("images").addEventListener("change", function (event) {
+                                               const files = event.target.files;
+                                               if (files.length > 0) {
+                                                   const reader = new FileReader();
+                                                   reader.onload = function (e) {
+                                                       const img = document.getElementById("previewImage");
+                                                       img.src = e.target.result;
+                                                       img.style.display = "block";
+                                                   };
+                                                   reader.readAsDataURL(files[0]); // chỉ xem trước ảnh đầu
+                                               }
+                                           });
+</script>
+
 <script>
     $(document).ready(function () {
         // Form validation
@@ -392,12 +433,12 @@
             }
 
             // Validate image URL
-            var imageUrl = $('#imageUrl').val();
-            if (imageUrl && !/\.(jpg|jpeg|png|gif|webp)$/i.test(imageUrl)) {
-                $('#imageUrl').addClass('is-invalid');
-                errorMessage = 'Image URL must end with a valid image extension (.jpg, .png, etc.)';
-                isValid = false;
-            }
+//            var imageUrl = $('#imageUrl').val();
+//            if (imageUrl && !/\.(jpg|jpeg|png|gif|webp)$/i.test(imageUrl)) {
+//                $('#imageUrl').addClass('is-invalid');
+//                errorMessage = 'Image URL must end with a valid image extension (.jpg, .png, etc.)';
+//                isValid = false;
+//            }
 
             if (!isValid) {
                 e.preventDefault();
