@@ -3,6 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <style>
+    /* Giữ nguyên style cũ */
     .form-container {
         max-width: 900px;
         background: white;
@@ -44,6 +45,11 @@
         line-height: 1.5;
     }
 
+    textarea.form-control {
+        min-height: 80px;
+        resize: vertical;
+    }
+
     .form-control:focus {
         outline: none;
         border-color: #5a2b81;
@@ -62,6 +68,12 @@
     .form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-row-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
         gap: 20px;
     }
 
@@ -206,7 +218,7 @@
     }
 
     @media (max-width: 768px) {
-        .form-row {
+        .form-row, .form-row-3 {
             grid-template-columns: 1fr;
         }
     }
@@ -344,7 +356,105 @@
                                 <small class="text-muted">Must start with 0 (10 digits total)</small>
                             </div>
                         </div>
+
+                        <div class="form-row-3">
+                            <div class="form-group">
+                                <label>Date of Birth</label>
+                                <input name="dateOfBirth" type="date" 
+                                       class="form-control" id="dateOfBirth"
+                                       value="${isEdit && not empty customer.dateOfBirth ? customer.formattedDateOfBirth : ''}"
+                                       max="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>">
+                            </div>
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select name="gender" class="form-control" id="gender">
+                                    <option value="">Select Gender</option>
+                                    <option value="MALE" ${isEdit && customer.gender == 'MALE' ? 'selected' : ''}>Male</option>
+                                    <option value="FEMALE" ${isEdit && customer.gender == 'FEMALE' ? 'selected' : ''}>Female</option>
+                                    <option value="OTHER" ${isEdit && customer.gender == 'OTHER' ? 'selected' : ''}>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>ID Type</label>
+                                <select name="idType" class="form-control" id="idType">
+                                    <option value="">Select ID Type</option>
+                                    <option value="PASSPORT" ${isEdit && customer.idType == 'PASSPORT' ? 'selected' : ''}>Passport</option>
+                                    <option value="ID_CARD" ${isEdit && customer.idType == 'ID_CARD' ? 'selected' : ''}>ID Card</option>
+                                    <option value="DRIVER_LICENSE" ${isEdit && customer.idType == 'DRIVER_LICENSE' ? 'selected' : ''}>Driver License</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>ID Number</label>
+                            <input name="idNumber" type="text" 
+                                   class="form-control" id="idNumber"
+                                   placeholder="Enter ID number"
+                                   value="${isEdit ? customer.idNumber : ''}">
+                        </div>
                     </div>
+
+                    <!-- Address Information -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-map-marker-alt"></i> Address Information</h3>
+
+                        <div class="form-group">
+                            <label>Address</label>
+                            <textarea name="address" class="form-control" id="address"
+                                      placeholder="Enter street address"
+                                      rows="2">${isEdit ? customer.address : ''}</textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>City</label>
+                                <input name="city" type="text" 
+                                       class="form-control" id="city"
+                                       placeholder="Enter city"
+                                       value="${isEdit ? customer.city : ''}">
+                            </div>
+                            <div class="form-group">
+                                <label>Country</label>
+                                <input name="country" type="text" 
+                                       class="form-control" id="country"
+                                       placeholder="Enter country"
+                                       value="${isEdit ? customer.country : ''}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loyalty Program (Only for Edit) -->
+                    <c:if test="${isEdit}">
+                        <div class="form-section">
+                            <h3><i class="fas fa-star"></i> Loyalty Program</h3>
+
+                            <div class="form-row-3">
+                                <div class="form-group">
+                                    <label>Loyalty Points</label>
+                                    <input name="loyaltyPoints" type="number" 
+                                           class="form-control" id="loyaltyPoints"
+                                           min="0"
+                                           value="${customer.loyaltyPoints}">
+                                </div>
+                                <div class="form-group">
+                                    <label>Membership Level</label>
+                                    <select name="membershipLevel" class="form-control" id="membershipLevel">
+                                        <option value="BRONZE" ${customer.membershipLevel == 'BRONZE' ? 'selected' : ''}>Bronze</option>
+                                        <option value="SILVER" ${customer.membershipLevel == 'SILVER' ? 'selected' : ''}>Silver</option>
+                                        <option value="GOLD" ${customer.membershipLevel == 'GOLD' ? 'selected' : ''}>Gold</option>
+                                        <option value="PLATINUM" ${customer.membershipLevel == 'PLATINUM' ? 'selected' : ''}>Platinum</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>VIP Status</label>
+                                    <select name="isVIP" class="form-control" id="isVIP">
+                                        <option value="false" ${!customer.isVIP ? 'selected' : ''}>Regular</option>
+                                        <option value="true" ${customer.isVIP ? 'selected' : ''}>VIP</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </c:if>
 
                     <div class="btn-group">
                         <button type="submit" class="btn btn-primary">
@@ -392,22 +502,28 @@
                         <strong>Total Bookings:</strong> ${customer.totalBookings}
                     </p>
                     <p class="small mb-1">
+                        <strong>Total Spent:</strong> ${customer.formattedTotalSpent}
+                    </p>
+                    <p class="small mb-1">
                         <strong>Member Since:</strong> 
                         <fmt:formatDate value="${customer.createdAt}" pattern="dd/MM/yyyy"/>
                     </p>
+                    <p class="small mb-1">
+                        <strong>Last Visit:</strong> 
+                        <fmt:formatDate value="${customer.lastVisit}" pattern="dd/MM/yyyy"/>
+                    </p>
                     <p class="small mb-0">
-                        <strong>Last Updated:</strong> 
-                        <fmt:formatDate value="${customer.updatedAt}" pattern="dd/MM/yyyy HH:mm"/>
+                        <strong>Profile Completion:</strong> ${customer.profileCompletionPercentage}%
                     </p>
                 </div>
 
                 <div class="info-box">
-                    <h6><i class="fas fa-shield-alt"></i> Security Notes</h6>
+                    <h6><i class="fas fa-star"></i> Loyalty Benefits</h6>
                     <ul class="small">
-                        <li>Password changes are logged for security</li>
-                        <li>Customer will receive email notification</li>
-                        <li>All login attempts are monitored</li>
-                        <li>Two-factor authentication available</li>
+                        <li><strong>Bronze:</strong> Welcome benefits</li>
+                        <li><strong>Silver:</strong> 5% discount + bonus points</li>
+                        <li><strong>Gold:</strong> 10% discount + priority booking</li>
+                        <li><strong>Platinum:</strong> 15% discount + VIP perks</li>
                     </ul>
                 </div>
             </c:if>
@@ -604,6 +720,18 @@ $(document).ready(function() {
             $('#phone').addClass('is-invalid');
             errorMessage = 'Phone number must start with 0 and be exactly 10 digits';
             isValid = false;
+        }
+
+        // Date of birth validation
+        var dob = $('#dateOfBirth').val();
+        if (dob) {
+            var dobDate = new Date(dob);
+            var today = new Date();
+            if (dobDate > today) {
+                $('#dateOfBirth').addClass('is-invalid');
+                errorMessage = 'Date of birth cannot be in the future';
+                isValid = false;
+            }
         }
 
         if (!isValid) {

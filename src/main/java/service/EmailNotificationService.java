@@ -204,7 +204,7 @@ public class EmailNotificationService {
         content.append("===============\n");
         content.append("Booking ID: #").append(reservation.getId()).append("\n");
         content.append("Transaction ID: ").append(payment.getTransactionId()).append("\n");
-        content.append("Amount Paid: ").append(priceFormat.format(payment.getAmount())).append("₫\n");
+        content.append("Amount Paid: ").append(priceFormat.format(payment.getAmount())).append("đ\n");
         content.append("Payment Method: ").append(payment.getMethodDisplayName()).append("\n");
         content.append("Payment Date: ").append(dateFormat.format(new Date(System.currentTimeMillis()))).append("\n\n");
         
