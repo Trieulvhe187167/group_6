@@ -190,18 +190,7 @@ public class RoomInspectionDAO extends DBContext {
         return amenities;
     }
     
-    // Update inspection status
-    public void updateInspectionStatus(int inspectionId, String status) throws SQLException {
-        String sql = "UPDATE RoomInspections SET Status = ? WHERE Id = ?";
-        
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, status);
-            stmt.setInt(2, inspectionId);
-            stmt.executeUpdate();
-        }
-    }
+   
     
     // Complete inspection
     public void completeInspection(int inspectionId, int approvedBy) throws SQLException {
@@ -278,23 +267,7 @@ public class RoomInspectionDAO extends DBContext {
         return inspections;
     }
     
-    // Get inspection by reservation ID
-    public RoomInspection getInspectionByReservationId(int reservationId) throws SQLException {
-        String sql = "SELECT Id FROM RoomInspections WHERE ReservationId = ?";
-        
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, reservationId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return getInspectionById(rs.getInt("Id"));
-                }
-            }
-        }
-        return null;
-    }
-    
+  
     // Update inspection notes
     public void updateInspectionNotes(int inspectionId, String notes) throws SQLException {
         String sql = "UPDATE RoomInspections SET Notes = ? WHERE Id = ?";
@@ -539,4 +512,83 @@ public class RoomInspectionDAO extends DBContext {
         inspection.setTotalDamageCharges(damageTotal);
         inspection.setTotalCharges(itemTotal.add(damageTotal));
     }
+    
+    // Add this method to RoomInspectionDAO.java
+
+public RoomInspection getInspectionByReservationId(int reservationId) throws SQLException {
+    String sql = "SELECT ri.*, " +
+                 "u.FullName as InspectorName, " +
+                 "r.CustomerName, r.CheckIn, r.CheckOut, r.TotalAmount, " +
+                 "rm.RoomNumber, rt.TypeName as RoomTypeName, " +
+                 "(SELECT COALESCE(SUM(TotalPrice), 0) FROM InspectionItems " +
+                 " WHERE InspectionId = ri.Id) as ItemCharges, " +
+                 "(SELECT COALESCE(SUM(EstimatedCost), 0) FROM RoomDamages " +
+                 " WHERE InspectionId = ri.Id) as DamageCharges " +
+                 "FROM RoomInspections ri " +
+                 "JOIN Users u ON ri.InspectorId = u.Id " +
+                 "JOIN Reservations r ON ri.ReservationId = r.Id " +
+                 "JOIN Rooms rm ON r.RoomId = rm.Id " +
+                 "JOIN RoomTypes rt ON rm.RoomTypeId = rt.Id " +
+                 "WHERE ri.ReservationId = ? " +
+                 "ORDER BY ri.InspectionTime DESC " +
+                 "LIMIT 1";
+    
+    try (Connection conn = getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setInt(1, reservationId);
+        
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                RoomInspection inspection = new RoomInspection();
+                inspection.setId(rs.getInt("Id"));
+                inspection.setReservationId(rs.getInt("ReservationId"));
+                inspection.setInspectorId(rs.getInt("InspectorId"));
+                inspection.setInspectionTime(rs.getTimestamp("InspectionTime"));
+                inspection.setRoomCondition(rs.getString("RoomCondition"));
+                inspection.setCleanlinessScore(rs.getInt("CleanlinessScore"));
+                inspection.setNotes(rs.getString("Notes"));
+                inspection.setStatus(rs.getString("Status"));
+                
+                // Set inspector info
+                User inspector = new User();
+                inspector.setFullName(rs.getString("InspectorName"));
+                inspection.setInspector(inspector);
+                
+                // Set charges
+                inspection.setTotalItemCharges(BigDecimal.valueOf(rs.getDouble("ItemCharges")));
+                inspection.setTotalDamageCharges(BigDecimal.valueOf(rs.getDouble("DamageCharges")));
+                inspection.setTotalCharges(inspection.getTotalItemCharges().add(inspection.getTotalDamageCharges()));
+                
+                // Set reservation info
+                Reservation reservation = new Reservation();
+                reservation.setId(rs.getInt("ReservationId"));
+                reservation.setCustomerName(rs.getString("CustomerName"));
+                reservation.setCheckIn(rs.getDate("CheckIn"));
+                reservation.setCheckOut(rs.getDate("CheckOut"));
+                reservation.setTotalAmount(rs.getDouble("TotalAmount"));
+                reservation.setRoomNumber(rs.getString("RoomNumber"));
+                reservation.setRoomTypeName(rs.getString("RoomTypeName"));
+                inspection.setReservation(reservation);
+                
+                return inspection;
+            }
+        }
+    }
+    return null;
+}
+
+// Also add this method to update inspection status
+public boolean updateInspectionStatus(int inspectionId, String status) throws SQLException {
+    String sql = "UPDATE RoomInspections SET Status = ?, UpdatedAt = NOW() WHERE Id = ?";
+    
+    try (Connection conn = getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setString(1, status);
+        stmt.setInt(2, inspectionId);
+        
+        return stmt.executeUpdate() > 0;
+    }
+}
 }

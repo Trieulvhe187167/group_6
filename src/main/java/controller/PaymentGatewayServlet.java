@@ -133,95 +133,97 @@ public class PaymentGatewayServlet extends HttpServlet {
         }
     }
     
-    private void processPayment(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+   
+private void processPayment(HttpServletRequest request, HttpServletResponse response)
+        throws IOException {
+    
+    HttpSession session = request.getSession();
+    User currentUser = (User) session.getAttribute("user");
+    
+    try {
+        int paymentId = Integer.parseInt(request.getParameter("paymentId"));
+        int reservationId = Integer.parseInt(request.getParameter("reservationId"));
+        String method = request.getParameter("method");
         
-        HttpSession session = request.getSession();
-        User currentUser = (User) session.getAttribute("user");
+        // Get reservation details
+        Reservation reservation = reservationDAO.getReservationById(reservationId);
         
-        try {
-            int paymentId = Integer.parseInt(request.getParameter("paymentId"));
-            int reservationId = Integer.parseInt(request.getParameter("reservationId"));
-            String method = request.getParameter("method");
+        // Calculate deposit amount (10% of total)
+        double depositAmount = reservation.getTotalAmount() * 0.1;
+        
+        // Simulate payment processing
+        boolean paymentSuccess = simulatePaymentProcessing(method);
+        
+        if (paymentSuccess) {
+            // Generate transaction ID
+            String transactionId = generateTransactionId(method);
             
-            // Get reservation details
-            Reservation reservation = reservationDAO.getReservationById(reservationId);
+            // Update the initial payment record to be a deposit payment
+            Payment payment = paymentDAO.getPaymentById(paymentId);
+            payment.setAmount(depositAmount); // Update to deposit amount
+            payment.setStatus("SUCCESS");
+            payment.setTransactionId(transactionId);
+            payment.setPaymentType("DEPOSIT"); //  Set payment type là DEPOSIT
             
-            // Calculate deposit amount (10% of total)
-            double depositAmount = reservation.getTotalAmount() * 0.1;
+            // Update payment in database
+            paymentDAO.updatePayment(payment);
             
-            // Simulate payment processing
-            boolean paymentSuccess = simulatePaymentProcessing(method);
+            // Update reservation with deposit information
+            reservation.setDepositAmount(depositAmount);
+            reservation.setDepositPaidDate(new java.sql.Date(System.currentTimeMillis()));
+            reservation.setDepositStatus("PAID");
+            reservation.setStatus("CONFIRMED");
             
-            if (paymentSuccess) {
-                // Generate transaction ID
-                String transactionId = generateTransactionId(method);
-                
-                // Update the initial payment record to be a deposit payment
-                Payment payment = paymentDAO.getPaymentById(paymentId);
-                payment.setAmount(depositAmount); // Update to deposit amount
-                payment.setStatus("SUCCESS");
-                payment.setTransactionId(transactionId);
-                
-                // Update payment in database
-                paymentDAO.updatePayment(payment);
-                
-                // Update reservation with deposit information
-                reservation.setDepositAmount(depositAmount);
-                reservation.setDepositPaidDate(new java.sql.Date(System.currentTimeMillis()));
-                reservation.setDepositStatus("PAID");
-                reservation.setStatus("CONFIRMED");
-                
-                // Update reservation in database
-                reservationDAO.updateReservation(reservation);
-                
-                // Log activity
-                Activity activity = new Activity();
-                activity.setType("DEPOSIT_PAYMENT");
-                activity.setReservationId(reservationId);
-                activity.setUserId(currentUser != null ? currentUser.getId() : reservation.getUserId());
-                activity.setDescription("Deposit payment received for reservation #" + reservationId + 
-                                      " - Amount: " + depositAmount + " (10% of total)");
-                activity.setAmount(depositAmount);
-                activity.setIpAddress(request.getRemoteAddr());
-                activityDAO.logActivity(activity);
-                
-                // GỬI EMAIL XÁC NHẬN THANH TOÁN
-                try {
-                    emailService.sendPaymentConfirmation(reservation, payment);
-                    System.out.println("Payment confirmation email sent to: " + reservation.getCustomerEmail());
-                } catch (Exception e) {
-                    // Log lỗi nhưng không làm thất bại quá trình thanh toán
-                    System.err.println("Failed to send payment confirmation email: " + e.getMessage());
-                    e.printStackTrace();
-                }
-                
-                // Clear session booking data
-                session.removeAttribute("pendingBookingData");
-                session.removeAttribute("pendingOTP");
-                
-                // Add success message to session
-                session.setAttribute("successMessage", 
-                    "Deposit payment of " + String.format("%,.0f", depositAmount) + 
-                    " VND (10%) has been received. Your reservation is confirmed!");
-                
-                // Redirect to confirmation page
-                response.sendRedirect("BookingConfirmation?reservationId=" + reservationId);
-                
-            } else {
-                // Payment failed
-                paymentDAO.updatePaymentStatus(paymentId, "FAILED", null);
-                
-                request.setAttribute("error", "Payment failed. Please try again.");
-                request.setAttribute("reservationId", reservationId);
-                request.getRequestDispatcher("/jsp/payment-failed.jsp").forward(request, response);
+            // Update reservation in database
+            reservationDAO.updateReservation(reservation);
+            
+            // Log activity
+            Activity activity = new Activity();
+            activity.setType("DEPOSIT_PAYMENT");
+            activity.setReservationId(reservationId);
+            activity.setUserId(currentUser != null ? currentUser.getId() : reservation.getUserId());
+            activity.setDescription("Deposit payment received for reservation #" + reservationId + 
+                                  " - Amount: " + depositAmount + " (10% of total)");
+            activity.setAmount(depositAmount);
+            activity.setIpAddress(request.getRemoteAddr());
+            activityDAO.logActivity(activity);
+            
+            // GỬI EMAIL XÁC NHẬN THANH TOÁN
+            try {
+                emailService.sendPaymentConfirmation(reservation, payment);
+                System.out.println("Payment confirmation email sent to: " + reservation.getCustomerEmail());
+            } catch (Exception e) {
+                // Log lỗi nhưng không làm thất bại quá trình thanh toán
+                System.err.println("Failed to send payment confirmation email: " + e.getMessage());
+                e.printStackTrace();
             }
             
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendRedirect("RoomListServlet");
+            // Clear session booking data
+            session.removeAttribute("pendingBookingData");
+            session.removeAttribute("pendingOTP");
+            
+            // Add success message to session
+            session.setAttribute("successMessage", 
+                "Deposit payment of " + String.format("%,.0f", depositAmount) + 
+                " VND (10%) has been received. Your reservation is confirmed!");
+            
+            // Redirect to confirmation page
+            response.sendRedirect("BookingConfirmation?reservationId=" + reservationId);
+            
+        } else {
+            // Payment failed
+            paymentDAO.updatePaymentStatus(paymentId, "FAILED", null);
+            
+            request.setAttribute("error", "Payment failed. Please try again.");
+            request.setAttribute("reservationId", reservationId);
+            request.getRequestDispatcher("/jsp/payment-failed.jsp").forward(request, response);
         }
+        
+    } catch (Exception e) {
+        e.printStackTrace();
+        response.sendRedirect("RoomListServlet");
     }
+}
     
     private boolean simulatePaymentProcessing(String method) {
         // In production, integrate with actual payment gateways

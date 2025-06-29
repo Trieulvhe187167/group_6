@@ -13,7 +13,7 @@
 </head>
 <body>
     <div class="error-container">
-        <h2>Đã xảy ra lỗi!</h2>
+        <h2>ERRRRORR!!!!!!!</h2>
         <div class="error-message">
             <%-- Hiển thị lỗi từ attribute 'error' --%>
             <c:if test="${not empty error}">

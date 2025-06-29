@@ -14,6 +14,9 @@ public class Service {
     private Timestamp updatedAt;
     private int createdBy;
     
+    // Additional field for active status
+    private boolean isActive;
+    
     // Constructors
     public Service() {}
     
@@ -23,6 +26,7 @@ public class Service {
         this.category = category;
         this.price = price;
         this.status = "ACTIVE";
+        this.isActive = true;
     }
     
     // Getters and Setters
@@ -52,6 +56,10 @@ public class Service {
     
     public int getCreatedBy() { return createdBy; }
     public void setCreatedBy(int createdBy) { this.createdBy = createdBy; }
+    
+    // Additional getter and setter for isActive
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean isActive) { this.isActive = isActive; }
     
     // Helper methods
     public String getCategoryDisplayName() {

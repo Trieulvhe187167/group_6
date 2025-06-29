@@ -603,6 +603,8 @@
 </div>
 
 <script>
+// Complete checkout JavaScript functions
+
 let currentReservationData = null;
 let inspectionData = null;
 
@@ -612,6 +614,12 @@ $(document).ready(function() {
         if (e.which == 13) {
             searchCheckOut();
         }
+    });
+    
+    // Handle check-out form submission
+    $('#checkOutForm').on('submit', function(e) {
+        e.preventDefault();
+        processCheckOut();
     });
 });
 
@@ -665,12 +673,12 @@ function requestInspection(reservationId) {
 function startCheckOut(reservationId) {
     // Show loading
     $('#checkOutModal').modal('show');
-    $('#inspectionSummary').html(`
-        <div class="text-center py-3">
-            <i class="fas fa-spinner fa-spin fa-2x text-info"></i>
-            <p class="mt-2 mb-0">Loading checkout details...</p>
-        </div>
-    `);
+    
+    var loadingHtml = '<div class="text-center py-3">';
+    loadingHtml += '<i class="fas fa-spinner fa-spin fa-2x text-info"></i>';
+    loadingHtml += '<p class="mt-2 mb-0">Loading checkout details...</p>';
+    loadingHtml += '</div>';
+    $('#inspectionSummary').html(loadingHtml);
     
     // Get checkout details including inspection data
     $.ajax({
@@ -687,8 +695,9 @@ function startCheckOut(reservationId) {
             populateCheckOutModal(data);
             calculateFinalBill(data);
         },
-        error: function() {
-            alert('Error loading checkout details');
+        error: function(xhr, status, error) {
+            console.error('Error loading checkout details:', error);
+            alert('Error loading checkout details. Please try again.');
             $('#checkOutModal').modal('hide');
         }
     });
@@ -722,16 +731,20 @@ function populateCheckOutModal(data) {
         displayInspectionSummary(inspection);
         loadInspectionCharges(inspection);
     } else {
-        $('#inspectionSummary').html(`
-            <div class="alert alert-warning mb-0">
-                <i class="fas fa-exclamation-triangle"></i> 
-                No inspection data available
-            </div>
-        `);
+        var noInspectionHtml = '<div class="alert alert-warning mb-0">';
+        noInspectionHtml += '<i class="fas fa-exclamation-triangle"></i> ';
+        noInspectionHtml += 'No inspection data available';
+        noInspectionHtml += '</div>';
+        $('#inspectionSummary').html(noInspectionHtml);
+        
+        // Hide charge sections if no inspection
+        $('#minibarSection').hide();
+        $('#servicesSection').hide();
+        $('#damagesSection').hide();
     }
     
     // Security deposit
-    const securityDeposit = checkIn ? checkIn.securityDeposit : 0;
+    const securityDeposit = data.securityDeposit || 0;
     $('#securityDeposit').text(formatCurrency(securityDeposit));
     
     // Amount already paid
@@ -749,39 +762,40 @@ function displayInspectionSummary(inspection) {
         case 'DAMAGED': conditionClass = 'status-poor'; break;
     }
     
-    let html = `
-        <div class="mb-2">
-            <strong>Inspector:</strong> ${inspection.inspectorName}
-        </div>
-        <div class="mb-2">
-            <strong>Inspection Time:</strong><br>
-            ${formatDateTime(inspection.inspectionTime)}
-        </div>
-        <div class="mb-2">
-            <strong>Room Condition:</strong><br>
-            <span class="room-status-indicator ${conditionClass}">
-                ${inspection.roomCondition}
-            </span>
-        </div>
-        <div class="mb-2">
-            <strong>Cleanliness:</strong> ${inspection.cleanlinessScore}/10
-        </div>
-    `;
+    let html = '<div class="mb-2">';
+    html += '<strong>Inspector:</strong> ' + (inspection.inspectorName || 'Unknown');
+    html += '</div>';
+    html += '<div class="mb-2">';
+    html += '<strong>Inspection Time:</strong><br>';
+    html += formatDateTime(inspection.inspectionTime);
+    html += '</div>';
+    html += '<div class="mb-2">';
+    html += '<strong>Room Condition:</strong><br>';
+    html += '<span class="room-status-indicator ' + conditionClass + '">';
+    html += inspection.roomCondition;
+    html += '</span>';
+    html += '</div>';
+    html += '<div class="mb-2">';
+    html += '<strong>Cleanliness:</strong> ' + inspection.cleanlinessScore + '/10';
+    html += '</div>';
     
     if (inspection.notes) {
-        html += `
-            <div class="mt-3">
-                <strong>Notes:</strong><br>
-                <small>${inspection.notes}</small>
-            </div>
-        `;
+        html += '<div class="mt-3">';
+        html += '<strong>Notes:</strong><br>';
+        html += '<small>' + inspection.notes + '</small>';
+        html += '</div>';
     }
     
     $('#inspectionSummary').html(html);
 }
 
 function loadInspectionCharges(inspection) {
-    // Minibar items
+    // Reset sections
+    $('#minibarSection').hide();
+    $('#servicesSection').hide();
+    $('#damagesSection').hide();
+    
+    // Minibar & Amenity items
     if (inspection.inspectionItems && inspection.inspectionItems.length > 0) {
         const minibarItems = inspection.inspectionItems.filter(item => 
             item.itemCategory === 'MINIBAR' || item.itemCategory === 'AMENITY'
@@ -792,19 +806,17 @@ function loadInspectionCharges(inspection) {
             let minibarHtml = '';
             let minibarTotal = 0;
             
-            minibarItems.forEach(item => {
-                minibarHtml += `
-                    <div class="minibar-item">
-                        <div>
-                            <strong>${item.itemName}</strong>
-                            <span class="text-muted ml-2">x${item.quantity}</span>
-                        </div>
-                        <div>
-                            <span class="text-muted">${formatCurrency(item.unitPrice)} × ${item.quantity} = </span>
-                            <strong>${formatCurrency(item.totalPrice)}</strong>
-                        </div>
-                    </div>
-                `;
+            minibarItems.forEach(function(item) {
+                minibarHtml += '<div class="minibar-item">';
+                minibarHtml += '<div>';
+                minibarHtml += '<strong>' + item.itemName + '</strong>';
+                minibarHtml += '<span class="text-muted ml-2">x' + item.quantity + '</span>';
+                minibarHtml += '</div>';
+                minibarHtml += '<div>';
+                minibarHtml += '<span class="text-muted">' + formatCurrency(item.unitPrice) + ' × ' + item.quantity + ' = </span>';
+                minibarHtml += '<strong>' + formatCurrency(item.totalPrice) + '</strong>';
+                minibarHtml += '</div>';
+                minibarHtml += '</div>';
                 minibarTotal += item.totalPrice;
             });
             
@@ -814,26 +826,25 @@ function loadInspectionCharges(inspection) {
     }
     
     // Service items
-    const serviceItems = inspection.inspectionItems ? 
-        inspection.inspectionItems.filter(item => item.itemCategory === 'SERVICE') : [];
-    
-    if (serviceItems.length > 0) {
-        $('#servicesSection').show();
-        let serviceHtml = '';
-        let serviceTotal = 0;
+    if (inspection.inspectionItems) {
+        const serviceItems = inspection.inspectionItems.filter(item => item.itemCategory === 'SERVICE');
         
-        serviceItems.forEach(item => {
-            serviceHtml += `
-                <div class="charge-item">
-                    <span>${item.itemName}</span>
-                    <span>${formatCurrency(item.totalPrice)}</span>
-                </div>
-            `;
-            serviceTotal += item.totalPrice;
-        });
-        
-        $('#serviceItems').html(serviceHtml);
-        $('#servicesTotal').text(formatCurrency(serviceTotal));
+        if (serviceItems.length > 0) {
+            $('#servicesSection').show();
+            let serviceHtml = '';
+            let serviceTotal = 0;
+            
+            serviceItems.forEach(function(item) {
+                serviceHtml += '<div class="charge-item">';
+                serviceHtml += '<span>' + item.itemName + '</span>';
+                serviceHtml += '<span>' + formatCurrency(item.totalPrice) + '</span>';
+                serviceHtml += '</div>';
+                serviceTotal += item.totalPrice;
+            });
+            
+            $('#serviceItems').html(serviceHtml);
+            $('#servicesTotal').text(formatCurrency(serviceTotal));
+        }
     }
     
     // Damages
@@ -842,22 +853,20 @@ function loadInspectionCharges(inspection) {
         let damageHtml = '';
         let damageTotal = 0;
         
-        inspection.roomDamages.forEach(damage => {
+        inspection.roomDamages.forEach(function(damage) {
             let severityClass = 'severity-' + damage.severity.toLowerCase();
-            damageHtml += `
-                <div class="damage-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <strong>${damage.damageType}</strong>
-                            <span class="damage-severity ${severityClass} ml-2">${damage.severity}</span>
-                            <p class="mb-1 mt-1">${damage.description}</p>
-                        </div>
-                        <div class="text-danger font-weight-bold">
-                            ${formatCurrency(damage.estimatedCost)}
-                        </div>
-                    </div>
-                </div>
-            `;
+            damageHtml += '<div class="damage-item">';
+            damageHtml += '<div class="d-flex justify-content-between align-items-start">';
+            damageHtml += '<div>';
+            damageHtml += '<strong>' + damage.damageType + '</strong>';
+            damageHtml += '<span class="damage-severity ' + severityClass + ' ml-2">' + damage.severity + '</span>';
+            damageHtml += '<p class="mb-1 mt-1">' + damage.description + '</p>';
+            damageHtml += '</div>';
+            damageHtml += '<div class="text-danger font-weight-bold">';
+            damageHtml += formatCurrency(damage.estimatedCost);
+            damageHtml += '</div>';
+            damageHtml += '</div>';
+            damageHtml += '</div>';
             damageTotal += damage.estimatedCost;
         });
         
@@ -883,7 +892,7 @@ function calculateFinalBill(data) {
     let finalAmount = subtotal - amountPaid;
     let refundAmount = 0;
     
-    if (damageCharges < securityDeposit) {
+    if (securityDeposit > 0 && damageCharges < securityDeposit) {
         refundAmount = securityDeposit - damageCharges;
         finalAmount = finalAmount - refundAmount;
     }
@@ -896,6 +905,8 @@ function calculateFinalBill(data) {
     if (refundAmount > 0) {
         $('#refundRow').show();
         $('#refundAmount').text(formatCurrency(refundAmount));
+    } else {
+        $('#refundRow').hide();
     }
     
     $('#finalAmount').text(formatCurrency(Math.max(0, finalAmount)));
@@ -903,300 +914,252 @@ function calculateFinalBill(data) {
     // Update button based on amount
     if (finalAmount <= 0) {
         $('#btnCompleteCheckout').html('<i class="fas fa-check-circle"></i> Complete Check-Out (No Payment Due)');
+    } else {
+        var buttonText = '<i class="fas fa-check-circle"></i> Complete Check-Out (';
+        buttonText += formatCurrency(finalAmount) + ' Due)';
+        $('#btnCompleteCheckout').html(buttonText);
     }
 }
 
-function selectPaymentMethod(method) {
-    $('.payment-method-btn').removeClass('selected');
-    $(`input[value="${method}"]`).prop('checked', true).closest('.payment-method-btn').addClass('selected');
-}
-
-function printInvoice() {
-    window.print();
-}
-
-function showLateCheckouts() {
-    // Filter and show only late checkouts
-    alert('Showing late checkouts...');
-}
-
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN');
-}
-
-function formatDateTime(dateString) {
-    if (!dateString) return 'N/A';
-    
-    try {
-        const date = new Date(dateString);
-        // Check if date is valid
-        if (isNaN(date.getTime())) {
-            return 'Invalid Date';
-        }
-        // Use Vietnamese locale with specific format
-        return date.toLocaleString('vi-VN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
-    } catch (error) {
-        console.error('Error formatting date:', error);
-        return 'Error';
-    }
-}
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-    }).format(amount);
-}
-
-// Form submission
-$('#checkOutForm').submit(function(e) {
-    e.preventDefault();
-    
+function processCheckOut() {
     // Validate payment method
-    if (!$('input[name="paymentMethod"]:checked').val()) {
+    const paymentMethod = $('input[name="paymentMethod"]:checked').val();
+    if (!paymentMethod && parseFloat($('#finalAmount').text().replace(/[^0-9.-]+/g,"")) > 0) {
         alert('Please select a payment method');
         return;
     }
     
-    // Confirm checkout
-    if (!confirm('Confirm checkout and payment?')) {
+    // Confirm check-out
+    const finalAmount = $('#finalAmount').text();
+    var confirmMessage = 'Confirm check-out?\n\n';
+    confirmMessage += 'Final Amount: ' + finalAmount + '\n';
+    confirmMessage += 'Payment Method: ' + (paymentMethod || 'No payment required');
+    
+    if (!confirm(confirmMessage)) {
         return;
     }
     
     // Show loading
-    const btn = $('#btnCompleteCheckout');
-    const originalText = btn.html();
-    btn.html('<i class="fas fa-spinner fa-spin"></i> Processing...').prop('disabled', true);
+    $('#btnCompleteCheckout').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
     
-    // Submit form
+    // Submit form data
+    const formData = $('#checkOutForm').serialize();
+    
     $.ajax({
-        url: $(this).attr('action'),
+        url: '${pageContext.request.contextPath}/receptionist/check-out',
         method: 'POST',
-        data: $(this).serialize(),
+        data: formData,
         success: function(response) {
             if (response.success) {
+                alert('Check-out completed successfully!');
                 $('#checkOutModal').modal('hide');
-                // Show success message
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Check-out Successful!',
-                    text: 'Guest has been checked out successfully',
-                    showConfirmButton: false,
-                    timer: 2000
-                }).then(() => {
-                    // Redirect to invoice or reload
-                    location.reload();
-                });
+                // Redirect to check-out page to refresh list
+                window.location.href = '${pageContext.request.contextPath}/receptionist/check-out';
             } else {
-                alert('Error: ' + response.message);
-                btn.html(originalText).prop('disabled', false);
+                alert('Error: ' + (response.message || 'Failed to process check-out'));
+                $('#btnCompleteCheckout').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Complete Check-Out');
             }
         },
-        error: function() {
-            alert('Error processing checkout');
-            btn.html(originalText).prop('disabled', false);
+        error: function(xhr, status, error) {
+            console.error('Check-out error:', error);
+            alert('Error processing check-out. Please try again.');
+            $('#btnCompleteCheckout').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Complete Check-Out');
         }
     });
-});
-// Function to calculate final amount considering deposit
-function calculateFinalAmountWithDeposit() {
-    const roomCharges = parseFloat($('#roomCharges').text().replace(/[₫,]/g, '')) || 0;
-    const serviceCharges = parseFloat($('#serviceCharges').text().replace(/[₫,]/g, '')) || 0;
-    const amenityCharges = parseFloat($('#amenityCharges').text().replace(/[₫,]/g, '')) || 0;
-    const damageCharges = parseFloat($('#damageCharges').val()) || 0;
-    const depositPaid = parseFloat($('#depositPaid').val()) || 0;
-    
-    // Total charges
-    const totalCharges = roomCharges + serviceCharges + amenityCharges + damageCharges;
-    
-    // Amount already paid (deposit)
-    const amountPaid = depositPaid;
-    
-    // Final amount to pay (can be negative if deposit covers all charges)
-    const finalAmount = totalCharges - amountPaid;
-    
-    // Update display
-    $('#totalCharges').text(formatCurrency(totalCharges));
-    $('#depositAmount').text(formatCurrency(depositPaid));
-    
-    if (finalAmount < 0) {
-        // Customer gets refund
-        $('#finalAmount').html(`<span class="text-success">Refund: ${formatCurrency(Math.abs(finalAmount))}</span>`);
-        $('#refundAmount').val(Math.abs(finalAmount));
-        $('#paymentMethodSection').hide();
-        $('#refundSection').show();
-    } else if (finalAmount > 0) {
-        // Customer needs to pay more
-        $('#finalAmount').html(`<span class="text-danger">To Pay: ${formatCurrency(finalAmount)}</span>`);
-        $('#refundAmount').val(0);
-        $('#paymentMethodSection').show();
-        $('#refundSection').hide();
-    } else {
-        // Exact amount - no payment needed
-        $('#finalAmount').html(`<span class="text-info">No Payment Required</span>`);
-        $('#refundAmount').val(0);
-        $('#paymentMethodSection').hide();
-        $('#refundSection').hide();
-    }
-    
-    return finalAmount;
 }
 
-// Function to process check-out with deposit handling
-function processCheckOutWithDeposit() {
-    const reservationId = $('#reservationSelect').val();
+function printInvoice() {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
     
-    if (!reservationId) {
-        showAlert('error', 'Please select a reservation to check out');
-        return;
-    }
+    // Generate invoice HTML
+    const invoiceHtml = generateInvoiceHTML();
     
-    // Get all values
-    const roomCondition = $('input[name="roomCondition"]:checked').val();
-    const damageCharges = parseFloat($('#damageCharges').val()) || 0;
-    const damageDescription = $('#damageDescription').val();
-    const checkOutNotes = $('#checkOutNotes').val();
-    const paymentMethod = $('input[name="paymentMethod"]:checked').val();
-    const refundAmount = parseFloat($('#refundAmount').val()) || 0;
-    const finalAmount = calculateFinalAmountWithDeposit();
+    // Write to print window
+    printWindow.document.write(invoiceHtml);
+    printWindow.document.close();
     
-    // Validate room condition
-    if (!roomCondition) {
-        showAlert('error', 'Please select room condition');
-        return;
-    }
-    
-    // If customer needs to pay and no payment method selected
-    if (finalAmount > 0 && !paymentMethod) {
-        showAlert('error', 'Please select a payment method');
-        return;
-    }
-    
-    // Prepare data
-    const checkOutData = {
-        reservationId: reservationId,
-        roomCondition: roomCondition,
-        damageCharges: damageCharges,
-        damageDescription: damageDescription,
-        checkOutNotes: checkOutNotes,
-        paymentMethod: paymentMethod || 'NONE',
-        finalAmount: Math.abs(finalAmount),
-        isRefund: finalAmount < 0,
-        refundAmount: refundAmount
+    // Print after loading
+    printWindow.onload = function() {
+        printWindow.print();
     };
+}
+
+function generateInvoiceHTML() {
+    const finalAmount = $('#finalAmount').text();
+    const refundAmount = $('#refundAmount').text();
+    const subtotal = $('#subtotal').text();
+    const guestName = $('#guestName').text();
+    const bookingId = $('#bookingId').text();
+    const roomNumber = $('#modalRoomNumber').text();
+    const checkInDate = $('#checkInDate').text();
+    const checkOutDate = $('#checkOutDate').text();
+    const billNights = $('#billNights').text();
+    const roomCharges = $('#roomCharges').text();
+    const amountPaid = $('#amountPaid').text();
     
-    // Confirm action
-    let confirmMessage = 'Are you sure you want to complete check-out?';
-    if (finalAmount < 0) {
-        confirmMessage += `\n\nRefund Amount: ${formatCurrency(Math.abs(finalAmount))}`;
-    } else if (finalAmount > 0) {
-        confirmMessage += `\n\nAmount to Collect: ${formatCurrency(finalAmount)}`;
+    let html = '<!DOCTYPE html><html><head>';
+    html += '<title>Invoice - Booking #' + bookingId + '</title>';
+    html += '<style>';
+    html += 'body { font-family: Arial, sans-serif; margin: 20px; }';
+    html += '.header { text-align: center; margin-bottom: 30px; }';
+    html += '.invoice-details { margin-bottom: 30px; }';
+    html += '.invoice-table { width: 100%; border-collapse: collapse; }';
+    html += '.invoice-table th, .invoice-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }';
+    html += '.invoice-table th { background-color: #f2f2f2; }';
+    html += '.total-row { font-weight: bold; background-color: #f9f9f9; }';
+    html += '.footer { margin-top: 50px; text-align: center; }';
+    html += '</style></head><body>';
+    
+    // Header
+    html += '<div class="header">';
+    html += '<h1>Hotel Invoice</h1>';
+    html += '<p>Invoice Date: ' + new Date().toLocaleDateString() + '</p>';
+    html += '</div>';
+    
+    // Invoice details
+    html += '<div class="invoice-details">';
+    html += '<p><strong>Guest Name:</strong> ' + guestName + '</p>';
+    html += '<p><strong>Booking ID:</strong> #' + bookingId + '</p>';
+    html += '<p><strong>Room:</strong> ' + roomNumber + '</p>';
+    html += '<p><strong>Check-in:</strong> ' + checkInDate + '</p>';
+    html += '<p><strong>Check-out:</strong> ' + checkOutDate + '</p>';
+    html += '</div>';
+    
+    // Invoice table
+    html += '<table class="invoice-table">';
+    html += '<thead><tr><th>Description</th><th style="text-align: right;">Amount</th></tr></thead>';
+    html += '<tbody>';
+    
+    // Room charges
+    html += '<tr>';
+    html += '<td>Room Charges (' + billNights + ' nights)</td>';
+    html += '<td style="text-align: right;">' + roomCharges + '</td>';
+    html += '</tr>';
+    
+    // Minibar charges if visible
+    if ($('#minibarSection').is(':visible')) {
+        html += '<tr>';
+        html += '<td>Minibar & Amenities</td>';
+        html += '<td style="text-align: right;">' + $('#minibarTotal').text() + '</td>';
+        html += '</tr>';
     }
     
-    if (confirm(confirmMessage)) {
-        // Show loading
-        showLoading('Processing check-out with deposit handling...');
-        
-        // Send AJAX request
-        $.ajax({
-            url: 'check-out',
-            type: 'POST',
-            data: JSON.stringify(checkOutData),
-            contentType: 'application/json',
-            success: function(response) {
-                hideLoading();
-                if (response.success) {
-                    showAlert('success', 'Check-out completed successfully!');
-                    
-                    // If there's a refund, show refund receipt
-                    if (finalAmount < 0) {
-                        showRefundReceipt(reservationId, Math.abs(finalAmount));
-                    }
-                    
-                    // Reset form after 2 seconds
-                    setTimeout(() => {
-                        resetCheckOutForm();
-                        loadReservations();
-                    }, 2000);
-                } else {
-                    showAlert('error', response.message || 'Failed to process check-out');
-                }
-            },
-            error: function(xhr, status, error) {
-                hideLoading();
-                showAlert('error', 'Error processing check-out: ' + error);
-            }
+    // Service charges if visible
+    if ($('#servicesSection').is(':visible')) {
+        html += '<tr>';
+        html += '<td>Additional Services</td>';
+        html += '<td style="text-align: right;">' + $('#servicesTotal').text() + '</td>';
+        html += '</tr>';
+    }
+    
+    // Damage charges if visible
+    if ($('#damagesSection').is(':visible')) {
+        html += '<tr>';
+        html += '<td>Room Damages</td>';
+        html += '<td style="text-align: right;">' + $('#damagesTotal').text() + '</td>';
+        html += '</tr>';
+    }
+    
+    // Subtotal
+    html += '<tr class="total-row">';
+    html += '<td>Subtotal</td>';
+    html += '<td style="text-align: right;">' + subtotal + '</td>';
+    html += '</tr>';
+    
+    // Amount paid
+    html += '<tr>';
+    html += '<td>Amount Paid</td>';
+    html += '<td style="text-align: right;">-' + amountPaid + '</td>';
+    html += '</tr>';
+    
+    // Refund if visible
+    if ($('#refundRow').is(':visible')) {
+        html += '<tr>';
+        html += '<td>Security Deposit Refund</td>';
+        html += '<td style="text-align: right;">-' + refundAmount + '</td>';
+        html += '</tr>';
+    }
+    
+    // Final amount
+    html += '<tr class="total-row">';
+    html += '<td>Final Amount</td>';
+    html += '<td style="text-align: right;">' + finalAmount + '</td>';
+    html += '</tr>';
+    
+    html += '</tbody></table>';
+    
+    // Footer
+    html += '<div class="footer">';
+    html += '<p>Thank you for staying with us!</p>';
+    html += '<p>For any questions, please contact reception.</p>';
+    html += '</div>';
+    
+    html += '</body></html>';
+    
+    return html;
+}
+
+// Helper functions
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function formatDateTime(dateTimeString) {
+    const date = new Date(dateTimeString);
+    return date.toLocaleString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', { 
+        style: 'currency', 
+        currency: 'VND' 
+    }).format(amount);
+}
+
+function displaySearchResults(results) {
+    let html = '';
+    
+    if (results.length === 0) {
+        html = '<div class="text-center py-5">';
+        html += '<i class="fas fa-search fa-3x text-muted mb-3"></i>';
+        html += '<h5 class="text-muted">No results found</h5>';
+        html += '<p class="text-muted">Try searching with different keywords</p>';
+        html += '</div>';
+    } else {
+        results.forEach(function(res) {
+            html += '<div class="checkout-card mb-3">';
+            html += '<div class="card-body">';
+            html += '<div class="row align-items-center">';
+            html += '<div class="col-md-7">';
+            html += '<h5>Room ' + res.roomNumber + ' - ' + res.customerName + '</h5>';
+            html += '<p class="mb-1">';
+            html += '<i class="fas fa-calendar"></i> ';
+            html += formatDate(res.checkIn) + ' → ' + formatDate(res.checkOut);
+            html += '</p>';
+            html += '<p class="mb-0">';
+            html += '<i class="fas fa-hashtag"></i> Booking #' + res.id;
+            html += '</p>';
+            html += '</div>';
+            html += '<div class="col-md-5 text-center">';
+            html += '<button class="btn btn-danger btn-lg" onclick="startCheckOut(' + res.id + ')">';
+            html += '<i class="fas fa-sign-out-alt"></i> Process Check-Out';
+            html += '</button>';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
         });
     }
-}
-
-// Function to show refund receipt
-function showRefundReceipt(reservationId, refundAmount) {
-    // Sử dụng locale vi-VN cho date
-    const currentDateTime = new Date().toLocaleString('vi-VN');
     
-    const modal = `
-        <div class="modal fade" id="refundReceiptModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title">
-                            <i class="fas fa-receipt"></i> Deposit Refund Receipt
-                        </h5>
-                        <button type="button" class="close" data-dismiss="modal">
-                            <span>&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="text-center mb-4">
-                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
-                            <h4 class="mt-3">Refund Processed</h4>
-                        </div>
-                        
-                        <div class="receipt-details">
-                            <div class="row mb-2">
-                                <div class="col-6">Reservation ID:</div>
-                                <div class="col-6"><strong>#${reservationId}</strong></div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-6">Refund Amount:</div>
-                                <div class="col-6"><strong class="text-success">${formatCurrency(refundAmount)}</strong></div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-6">Date:</div>
-                                <div class="col-6">${currentDateTime}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="alert alert-info mt-3">
-                            <i class="fas fa-info-circle"></i>
-                            The deposit refund will be processed within 3-5 business days.
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" onclick="printRefundReceipt()">
-                            <i class="fas fa-print"></i> Print Receipt
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    $('body').append(modal);
-    $('#refundReceiptModal').modal('show');
-    
-    $('#refundReceiptModal').on('hidden.bs.modal', function() {
-        $(this).remove();
-    });
+    $('#searchResults').html(html);
 }
 </script>
 
