@@ -43,6 +43,10 @@ public class Reservation {
 private Double depositAmount;
 private Date depositPaidDate;
 private String depositStatus; // PENDING, PAID, REFUNDED
+
+// Thêm field basePrice
+private double basePrice;
+
     // Constructors
     public Reservation() {}
     
@@ -354,6 +358,16 @@ public double getDepositPercentage() {
     if (depositAmount == null) return 0;
     return (depositAmount / totalAmount) * 100;
 }
+
+// Getters and Setters for basePrice
+public double getBasePrice() {
+    return basePrice;
+}
+
+public void setBasePrice(double basePrice) {
+    this.basePrice = basePrice;
+}
+
     // Helper methods
     public String getStatusDisplayName() {
         if (status == null) return "";
