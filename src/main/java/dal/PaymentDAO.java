@@ -550,4 +550,153 @@ public Payment getPaymentByReservationId(int reservationId) {
     }
     return null;
 }
+
+// Add these methods to PaymentDAO.java
+
+public List<Payment> getFilteredPayments(String status, String method, String paymentType, 
+                                        String fromDate, String toDate, String search) {
+    List<Payment> payments = new ArrayList<>();
+    StringBuilder sql = new StringBuilder();
+    sql.append("SELECT p.*, u.FullName as CustomerName, rm.RoomNumber, r.Status as ReservationStatus ");
+    sql.append("FROM Payments p ");
+    sql.append("INNER JOIN Reservations r ON p.ReservationId = r.Id ");
+    sql.append("INNER JOIN Users u ON r.UserId = u.Id ");
+    sql.append("LEFT JOIN Rooms rm ON r.RoomId = rm.Id ");
+    sql.append("WHERE 1=1 ");
+    
+    List<Object> params = new ArrayList<>();
+    
+    if (status != null && !status.isEmpty()) {
+        sql.append("AND p.Status = ? ");
+        params.add(status);
+    }
+    
+    if (method != null && !method.isEmpty()) {
+        sql.append("AND p.Method = ? ");
+        params.add(method);
+    }
+    
+    if (paymentType != null && !paymentType.isEmpty()) {
+        sql.append("AND p.PaymentType = ? ");
+        params.add(paymentType);
+    }
+    
+    if (fromDate != null && !fromDate.isEmpty()) {
+        sql.append("AND CAST(p.CreatedAt AS DATE) >= ? ");
+        params.add(fromDate);
+    }
+    
+    if (toDate != null && !toDate.isEmpty()) {
+        sql.append("AND CAST(p.CreatedAt AS DATE) <= ? ");
+        params.add(toDate);
+    }
+    
+    if (search != null && !search.isEmpty()) {
+        sql.append("AND (CAST(p.ReservationId AS VARCHAR) LIKE ? OR u.FullName LIKE ?) ");
+        params.add("%" + search + "%");
+        params.add("%" + search + "%");
+    }
+    
+    sql.append("ORDER BY p.CreatedAt DESC");
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        
+        for (int i = 0; i < params.size(); i++) {
+            ps.setObject(i + 1, params.get(i));
+        }
+        
+        ResultSet rs = ps.executeQuery();
+        
+        while (rs.next()) {
+            Payment payment = new Payment();
+            payment.setId(rs.getInt("Id"));
+            payment.setReservationId(rs.getInt("ReservationId"));
+            payment.setAmount(rs.getDouble("Amount"));
+            payment.setMethod(rs.getString("Method"));
+            payment.setStatus(rs.getString("Status"));
+            payment.setTransactionId(rs.getString("TransactionId"));
+            payment.setPaymentType(rs.getString("PaymentType"));
+            payment.setCreatedAt(rs.getTimestamp("CreatedAt"));
+            payment.setCustomerName(rs.getString("CustomerName"));
+            payment.setRoomNumber(rs.getString("RoomNumber"));
+            payment.setReservationStatus(rs.getString("ReservationStatus"));
+            payments.add(payment);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return payments;
+}
+
+public int getPaymentCountByType(String paymentType) {
+    String sql = "SELECT COUNT(*) FROM Payments WHERE PaymentType = ?";
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setString(1, paymentType);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return 0;
+}
+
+public int getPaymentCountByMethodGroup(String methodGroup) {
+    String sql = "";
+    if ("CARD".equals(methodGroup)) {
+        sql = "SELECT COUNT(*) FROM Payments WHERE Method IN ('CREDIT_CARD', 'DEBIT_CARD', 'VNPay', 'MoMo')";
+    } else {
+        sql = "SELECT COUNT(*) FROM Payments WHERE Method IN ('CASH', 'BANK_TRANSFER')";
+    }
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return 0;
+}
+
+public boolean isDepositPaid(int reservationId) {
+    String sql = "SELECT COUNT(*) FROM Payments WHERE ReservationId = ? AND PaymentType = 'DEPOSIT' AND Status = 'SUCCESS'";
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, reservationId);
+        ResultSet rs = ps.executeQuery();
+        
+        if (rs.next()) {
+            return rs.getInt(1) > 0;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+public boolean updateDepositStatus(int reservationId, String status) {
+    String sql = "UPDATE Reservations SET DepositStatus = ? WHERE Id = ?";
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setString(1, status);
+        ps.setInt(2, reservationId);
+        
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
 }

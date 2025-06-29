@@ -1,5 +1,6 @@
 package dal;
 
+import static dal.DBContext.getConnection;
 import model.Reservation;
 import model.ReservationDetail;
 import model.ReservationSummary;
@@ -1120,5 +1121,21 @@ public class ReservationDAO {
         
         return reservation;
     }
+   public boolean updateDepositStatus(int reservationId, String depositStatus) {
+    String sql = "UPDATE Reservations SET DepositStatus = ?, UpdatedAt = GETDATE() WHERE Id = ?";
+    
+    try (Connection conn = getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setString(1, depositStatus);
+        stmt.setInt(2, reservationId);
+        
+        return stmt.executeUpdate() > 0;
+        
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
 }
 

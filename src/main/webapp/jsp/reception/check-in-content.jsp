@@ -2,82 +2,71 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
+<!-- Add SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
-    .check-in-card {
-        border-radius: 15px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    .check-in-header {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .room-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         transition: all 0.3s ease;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
         overflow: hidden;
     }
     
-    .check-in-card:hover {
+    .room-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 5px 20px rgba(0,0,0,0.15);
     }
     
-    .status-badge {
-        font-size: 0.85rem;
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        font-weight: 500;
-    }
-    
-    .status-pending {
-        background-color: #fff3cd;
-        color: #856404;
-    }
-    
-    .status-confirmed {
-        background-color: #d1ecf1;
-        color: #0c5460;
-    }
-    
-    .status-checked-in {
-        background-color: #d4edda;
-        color: #155724;
-    }
-    
-    .room-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 10px;
-        text-align: center;
+    .room-card.selected {
+        border: 2px solid #17a2b8;
+        background: rgba(23, 162, 184, 0.05);
     }
     
     .room-number {
-        font-size: 2.5rem;
+        font-size: 24px;
         font-weight: bold;
-        margin-bottom: 0.5rem;
+        color: #17a2b8;
+        margin-bottom: 10px;
     }
     
     .step-indicator {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         margin-bottom: 2rem;
         position: relative;
     }
     
-    .step {
-        flex: 1;
-        text-align: center;
-        position: relative;
-        z-index: 1;
-    }
-    
-    .step::before {
+    .step-indicator::before {
         content: '';
         position: absolute;
         top: 20px;
-        right: -50%;
-        width: 100%;
+        left: 0;
+        right: 0;
         height: 2px;
-        background: #dee2e6;
+        background: #e9ecef;
         z-index: -1;
     }
     
-    .step:last-child::before {
-        display: none;
+    .step {
+        text-align: center;
+        position: relative;
+        background: white;
+        padding: 0 15px;
     }
     
     .step-circle {
@@ -85,8 +74,7 @@
         height: 40px;
         border-radius: 50%;
         background: #e9ecef;
-        color: #6c757d;
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
@@ -206,122 +194,84 @@
                         <input type="text" class="form-control" id="searchInput" 
                                placeholder="Enter Booking ID, Guest Name, Phone Number, or scan QR code...">
                         <div class="input-group-append">
-                            <button class="btn btn-info" type="button" onclick="searchReservation()">
-                                Search
-                            </button>
-                            <button class="btn btn-success" type="button" onclick="scanQRCode()">
+                            <button class="btn btn-outline-secondary" type="button" onclick="scanQRCode()">
                                 <i class="fas fa-qrcode"></i> Scan QR
+                            </button>
+                            <button class="btn btn-info" type="button" onclick="searchReservation()">
+                                <i class="fas fa-search"></i> Search
                             </button>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <button class="btn btn-primary btn-lg btn-block" onclick="showWalkInForm()">
+                    <button class="btn btn-success btn-lg btn-block" onclick="showWalkInForm()">
                         <i class="fas fa-user-plus"></i> Walk-in Guest
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Search Results -->
-    <div id="searchResults" class="card mb-4" style="display: none;">
-        <div class="card-body">
-            <h5 class="card-title">
-                <i class="fas fa-search-location"></i> Search Results
-                <button class="btn btn-sm btn-outline-secondary float-right" onclick="clearSearch()">
-                    <i class="fas fa-times"></i> Clear
+            
+            <!-- Search Results -->
+            <div id="searchResults" class="mt-4" style="display: none;">
+                <h6>Search Results:</h6>
+                <div id="resultsContainer">
+                    <!-- Results will be loaded here -->
+                </div>
+                <button class="btn btn-sm btn-secondary mt-2" onclick="clearSearch()">
+                    <i class="fas fa-times"></i> Clear Search
                 </button>
-            </h5>
-            <div id="resultsContainer">
-                <!-- Results will be loaded here -->
             </div>
         </div>
     </div>
-
-    <!-- Today's Expected Check-Ins -->
+    
+    <!-- Today's Check-ins -->
     <div class="card">
-        <div class="card-body">
-            <h5 class="card-title mb-4">
-                <i class="fas fa-calendar-day"></i> Today's Expected Check-Ins
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i> Today's Check-ins
                 <span class="badge badge-info ml-2">${todayCheckIns.size()}</span>
             </h5>
-
+        </div>
+        <div class="card-body">
             <c:choose>
                 <c:when test="${not empty todayCheckIns}">
                     <div class="row">
                         <c:forEach var="reservation" items="${todayCheckIns}">
-                            <div class="col-lg-6 mb-4">
-                                <div class="check-in-card card ${reservation.checkedIn ? 'border-success' : 'border-0'}">
-                                    <div class="card-header ${reservation.checkedIn ? 'bg-success text-white' : 'bg-light'}">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0">
-                                                <i class="fas fa-user mr-2"></i>${reservation.customerName}
-                                            </h6>
-                                            <c:choose>
-                                                <c:when test="${reservation.checkedIn}">
-                                                    <span class="badge badge-light">
-                                                        <i class="fas fa-check-circle"></i> Checked In
-                                                    </span>
-                                                </c:when>
-                                                <c:when test="${reservation.status == 'CONFIRMED'}">
-                                                    <span class="status-badge status-confirmed">Confirmed</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="status-badge status-pending">Pending</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </div>
-                                    </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-left-info">
                                     <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-7">
-                                                <p class="mb-2">
-                                                    <i class="fas fa-phone text-muted mr-2"></i>${reservation.customerPhone}
+                                        <div class="row align-items-center">
+                                            <div class="col-8">
+                                                <h6 class="font-weight-bold text-primary mb-1">
+                                                    ${reservation.customerName}
+                                                </h6>
+                                                <p class="text-xs mb-1">
+                                                    <i class="fas fa-door-open mr-1"></i>
+                                                    Room ${reservation.roomNumber} - ${reservation.roomTypeName}
                                                 </p>
-                                                <p class="mb-2">
-                                                    <i class="fas fa-envelope text-muted mr-2"></i>${reservation.customerEmail}
-                                                </p>
-                                                <p class="mb-2">
-                                                    <i class="fas fa-hashtag text-muted mr-2"></i>Booking ID: 
-                                                    <strong>#${reservation.id}</strong>
-                                                </p>
-                                                <p class="mb-0">
-                                                    <i class="fas fa-calendar text-muted mr-2"></i>
-                                                    <fmt:formatDate value="${reservation.checkIn}" pattern="dd/MM/yyyy"/> - 
-                                                    <fmt:formatDate value="${reservation.checkOut}" pattern="dd/MM/yyyy"/>
-                                                    (${reservation.nights} nights)
+                                                <p class="text-xs mb-0">
+                                                    <i class="fas fa-hashtag mr-1"></i>
+                                                    Booking #${reservation.id}
                                                 </p>
                                             </div>
-                                            <div class="col-md-5">
-                                                <div class="room-card">
-                                                    <div class="room-number">${reservation.roomNumber}</div>
-                                                    <div>${reservation.roomTypeName}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card-footer bg-transparent">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <strong class="text-primary">
+                                            <div class="col-4 text-right">
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">
                                                     <fmt:formatNumber value="${reservation.totalAmount}" pattern="#,##0"/>₫
-                                                </strong>
-                                                <span class="text-muted">/ Total</span>
+                                                    <span class="text-muted">/ Total</span>
+                                                </div>
+                                                <c:choose>
+                                                    <c:when test="${reservation.checkedIn}">
+                                                        <button class="btn btn-secondary" disabled>
+                                                            <i class="fas fa-check"></i> Already Checked In
+                                                        </button>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <button class="quick-action-btn btn btn-info" 
+                                                                onclick="startCheckIn(${reservation.id})">
+                                                            <i class="fas fa-user-check"></i> Process Check-In
+                                                        </button>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </div>
-                                            <c:choose>
-                                                <c:when test="${reservation.checkedIn}">
-                                                    <button class="btn btn-secondary" disabled>
-                                                        <i class="fas fa-check"></i> Already Checked In
-                                                    </button>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <button class="quick-action-btn btn btn-info" 
-                                                            onclick="startCheckIn(${reservation.id})">
-                                                        <i class="fas fa-user-check"></i> Process Check-In
-                                                    </button>
-                                                </c:otherwise>
-                                            </c:choose>
                                         </div>
                                     </div>
                                 </div>
@@ -357,7 +307,7 @@
                     <span>&times;</span>
                 </button>
             </div>
-            <form id="checkInForm" action="${pageContext.request.contextPath}/receptionist/check-in" method="POST">
+            <form id="checkInForm">
                 <input type="hidden" name="action" value="processCheckIn">
                 <input type="hidden" name="reservationId" id="modalReservationId">
                 
@@ -409,7 +359,7 @@
                                         <input type="checkbox" class="custom-control-input" id="idVerified" 
                                                name="idVerified" value="Y" required>
                                         <label class="custom-control-label" for="idVerified">
-                                            I have verified the guest's identity document
+                                            I have verified the guest's identity
                                         </label>
                                     </div>
                                 </div>
@@ -417,28 +367,33 @@
                             
                             <div class="col-md-6">
                                 <h6 class="mb-3"><i class="fas fa-bed"></i> Reservation Details</h6>
-                                <div class="guest-info-box">
-                                    <p class="mb-2"><strong>Room:</strong> 
-                                        <span id="modalRoomNumber" class="badge badge-primary"></span> - 
-                                        <span id="modalRoomType"></span>
-                                    </p>
-                                    <p class="mb-2"><strong>Check-in:</strong> 
-                                        <span id="modalCheckIn"></span> (2:00 PM)
-                                    </p>
-                                    <p class="mb-2"><strong>Check-out:</strong> 
-                                        <span id="modalCheckOut"></span> (12:00 PM)
-                                    </p>
-                                    <p class="mb-2"><strong>Duration:</strong> 
-                                        <span id="modalNights"></span> nights
-                                    </p>
-                                    <p class="mb-0"><strong>Total Amount:</strong> 
-                                        <span class="text-primary font-weight-bold" id="modalTotalAmount"></span>
-                                    </p>
-                                </div>
-                                
-                                <div class="alert alert-info mt-3">
-                                    <i class="fas fa-info-circle"></i> 
-                                    Please ensure all guest information is correct before proceeding.
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td>Room:</td>
+                                            <td><strong><span id="modalRoomNumber"></span></strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Room Type:</td>
+                                            <td><span id="modalRoomType"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Check-in:</td>
+                                            <td><span id="modalCheckIn"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Check-out:</td>
+                                            <td><span id="modalCheckOut"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Nights:</td>
+                                            <td><span id="modalNights"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Amount:</td>
+                                            <td><strong class="text-primary"><span id="modalTotalAmount"></span></strong></td>
+                                        </tr>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -461,8 +416,9 @@
                                 </div>
                                 
                                 <div class="form-group">
-                                    <label>Number of Key Cards</label>
-                                    <select class="form-control" name="keyCards">
+                                    <label>Number of Key Cards <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="keyCards" required>
+                                        <option value="">Select number of key cards</option>
                                         <option value="1">1 Key Card</option>
                                         <option value="2" selected>2 Key Cards</option>
                                         <option value="3">3 Key Cards</option>
@@ -473,35 +429,32 @@
                                 <div class="form-group">
                                     <label>Additional Guests</label>
                                     <input type="number" class="form-control" name="additionalGuests" 
-                                           value="0" min="0" max="4">
-                                    <small class="form-text text-muted">
-                                        Maximum room capacity: <span id="maxCapacity">2</span> guests
-                                    </small>
+                                           min="0" max="3" value="0">
+                                    <small class="text-muted">Max capacity: <span id="maxCapacity">2</span> guests</small>
                                 </div>
                             </div>
                             
                             <div class="col-md-6">
-                                <h6 class="mb-3"><i class="fas fa-clipboard-list"></i> Special Requests</h6>
-                                <div class="form-group">
-                                    <label>Guest Preferences</label>
-                                    <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input" id="highFloor" 
-                                               name="preferences" value="HIGH_FLOOR">
-                                        <label class="custom-control-label" for="highFloor">High floor</label>
+                                <h6 class="mb-3"><i class="fas fa-bed"></i> Room Features</h6>
+                                <div class="room-features">
+                                    <div class="custom-control custom-checkbox mb-2">
+                                        <input type="checkbox" class="custom-control-input" 
+                                               id="hasView" checked disabled>
+                                        <label class="custom-control-label" for="hasView">City view</label>
                                     </div>
-                                    <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input" id="quietRoom" 
-                                               name="preferences" value="QUIET_ROOM">
-                                        <label class="custom-control-label" for="quietRoom">Quiet room</label>
+                                    <div class="custom-control custom-checkbox mb-2">
+                                        <input type="checkbox" class="custom-control-input" 
+                                               id="hasBalcony" checked disabled>
+                                        <label class="custom-control-label" for="hasBalcony">Balcony</label>
                                     </div>
-                                    <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input" id="nearElevator" 
-                                               name="preferences" value="NEAR_ELEVATOR">
+                                    <div class="custom-control custom-checkbox mb-2">
+                                        <input type="checkbox" class="custom-control-input" 
+                                               id="nearElevator" disabled>
                                         <label class="custom-control-label" for="nearElevator">Near elevator</label>
                                     </div>
                                 </div>
                                 
-                                <div class="form-group">
+                                <div class="form-group mt-3">
                                     <label>Special Requests / Notes</label>
                                     <textarea class="form-control" name="specialRequests" rows="3" 
                                               placeholder="Any special requests or notes..."></textarea>
@@ -528,30 +481,34 @@
                                             <td class="text-right">
                                                 <input type="number" class="form-control form-control-sm text-right" 
                                                        name="securityDeposit" id="securityDeposit" 
-                                                       value="1000000" step="100000">
+                                                       value="500000" min="0" step="10000">
                                             </td>
                                         </tr>
                                         <tr class="font-weight-bold">
                                             <td>Total Due at Check-in:</td>
-                                            <td class="text-right text-primary">
-                                                <span id="totalDueAtCheckin"></span>
+                                            <td class="text-right">
+                                                <span id="totalDueAtCheckin" class="text-primary"></span>
                                             </td>
                                         </tr>
                                     </table>
                                 </div>
                                 
+                                <div class="form-group mt-3">
+                                    <label>Key Card Numbers <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="keyCardNumbers" 
+                                           placeholder="e.g., 101-A, 101-B" required>
+                                    <small class="text-muted">Enter the key card numbers separated by commas</small>
+                                </div>
+                                
                                 <div class="form-group">
-                                    <label>Payment Status</label>
-                                    <select class="form-control" name="paymentStatus" required>
-                                        <option value="PENDING">To be paid</option>
-                                        <option value="PARTIAL">Partially paid</option>
-                                        <option value="PAID">Fully paid</option>
-                                    </select>
+                                    <label>Check-in Notes (Optional)</label>
+                                    <textarea class="form-control" name="checkInNotes" rows="3" 
+                                              placeholder="Any special notes or observations..."></textarea>
                                 </div>
                             </div>
                             
                             <div class="col-md-6">
-                                <h6 class="mb-3"><i class="fas fa-tasks"></i> Check-in Checklist</h6>
+                                <h6 class="mb-3"><i class="fas fa-check-circle"></i> Final Checklist</h6>
                                 <div class="custom-control custom-checkbox mb-2">
                                     <input type="checkbox" class="custom-control-input" id="check1" required>
                                     <label class="custom-control-label" for="check1">
@@ -585,7 +542,7 @@
                                 
                                 <div class="alert alert-success mt-3">
                                     <i class="fas fa-check-circle"></i> 
-                                    Room ${reservation.roomNumber} is ready for guest arrival!
+                                    Room ready for guest arrival!
                                 </div>
                             </div>
                         </div>
@@ -600,7 +557,8 @@
                     <button type="button" class="btn btn-info" id="btnNext" onclick="nextStep()">
                         Next <i class="fas fa-arrow-right"></i>
                     </button>
-                    <button type="submit" class="btn btn-success" id="btnComplete" style="display: none;">
+                    <button type="button" class="btn btn-success" id="btnComplete" 
+                            style="display: none;" onclick="processCheckIn()">
                         <i class="fas fa-check-circle"></i> Complete Check-In
                     </button>
                     <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
@@ -656,6 +614,18 @@ $(document).ready(function() {
     $('#securityDeposit').on('input', function() {
         updateTotalDue();
     });
+    
+    // Form submission handler
+    $('#checkInForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        if (!validateCurrentStep()) {
+            return false;
+        }
+        
+        processCheckIn();
+        return false; // Extra prevention of default submit
+    });
 });
 
 function searchReservation() {
@@ -692,20 +662,27 @@ function displaySearchResults(results) {
     
     let html = '<div class="list-group">';
     results.forEach(function(res) {
-        html += `
-            <div class="list-group-item list-group-item-action">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-1">${res.customerName}</h6>
-                        <p class="mb-1">Booking #${res.id} | Room ${res.roomNumber}</p>
-                        <small>Check-in: ${formatDate(res.checkIn)}</small>
-                    </div>
-                    <button class="btn btn-info" onclick="startCheckIn(${res.id})">
-                        <i class="fas fa-user-check"></i> Check In
-                    </button>
-                </div>
-            </div>
-        `;
+        let statusBadge = res.checkedIn ? 
+            '<span class="badge badge-success">Checked In</span>' : 
+            '<span class="badge badge-warning">Pending</span>';
+            
+        html += '<div class="list-group-item list-group-item-action">';
+        html += '<div class="d-flex justify-content-between align-items-center">';
+        html += '<div>';
+        html += '<h6 class="mb-1">' + res.customerName + '</h6>';
+        html += '<p class="mb-1">Booking #' + res.id + ' | Room ' + res.roomNumber + '</p>';
+        html += '<small>Check-in: ' + formatDate(res.checkIn) + '</small>';
+        html += '</div>';
+        html += '<div>';
+        html += statusBadge;
+        if (!res.checkedIn) {
+            html += '<button class="btn btn-info btn-sm ml-2" onclick="startCheckIn(' + res.id + ')">';
+            html += '<i class="fas fa-user-check"></i> Check In';
+            html += '</button>';
+        }
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
     });
     html += '</div>';
     
@@ -772,14 +749,14 @@ function showStep(step) {
     $('.step').removeClass('active completed');
     
     // Show current step
-    $(`#step${step}Content`).show();
+    $('#step' + step + 'Content').show();
     
     // Update step indicators
     for (let i = 1; i <= step; i++) {
         if (i < step) {
-            $(`#step${i}`).addClass('completed');
+            $('#step' + i).addClass('completed');
         } else {
-            $(`#step${i}`).addClass('active');
+            $('#step' + i).addClass('active');
         }
     }
     
@@ -815,8 +792,18 @@ function validateCurrentStep() {
             return false;
         }
     } else if (currentStep === 2) {
-        // Additional validation if needed
+        // Validate key cards
+        if (!$('select[name="keyCards"]').val()) {
+            alert('Please select number of key cards');
+            return false;
+        }
     } else if (currentStep === 3) {
+        // Validate key card numbers
+        if (!$('input[name="keyCardNumbers"]').val()) {
+            alert('Please enter key card numbers');
+            return false;
+        }
+        
         // Validate all checkboxes
         let allChecked = true;
         $('#step3Content input[type="checkbox"]').each(function() {
@@ -839,9 +826,61 @@ function updateTotalDue() {
     $('#totalDueAtCheckin').text(formatCurrency(total));
 }
 
+function processCheckIn() {
+    // Show loading
+    const btn = $('#btnComplete');
+    const originalText = btn.html();
+    btn.html('<i class="fas fa-spinner fa-spin"></i> Processing...').prop('disabled', true);
+    
+    // Submit form data
+    const formData = $('#checkInForm').serialize();
+    
+    $.ajax({
+        url: '${pageContext.request.contextPath}/receptionist/check-in',
+        method: 'POST',
+        data: formData,
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                $('#checkInModal').modal('hide');
+                // Show success message with SweetAlert2
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Check-in Successful!',
+                    text: 'Guest has been checked into room ' + currentReservationData.roomNumber,
+                    showConfirmButton: false,
+                    timer: 2000
+                }).then(() => {
+                    // Reload page
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Check-in Failed',
+                    text: response.message || 'Failed to process check-in'
+                });
+                btn.html(originalText).prop('disabled', false);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Check-in error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error processing check-in. Please try again.'
+            });
+            btn.html(originalText).prop('disabled', false);
+        }
+    });
+}
+
 function scanQRCode() {
-    alert('QR code scanner would open here');
-    // Implement QR code scanning functionality
+    Swal.fire({
+        icon: 'info',
+        title: 'QR Scanner',
+        text: 'QR code scanner would open here (feature not yet implemented)'
+    });
 }
 
 function showWalkInForm() {
@@ -859,47 +898,4 @@ function formatCurrency(amount) {
         currency: 'VND'
     }).format(amount);
 }
-
-// Form submission
-$('#checkInForm').submit(function(e) {
-    e.preventDefault();
-    
-    if (!validateCurrentStep()) {
-        return;
-    }
-    
-    // Show loading
-    const btn = $('#btnComplete');
-    const originalText = btn.html();
-    btn.html('<i class="fas fa-spinner fa-spin"></i> Processing...').prop('disabled', true);
-    
-    // Submit form
-    $.ajax({
-        url: $(this).attr('action'),
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-            if (response.success) {
-                $('#checkInModal').modal('hide');
-                // Show success message
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Check-in Successful!',
-                    text: `Guest has been checked into room ${currentReservationData.roomNumber}`,
-                    showConfirmButton: false,
-                    timer: 2000
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                alert('Error: ' + response.message);
-                btn.html(originalText).prop('disabled', false);
-            }
-        },
-        error: function() {
-            alert('Error processing check-in');
-            btn.html(originalText).prop('disabled', false);
-        }
-    });
-});
 </script>

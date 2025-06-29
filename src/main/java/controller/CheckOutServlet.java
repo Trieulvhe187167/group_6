@@ -25,6 +25,7 @@ public class CheckOutServlet extends HttpServlet {
     private final HousekeepingTaskDAO housekeepingDAO = new HousekeepingTaskDAO();
     private final RoomAmenityDAO amenityDAO = new RoomAmenityDAO();
     private final ServiceDAO serviceDAO = new ServiceDAO();
+    private final RoomInspectionDAO inspectionDAO = new RoomInspectionDAO();
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -44,10 +45,16 @@ public class CheckOutServlet extends HttpServlet {
             Date today = Date.valueOf(LocalDate.now());
             List<ReservationSummary> todayCheckOuts = checkInOutDAO.getUpcomingCheckOuts(24);
             
-            // Add payment status and check if already checked out
+            // Add payment status, inspection status and check if already checked out
             for (ReservationSummary res : todayCheckOuts) {
                 res.setCheckedOut(checkInOutDAO.isCheckedOut(res.getId()));
                 res.setPaymentStatus(paymentDAO.getReservationPaymentStatus(res.getId()));
+                
+                // Get inspection status
+                RoomInspection inspection = inspectionDAO.getInspectionByReservationId(res.getId());
+                if (inspection != null) {
+                    res.setInspectionStatus(inspection.getStatus());
+                }
                 
                 // Check if late checkout
                 if (res.getCheckOut().before(today)) {
@@ -91,9 +98,6 @@ public class CheckOutServlet extends HttpServlet {
                 case "getCheckOutDetails":
                     getCheckOutDetails(request, response);
                     break;
-                case "getAmenitiesUsage":
-                    getAmenitiesUsage(request, response);
-                    break;
                 case "processCheckOut":
                     processCheckOut(request, response);
                     break;
@@ -125,7 +129,7 @@ public class CheckOutServlet extends HttpServlet {
     
     private void getCheckOutDetails(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
-        String idParam = request.getParameter("id");
+        String idParam = request.getParameter("reservationId");
         if (idParam == null || idParam.trim().isEmpty()) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Reservation ID is required");
             return;
@@ -144,102 +148,134 @@ public class CheckOutServlet extends HttpServlet {
             // Get check-in details for security deposit
             CheckInDetail checkIn = checkInOutDAO.getCheckInDetails(reservationId);
             
-            // Calculate charges
-            CheckOutDetail details = new CheckOutDetail();
-            details.setId(reservation.getId());
-            details.setRoomNumber(reservation.getRoomNumber());
-            details.setCustomerName(reservation.getCustomerName());
-            details.setCheckIn(reservation.getCheckIn());
-            details.setCheckOut(reservation.getCheckOut());
-            details.setRoomId(reservation.getRoomId());
+            // Get inspection data
+            RoomInspection inspection = inspectionDAO.getInspectionByReservationId(reservationId);
             
-            // Calculate nights
-            long nights = (reservation.getCheckOut().getTime() - reservation.getCheckIn().getTime()) / (1000 * 60 * 60 * 24);
-            details.setNights((int) nights);
+            // Create response object
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("reservation", reservation);
+            responseData.put("checkIn", checkIn);
             
-            // Room charges
-            details.setRoomCharges(reservation.getTotalAmount());
+            // Add inspection data if available
+            if (inspection != null) {
+                // Get full inspection details including items and damages
+                inspection = inspectionDAO.getInspectionById(inspection.getId());
+                
+                Map<String, Object> inspectionData = new HashMap<>();
+                inspectionData.put("id", inspection.getId());
+                inspectionData.put("inspectorName", inspection.getInspector() != null ? 
+                    inspection.getInspector().getFullName() : "Unknown");
+                inspectionData.put("inspectionTime", inspection.getInspectionTime());
+                inspectionData.put("roomCondition", inspection.getRoomCondition());
+                inspectionData.put("cleanlinessScore", inspection.getCleanlinessScore());
+                inspectionData.put("notes", inspection.getNotes());
+                inspectionData.put("status", inspection.getStatus());
+                
+                // Add inspection items (minibar, amenities, services)
+                if (inspection.getInspectionItems() != null) {
+                    inspectionData.put("inspectionItems", inspection.getInspectionItems());
+                }
+                
+                // Add room damages
+                if (inspection.getRoomDamages() != null) {
+                    inspectionData.put("roomDamages", inspection.getRoomDamages());
+                }
+                
+                responseData.put("inspection", inspectionData);
+                
+                // Calculate charges from inspection
+                Map<String, Double> charges = new HashMap<>();
+                charges.put("minibar", inspection.getTotalItemCharges().doubleValue());
+                charges.put("damages", inspection.getTotalDamageCharges().doubleValue());
+                charges.put("services", serviceDAO.getReservationServiceTotal(reservationId));
+                responseData.put("charges", charges);
+            } else {
+                // No inspection data - set default charges
+                Map<String, Double> charges = new HashMap<>();
+                charges.put("minibar", 0.0);
+                charges.put("damages", 0.0);
+                charges.put("services", serviceDAO.getReservationServiceTotal(reservationId));
+                responseData.put("charges", charges);
+            }
             
-            // Service charges
-            double serviceCharges = serviceDAO.getReservationServiceTotal(reservationId);
-            details.setServiceCharges(serviceCharges);
-            
-            // Amount paid
+            // Add payment info
             double amountPaid = paymentDAO.getReservationPaidAmount(reservationId);
-            details.setAmountPaid(amountPaid);
+            responseData.put("amountPaid", amountPaid);
             
-            // Security deposit
+            // Add security deposit if available
             if (checkIn != null) {
-                details.setSecurityDeposit(checkIn.getSecurityDeposit());
+                responseData.put("securityDeposit", checkIn.getSecurityDeposit());
             }
             
             response.setContentType("application/json");
-            new Gson().toJson(details, response.getWriter());
+            new Gson().toJson(responseData, response.getWriter());
             
-        } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid reservation ID format");
-        }
-    }
-    
-    private void getAmenitiesUsage(HttpServletRequest request, HttpServletResponse response) 
-            throws IOException {
-        String roomIdParam = request.getParameter("roomId");
-        if (roomIdParam == null || roomIdParam.trim().isEmpty()) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Room ID is required");
-            return;
-        }
-        
-        try {
-            int roomId = Integer.parseInt(roomIdParam);
-            List<RoomAmenity> amenities = amenityDAO.getChargeableAmenities(roomId);
-            
-            response.setContentType("application/json");
-            new Gson().toJson(amenities, response.getWriter());
-            
-        } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid room ID format");
+        } catch (Exception e) {
+            logger.error("Error getting checkout details", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading checkout details");
         }
     }
     
     private void processCheckOut(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
-        // Parse JSON request
-        CheckOutRequest checkOutRequest = new Gson().fromJson(request.getReader(), CheckOutRequest.class);
-        
-        if (!validateCheckOutRequest(checkOutRequest)) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid check-out request");
-            return;
-        }
         
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
         
         try {
-            // Calculate total charges
-            double amenityCharges = calculateAmenityCharges(checkOutRequest);
+            // Get form parameters
+            int reservationId = Integer.parseInt(request.getParameter("reservationId"));
+            String paymentMethod = request.getParameter("paymentMethod");
+            String checkOutNotes = request.getParameter("checkOutNotes");
             
-            // Get reservation details for final calculation
-            Reservation reservation = reservationDAO.getReservationById(checkOutRequest.getReservationId());
+            // Get reservation and inspection data
+            Reservation reservation = reservationDAO.getReservationById(reservationId);
             if (reservation == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Reservation not found");
                 return;
             }
             
-            double serviceCharges = serviceDAO.getReservationServiceTotal(checkOutRequest.getReservationId());
-            double totalAmount = reservation.getTotalAmount() + serviceCharges + amenityCharges + checkOutRequest.getDamageCharges();
-            double amountPaid = paymentDAO.getReservationPaidAmount(checkOutRequest.getReservationId());
+            RoomInspection inspection = inspectionDAO.getInspectionByReservationId(reservationId);
+            
+            // Calculate total charges
+            double roomCharges = reservation.getTotalAmount();
+            double serviceCharges = serviceDAO.getReservationServiceTotal(reservationId);
+            double inspectionCharges = 0;
+            double damageCharges = 0;
+            
+            if (inspection != null) {
+                // Get full inspection details
+                inspection = inspectionDAO.getInspectionById(inspection.getId());
+                inspectionCharges = inspection.getTotalItemCharges().doubleValue();
+                damageCharges = inspection.getTotalDamageCharges().doubleValue();
+            }
+            
+            double totalAmount = roomCharges + serviceCharges + inspectionCharges + damageCharges;
+            double amountPaid = paymentDAO.getReservationPaidAmount(reservationId);
             double finalAmount = totalAmount - amountPaid;
             
-            // Get security deposit
-            CheckInDetail checkIn = checkInOutDAO.getCheckInDetails(checkOutRequest.getReservationId());
-            double refundAmount = 0;
-            if (checkIn != null) {
-                refundAmount = checkIn.getSecurityDeposit() - checkOutRequest.getDamageCharges();
+            // Get security deposit and calculate refund
+            CheckInDetail checkIn = checkInOutDAO.getCheckInDetails(reservationId);
+            double securityDeposit = checkIn != null ? checkIn.getSecurityDeposit() : 0;
+            double refundAmount = Math.max(0, securityDeposit - damageCharges);
+            
+            // Adjust final amount if there's a refund
+            if (refundAmount > 0) {
+                finalAmount = finalAmount - refundAmount;
             }
             
             // Create check-out record
-            CheckOutDetail checkOut = createCheckOutDetail(checkOutRequest, currentUser.getId(), 
-                    amenityCharges, serviceCharges, finalAmount, refundAmount);
+            CheckOutDetail checkOut = new CheckOutDetail();
+            checkOut.setReservationId(reservationId);
+            checkOut.setRoomCondition(inspection != null ? inspection.getRoomCondition() : "GOOD");
+            checkOut.setAmenityCharges(inspectionCharges);
+            checkOut.setServiceCharges(serviceCharges);
+            checkOut.setDamageCharges(damageCharges);
+            checkOut.setFinalAmount(Math.max(0, finalAmount));
+            checkOut.setRefundAmount(refundAmount);
+            checkOut.setPaymentMethod(paymentMethod);
+            checkOut.setCheckOutNotes(checkOutNotes);
+            checkOut.setCheckOutBy(currentUser.getId());
             
             // Save check-out
             boolean success = checkInOutDAO.createCheckOut(checkOut);
@@ -249,134 +285,92 @@ public class CheckOutServlet extends HttpServlet {
                 roomDAO.updateRoomStatus(reservation.getRoomId(), "DIRTY");
                 
                 // Update reservation status to COMPLETED
-                reservationDAO.updateReservationStatus(checkOutRequest.getReservationId(), "COMPLETED");
+                reservationDAO.updateReservationStatus(reservationId, "COMPLETED");
                 
                 // Create housekeeping task for cleaning
                 createHousekeepingTask(reservation.getRoomId());
                 
                 // Create final payment record if there's a balance
                 if (finalAmount > 0) {
-                    createFinalPayment(checkOutRequest, finalAmount);
+                    createFinalPayment(reservationId, finalAmount, paymentMethod);
+                }
+                
+                // Process refund if applicable
+                if (refundAmount > 0) {
+                    processRefund(reservationId, refundAmount, paymentMethod);
                 }
                 
                 // Log activity
-                logCheckOutActivity(currentUser, reservation, finalAmount, request.getRemoteAddr());
+                logCheckOutActivity(currentUser, reservation, totalAmount, request.getRemoteAddr());
+                
+                // Update inspection status to COMPLETED if exists
+                if (inspection != null) {
+                    inspectionDAO.updateInspectionStatus(inspection.getId(), "COMPLETED");
+                }
             }
             
             response.setContentType("application/json");
-            response.getWriter().write("{\"success\":" + success + "}");
+            response.getWriter().write("{\"success\":" + success + ", \"message\":\"Check-out completed successfully\"}");
             
         } catch (Exception e) {
             logger.error("Error processing check-out", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing check-out");
+            response.setContentType("application/json");
+            response.getWriter().write("{\"success\":false, \"message\":\"Error processing check-out: " + e.getMessage() + "\"}");
         }
-    }
-    
-    private boolean validateCheckOutRequest(CheckOutRequest request) {
-        return request != null && request.getReservationId() > 0;
-    }
-    
-    private double calculateAmenityCharges(CheckOutRequest request) {
-        double total = 0;
-        if (request.getAmenitiesUsage() != null) {
-            for (AmenityUsage usage : request.getAmenitiesUsage()) {
-                total += usage.getQuantity() * usage.getUnitPrice();
-                
-                // Record amenity usage
-                amenityDAO.recordAmenityUsage(
-                    request.getReservationId(),
-                    usage.getAmenityId(),
-                    usage.getQuantity(),
-                    usage.getUnitPrice(),
-                    request.getReservationId()
-                );
-            }
-        }
-        return total;
-    }
-    
-    private CheckOutDetail createCheckOutDetail(CheckOutRequest request, int userId,
-            double amenityCharges, double serviceCharges, double finalAmount, double refundAmount) {
-        CheckOutDetail checkOut = new CheckOutDetail();
-        checkOut.setReservationId(request.getReservationId());
-        checkOut.setRoomCondition(request.getRoomCondition());
-        checkOut.setDamageDescription(request.getDamageDescription());
-        checkOut.setDamageCharges(request.getDamageCharges());
-        checkOut.setAmenityCharges(amenityCharges);
-        checkOut.setServiceCharges(serviceCharges);
-        checkOut.setFinalAmount(finalAmount);
-        checkOut.setRefundAmount(refundAmount);
-        checkOut.setPaymentMethod(request.getPaymentMethod());
-        checkOut.setCheckOutNotes(request.getCheckOutNotes());
-        checkOut.setCheckOutBy(userId);
-        return checkOut;
     }
     
     private void createHousekeepingTask(int roomId) {
-        HousekeepingTask task = new HousekeepingTask();
-        task.setRoomId(roomId);
-        task.setStatus("PENDING");
-        task.setNotes("Room checked out - deep cleaning required");
-        housekeepingDAO.createTask(task);
+        try {
+            HousekeepingTask task = new HousekeepingTask();
+            task.setRoomId(roomId);
+            task.setStatus("PENDING");
+            task.setNotes("Room checked out - deep cleaning required");
+            housekeepingDAO.createTask(task);
+        } catch (Exception e) {
+            logger.error("Error creating housekeeping task", e);
+        }
     }
     
-    private void createFinalPayment(CheckOutRequest request, double finalAmount) {
-        Payment payment = new Payment();
-        payment.setReservationId(request.getReservationId());
-        payment.setAmount(finalAmount);
-        payment.setMethod(request.getPaymentMethod());
-        payment.setStatus("SUCCESS");
-        paymentDAO.createPayment(payment);
+    private void createFinalPayment(int reservationId, double amount, String paymentMethod) {
+        try {
+            Payment payment = new Payment();
+            payment.setReservationId(reservationId);
+            payment.setAmount(amount);
+            payment.setMethod(paymentMethod);
+            payment.setStatus("SUCCESS");
+            payment.setPaymentType("FINAL_PAYMENT");
+            paymentDAO.createPayment(payment);
+        } catch (Exception e) {
+            logger.error("Error creating final payment", e);
+        }
+    }
+    
+    private void processRefund(int reservationId, double refundAmount, String refundMethod) {
+        try {
+            Payment refund = new Payment();
+            refund.setReservationId(reservationId);
+            refund.setAmount(-refundAmount); // Negative amount for refund
+            refund.setMethod(refundMethod);
+            refund.setStatus("SUCCESS");
+            refund.setPaymentType("SECURITY_DEPOSIT_REFUND");
+            paymentDAO.createPayment(refund);
+        } catch (Exception e) {
+            logger.error("Error processing refund", e);
+        }
     }
     
     private void logCheckOutActivity(User user, Reservation reservation, double amount, String ipAddress) {
-        Activity activity = new Activity();
-        activity.setType("CHECK_OUT");
-        activity.setReservationId(reservation.getId());
-        activity.setUserId(user.getId());
-        activity.setDescription("Checked out room " + roomDAO.getRoomById(reservation.getRoomId()).getRoomNumber());
-        activity.setAmount(amount);
-        activity.setIpAddress(ipAddress);
-        activityDAO.logActivity(activity);
+        try {
+            Activity activity = new Activity();
+            activity.setType("CHECK_OUT");
+            activity.setReservationId(reservation.getId());
+            activity.setUserId(user.getId());
+            activity.setDescription("Checked out room " + roomDAO.getRoomById(reservation.getRoomId()).getRoomNumber());
+            activity.setAmount(amount);
+            activity.setIpAddress(ipAddress);
+            activityDAO.logActivity(activity);
+        } catch (Exception e) {
+            logger.error("Error logging activity", e);
+        }
     }
-}
-
-// Helper classes for JSON parsing
-class CheckOutRequest {
-    private int reservationId;
-    private String roomCondition;
-    private String damageDescription;
-    private double damageCharges;
-    private List<AmenityUsage> amenitiesUsage;
-    private String paymentMethod;
-    private String checkOutNotes;
-    
-    // Getters and setters
-    public int getReservationId() { return reservationId; }
-    public void setReservationId(int reservationId) { this.reservationId = reservationId; }
-    public String getRoomCondition() { return roomCondition; }
-    public void setRoomCondition(String roomCondition) { this.roomCondition = roomCondition; }
-    public String getDamageDescription() { return damageDescription; }
-    public void setDamageDescription(String damageDescription) { this.damageDescription = damageDescription; }
-    public double getDamageCharges() { return damageCharges; }
-    public void setDamageCharges(double damageCharges) { this.damageCharges = damageCharges; }
-    public List<AmenityUsage> getAmenitiesUsage() { return amenitiesUsage; }
-    public void setAmenitiesUsage(List<AmenityUsage> amenitiesUsage) { this.amenitiesUsage = amenitiesUsage; }
-    public String getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
-    public String getCheckOutNotes() { return checkOutNotes; }
-    public void setCheckOutNotes(String checkOutNotes) { this.checkOutNotes = checkOutNotes; }
-}
-
-class AmenityUsage {
-    private int amenityId;
-    private int quantity;
-    private double unitPrice;
-    
-    public int getAmenityId() { return amenityId; }
-    public void setAmenityId(int amenityId) { this.amenityId = amenityId; }
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
-    public double getUnitPrice() { return unitPrice; }
-    public void setUnitPrice(double unitPrice) { this.unitPrice = unitPrice; }
 }
