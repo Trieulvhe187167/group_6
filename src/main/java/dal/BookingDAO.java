@@ -10,6 +10,78 @@ import java.sql.Date;
 import model.Reservation;
 
 public class BookingDAO {
+    public boolean cancelBooking(int bookingId) {
+    String sql = "UPDATE Reservations SET Status = 'CANCELLED', UpdatedAt = GETDATE() WHERE Id = ?";
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, bookingId);
+        return ps.executeUpdate() > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+    public List<Reservation> getUpcomingBookings(int userId) {
+    String sql = """
+        SELECT r.*, room.RoomNumber, 
+               rt.Name AS roomTypeName, rt.BasePrice,
+               u.Phone AS UserPhone,
+               u.Email AS CustomerEmail,
+               u.FullName AS UserFullName
+        FROM Reservations r
+        JOIN Rooms room ON r.RoomId = room.Id
+        JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
+        JOIN Users u ON r.UserId = u.Id
+        WHERE r.UserId = ? 
+          AND r.Status IN ('PENDING', 'CONFIRMED', 'CHECKIN') 
+          AND r.CheckOut >= CAST(GETDATE() AS DATE)
+    """;
+    return executeBookingQuery(sql, userId);
+}
+
+public List<Reservation> getPastBookings(int userId) {
+    String sql = """
+        SELECT r.*, room.RoomNumber, 
+               rt.Name AS roomTypeName, rt.BasePrice,
+               u.Phone AS UserPhone,
+               u.Email AS CustomerEmail,
+               u.FullName AS UserFullName
+        FROM Reservations r
+        JOIN Rooms room ON r.RoomId = room.Id
+        JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
+        JOIN Users u ON r.UserId = u.Id
+        WHERE r.UserId = ? 
+          AND (r.Status IN ('COMPLETED', 'CANCELLED') 
+               OR (r.Status = 'CHECKIN' AND r.CheckOut < CAST(GETDATE() AS DATE)))
+    """;
+    return executeBookingQuery(sql, userId);
+}
+private List<Reservation> executeBookingQuery(String sql, int userId) {
+    List<Reservation> list = new ArrayList<>();
+    try (Connection con = DBContext.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+            Reservation r = mapResultSetToReservation(rs);
+            r.setRoomName(rs.getString("roomNumber"));
+            r.setRoomTypeName(rs.getString("roomTypeName"));
+            r.setBasePrice(rs.getDouble("BasePrice"));
+            r.setCustomerPhone(rs.getString("UserPhone")); // <== Đọc alias vừa thêm
+            r.setCustomerEmail(rs.getString("CustomerEmail"));
+            r.setUserFullName(rs.getString("UserFullName"));
+
+            list.add(r);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
+}
+
     
     /**
      * Get reservations with filtering and pagination
