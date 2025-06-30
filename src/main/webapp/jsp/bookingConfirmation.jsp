@@ -131,6 +131,63 @@
                 border-radius: 10px;
             }
             
+            /* Deposit Info Styles */
+            .deposit-info {
+                background: #e8f5e9;
+                border: 2px solid #4caf50;
+                border-radius: 10px;
+                padding: 20px;
+                margin: 30px 0;
+                text-align: left;
+            }
+            
+            .deposit-info h4 {
+                color: #2e7d32;
+                margin-bottom: 15px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .deposit-info .icon {
+                font-size: 24px;
+            }
+            
+            .payment-summary {
+                background: #f5f5f5;
+                border-radius: 10px;
+                padding: 20px;
+                margin: 20px 0;
+                text-align: left;
+            }
+            
+            .payment-summary h5 {
+                margin-bottom: 15px;
+                color: #333;
+            }
+            
+            .amount-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 10px 0;
+            }
+            
+            .amount-row.total {
+                border-top: 2px solid #ddd;
+                margin-top: 10px;
+                padding-top: 15px;
+                font-weight: bold;
+                font-size: 1.1rem;
+            }
+            
+            .amount-row.deposit {
+                color: #4caf50;
+            }
+            
+            .amount-row.remaining {
+                color: #ff9800;
+            }
+            
             .print-section {
                 display: none;
             }
@@ -173,6 +230,16 @@
                 // Calculate nights
                 long diffInMillies = reservation.getCheckOut().getTime() - reservation.getCheckIn().getTime();
                 int nights = (int) (diffInMillies / (1000 * 60 * 60 * 24));
+                
+                // Calculate deposit and remaining amounts
+                double totalAmount = reservation.getTotalAmount();
+                double depositAmount = totalAmount * 0.1; // 10% deposit
+                double remainingAmount = totalAmount - depositAmount;
+                boolean hasDepositPaid = payment != null && "SUCCESS".equals(payment.getStatus());
+                
+                // Get success message from session
+                String successMessage = (String) session.getAttribute("successMessage");
+                session.removeAttribute("successMessage");
             %>
             
             <!-- Content -->
@@ -210,14 +277,36 @@
                                 Thank you for choosing LuxuryHotel. Your booking has been successfully confirmed.
                             </p>
                             
+                            <% if (successMessage != null) { %>
+                            <div class="alert alert-success">
+                                <i class="fa fa-info-circle"></i> <%= successMessage %>
+                            </div>
+                            <% } %>
+                            
                             <div class="booking-id">
                                 Booking ID: #<%= reservation.getId() %>
                             </div>
                             
-                            <div class="qr-code">
-                                <i class="fa fa-qrcode" style="font-size: 60px; color: #999;"></i>
+                            <!-- Deposit Information -->
+                            <% if (hasDepositPaid) { %>
+                            <div class="deposit-info">
+                                <h4>
+                                    <i class="fa fa-check-circle icon"></i>
+                                    10% Deposit Payment Confirmed
+                                </h4>
+                                <p>Your deposit has been successfully received.</p>
+                                <ul style="margin-left: 20px;">
+                                    <li><strong>Deposit Amount:</strong> <%= df.format(depositAmount) %>₫ (10% of total)</li>
+                                    <li><strong>Payment Method:</strong> <%= payment.getMethod().replace("_", " ") %></li>
+                                    <li><strong>Transaction ID:</strong> <%= payment.getTransactionId() %></li>
+                                </ul>
+                                <div class="alert alert-info mt-3 mb-0">
+                                    <i class="fa fa-info-circle"></i> 
+                                    <strong>Important:</strong> Your deposit will be <strong>fully refunded</strong> at check-out. 
+                                    This amount will be deducted from your final bill.
+                                </div>
                             </div>
-                            <p class="text-muted small">Scan this QR code at reception for quick check-in</p>
+                            <% } %>
                             
                             <div class="booking-details">
                                 <h4 class="mb-4">Booking Details</h4>
@@ -284,33 +373,38 @@
                                     <span class="detail-value"><%= reservation.getSpecialRequests() %></span>
                                 </div>
                                 <% } %>
+                            </div>
+                            
+                            <!-- Payment Summary -->
+                            <div class="payment-summary">
+                                <h5>Payment Summary</h5>
                                 
-                                <div class="detail-row">
-                                    <span class="detail-label">Payment Method:</span>
-                                    <span class="detail-value">
-                                        <% if (payment != null) { %>
-                                            <%= payment.getMethod().replace("_", " ") %>
-                                        <% } else { %>
-                                            Pay at Hotel
-                                        <% } %>
-                                    </span>
+                                <div class="amount-row">
+                                    <span>Room charges:</span>
+                                    <span><%= df.format(totalAmount) %>₫</span>
                                 </div>
                                 
-                                <div class="detail-row">
-                                    <span class="detail-label">Payment Status:</span>
-                                    <span class="detail-value">
-                                        <% if (payment != null && "SUCCESS".equals(payment.getStatus())) { %>
-                                            <span class="badge badge-success">Paid</span>
-                                        <% } else { %>
-                                            <span class="badge badge-warning">Pending</span>
-                                        <% } %>
-                                    </span>
+                                <% if (hasDepositPaid) { %>
+                                <div class="amount-row deposit">
+                                    <span>Deposit paid (10%):</span>
+                                    <span style="color: #4caf50;">-<%= df.format(depositAmount) %>₫</span>
                                 </div>
                                 
-                                <div class="detail-row">
-                                    <span class="detail-label"><strong>Total Amount:</strong></span>
-                                    <span class="detail-value"><strong><%= df.format(reservation.getTotalAmount()) %>₫</strong></span>
+                                <div class="amount-row remaining total">
+                                    <span><strong>Remaining balance:</strong></span>
+                                    <span style="color: #ff9800;"><strong><%= df.format(remainingAmount) %>₫</strong></span>
                                 </div>
+                                
+                                <div class="alert alert-warning mt-3 mb-0">
+                                    <i class="fa fa-exclamation-circle"></i>
+                                    You need to pay <strong><%= df.format(remainingAmount) %>₫</strong> at check-in or during your stay.
+                                </div>
+                                <% } else { %>
+                                <div class="amount-row total">
+                                    <span><strong>Total Amount:</strong></span>
+                                    <span><strong><%= df.format(totalAmount) %>₫</strong></span>
+                                </div>
+                                <% } %>
                             </div>
                             
                             <div class="booking-actions no-print">
@@ -329,6 +423,9 @@
                                     <li>Please bring a valid ID and this confirmation when checking in</li>
                                     <li>For any changes or cancellations, please contact us at least 3 days before check-in</li>
                                     <li>A confirmation email has been sent to <%= reservation.getCustomerEmail() %></li>
+                                    <% if (hasDepositPaid) { %>
+                                    <li><strong>Your 10% deposit (<%= df.format(depositAmount) %>₫) will be refunded at check-out</strong></li>
+                                    <% } %>
                                 </ul>
                             </div>
                         </div>

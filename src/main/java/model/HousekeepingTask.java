@@ -16,9 +16,14 @@ public class HousekeepingTask {
     private String roomTypeName;
     private String assignedToName;
     private String roomStatus;
+    private String priority;
+    
     
     // Constructors
-    public HousekeepingTask() {}
+     public HousekeepingTask() {
+        this.priority = "MEDIUM"; // Default priority
+    }
+    
     
     public HousekeepingTask(int roomId, int assignedTo, String status, String notes) {
         this.roomId = roomId;
@@ -115,7 +120,13 @@ public class HousekeepingTask {
     public void setRoomStatus(String roomStatus) {
         this.roomStatus = roomStatus;
     }
-    
+    public String getPriority() {
+    return priority;
+}
+
+public void setPriority(String priority) {
+    this.priority = priority;
+}
     // Helper methods
     public String getStatusDisplayName() {
         if (status == null) return "";

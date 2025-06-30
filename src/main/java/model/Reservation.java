@@ -14,7 +14,7 @@ public class Reservation {
     private Date checkIn;
     private Date checkOut;
     private String status;
-    private double totalAmount;
+    private Double totalAmount;
     private String notes;
     private String specialRequests;
     private int numberOfCustomers;
@@ -39,10 +39,18 @@ public class Reservation {
     private String paymentStatus;
     private double amountPaid;
     
+    // Deposit-related fields
+private Double depositAmount;
+private Date depositPaidDate;
+private String depositStatus; // PENDING, PAID, REFUNDED
+
+// Thêm field basePrice
+private double basePrice;
+
     // Constructors
     public Reservation() {}
     
-    public Reservation(int userId, Integer roomId, Date checkIn, Date checkOut, String status, double totalAmount) {
+    public Reservation(int userId, Integer roomId, Date checkIn, Date checkOut, String status, Double totalAmount) {
         this.userId = userId;
         this.roomId = roomId;
         this.checkIn = checkIn;
@@ -52,7 +60,7 @@ public class Reservation {
     }
     
     // Constructor for reservations without room assignment
-    public Reservation(int userId, int roomTypeId, Date checkIn, Date checkOut, String status, double totalAmount) {
+    public Reservation(int userId, int roomTypeId, Date checkIn, Date checkOut, String status, Double totalAmount) {
         this.userId = userId;
         this.roomTypeId = roomTypeId;
         this.roomId = null; // No room assigned yet
@@ -167,11 +175,11 @@ public void setRoomName(String roomName) {
         this.status = status;
     }
     
-    public double getTotalAmount() {
+    public Double getTotalAmount() {
         return totalAmount;
     }
     
-    public void setTotalAmount(double totalAmount) {
+    public void setTotalAmount(Double totalAmount) {
         this.totalAmount = totalAmount;
     }
     
@@ -305,7 +313,61 @@ public void setRoomName(String roomName) {
     public void setAmountPaid(double amountPaid) {
         this.amountPaid = amountPaid;
     }
-    
+    // Getters and Setters for deposit fields
+public Double getDepositAmount() {
+    return depositAmount;
+}
+
+public void setDepositAmount(Double depositAmount) {
+    this.depositAmount = depositAmount;
+}
+
+public Date getDepositPaidDate() {
+    return depositPaidDate;
+}
+
+public void setDepositPaidDate(Date depositPaidDate) {
+    this.depositPaidDate = depositPaidDate;
+}
+
+public String getDepositStatus() {
+    return depositStatus;
+}
+
+public void setDepositStatus(String depositStatus) {
+    this.depositStatus = depositStatus;
+}
+
+// Helper methods for deposit
+public boolean hasDepositPaid() {
+    return "PAID".equals(depositStatus) && depositAmount != null && depositAmount > 0;
+}
+
+public boolean isDepositRefunded() {
+    return "REFUNDED".equals(depositStatus);
+}
+
+public double getRemainingBalance() {
+    if (totalAmount == null) return 0;
+    if (depositAmount == null) return totalAmount;
+    return totalAmount - depositAmount;
+}
+
+public double getDepositPercentage() {
+    if (totalAmount == null || totalAmount == 0) return 0;
+    if (depositAmount == null) return 0;
+    return (depositAmount / totalAmount) * 100;
+}
+
+// Getters and Setters for basePrice
+public double getBasePrice() {
+    return basePrice;
+}
+
+public void setBasePrice(double basePrice) {
+    this.basePrice = basePrice;
+}
+
     // Helper methods
     public String getStatusDisplayName() {
         if (status == null) return "";

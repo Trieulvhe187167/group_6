@@ -182,6 +182,24 @@
                     margin-left: 0;
                 }
             }
+
+            .lightbox .lb-image {
+                width: auto ;
+                height: auto ;
+                max-width: 100% ;
+                max-height: 90vh ;
+                object-fit: contain;
+            }
+
+            .lightbox .lb-outerContainer {
+                width: auto ;
+                height: auto ;
+            }
+
+            .lightbox .lb-data {
+                text-align: center;
+                font-size: 16px;
+            }
         </style>
     </head>
     <body>
@@ -214,6 +232,10 @@
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/rooms" 
                    class="nav-item ${activePage == 'rooms' ? 'active' : ''}">
+                    <i class="fas fa-bed"></i> RoomTypes
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/rooms2" 
+                   class="nav-item ${activePage == 'room-manage' ? 'active' : ''}">
                     <i class="fas fa-bed"></i> Rooms
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/customers" 
@@ -224,10 +246,10 @@
                    class="nav-item ${activePage == 'staff' ? 'active' : ''}">
                     <i class="fas fa-user-tie"></i> Staff
                 </a>
-                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/change-request">
+                   <%--                 <a class="nav-link" href="${pageContext.request.contextPath}/admin/change-request">
         <i class="fas fa-clock"></i> Pending Changes
         <span class="badge badge-warning ml-1">${pendingChangesCount}</span>
-    </a>
+    </a>--%>
                 <a href="${pageContext.request.contextPath}/admin/bookings" 
                    class="nav-item ${activePage == 'bookings' ? 'active' : ''}">
                     <i class="fas fa-calendar-check"></i> Bookings
@@ -237,10 +259,7 @@
                    class="nav-item ${activePage == 'houseKeeping' ? 'active' : ''}">
                     <i class="fas fa-broom"></i> Housekeeping
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/receptionist" 
-                   class="nav-item ${activePage == 'receptionist' ? 'active' : ''}">
-                    <i class="fas fa-bell-concierge"></i> Receptionist
-                </a>
+              
                 <a href="${pageContext.request.contextPath}/admin/reports" 
                    class="nav-item ${activePage == 'reports' ? 'active' : ''}">
                     <i class="fas fa-chart-bar"></i> Reports
@@ -274,5 +293,22 @@
                 document.getElementById('sidebar').classList.toggle('active');
             }
         </script>
+
+        <script>
+            lightbox.option({
+                'resizeDuration': 200,
+                'wrapAround': true,
+                'fadeDuration': 300,
+                'imageFadeDuration': 300,
+                'showImageNumberLabel': true
+            })
+        </script>
+        <!-- Lightbox2 CSS -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet" />
+
+        <!-- Lightbox2 JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+
+
     </body>
 </html>

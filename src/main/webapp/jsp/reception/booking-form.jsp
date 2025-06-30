@@ -66,6 +66,78 @@
 .guest-type-selector .btn:last-child {
     margin-right: 0;
 }
+
+/* Services Section Styling */
+.services-grid {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    background: #f8f9fa;
+}
+
+.services-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.services-grid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.services-grid::-webkit-scrollbar-thumb {
+    background: #17a2b8;
+    border-radius: 4px;
+}
+
+.service-item {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s;
+}
+
+.service-item:hover {
+    border-color: #17a2b8;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.service-item.selected {
+    background: #e7f8fa;
+    border-color: #17a2b8;
+}
+
+.service-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.service-price {
+    color: #17a2b8;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.custom-control-label {
+    width: 100%;
+    cursor: pointer;
+}
+
+/* Selected services counter */
+.services-selected-count {
+    float: right;
+    background: #17a2b8;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+}
+
 </style>
 
 <div class="container-fluid">
@@ -228,6 +300,104 @@
                     <input type="hidden" name="roomId" id="selectedRoom" required>
                 </div>
                 
+              <!-- Additional Services Section -->
+<div class="booking-section">
+    <h5><i class="fas fa-concierge-bell"></i> Additional Services <span class="text-muted" style="font-size: 14px; font-weight: normal;">Optional</span></h5>
+    
+    <!-- Search Box -->
+    <div class="service-search-box mb-3">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text bg-white border-right-0">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+            </div>
+            <input type="text" 
+                   id="serviceSearch" 
+                   class="form-control border-left-0" 
+                   placeholder="Search services..."
+                   onkeyup="searchServices()">
+        </div>
+    </div>
+    
+    <!-- Service Category Filters -->
+    <div class="service-filters mb-3">
+        <button type="button" class="btn btn-service-filter active" data-category="all" onclick="filterServices('all')">
+            All Services
+        </button>
+        <button type="button" class="btn btn-service-filter" data-category="TRANSPORT" onclick="filterServices('TRANSPORT')">
+            Transportation
+        </button>
+        <button type="button" class="btn btn-service-filter" data-category="DINING" onclick="filterServices('DINING')">
+            Dining
+        </button>
+        <button type="button" class="btn btn-service-filter" data-category="SPA" onclick="filterServices('SPA')">
+            Spa & Wellness
+        </button>
+        <button type="button" class="btn btn-service-filter" data-category="SPECIAL" onclick="filterServices('SPECIAL')">
+            Special Services
+        </button>
+    </div>
+    
+    <!-- Services List -->
+    <div id="servicesContainer" class="services-grid">
+        <c:forEach var="service" items="${services}">
+            <div class="service-item" data-category="${service.category}">
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" 
+                           id="service_${service.id}" 
+                           name="services" 
+                           value="${service.id}"
+                           data-price="${service.price}"
+                           onchange="updateServicesSummary()">
+                    <label class="custom-control-label" for="service_${service.id}">
+                        <div class="service-header">
+                            <div class="service-title-section">
+                                <c:choose>
+                                    <c:when test="${service.category == 'TRANSPORT'}">
+                                        <i class="fas fa-car service-icon"></i>
+                                    </c:when>
+                                    <c:when test="${service.category == 'DINING'}">
+                                        <i class="fas fa-utensils service-icon"></i>
+                                    </c:when>
+                                    <c:when test="${service.category == 'SPA'}">
+                                        <i class="fas fa-spa service-icon"></i>
+                                    </c:when>
+                                    <c:when test="${service.category == 'SPECIAL'}">
+                                        <i class="fas fa-star service-icon"></i>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <i class="fas fa-concierge-bell service-icon"></i>
+                                    </c:otherwise>
+                                </c:choose>
+                                <div>
+                                    <strong>${service.name}</strong>
+                                    <span class="service-category-badge">${service.category}</span>
+                                </div>
+                            </div>
+                            <span class="service-price">
+                                <fmt:formatNumber value="${service.price}" pattern="#,###"/>₫
+                            </span>
+                        </div>
+                        <small class="text-muted service-description">${service.description}</small>
+                    </label>
+                </div>
+            </div>
+        </c:forEach>
+        
+        <!-- No results message -->
+        <div id="noServicesMessage" class="text-center py-4" style="display: none;">
+            <i class="fas fa-search fa-2x text-muted mb-2"></i>
+            <p class="text-muted">No services found matching your search</p>
+        </div>
+    </div>
+    
+    <c:if test="${empty services}">
+        <div class="text-center py-3 text-muted">
+            No additional services available
+        </div>
+    </c:if>
+</div>
                 <!-- Additional Information -->
                 <div class="booking-section">
                     <h5><i class="fas fa-clipboard"></i> Additional Information</h5>
@@ -315,6 +485,9 @@ $(document).ready(function() {
             e.preventDefault();
         }
     });
+    
+    // Initialize services counter on page load
+    updateServicesSummary();
 });
 
 function setGuestType(type) {
@@ -426,15 +599,36 @@ function selectRoom(roomId, roomNumber, price, roomType) {
     $('#submitBtn').prop('disabled', false);
 }
 
+// Update booking summary with room and services
 function updateBookingSummary(roomNumber, roomType, pricePerNight) {
     var checkIn = new Date($('#checkIn').val());
     var checkOut = new Date($('#checkOut').val());
     var nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-    var subtotal = nights * pricePerNight;
+    var roomSubtotal = nights * pricePerNight;
+    
+    // Calculate services total
+    var servicesTotal = 0;
+    var selectedServices = [];
+    
+    document.querySelectorAll('input[name="services"]:checked').forEach(function(checkbox) {
+        var price = parseFloat(checkbox.getAttribute('data-price'));
+        servicesTotal += price;
+        
+        var serviceLabel = checkbox.parentElement.querySelector('strong').textContent;
+        selectedServices.push({
+            name: serviceLabel,
+            price: price
+        });
+    });
+    
+    var subtotal = roomSubtotal + servicesTotal;
     var tax = subtotal * 0.1; // 10% tax
     var total = subtotal + tax;
     
+    // Build HTML
     var html = '<div class="booking-summary-content">';
+    
+    // Room details
     html += '<div class="row mb-2">';
     html += '<div class="col-8"><strong>Room ' + roomNumber + '</strong></div>';
     html += '<div class="col-4 text-right">' + formatCurrency(pricePerNight) + '₫</div>';
@@ -443,6 +637,29 @@ function updateBookingSummary(roomNumber, roomType, pricePerNight) {
     html += '<div class="col-8 text-muted">' + roomType + '</div>';
     html += '<div class="col-4 text-right text-muted">× ' + nights + ' nights</div>';
     html += '</div>';
+    html += '<div class="row mb-3">';
+    html += '<div class="col-8">Room Total</div>';
+    html += '<div class="col-4 text-right">' + formatCurrency(roomSubtotal) + '₫</div>';
+    html += '</div>';
+    
+    // Services details
+    if (selectedServices.length > 0) {
+        html += '<hr>';
+        html += '<h6 class="mb-2"><i class="fas fa-concierge-bell mr-1"></i>Additional Services</h6>';
+        
+        selectedServices.forEach(function(service) {
+            html += '<div class="row mb-1">';
+            html += '<div class="col-8 text-muted"><small>' + service.name + '</small></div>';
+            html += '<div class="col-4 text-right"><small>' + formatCurrency(service.price) + '₫</small></div>';
+            html += '</div>';
+        });
+        
+        html += '<div class="row mb-3">';
+        html += '<div class="col-8">Services Total</div>';
+        html += '<div class="col-4 text-right">' + formatCurrency(servicesTotal) + '₫</div>';
+        html += '</div>';
+    }
+    
     html += '<hr>';
     html += '<div class="row mb-2">';
     html += '<div class="col-8">Subtotal</div>';
@@ -454,11 +671,16 @@ function updateBookingSummary(roomNumber, roomType, pricePerNight) {
     html += '</div>';
     html += '</div>';
     
+    // Total section
     var totalHtml = '<div class="total-summary">';
     totalHtml += '<div class="row align-items-center">';
     totalHtml += '<div class="col-8">';
     totalHtml += '<h5 class="mb-0">Total Amount</h5>';
-    totalHtml += '<small>' + nights + ' nights in ' + roomType + '</small>';
+    totalHtml += '<small>' + nights + ' nights';
+    if (selectedServices.length > 0) {
+        totalHtml += ' + ' + selectedServices.length + ' service(s)';
+    }
+    totalHtml += '</small>';
     totalHtml += '</div>';
     totalHtml += '<div class="col-4 text-right">';
     totalHtml += '<h4 class="mb-0">' + formatCurrency(total) + '₫</h4>';
@@ -467,6 +689,60 @@ function updateBookingSummary(roomNumber, roomType, pricePerNight) {
     totalHtml += '</div>';
     
     $('#bookingSummary').html(html + totalHtml);
+    
+    // Store current room price for service updates
+    $('#bookingSummary').data('roomPrice', pricePerNight);
+    $('#bookingSummary').data('nights', nights);
+    $('#bookingSummary').data('roomNumber', roomNumber);
+    $('#bookingSummary').data('roomType', roomType);
+}
+
+// Update services summary when services are selected/deselected
+function updateServicesSummary() {
+    let servicesTotal = 0;
+    let selectedCount = 0;
+    
+    document.querySelectorAll('input[name="services"]:checked').forEach(checkbox => {
+        const price = parseFloat(checkbox.getAttribute('data-price'));
+        servicesTotal += price;
+        selectedCount++;
+        
+        // Highlight selected service
+        checkbox.closest('.service-item').classList.add('selected');
+    });
+    
+    // Remove highlight from unselected services
+    document.querySelectorAll('input[name="services"]:not(:checked)').forEach(checkbox => {
+        checkbox.closest('.service-item').classList.remove('selected');
+    });
+    
+    // Update selected count in header
+    updateSelectedCount(selectedCount);
+    
+    // If room is already selected, update the booking summary
+    var roomPrice = $('#bookingSummary').data('roomPrice');
+    var roomNumber = $('#bookingSummary').data('roomNumber');
+    var roomType = $('#bookingSummary').data('roomType');
+    
+    if (roomPrice && roomNumber && roomType) {
+        updateBookingSummary(roomNumber, roomType, roomPrice);
+    }
+}
+
+// Update selected services counter
+function updateSelectedCount(count) {
+    const existingCounter = document.querySelector('.services-selected-count');
+    if (existingCounter) {
+        existingCounter.remove();
+    }
+    
+    if (count > 0) {
+        const servicesHeader = document.querySelector('.booking-section h5 i.fa-concierge-bell').parentElement;
+        const counter = document.createElement('span');
+        counter.className = 'services-selected-count';
+        counter.textContent = count + ' selected';
+        servicesHeader.appendChild(counter);
+    }
 }
 
 function clearRoomSelection() {
@@ -474,6 +750,9 @@ function clearRoomSelection() {
     $('#submitBtn').prop('disabled', true);
     $('#availableRooms').html('<div class="text-center py-4"><i class="fas fa-calendar-day fa-3x text-muted mb-3"></i><p class="text-muted">Please check availability to see available rooms</p></div>');
     $('#bookingSummary').html('<div class="text-center py-4"><i class="fas fa-hand-point-left fa-2x text-muted mb-3"></i><p class="text-muted">Select a room to see booking summary</p></div>');
+    
+    // Clear stored data
+    $('#bookingSummary').removeData(['roomPrice', 'nights', 'roomNumber', 'roomType']);
 }
 
 function validateForm() {
@@ -502,6 +781,22 @@ function validateForm() {
             $('#newCustomerPhone').focus();
             return false;
         }
+        
+        // Validate email format
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test($('#newCustomerEmail').val().trim())) {
+            alert('Please enter a valid email address');
+            $('#newCustomerEmail').focus();
+            return false;
+        }
+        
+        // Validate phone format (Vietnamese phone)
+        var phoneRegex = /^0[0-9]{9}$/;
+        if (!phoneRegex.test($('#newCustomerPhone').val().trim())) {
+            alert('Please enter a valid Vietnamese phone number (10 digits starting with 0)');
+            $('#newCustomerPhone').focus();
+            return false;
+        }
     }
     
     // Validate dates
@@ -523,10 +818,180 @@ function validateForm() {
         return false;
     }
     
+    // Optional: Validate at least one service selected
+    // Uncomment if services are required
+    /*
+    if ($('input[name="services"]:checked').length === 0) {
+        alert('Please select at least one service');
+        return false;
+    }
+    */
+    
     return true;
 }
 
 function formatCurrency(amount) {
     return new Intl.NumberFormat('vi-VN').format(amount);
 }
+
+// Search/Filter services by name (optional feature)
+function searchServices() {
+    const searchTerm = document.getElementById('serviceSearch').value.toLowerCase();
+    const serviceItems = document.querySelectorAll('.service-item');
+    
+    serviceItems.forEach(item => {
+        const serviceName = item.querySelector('strong').textContent.toLowerCase();
+        const serviceDesc = item.querySelector('.text-muted').textContent.toLowerCase();
+        
+        if (serviceName.includes(searchTerm) || serviceDesc.includes(searchTerm)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+// Filter services by category
+function filterServices(category) {
+    // Update active button
+    document.querySelectorAll('.btn-service-filter').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.currentTarget.classList.add('active');
+    
+    // Filter service items
+    const serviceItems = document.querySelectorAll('.service-item');
+    serviceItems.forEach(item => {
+        if (category === 'all' || item.getAttribute('data-category') === category) {
+            item.classList.remove('hidden');
+            item.style.display = 'block';
+        } else {
+            item.classList.add('hidden');
+            item.style.display = 'none';
+        }
+    });
+    
+    // Update scroll height if needed
+    updateServicesContainerHeight();
+}
+
+// Update services container height based on visible items
+function updateServicesContainerHeight() {
+    const container = document.getElementById('servicesContainer');
+    const visibleItems = container.querySelectorAll('.service-item:not(.hidden)');
+    
+    if (visibleItems.length === 0) {
+        container.innerHTML = '<div class="text-center py-3 text-muted">No services available in this category</div>';
+    }
+}
+
+// Enhanced updateServicesSummary function
+function updateServicesSummary() {
+    let servicesTotal = 0;
+    let selectedCount = 0;
+    let selectedByCategory = {};
+    
+    document.querySelectorAll('input[name="services"]:checked').forEach(checkbox => {
+        const price = parseFloat(checkbox.getAttribute('data-price'));
+        servicesTotal += price;
+        selectedCount++;
+        
+        // Count by category
+        const category = checkbox.closest('.service-item').getAttribute('data-category');
+        selectedByCategory[category] = (selectedByCategory[category] || 0) + 1;
+        
+        // Highlight selected service
+        checkbox.closest('.service-item').classList.add('selected');
+    });
+    
+    // Remove highlight from unselected services
+    document.querySelectorAll('input[name="services"]:not(:checked)').forEach(checkbox => {
+        checkbox.closest('.service-item').classList.remove('selected');
+    });
+    
+    // Update selected count in header
+    updateSelectedCount(selectedCount, selectedByCategory);
+    
+    // If room is already selected, update the booking summary
+    var roomPrice = $('#bookingSummary').data('roomPrice');
+    var roomNumber = $('#bookingSummary').data('roomNumber');
+    var roomType = $('#bookingSummary').data('roomType');
+    
+    if (roomPrice && roomNumber && roomType) {
+        updateBookingSummary(roomNumber, roomType, roomPrice);
+    }
+}
+
+// Update selected services counter with category breakdown
+function updateSelectedCount(count, byCategory) {
+    const existingCounter = document.querySelector('.services-selected-count');
+    if (existingCounter) {
+        existingCounter.remove();
+    }
+    
+    if (count > 0) {
+        const servicesHeader = document.querySelector('.booking-section h5 i.fa-concierge-bell').parentElement;
+        const counter = document.createElement('span');
+        counter.className = 'services-selected-count';
+        
+        // Create detailed text
+        let text = count + ' selected';
+        
+        // Add breakdown if multiple categories
+        const categories = Object.keys(byCategory);
+        if (categories.length > 1) {
+            const breakdown = categories.map(cat => {
+                const catName = getCategoryShortName(cat);
+                return byCategory[cat] + ' ' + catName;
+            }).join(', ');
+            counter.setAttribute('title', breakdown);
+        }
+        
+        counter.textContent = text;
+        servicesHeader.appendChild(counter);
+    }
+}
+
+// Get short name for category
+function getCategoryShortName(category) {
+    const names = {
+        'TRANSPORT': 'Transport',
+        'DINING': 'Dining',
+        'SPA': 'Spa',
+        'SPECIAL': 'Special'
+    };
+    return names[category] || category;
+}
+
+// Initialize on page load
+$(document).ready(function() {
+    // ... existing code ...
+    
+    // Initialize service counts
+    updateServicesSummary();
+    
+    // Add search functionality for services
+    $('#serviceSearch').on('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const currentCategory = document.querySelector('.btn-service-filter.active').getAttribute('data-category');
+        
+        document.querySelectorAll('.service-item').forEach(item => {
+            const serviceName = item.querySelector('strong').textContent.toLowerCase();
+            const serviceDesc = item.querySelector('.service-description').textContent.toLowerCase();
+            const itemCategory = item.getAttribute('data-category');
+            
+            const matchesSearch = serviceName.includes(searchTerm) || serviceDesc.includes(searchTerm);
+            const matchesCategory = currentCategory === 'all' || itemCategory === currentCategory;
+            
+            if (matchesSearch && matchesCategory) {
+                item.style.display = 'block';
+                item.classList.remove('hidden');
+            } else {
+                item.style.display = 'none';
+                item.classList.add('hidden');
+            }
+        });
+        
+        updateServicesContainerHeight();
+    });
+});
 </script>

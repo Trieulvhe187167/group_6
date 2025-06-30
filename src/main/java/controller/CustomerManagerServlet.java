@@ -11,6 +11,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import model.PendingChange;
 import service.VerificationService;
@@ -155,33 +158,40 @@ public class CustomerManagerServlet extends HttpServlet {
         request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
     }
     
-    private void showForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+   private void showForm(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    
+    String idParam = request.getParameter("id");
+    boolean isEdit = idParam != null && !idParam.isEmpty();
+    
+    if (isEdit) {
+        int id = Integer.parseInt(idParam);
+        User customer = userDAO.getCustomerByIdWithDetails(id);
         
-        String idParam = request.getParameter("id");
-        boolean isEdit = idParam != null && !idParam.isEmpty();
-        
-        if (isEdit) {
-            int id = Integer.parseInt(idParam);
-            User customer = userDAO.getCustomerByIdWithDetails(id);
-            
-            if (customer == null || !"CUSTOMER".equals(customer.getRole())) {
-                request.getSession().setAttribute("error", "Customer not found!");
-                response.sendRedirect(request.getContextPath() + "/admin/customers");
-                return;
-            }
-            
-            request.setAttribute("customer", customer);
+        if (customer == null || !"CUSTOMER".equals(customer.getRole())) {
+            request.getSession().setAttribute("error", "Customer not found!");
+            response.sendRedirect(request.getContextPath() + "/admin/customers");
+            return;
         }
         
-        // Set template attributes
-        request.setAttribute("pageTitle", isEdit ? "Edit Customer" : "Add New Customer");
-        request.setAttribute("contentPage", "/jsp/admin/customers/customer-form.jsp");
-        request.setAttribute("activePage", "customers");
-        request.setAttribute("isEdit", isEdit);
+        // Format date of birth for HTML date input
+        if (customer.getDateOfBirth() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String formattedDateOfBirth = sdf.format(customer.getDateOfBirth());
+            request.setAttribute("formattedDateOfBirth", formattedDateOfBirth);
+        }
         
-        request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
+        request.setAttribute("customer", customer);
     }
+    
+    // Set template attributes
+    request.setAttribute("pageTitle", isEdit ? "Edit Customer" : "Add New Customer");
+    request.setAttribute("contentPage", "/jsp/admin/customers/customer-form.jsp");
+    request.setAttribute("activePage", "customers");
+    request.setAttribute("isEdit", isEdit);
+    
+    request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
+}
     
   private void showCustomerDetail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -266,7 +276,7 @@ public class CustomerManagerServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/customers");
     }
     
-    private void updateCustomer(HttpServletRequest request, HttpServletResponse response)
+private void updateCustomer(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
     
     int id = Integer.parseInt(request.getParameter("id"));
@@ -276,6 +286,20 @@ public class CustomerManagerServlet extends HttpServlet {
     String changePassword = request.getParameter("changePassword");
     String newPassword = request.getParameter("newPassword");
     
+    // Get additional customer fields
+    String dateOfBirthStr = request.getParameter("dateOfBirth");
+    String gender = request.getParameter("gender");
+    String idType = request.getParameter("idType");
+    String idNumber = request.getParameter("idNumber");
+    String address = request.getParameter("address");
+    String city = request.getParameter("city");
+    String country = request.getParameter("country");
+    
+    // Get loyalty program fields (only for edit mode)
+    String loyaltyPointsStr = request.getParameter("loyaltyPoints");
+    String membershipLevel = request.getParameter("membershipLevel");
+    String isVIPStr = request.getParameter("isVIP");
+    
     // Get current admin user
     User currentAdmin = (User) request.getSession().getAttribute("user");
     if (currentAdmin == null || !"ADMIN".equals(currentAdmin.getRole())) {
@@ -284,7 +308,7 @@ public class CustomerManagerServlet extends HttpServlet {
         return;
     }
     
-    // Get existing customer
+    // Get existing customer with all details
     User customer = userDAO.getCustomerByIdWithDetails(id);
     if (customer == null || !"CUSTOMER".equals(customer.getRole())) {
         request.getSession().setAttribute("error", "Customer not found!");
@@ -292,7 +316,20 @@ public class CustomerManagerServlet extends HttpServlet {
         return;
     }
     
-    // 🔥 NEW: Check for sensitive changes and create verification requests
+    // Validate input
+    String validationError = validateCustomerInput(null, null, email, phone, id);
+    if (validationError != null) {
+        request.setAttribute("error", validationError);
+        request.setAttribute("customer", customer);
+        request.setAttribute("isEdit", true);
+        request.setAttribute("pageTitle", "Edit Customer");
+        request.setAttribute("contentPage", "/jsp/admin/customers/customer-form.jsp");
+        request.setAttribute("activePage", "customers");
+        request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
+        return;
+    }
+    
+    // 🔥 Check for sensitive changes and create verification requests
     VerificationService verificationService = new VerificationService();
     boolean hasSensitiveChanges = false;
     String successMessage = "";
@@ -310,34 +347,21 @@ public class CustomerManagerServlet extends HttpServlet {
             }
         }
         
-   
-      // Check phone change  
-String currentPhone = customer.getPhone() != null ? customer.getPhone() : "";
-String newPhone = phone != null ? phone : "";
-System.out.println("Checking phone change: current='" + currentPhone + "', new='" + newPhone + "'");
-
-if (!newPhone.equals(currentPhone)) {
-    System.out.println("Phone change detected!");
-    System.out.println("   Current: '" + currentPhone + "'");
-    System.out.println("   New: '" + newPhone + "'");
-    
-    try {
-        boolean phoneRequestCreated = verificationService.requestPhoneChange(
-            id, phone, currentAdmin.getId(),
-            "Admin requested phone change from " + currentPhone + " to " + newPhone
-        );
+        // Check phone change  
+        String currentPhone = customer.getPhone() != null ? customer.getPhone() : "";
+        String newPhone = phone != null ? phone : "";
         
-        System.out.println("   Request created: " + phoneRequestCreated);
-        
-        if (phoneRequestCreated) {
-            hasSensitiveChanges = true;
-            successMessage += "Phone change verification sent. ";
+        if (!newPhone.equals(currentPhone)) {
+            boolean phoneRequestCreated = verificationService.requestPhoneChange(
+                id, phone, currentAdmin.getId(),
+                "Admin requested phone change from " + currentPhone + " to " + newPhone
+            );
+            if (phoneRequestCreated) {
+                hasSensitiveChanges = true;
+                successMessage += "Phone change verification sent. ";
+            }
         }
-    } catch (Exception e) {
-        System.err.println("Exception in phone change: " + e.getMessage());
-        e.printStackTrace();
-    }
-}    
+        
         // Check password change
         if ("true".equals(changePassword) && newPassword != null && !newPassword.isEmpty()) {
             boolean passwordRequestCreated = verificationService.requestPasswordChange(
@@ -351,16 +375,121 @@ if (!newPhone.equals(currentPhone)) {
         }
         
         // Update non-sensitive fields directly
+        boolean needsBasicUpdate = false;
+        boolean needsDetailsUpdate = false;
+        
+        // Update basic user info
         if (!fullName.equals(customer.getFullName())) {
             customer.setFullName(fullName);
+            needsBasicUpdate = true;
+        }
+        
+        // Update customer details
+        // Parse and set date of birth
+        if (dateOfBirthStr != null && !dateOfBirthStr.isEmpty()) {
+            try {
+                Date dob = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(dateOfBirthStr);
+                if (!dob.equals(customer.getDateOfBirth())) {
+                    customer.setDateOfBirth(dob);
+                    needsDetailsUpdate = true;
+                }
+            } catch (Exception e) {
+                System.err.println("Error parsing date of birth: " + e.getMessage());
+            }
+        } else if (customer.getDateOfBirth() != null) {
+            customer.setDateOfBirth(null);
+            needsDetailsUpdate = true;
+        }
+        
+        // Update gender
+        if ((gender != null && !gender.equals(customer.getGender())) || 
+            (gender == null && customer.getGender() != null) ||
+            (gender != null && gender.isEmpty() && customer.getGender() != null)) {
+            customer.setGender(gender != null && !gender.isEmpty() ? gender : null);
+            needsDetailsUpdate = true;
+        }
+        
+        // Update ID information
+        if ((idType != null && !idType.equals(customer.getIdType())) ||
+            (idType == null && customer.getIdType() != null) ||
+            (idType != null && idType.isEmpty() && customer.getIdType() != null)) {
+            customer.setIdType(idType != null && !idType.isEmpty() ? idType : null);
+            needsDetailsUpdate = true;
+        }
+        
+        if ((idNumber != null && !idNumber.equals(customer.getIdNumber())) ||
+            (idNumber == null && customer.getIdNumber() != null)) {
+            customer.setIdNumber(idNumber != null && !idNumber.trim().isEmpty() ? idNumber.trim() : null);
+            needsDetailsUpdate = true;
+        }
+        
+        // Update address information
+        if ((address != null && !address.equals(customer.getAddress())) ||
+            (address == null && customer.getAddress() != null)) {
+            customer.setAddress(address != null && !address.trim().isEmpty() ? address.trim() : null);
+            needsDetailsUpdate = true;
+        }
+        
+        if ((city != null && !city.equals(customer.getCity())) ||
+            (city == null && customer.getCity() != null)) {
+            customer.setCity(city != null && !city.trim().isEmpty() ? city.trim() : null);
+            needsDetailsUpdate = true;
+        }
+        
+        if ((country != null && !country.equals(customer.getCountry())) ||
+            (country == null && customer.getCountry() != null)) {
+            customer.setCountry(country != null && !country.trim().isEmpty() ? country.trim() : null);
+            needsDetailsUpdate = true;
+        }
+        
+        // Update loyalty program information
+        if (loyaltyPointsStr != null && !loyaltyPointsStr.isEmpty()) {
+            try {
+                int loyaltyPoints = Integer.parseInt(loyaltyPointsStr);
+                if (loyaltyPoints != customer.getLoyaltyPoints()) {
+                    customer.setLoyaltyPoints(loyaltyPoints);
+                    needsDetailsUpdate = true;
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Invalid loyalty points: " + loyaltyPointsStr);
+            }
+        }
+        
+        if (membershipLevel != null && !membershipLevel.equals(customer.getMembershipLevel())) {
+            customer.setMembershipLevel(membershipLevel);
+            needsDetailsUpdate = true;
+        }
+        
+        if (isVIPStr != null) {
+            boolean isVIP = Boolean.parseBoolean(isVIPStr);
+            if (isVIP != customer.isVIP()) {
+                customer.setVIP(isVIP);
+                needsDetailsUpdate = true;
+            }
+        }
+        
+        // Perform updates
+        if (needsBasicUpdate) {
             userDAO.updateUser(customer);
         }
         
+        if (needsDetailsUpdate) {
+            // Ensure customer details exist
+            if (!userDAO.hasCustomerDetails(id)) {
+                userDAO.createCustomerDetailsIfNotExists(id);
+            }
+            // Update customer details
+            userDAO.updateCustomerDetails(customer);
+        }
+        
+        // Set success message
         if (hasSensitiveChanges) {
             request.getSession().setAttribute("success", 
                 successMessage + "Customer will receive verification emails to approve changes.");
-        } else {
+        } else if (needsBasicUpdate || needsDetailsUpdate) {
             request.getSession().setAttribute("success", "Customer information updated successfully!");
+        } else {
+            request.getSession().setAttribute("info", "No changes were made.");
         }
         
     } catch (Exception e) {
@@ -375,11 +504,12 @@ if (!newPhone.equals(currentPhone)) {
         return;
     }
     
+    // Redirect to customer detail page
     if (hasSensitiveChanges) {
-    response.sendRedirect(request.getContextPath() + "/admin/customers?action=view&id=" + id + "&verificationSent=true");
-} else {
-    response.sendRedirect(request.getContextPath() + "/admin/customers?action=view&id=" + id);
-}
+        response.sendRedirect(request.getContextPath() + "/admin/customers?action=view&id=" + id + "&verificationSent=true");
+    } else {
+        response.sendRedirect(request.getContextPath() + "/admin/customers?action=view&id=" + id);
+    }
 }
     
     private void deleteCustomer(HttpServletRequest request, HttpServletResponse response)

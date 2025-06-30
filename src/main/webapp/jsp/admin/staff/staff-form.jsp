@@ -3,6 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <style>
+    /* Giữ nguyên style cũ và thêm mới */
     .form-container {
         max-width: 900px;
         background: white;
@@ -408,6 +409,90 @@
                         </div>
                     </div>
 
+                    <!-- Personal Details -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-user-circle"></i> Personal Details</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date of Birth <span class="text-danger">*</span></label>
+                                <input name="dateOfBirth" type="date" required
+                                       class="form-control" id="dateOfBirth"
+                                       value="${isEdit && not empty staff.dateOfBirth ? staff.formattedDateOfBirth : ''}"
+                                       max="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>">
+                                <small class="text-muted">Must be at least 18 years old</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select name="gender" class="form-control" id="gender">
+                                    <option value="">Select Gender</option>
+                                    <option value="MALE" ${isEdit && staff.gender == 'MALE' ? 'selected' : ''}>Male</option>
+                                    <option value="FEMALE" ${isEdit && staff.gender == 'FEMALE' ? 'selected' : ''}>Female</option>
+                                    <option value="OTHER" ${isEdit && staff.gender == 'OTHER' ? 'selected' : ''}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input name="address" type="text" 
+                                   class="form-control" id="address"
+                                   placeholder="Enter street address"
+                                   value="${isEdit ? staff.address : ''}">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>City</label>
+                                <input name="city" type="text" 
+                                       class="form-control" id="city"
+                                       placeholder="Enter city"
+                                       value="${isEdit ? staff.city : ''}">
+                            </div>
+                            <div class="form-group">
+                                <label>Country</label>
+                                <input name="country" type="text" 
+                                       class="form-control" id="country"
+                                       placeholder="Enter country"
+                                       value="${isEdit ? staff.country : ''}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employment Information -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-briefcase"></i> Employment Information</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Department</label>
+                                <input name="department" type="text" 
+                                       class="form-control" id="department"
+                                       placeholder="Enter department"
+                                       value="${isEdit ? staff.department : ''}">
+                                <small class="text-muted">e.g., Front Office, Housekeeping, Management</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Hire Date</label>
+                                <input name="hireDate" type="date" 
+                                       class="form-control" id="hireDate"
+                                       value="${isEdit && not empty staff.hireDate ? staff.formattedHireDate : ''}"
+                                       max="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Monthly Salary (VND)</label>
+                            <input name="salary" type="number" 
+                                   class="form-control" id="salary"
+                                   placeholder="Enter monthly salary"
+                                   min="0"
+                                   step="100000"
+                                   value="${isEdit ? staff.salary : ''}">
+                            <small class="text-muted">Basic monthly salary in Vietnamese Dong</small>
+                        </div>
+                    </div>
+
                     <div class="btn-group">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> ${isEdit ? 'Update' : 'Create'} Staff Member
@@ -468,6 +553,9 @@
                         <span class="badge ${staff.statusBadgeClass}">${staff.statusDisplayName}</span>
                     </p>
                     <p class="small mb-1">
+                        <strong>Years of Service:</strong> ${staff.yearsOfService}
+                    </p>
+                    <p class="small mb-1">
                         <strong>Joined:</strong> 
                         <fmt:formatDate value="${staff.createdAt}" pattern="dd/MM/yyyy"/>
                     </p>
@@ -483,20 +571,23 @@
                 </div>
 
                 <div class="info-box">
-                    <h6><i class="fas fa-exclamation-triangle"></i> Security Notes</h6>
+                    <h6><i class="fas fa-dollar-sign"></i> Salary Guidelines</h6>
                     <ul class="small">
-                        <li>Password changes are logged for security audit</li>
-                        <li>Staff will receive email notification of changes</li>
-                        <c:if test="${staff.role == 'ADMIN'}">
-                            <li><strong>Admin role changes are restricted</strong></li>
-                        </c:if>
-                        <c:if test="${staff.role != 'ADMIN'}">
-                            <li>Role changes require admin approval</li>
-                        </c:if>
-                        <li>All staff activities are monitored</li>
+                        <li><strong>Receptionist:</strong> 8M - 15M VND/month</li>
+                        <li><strong>Housekeeper:</strong> 6M - 10M VND/month</li>
+                        <li><strong>Room Inspector:</strong> 7M - 12M VND/month</li>
+                        <li><strong>Administrator:</strong> 15M - 30M VND/month</li>
                     </ul>
                 </div>
             </c:if>
+
+            <div class="info-box">
+                <h6><i class="fas fa-calendar-alt"></i> Age Requirement</h6>
+                <p class="small">
+                    All staff members must be at least 18 years old at the time of hiring. 
+                    This is automatically validated when you enter the date of birth.
+                </p>
+            </div>
         </div>
     </div>
 </div>
@@ -573,6 +664,31 @@ $(document).ready(function() {
         checkPasswordStrength(password, '#passwordStrength');
     });
     </c:if>
+
+    // Auto-fill department based on role selection
+    $('#role').on('change', function() {
+        var role = $(this).val();
+        var department = '';
+        
+        switch(role) {
+            case 'ADMIN':
+                department = 'Management';
+                break;
+            case 'RECEPTIONIST':
+                department = 'Front Office';
+                break;
+            case 'HOUSEKEEPER':
+                department = 'Housekeeping';
+                break;
+            case 'ROOM_INSPECTOR':
+                department = 'Quality Control';
+                break;
+        }
+        
+        if (department && !$('#department').val()) {
+            $('#department').val(department);
+        }
+    });
 
     // Password strength checker function
     function checkPasswordStrength(password, targetElement) {
@@ -701,6 +817,51 @@ $(document).ready(function() {
             isValid = false;
         }
         </c:if>
+
+        // Date of birth validation
+        var dob = $('#dateOfBirth').val();
+        if (dob) {
+            var dobDate = new Date(dob);
+            var today = new Date();
+            var age = today.getFullYear() - dobDate.getFullYear();
+            var monthDiff = today.getMonth() - dobDate.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+                age--;
+            }
+            
+            if (age < 18) {
+                $('#dateOfBirth').addClass('is-invalid');
+                errorMessage = 'Staff member must be at least 18 years old';
+                isValid = false;
+            }
+            
+            if (dobDate > today) {
+                $('#dateOfBirth').addClass('is-invalid');
+                errorMessage = 'Date of birth cannot be in the future';
+                isValid = false;
+            }
+        }
+
+        // Hire date validation
+        var hireDate = $('#hireDate').val();
+        if (hireDate) {
+            var hireDateObj = new Date(hireDate);
+            var today = new Date();
+            if (hireDateObj > today) {
+                $('#hireDate').addClass('is-invalid');
+                errorMessage = 'Hire date cannot be in the future';
+                isValid = false;
+            }
+        }
+
+        // Salary validation
+        var salary = $('#salary').val();
+        if (salary && salary < 0) {
+            $('#salary').addClass('is-invalid');
+            errorMessage = 'Salary cannot be negative';
+            isValid = false;
+        }
 
         if (!isValid) {
             e.preventDefault();
