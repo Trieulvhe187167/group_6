@@ -392,7 +392,7 @@
                                                             <a><i class="fa fa-map-marker"></i> ${e.location}</a>
                                                         </li>
                                                     </ul>
-                                                    <p>${e.description}</p>
+                                                    <p class="event-description">${e.description}</p>
                                                 </div>
                                             </div>
                                         </div>  

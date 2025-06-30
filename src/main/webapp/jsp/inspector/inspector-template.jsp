@@ -250,7 +250,7 @@
                 <i class="fas fa-tachometer-alt"></i> Dashboard
             </a>
             <a href="${pageContext.request.contextPath}/inspector/pending-inspections" 
-               class="nav-item ${activePage == 'pending' ? 'active' : ''}">
+               class="nav-item ${activePage == 'pending-inspections' ? 'active' : ''}">
                 <i class="fas fa-clipboard-list"></i> Pending Inspections
             </a>
             <a href="${pageContext.request.contextPath}/inspector/my-inspections" 

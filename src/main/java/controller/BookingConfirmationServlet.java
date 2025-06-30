@@ -7,7 +7,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @WebServlet(name = "BookingConfirmationServlet", urlPatterns = {"/BookingConfirmation"})
 public class BookingConfirmationServlet extends HttpServlet {
@@ -16,13 +15,30 @@ public class BookingConfirmationServlet extends HttpServlet {
     private final RoomDAO roomDAO = new RoomDAO();
     private final RoomTypeDAO roomTypeDAO = new RoomTypeDAO();
     private final PaymentDAO paymentDAO = new PaymentDAO();
+    private final ServiceDAO serviceDAO = new ServiceDAO();
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
         HttpSession session = request.getSession();
-        Integer reservationId = (Integer) session.getAttribute("lastReservationId");
+        
+        // Get reservation ID from parameter first (from payment redirect)
+        String reservationIdParam = request.getParameter("reservationId");
+        Integer reservationId = null;
+        
+        if (reservationIdParam != null) {
+            try {
+                reservationId = Integer.parseInt(reservationIdParam);
+            } catch (NumberFormatException e) {
+                // Invalid ID format
+            }
+        }
+        
+        // If no parameter, check session (from direct booking)
+        if (reservationId == null) {
+            reservationId = (Integer) session.getAttribute("lastReservationId");
+        }
         
         if (reservationId == null) {
             response.sendRedirect("RoomListServlet");
@@ -30,7 +46,7 @@ public class BookingConfirmationServlet extends HttpServlet {
         }
         
         try {
-            // Get reservation details
+            // Get reservation details with deposit info
             Reservation reservation = reservationDAO.getReservationById(reservationId);
             if (reservation == null) {
                 response.sendRedirect("RoomListServlet");
@@ -39,13 +55,19 @@ public class BookingConfirmationServlet extends HttpServlet {
             
             // Get room details
             Room room = roomDAO.getRoomById(reservation.getRoomId());
+            if (room == null) {
+                response.sendRedirect("RoomListServlet");
+                return;
+            }
+            
+            // Get room type
             RoomType roomType = roomTypeDAO.getRoomTypesById(room.getRoomTypeId());
             
-            // Get payment info
-            Payment payment = paymentDAO.getLatestPaymentByReservation(reservationId);
+            // Get latest payment info (deposit payment)
+            Payment payment = paymentDAO.getPaymentByReservationId(reservationId);
             
-            // Get services
-            List<ServiceOrder> services = new ServiceDAO().getServiceOrdersByReservation(reservationId);
+            // Get services if any
+            List<ServiceOrder> services = serviceDAO.getServiceOrdersByReservation(reservationId);
             
             // Set attributes
             request.setAttribute("reservation", reservation);

@@ -29,7 +29,7 @@ public class AdminEventServlet extends HttpServlet {
     private EventDAO eventDAO = new EventDAO();
     private UserDAO userDAO = new UserDAO();
     private static final int RECORDS_PER_PAGE = 2;
-    private static final String UPLOAD_DIR = "uploads";
+       private static final String UPLOAD_DIR = "assets" + File.separator + "images" + File.separator + "uploads"+ File.separator + "events";
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

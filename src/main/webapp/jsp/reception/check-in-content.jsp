@@ -4,30 +4,54 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <div class="container-fluid">
-    <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2>Check-In Management</h2>
-            <p class="text-muted">Process guest check-ins quickly and efficiently</p>
-        </div>
-    </div>
-
-    <!-- Calendar View Toggle -->
-    <div class="mb-4">
-        <a href="#" class="btn btn-outline-primary" onclick="toggleCalendar(); return false;">
-            <i class="fas fa-calendar-alt"></i> Toggle Calendar View
-        </a>
-    </div>
-
     <!-- Calendar View -->
-    <div id="calendarView" class="card mb-4" style="display: none;">
+    <div id="calendarView" class="card mb-4">
         <div class="card-header bg-info text-white">
-            <h5 class="mb-0">
-                <i class="fas fa-calendar-alt mr-2"></i> Reservation Calendar
-            </h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt mr-2"></i> Reservation Calendar
+                </h5>
+                                    <div class="d-flex align-items-center">
+                        <div class="mr-3 d-flex align-items-center">
+                            <div style="width: 15px; height: 15px; background-color: #17a2b8; margin-right: 5px;"></div>
+                            <span class="small">Booking</span>
+                        </div>
+                        <div class="mr-3 d-flex align-items-center">
+                            <div style="width: 15px; height: 15px; background-color: #dc3545; margin-right: 5px;"></div>
+                            <span class="small">Đang sử dụng</span>
+                        </div>
+                        <div class="mr-4 d-flex align-items-center">
+                            <div style="width: 15px; height: 15px; background-color: #28a745; margin-right: 5px;"></div>
+                            <span class="small">Free</span>
+                        </div>
+                    </div>
+                <div class="btn-group">
+                    <a href="?weekOffset=${prevWeekOffset}" class="btn btn-sm btn-light">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-light dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                            ${startOfWeekFormatted} - ${endOfWeekFormatted}
+                        </button>
+                        <div class="dropdown-menu p-3">
+                            <div class="form-group mb-0">
+                                <label for="calendarDatePicker">Select a date:</label>
+                                <input type="date" id="calendarDatePicker" class="form-control form-control-sm">
+                                <div class="mt-2 text-right">
+                                    <button type="button" class="btn btn-sm btn-secondary mr-1" onclick="goToToday()">Today</button>
+                                    <button type="button" class="btn btn-sm btn-info" onclick="goToSelectedDate()">Go</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="?weekOffset=${nextWeekOffset}" class="btn btn-sm btn-light">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
         </div>
         <div class="card-body p-0">
-            <div class="calendar-container" style="overflow-x: auto;">
+            <div class="calendar-container">
                 <c:if test="${empty rooms || empty calendarDates}">
                     <div class="alert alert-warning m-3">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
@@ -35,13 +59,13 @@
                     </div>
                 </c:if>
                 <c:if test="${not empty rooms && not empty calendarDates}">
-                    <table class="table table-bordered calendar-table" style="min-width: 1500px;">
+                    <table class="table table-bordered calendar-table">
                         <thead>
                             <tr>
-                                <th style="width: 120px; min-width: 120px;">Room</th>
+                                <th style="width: 130px; min-width: 130px;">Room</th>
                                 <c:forEach var="date" items="${calendarDates}">
                                     <th class="text-center ${date.equals(today) ? 'bg-warning' : (date.getDayOfWeek().getValue() >= 6 ? 'bg-light' : '')}" 
-                                        style="width: 40px; min-width: 40px;">
+                                        style="width: 12%; min-width: 12%;">
                                         <div class="small">${date.getDayOfMonth()}</div>
                                         <div class="small text-muted">${date.getDayOfWeek().toString().substring(0,3)}</div>
                                     </th>
@@ -54,20 +78,22 @@
                                 <c:if test="${room.roomTypeName != currentRoomType}">
                                     <c:set var="currentRoomType" value="${room.roomTypeName}" />
                                     <c:set var="roomTypeId" value="${fn:replace(room.roomTypeName, ' ', '-')}" />
-                                    <tr class="room-type-header collapsed" data-room-type="${roomTypeId}" id="header-${roomTypeId}">
+                                    <tr class="room-type-header" data-room-type="${roomTypeId}" id="header-${roomTypeId}">
                                         <td colspan="${calendarDates.size() + 1}" class="bg-secondary text-white">
                                             <div class="d-flex justify-content-between align-items-center" 
                                                  onclick="toggleRoomType('${roomTypeId}')">
                                                 <strong>${room.roomTypeName}</strong>
-                                                <i class="fas fa-chevron-up toggle-icon"></i>
+                                                <i class="fas fa-chevron-down toggle-icon"></i>
                                             </div>
                                         </td>
                                     </tr>
                                 </c:if>
-                                <tr class="room-row room-hidden" id="room-${room.id}" data-room-type="${fn:replace(room.roomTypeName, ' ', '-')}" style="display: none;">
+                                <tr class="room-row" id="room-${room.id}" data-room-type="${fn:replace(room.roomTypeName, ' ', '-')}">
                                     <td class="align-middle">
-                                        <div class="font-weight-bold">${room.roomNumber}</div>
-                                        <span class="badge badge-${room.status == 'AVAILABLE' ? 'success' : (room.status == 'OCCUPIED' ? 'info' : (room.status == 'MAINTENANCE' ? 'danger' : 'warning'))}">${room.status}</span>
+                                        <div class="font-weight-bold text-center">${room.roomNumber}</div>
+                                        <div class="text-center mt-1">
+                                            <span class="badge badge-${room.status == 'AVAILABLE' ? 'success' : (room.status == 'OCCUPIED' ? 'info' : (room.status == 'MAINTENANCE' ? 'danger' : 'warning'))}" style="width: 100%; padding: 8px 0; font-size: 14px;">${room.status}</span>
+                                        </div>
                                     </td>
                                     <c:forEach var="date" items="${calendarDates}" varStatus="dateStatus">
                                         <td class="p-0 position-relative ${date.equals(today) ? 'bg-warning-light' : ''}">
@@ -83,32 +109,61 @@
                                                         <div data-reservation-id="${res.id}" 
                                                              class="reservation-bar reservation-${reservationClass}" 
                                                              style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-                                                                    background-color: #007bff; opacity: 0.8; 
-                                                                    border-top-left-radius: 4px; border-bottom-left-radius: 4px; 
                                                                     overflow: hidden; cursor: pointer; z-index: 1;">
-                                                            <div class="reservation-info p-1 text-white small">
-                                                                <i class="fas fa-sign-in-alt"></i> ${res.customerName}
-                                                            </div>
+                                                            <c:choose>
+                                                                <c:when test="${room.status == 'OCCUPIED'}">
+                                                                    <div class="reservation-info-occupied">
+                                                                        <fmt:formatNumber value="${res.getCheckInHour()}" pattern="0" var="checkInHour" />
+                                                                        ${checkInHour}h-24h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <div class="reservation-info">
+                                                                        <fmt:formatNumber value="${res.getCheckInHour()}" pattern="0" var="checkInHour" />
+                                                                        ${checkInHour}h-24h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </div>
                                                     </c:if>
                                                     <c:if test="${!isCheckIn && !isCheckOut}">
                                                         <div data-reservation-id="${res.id}" 
                                                              class="reservation-bar reservation-${reservationClass}" 
-                                                             style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-                                                                    background-color: #007bff; opacity: 0.6; 
+                                                             style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;  
                                                                     overflow: hidden; cursor: pointer; z-index: 1;">
+                                                            <c:choose>
+                                                                <c:when test="${room.status == 'OCCUPIED'}">
+                                                                    <div class="reservation-info-occupied">
+                                                                        00h-24h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <div class="reservation-info">
+                                                                        00h-24h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </div>
                                                     </c:if>
                                                     <c:if test="${isCheckOut}">
                                                         <div data-reservation-id="${res.id}" 
                                                              class="reservation-bar reservation-${reservationClass}" 
                                                              style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-                                                                    background-color: #007bff; opacity: 0.8; 
-                                                                    border-top-right-radius: 4px; border-bottom-right-radius: 4px; 
                                                                     overflow: hidden; cursor: pointer; z-index: 1;">
-                                                            <div class="reservation-info p-1 text-white small">
-                                                                <i class="fas fa-sign-out-alt"></i>
-                                                            </div>
+                                                            <c:choose>
+                                                                <c:when test="${room.status == 'OCCUPIED'}">
+                                                                    <div class="reservation-info-occupied">
+                                                                        <fmt:formatNumber value="${res.getCheckOutHour()}" pattern="0" var="checkOutHour" />
+                                                                        00h-${checkOutHour}h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <div class="reservation-info">
+                                                                        <fmt:formatNumber value="${res.getCheckOutHour()}" pattern="0" var="checkOutHour" />
+                                                                        00h-${checkOutHour}h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </div>
                                                     </c:if>
                                                 </c:if>
@@ -329,9 +384,12 @@
 
 <style>
     .calendar-container {
-        overflow-x: auto;
+        width: 100%;
+        overflow-x: hidden;
     }
     .calendar-table {
+        width: 100%;
+        table-layout: fixed;
         border-collapse: separate;
         border-spacing: 0;
     }
@@ -339,13 +397,37 @@
         border: 1px solid #dee2e6;
         padding: 0.25rem;
         height: 30px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .calendar-table td .badge {
+        display: inline-block;
+        width: auto;
+        min-width: 80px;
+        text-align: center;
+        font-size: 90%;
     }
     .reservation-bar {
         transition: all 0.2s;
+        background-color: transparent !important; /* Changed from colored background to transparent */
     }
     .reservation-bar:hover {
         opacity: 1 !important;
         z-index: 10 !important;
+    }
+    .reservation-info {
+        font-size: 12px !important;
+        font-weight: bold;
+        padding: 4px !important;
+        color: #17a2b8 !important; /* Text color instead of background color */
+    }
+    /* Màu cho phòng đang sử dụng */
+    .reservation-info-occupied {
+        font-size: 12px !important;
+        font-weight: bold;
+        padding: 4px !important;
+        color: #dc3545 !important; /* Màu đỏ cho phòng đang sử dụng */
     }
     .bg-warning-light {
         background-color: rgba(255, 193, 7, 0.2);
@@ -374,17 +456,9 @@
     // Execute when DOM is fully loaded
     document.addEventListener('DOMContentLoaded', function() {
         console.log("DOM loaded - initialization complete");
+        // Set default date for calendar picker to today
+        document.getElementById('calendarDatePicker').valueAsDate = new Date();
     });
-    
-    function toggleCalendar() {
-        console.log("Toggle calendar function called");
-        const calendarView = document.getElementById('calendarView');
-        if (calendarView.style.display === 'none') {
-            calendarView.style.display = 'block';
-        } else {
-            calendarView.style.display = 'none';
-        }
-    }
     
     // Function to toggle room type visibility
     function toggleRoomType(roomTypeId) {
@@ -405,18 +479,28 @@
         headerRow.classList.toggle('collapsed');
         const isCollapsed = headerRow.classList.contains('collapsed');
         
-        // Toggle visibility of room rows using direct style manipulation
+        // Toggle visibility of room rows
         roomRows.forEach(row => {
             if (isCollapsed) {
-                row.classList.add('room-hidden');
                 row.style.display = 'none';
                 console.log("Hiding row: " + row.id);
             } else {
-                row.classList.remove('room-hidden');
                 row.style.display = '';
                 console.log("Showing row: " + row.id);
             }
         });
+        
+        // Toggle icon direction
+        const toggleIcon = headerRow.querySelector('.toggle-icon');
+        if (toggleIcon) {
+            if (isCollapsed) {
+                toggleIcon.classList.remove('fa-chevron-down');
+                toggleIcon.classList.add('fa-chevron-up');
+            } else {
+                toggleIcon.classList.remove('fa-chevron-up');
+                toggleIcon.classList.add('fa-chevron-down');
+            }
+        }
         
         console.log(isCollapsed 
             ? "Collapsed room type: " + roomTypeId
@@ -599,5 +683,18 @@
     
     function scanQRCode() {
         alert('QR Code scanning functionality not implemented yet.');
+    }
+
+    // Function to go to selected date
+    function goToSelectedDate() {
+        const selectedDate = document.getElementById('calendarDatePicker').value;
+        if (selectedDate) {
+            window.location.href = '?selectedDate=' + selectedDate;
+        }
+    }
+    
+    // Function to go to today
+    function goToToday() {
+        window.location.href = '?weekOffset=0';
     }
 </script>

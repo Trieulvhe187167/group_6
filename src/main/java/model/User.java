@@ -2,6 +2,7 @@ package model;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Objects;
 
 public class User {
     private int id;
@@ -38,6 +39,8 @@ public class User {
     private double totalSpent; // Only for customers
     private Date lastVisit; // Only for customers
     
+    private transient String formattedDateOfBirth;
+    private transient String formattedHireDate;
     // Constructors
     public User() {}
     
@@ -205,12 +208,25 @@ public class User {
         this.membershipLevel = membershipLevel;
     }
     
-    public boolean getIsVIP() {
+    // Fixed VIP methods to be consistent
+    public boolean isVIP() {
         return isVIP;
     }
     
-    public void setIsVIP(boolean isVIP) {
+    public void setVIP(boolean isVIP) {
         this.isVIP = isVIP;
+    }
+    
+    // Deprecated - use isVIP() instead
+    @Deprecated
+    public boolean getIsVIP() {
+        return isVIP();
+    }
+    
+    // Deprecated - use setVIP() instead
+    @Deprecated
+    public void setIsVIP(boolean isVIP) {
+        setVIP(isVIP);
     }
     
     // Employee Details getters and setters
@@ -439,6 +455,214 @@ public class User {
         
         return total > 0 ? (completed * 100) / total : 0;
     }
+      // Getters and setters
+    public String getFormattedDateOfBirth() {
+        if (formattedDateOfBirth != null) {
+            return formattedDateOfBirth;
+        } else if (dateOfBirth != null) {
+            return new java.text.SimpleDateFormat("yyyy-MM-dd").format(dateOfBirth);
+        }
+        return "";
+    }
+    
+    public void setFormattedDateOfBirth(String formattedDateOfBirth) {
+        this.formattedDateOfBirth = formattedDateOfBirth;
+    }
+    
+    public String getFormattedHireDate() {
+        if (formattedHireDate != null) {
+            return formattedHireDate;
+        } else if (hireDate != null) {
+            return new java.text.SimpleDateFormat("yyyy-MM-dd").format(hireDate);
+        }
+        return "";
+    }
+    
+    public void setFormattedHireDate(String formattedHireDate) {
+        this.formattedHireDate = formattedHireDate;
+    }
+    
+    // NEW: Validation methods
+    public boolean isValidEmail() {
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    }
+    
+    public boolean isValidPhone() {
+        return phone == null || phone.isEmpty() || phone.matches("^0\\d{9}$");
+    }
+    
+    public boolean isValidUsername() {
+        return username != null && username.matches("^[a-zA-Z0-9_]{3,20}$");
+    }
+    
+    // NEW: Age calculation
+    public int getAge() {
+        if (dateOfBirth == null) return 0;
+        
+        long ageInMillis = System.currentTimeMillis() - dateOfBirth.getTime();
+        return (int) (ageInMillis / (365L * 24 * 60 * 60 * 1000));
+    }
+    
+    public boolean isAdult() {
+        return getAge() >= 18;
+    }
+    
+    // NEW: Years of service for employees
+    public int getYearsOfService() {
+        if (hireDate == null || !isEmployee()) return 0;
+        
+        long serviceInMillis = System.currentTimeMillis() - hireDate.getTime();
+        return (int) (serviceInMillis / (365L * 24 * 60 * 60 * 1000));
+    }
+    
+    // NEW: Formatted dates
+    public String getFormattedCreatedAt() {
+        if (createdAt == null) return "";
+        return new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(createdAt);
+    }
+    
+ 
+    public String getFormattedLastVisit() {
+        if (lastVisit == null) return "Never";
+        return new java.text.SimpleDateFormat("dd/MM/yyyy").format(lastVisit);
+    }
+    
+    // NEW: Auto-calculate membership level based on points
+    public String getCalculatedMembershipLevel() {
+        if (loyaltyPoints >= 10000) return "PLATINUM";
+        else if (loyaltyPoints >= 5000) return "GOLD";
+        else if (loyaltyPoints >= 1000) return "SILVER";
+        else return "BRONZE";
+    }
+    
+    // NEW: Calculate loyalty points to next level
+    public int getPointsToNextLevel() {
+        if (loyaltyPoints >= 10000) return 0; // Already at highest level
+        else if (loyaltyPoints >= 5000) return 10000 - loyaltyPoints;
+        else if (loyaltyPoints >= 1000) return 5000 - loyaltyPoints;
+        else return 1000 - loyaltyPoints;
+    }
+    
+    public String getNextMembershipLevel() {
+        if (loyaltyPoints >= 10000) return null; // Already at highest level
+        else if (loyaltyPoints >= 5000) return "PLATINUM";
+        else if (loyaltyPoints >= 1000) return "GOLD";
+        else return "SILVER";
+    }
+    
+    // NEW: Full address formatting
+    public String getFullAddress() {
+        StringBuilder sb = new StringBuilder();
+        if (address != null && !address.trim().isEmpty()) {
+            sb.append(address);
+        }
+        if (city != null && !city.trim().isEmpty()) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(city);
+        }
+        if (country != null && !country.trim().isEmpty()) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(country);
+        }
+        return sb.length() > 0 ? sb.toString() : "Not provided";
+    }
+    
+    // NEW: Check for missing critical information
+    public boolean hasMissingCriticalInfo() {
+        if (isCustomer()) {
+            return email == null || email.trim().isEmpty() ||
+                   idType == null || idNumber == null || idNumber.trim().isEmpty();
+        } else if (isEmployee()) {
+            return email == null || email.trim().isEmpty() ||
+                   department == null || department.trim().isEmpty();
+        }
+        return email == null || email.trim().isEmpty();
+    }
+    
+    // NEW: Get warning messages for missing info
+    public String getMissingInfoWarning() {
+        if (!hasMissingCriticalInfo()) return null;
+        
+        StringBuilder warning = new StringBuilder("Missing: ");
+        boolean first = true;
+        
+        if (email == null || email.trim().isEmpty()) {
+            warning.append("Email");
+            first = false;
+        }
+        
+        if (isCustomer()) {
+            if (idType == null) {
+                if (!first) warning.append(", ");
+                warning.append("ID Type");
+                first = false;
+            }
+            if (idNumber == null || idNumber.trim().isEmpty()) {
+                if (!first) warning.append(", ");
+                warning.append("ID Number");
+            }
+        } else if (isEmployee()) {
+            if (department == null || department.trim().isEmpty()) {
+                if (!first) warning.append(", ");
+                warning.append("Department");
+            }
+        }
+        
+        return warning.toString();
+    }
+    
+    // NEW: Clone method for creating copies
+    public User clone() {
+        User clone = new User();
+        clone.id = this.id;
+        clone.username = this.username;
+        clone.fullName = this.fullName;
+        clone.email = this.email;
+        clone.phone = this.phone;
+        clone.role = this.role;
+        clone.status = this.status;
+        clone.createdAt = this.createdAt;
+        clone.updatedAt = this.updatedAt;
+        
+        // Customer details
+        clone.idType = this.idType;
+        clone.idNumber = this.idNumber;
+        clone.dateOfBirth = this.dateOfBirth;
+        clone.gender = this.gender;
+        clone.address = this.address;
+        clone.city = this.city;
+        clone.country = this.country;
+        clone.loyaltyPoints = this.loyaltyPoints;
+        clone.membershipLevel = this.membershipLevel;
+        clone.isVIP = this.isVIP;
+        
+        // Employee details
+        clone.department = this.department;
+        clone.hireDate = this.hireDate;
+        clone.salary = this.salary;
+        
+        // Statistics
+        clone.totalBookings = this.totalBookings;
+        clone.completedBookings = this.completedBookings;
+        clone.totalSpent = this.totalSpent;
+        clone.lastVisit = this.lastVisit;
+        
+        return clone;
+    }
+    
+    // NEW: equals and hashCode methods
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id && Objects.equals(username, user.username);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, username);
+    }
     
     @Override
     public String toString() {
@@ -453,6 +677,10 @@ public class User {
                 ", totalBookings=" + totalBookings +
                 ", membershipLevel='" + membershipLevel + '\'' +
                 ", department='" + department + '\'' +
+                ", isVIP=" + isVIP +
+                ", loyaltyPoints=" + loyaltyPoints +
+                ", yearsOfService=" + getYearsOfService() +
+                ", profileCompletion=" + getProfileCompletionPercentage() + "%" +
                 '}';
     }
 }

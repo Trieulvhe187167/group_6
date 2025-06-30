@@ -122,7 +122,7 @@
                                 <th>Username</th>
                                 <th>Status</th>
                                 <th>Total Bookings</th>
-                                <th>Joined Date</th>
+                               
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -167,9 +167,7 @@
                                     <td>
                                         <span class="badge badge-info">${customer.totalBookings}</span>
                                     </td>
-                                    <td>
-                                        <fmt:formatDate value="${customer.createdAt}" pattern="dd/MM/yyyy"/>
-                                    </td>
+                                   
                                     <td>
                                         <c:if test="${!isTrashView}">
                                             <div class="btn-group" role="group">

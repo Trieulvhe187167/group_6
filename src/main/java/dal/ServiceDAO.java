@@ -115,7 +115,6 @@ public class ServiceDAO {
                 order.setReservationId(rs.getInt("ReservationId"));
                 order.setServiceId(rs.getInt("ServiceId"));
                 order.setServiceName(rs.getString("ServiceName"));
-                order.setCategory(rs.getString("Category"));
                 order.setQuantity(rs.getInt("Quantity"));
                 order.setUnitPrice(rs.getDouble("Price"));
                 order.setTotalAmount(rs.getDouble("Price") * rs.getInt("Quantity"));

@@ -3,9 +3,9 @@
   "configurations": [
     {
       "type": "java",
-      "name": "HotelManagementSystemApplication",
+      "name": "DBContext",
       "request": "launch",
-      "mainClass": "hms.HotelManagementSystemApplication",
+      "mainClass": "dal.DBContext",
       "projectName": "hotel-management-system"
     },
     {

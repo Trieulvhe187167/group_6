@@ -15,15 +15,21 @@
         
         if (paymentIdObj != null && reservationObj != null && amountObj != null) {
             model.Reservation res = (model.Reservation) reservationObj;
-            String customerName = res.getCustomerName() != null ? res.getCustomerName() : "CUSTOMER";
+            double fullAmount = (Double) amountObj;
+            double depositAmount = fullAmount * 0.1; // 10% deposit
             
-            // Simple transfer content: Reservation ID + Customer Name
-            transferContent = res.getId() + " " + customerName;
+            String customerName = res.getCustomerName() != null ?
+                res.getCustomerName() : "CUSTOMER";
+            
+            // Simple transfer content: Reservation ID + Customer Name + DEPOSIT
+            transferContent = res.getId() + " " + customerName + " DEPOSIT";
             
             // Set attributes
             request.setAttribute("accountNumber", accountNumber);
             request.setAttribute("accountHolder", accountHolder);
             request.setAttribute("transferContent", transferContent);
+            request.setAttribute("depositAmount", depositAmount);
+            request.setAttribute("fullAmount", fullAmount);
         }
     } catch (Exception e) {
         System.out.println("Setup error: " + e.getMessage());
@@ -80,6 +86,23 @@
             border-left: 4px solid #667eea;
         }
         
+        .deposit-notice {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .deposit-notice h5 {
+            color: #2e7d32;
+            margin-bottom: 1rem;
+        }
+        
+        .deposit-notice ul {
+            margin-bottom: 0;
+        }
+        
         .info-row {
             display: flex;
             justify-content: space-between;
@@ -90,176 +113,83 @@
         
         .info-row:last-child {
             border-bottom: none;
-            border-top: 2px solid #667eea;
-            padding-top: 1rem;
-            margin-top: 1rem;
-            font-weight: 600;
-            color: #667eea;
         }
         
-        .amount-display {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .amount-display h4 {
-            margin: 0;
-            font-weight: 300;
-        }
-        
-        .amount-display .amount {
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-top: 0.5rem;
+        .amount-highlight {
+            background: #fff3cd;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #856404;
         }
         
         .bank-detail {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
             padding: 1rem;
+            margin-bottom: 0.5rem;
             background: white;
             border-radius: 8px;
-            border: 1px solid #dee2e6;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
         
         .bank-detail:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transform: translateY(-1px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         .bank-label {
             font-weight: 600;
-            color: #495057;
-            flex: 1;
+            color: #666;
+            font-size: 0.9rem;
         }
         
         .bank-value {
-            font-family: 'Courier New', monospace;
-            font-weight: 600;
-            color: #212529;
-            flex: 2;
-            text-align: right;
-            margin-right: 1rem;
-            word-break: break-all;
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
         
         .copy-btn {
-            background: #667eea;
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 80px;
+            color: #667eea;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #667eea;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            transition: all 0.3s;
         }
         
         .copy-btn:hover {
-            background: #5a6fd8;
-            transform: translateY(-1px);
+            background: #667eea;
+            color: white;
+        }
+        
+        .instruction-card {
+            background: #f0f7ff;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .instruction-list {
+            margin: 1rem 0 0 0;
+            padding-left: 1.5rem;
+        }
+        
+        .instruction-list li {
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
         }
         
         .qr-section {
             text-align: center;
-            background: #f8f9fa;
-            border-radius: 10px;
             padding: 2rem;
-            margin-bottom: 2rem;
-            border: 2px dashed #dee2e6;
-        }
-        
-        .qr-image {
-            border: 3px solid #667eea;
-            border-radius: 15px;
-            padding: 15px;
-            background: white;
-            display: inline-block;
-            margin: 1rem 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .instruction-card {
-            background: #e3f2fd;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            border-left: 4px solid #2196f3;
-        }
-        
-        .instruction-card h5 {
-            color: #1976d2;
-            margin-bottom: 1rem;
-        }
-        
-        .instruction-list {
-            margin: 0;
-            padding-left: 1.2rem;
-        }
-        
-        .instruction-list li {
-            margin-bottom: 0.7rem;
-            color: #424242;
-            line-height: 1.5;
-        }
-        
-        .confirm-section {
-            background: #fff3cd;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            border-left: 4px solid #ffc107;
-        }
-        
-        .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 0.75rem 2rem;
-            border-radius: 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            border: none;
-            padding: 0.75rem 2rem;
-            border-radius: 25px;
-            font-weight: 600;
-        }
-        
-        .countdown {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #dc3545;
-        }
-        
-        .alert-info {
-            border-left: 4px solid #17a2b8;
-        }
-        
-        .qr-placeholder {
-            border: 2px dashed #dee2e6;
-            border-radius: 15px;
-            padding: 3rem 2rem;
             background: #f8f9fa;
+            border-radius: 10px;
             min-height: 300px;
             display: flex;
             flex-direction: column;
@@ -267,19 +197,16 @@
             justify-content: center;
         }
         
-       .qr img {
-    padding: 20px;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-}
-
-.qr img {
-    max-width: 500px;
-    max-height: 5000px;
-    border-radius: 10px;
-}
+        .qr img {
+            padding: 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            max-width: 500px;
+            max-height: 500px;
+            border-radius: 10px;
+        }
         
         @media (max-width: 768px) {
             .payment-container {
@@ -312,6 +239,20 @@
             </div>
             
             <div class="payment-body">
+                <!-- Deposit Notice -->
+                <div class="deposit-notice">
+                    <h5><i class="fas fa-info-circle me-2"></i>Deposit Payment Required</h5>
+                    <ul class="mb-3">
+                        <li><strong>You only need to pay 10% deposit now</strong> to secure your reservation</li>
+                        <li>The deposit amount will be <strong>fully refunded</strong> when you check out</li>
+                        <li>The remaining 90% can be paid at check-in or during your stay</li>
+                    </ul>
+                    <div class="alert alert-warning mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> Your deposit (<fmt:formatNumber value="${depositAmount}" pattern="#,###"/> VND) will be returned to you at check-out
+                    </div>
+                </div>
+                
                 <!-- Reservation Info -->
                 <div class="section">
                     <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>Reservation Details</h5>
@@ -340,16 +281,16 @@
                     </div>
                     </c:if>
                     <div class="info-row">
-                        <span>Total Amount:</span>
-                        <span><fmt:formatNumber value="${amount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
+                        <span>Total Booking Amount:</span>
+                        <span><fmt:formatNumber value="${fullAmount}" pattern="#,###"/> VND</span>
                     </div>
-                </div>
-                
-                <!-- Amount Display -->
-                <div class="amount-display">
-                    <h4>Amount to Transfer</h4>
-                    <div class="amount">
-                        <fmt:formatNumber value="${amount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
+                    <div class="info-row">
+                        <span>Deposit Required (10%):</span>
+                        <span class="amount-highlight"><fmt:formatNumber value="${depositAmount}" pattern="#,###"/> VND</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Remaining Balance:</span>
+                        <span><fmt:formatNumber value="${fullAmount - depositAmount}" pattern="#,###"/> VND</span>
                     </div>
                 </div>
                 
@@ -358,65 +299,64 @@
                     <h5 class="mb-3"><i class="fas fa-building-columns me-2"></i>Bank Account Details</h5>
                     
                     <div class="bank-detail">
-                        <div class="bank-label">Bank Name:</div>
-                        <div class="bank-value">Vietcombank (VCB)</div>
-                        <button type="button" class="copy-btn" onclick="copyToClipboard('Vietcombank')">
-                            <i class="fas fa-copy me-1"></i>Copy
-                        </button>
+                        <span class="bank-label">Bank Name:</span>
+                        <span class="bank-value">
+                            <strong>Techcombank (TCB)</strong>
+                            <span class="copy-btn" onclick="copyText('Techcombank')">
+                                <i class="fas fa-copy"></i> Copy
+                            </span>
+                        </span>
                     </div>
                     
                     <div class="bank-detail">
-                        <div class="bank-label">Account Number:</div>
-                        <div class="bank-value">1024520090</div>
-                        <button type="button" class="copy-btn" onclick="copyToClipboard('1024520090')">
-                            <i class="fas fa-copy me-1"></i>Copy
-                        </button>
+                        <span class="bank-label">Account Number:</span>
+                        <span class="bank-value">
+                            <strong><%= accountNumber %></strong>
+                            <span class="copy-btn" onclick="copyText('<%= accountNumber %>')">
+                                <i class="fas fa-copy"></i> Copy
+                            </span>
+                        </span>
                     </div>
                     
                     <div class="bank-detail">
-                        <div class="bank-label">Account Holder:</div>
-                        <div class="bank-value">LE VAN TRIEU</div>
-                        <button type="button" class="copy-btn" onclick="copyToClipboard('LE VAN TRIEU')">
-                            <i class="fas fa-copy me-1"></i>Copy
-                        </button>
+                        <span class="bank-label">Account Holder:</span>
+                        <span class="bank-value">
+                            <strong><%= accountHolder %></strong>
+                            <span class="copy-btn" onclick="copyText('<%= accountHolder %>')">
+                                <i class="fas fa-copy"></i> Copy
+                            </span>
+                        </span>
                     </div>
                     
                     <div class="bank-detail">
-                        <div class="bank-label">Transfer Content:</div>
-                        <div class="bank-value"><%= transferContent %></div>
-                        <button type="button" class="copy-btn" onclick="copyToClipboard('<%= transferContent %>')">
-                            <i class="fas fa-copy me-1"></i>Copy
-                        </button>
-                    </div>
-                    
-                    <div class="bank-detail">
-                        <div class="bank-label">Amount:</div>
-                        <div class="bank-value"><fmt:formatNumber value="${amount}" pattern="#,###"/> VND</div>
-                        <button type="button" class="copy-btn" onclick="copyToClipboard('<fmt:formatNumber value="${amount}" pattern="#,###"/>')">
-                            <i class="fas fa-copy me-1"></i>Copy
-                        </button>
+                        <span class="bank-label">Transfer Content:</span>
+                        <span class="bank-value">
+                            <strong><%= transferContent %></strong>
+                            <span class="copy-btn" onclick="copyText('<%= transferContent %>')">
+                                <i class="fas fa-copy"></i> Copy
+                            </span>
+                        </span>
                     </div>
                 </div>
                 
                 <!-- QR Code Section -->
-                <div class="qr-section">
-                    <h5 class="mb-3"><i class="fas fa-qrcode me-2"></i>QR Code</h5>
+                <div class="section">
+                    <h5 class="mb-3"><i class="fas fa-qrcode me-2"></i>Quick Transfer via QR Code</h5>
                     
-                    <!-- QR Code Display -->
-                    <div id="qr-display" class="qr">
-                       <img src="${pageContext.request.contextPath}/assets/images/uploads/qr.jpg" >
-                         
-                   
+                    <div class="qr-section">
+                        <div id="qr-loading">
+                            <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted">Loading QR code...</p>
+                        </div>
                         
-            
-                        
-                       
-                    </div>
-                    
-                    <!-- QR Status Messages -->
-                    <div id="qr-success" style="display: none;" class="alert alert-success">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <strong>QR Code loaded successfully!</strong> Customers can scan this code to transfer money.
+                        <div id="qr-container" style="display: none;">
+                            <div class="qr">
+                                <img id="qr-image" alt="QR Code for bank transfer" 
+                                     onerror="handleQRError()" onload="handleQRLoad()">
+                            </div>
+                        </div>
                     </div>
                     
                     <div id="qr-error" style="display: none;" class="alert alert-danger">
@@ -433,7 +373,7 @@
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>Transfer Information:</strong><br>
-                        <strong>Amount:</strong> <fmt:formatNumber value="${amount}" pattern="#,###"/> VND<br>
+                        <strong>Deposit Amount:</strong> <fmt:formatNumber value="${depositAmount}" pattern="#,###"/> VND<br>
                         <strong>Content:</strong> <%= transferContent %><br>
                         <small class="text-muted">Make sure your QR code includes the correct amount and transfer content above.</small>
                     </div>
@@ -453,285 +393,120 @@
                         <li>Select <strong>"Transfer to another bank"</strong> or <strong>"Interbank Transfer"</strong></li>
                         <li>Enter the bank account details provided above or scan the QR code</li>
                         <li><strong>Important:</strong> Use the exact transfer content: <code><%= transferContent %></code></li>
-                        <li>Enter the amount: <strong><fmt:formatNumber value="${amount}" pattern="#,###"/> VND</strong></li>
+                        <li>Enter the deposit amount: <strong><fmt:formatNumber value="${depositAmount}" pattern="#,###"/> VND</strong></li>
                         <li>Complete the transfer and save your transaction receipt</li>
                         <li>Your reservation will be automatically confirmed after payment is received</li>
                     </ol>
                     
                     <div class="alert alert-success mt-3 mb-0">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Note:</strong> After completing the transfer, your reservation status will be updated automatically. 
-                        Please keep your transaction receipt for records.
-                    </div>
-                </div>
-                
-                <!-- Payment Information Summary -->
-                <div class="section">
-                    <h5><i class="fas fa-receipt me-2"></i>Payment Summary</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="info-row">
-                                <span>Transfer Amount:</span>
-                                <span><strong><fmt:formatNumber value="${amount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></strong></span>
-                            </div>
-                            <div class="info-row">
-                                <span>Transfer Content:</span>
-                                <span><code><%= transferContent %></code></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="info-row">
-                                <span>Bank:</span>
-                                <span>Vietcombank (VCB)</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Account:</span>
-                                <span><%= accountNumber %></span>
-                            </div>
-                        </div>
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Deposit Refund Policy:</strong> Your 10% deposit will be fully refunded at check-out. 
+                        You can pay the remaining balance at any time during your stay.
                     </div>
                 </div>
                 
                 <!-- Action Buttons -->
-                <div class="d-flex justify-content-between flex-wrap gap-2">
-                    <button type="button" class="btn btn-secondary" onclick="history.back()">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Payment Options
+                <div class="text-center mt-4">
+                    <button class="btn btn-success btn-lg me-3" onclick="confirmPayment()">
+                        <i class="fas fa-check me-2"></i>I've Made the Transfer
                     </button>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-primary" onclick="copyTransferInfo()">
-                            <i class="fas fa-copy me-2"></i>Copy Transfer Info
-                        </button>
-                        
-                        <a href="BookingManagement" class="btn btn-primary">
-                            <i class="fas fa-list me-2"></i>View My Reservations
-                        </a>
-                    </div>
+                    <button class="btn btn-outline-secondary btn-lg" onclick="cancelPayment()">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
                 </div>
-                
-               
             </div>
         </div>
     </div>
     
-    <!-- Toast Container -->
-    <div class="toast-container"></div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <!-- JavaScript -->
+    <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
     <script>
-        // Copy to clipboard
-        function copyToClipboard(text) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(function() {
-                    showToast('Copied to clipboard!', 'success');
-                }).catch(function(err) {
-                    showToast('Failed to copy. Please copy manually.', 'error');
-                });
-            } else {
-                // Fallback
-                var textArea = document.createElement('textarea');
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    showToast('Copied to clipboard!', 'success');
-                } catch (err) {
-                    showToast('Failed to copy. Please copy manually.', 'error');
-                }
-                document.body.removeChild(textArea);
-            }
+        // Initialize QR code
+        $(document).ready(function() {
+            loadQRCode();
+        });
+        
+        function loadQRCode() {
+            const qrImage = document.getElementById('qr-image');
+            const amount = <%= request.getAttribute("depositAmount") != null ? request.getAttribute("depositAmount") : "0" %>;
+            const content = encodeURIComponent('<%= transferContent %>');
+            
+            // Generate QR code URL (you can use your preferred QR code API)
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=` +
+                         encodeURIComponent(`Bank: Techcombank\nAccount: <%= accountNumber %>\nAmount: ${amount}\nContent: <%= transferContent %>`);
+            
+            qrImage.src = qrUrl;
         }
         
-        // Toast notification
-        function showToast(message, type) {
-            var toast = document.createElement('div');
-            var alertClass = (type === 'success') ? 'success' : 'danger';
-            var iconClass = (type === 'success') ? 'check' : 'exclamation-triangle';
-            
-            toast.className = 'alert alert-' + alertClass + ' alert-dismissible fade show';
-            toast.style.cssText = 'min-width: 300px; margin-bottom: 1rem;';
-            toast.innerHTML = '<i class="fas fa-' + iconClass + ' me-2"></i>' + message +
-                '<button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>';
-            
-            document.querySelector('.toast-container').appendChild(toast);
-            
-            setTimeout(function() {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
-            }, 3000);
-        }
-        
-        // QR Code Management Functions
-        function showQRInput() {
-            document.getElementById('qr-input-section').style.display = 'block';
-            document.getElementById('qr-url-input').focus();
-        }
-        
-        function cancelQRInput() {
-            document.getElementById('qr-input-section').style.display = 'none';
-            document.getElementById('qr-url-input').value = '';
-            document.getElementById('qr-preview').style.display = 'none';
-        }
-        
-        function previewQR() {
-            var url = document.getElementById('qr-url-input').value.trim();
-            if (url && isValidURL(url)) {
-                var preview = document.getElementById('qr-preview');
-                var previewImg = document.getElementById('qr-preview-img');
-                
-                previewImg.onload = function() {
-                    preview.style.display = 'block';
-                };
-                previewImg.onerror = function() {
-                    showToast('Invalid image URL', 'error');
-                    preview.style.display = 'none';
-                };
-                previewImg.src = url;
-            }
-        }
-        
-        function loadQR() {
-            var url = document.getElementById('qr-url-input').value.trim();
-            
-            if (!url) {
-                showToast('Please enter a QR code URL', 'error');
-                return;
-            }
-            
-            if (!isValidURL(url)) {
-                showToast('Please enter a valid URL', 'error');
-                return;
-            }
-            
-            // Load the QR image
-            var qrImage = document.getElementById('qr-image');
-            qrImage.src = url;
-            
-            // Hide input section
-            cancelQRInput();
-            
-            showToast('Loading QR code...', 'info');
-        }
-        
-        function handleQRSuccess() {
-            // Show custom QR display
-            document.getElementById('default-qr').style.display = 'none';
-            document.getElementById('custom-qr').style.display = 'block';
-            
-            // Show success message
-            document.getElementById('qr-success').style.display = 'block';
-            document.getElementById('qr-error').style.display = 'none';
-            
-            showToast('QR code loaded successfully!', 'success');
+        function handleQRLoad() {
+            document.getElementById('qr-loading').style.display = 'none';
+            document.getElementById('qr-container').style.display = 'block';
         }
         
         function handleQRError() {
-            // Show error message
+            document.getElementById('qr-loading').style.display = 'none';
             document.getElementById('qr-error').style.display = 'block';
-            document.getElementById('qr-success').style.display = 'none';
-            
-            showToast('Failed to load QR code', 'error');
-        }
-        
-        function changeQR() {
-            showQRInput();
-        }
-        
-        function removeQR() {
-            // Reset to default state
-            document.getElementById('default-qr').style.display = 'block';
-            document.getElementById('custom-qr').style.display = 'none';
-            document.getElementById('qr-success').style.display = 'none';
-            document.getElementById('qr-error').style.display = 'none';
-            
-            // Clear image
-            document.getElementById('qr-image').src = '';
-            
-            showToast('QR code removed', 'info');
         }
         
         function retryQR() {
-            var currentSrc = document.getElementById('qr-image').src;
-            if (currentSrc) {
-                // Force reload by adding timestamp
-                document.getElementById('qr-image').src = currentSrc + '?t=' + new Date().getTime();
-            } else {
-                showQRInput();
-            }
+            document.getElementById('qr-error').style.display = 'none';
+            document.getElementById('qr-loading').style.display = 'block';
+            loadQRCode();
         }
         
-        function isValidURL(string) {
-            try {
-                new URL(string);
-                return true;
-            } catch (_) {
-                return false;
-            }
-        }
-        
-        // Auto-detect paste and preview
-        document.addEventListener('DOMContentLoaded', function() {
-            var input = document.getElementById('qr-url-input');
-            if (input) {
-                input.addEventListener('input', function() {
-                    setTimeout(previewQR, 500); // Delay to allow full paste
-                });
-            }
-        });
-        
-        // Copy transfer information
-        function copyTransferInfo() {
-            var transferInfo = 
-                'Bank: Vietcombank (VCB)\n' +
-                'Account: <%= accountNumber %>\n' +
-                'Account Holder: <%= accountHolder %>\n' +
-                'Amount: <fmt:formatNumber value="${amount}" pattern="#,###"/> VND\n' +
-                'Content: <%= transferContent %>';
-            
-            copyToClipboard(transferInfo);
-        }
-        
-        // Enable/disable confirm button
-        document.addEventListener('DOMContentLoaded', function() {
-            // Remove confirm button functionality since we removed the form
-            console.log('Bank transfer page loaded');
-        });
-        
-        // Countdown timer (simplified)
-        var timeLeft = 15 * 60;
-        
-        function updateCountdown() {
-            var minutes = Math.floor(timeLeft / 60);
-            var seconds = timeLeft % 60;
-            
-            var minutesStr = minutes < 10 ? '0' + minutes : minutes;
-            var secondsStr = seconds < 10 ? '0' + seconds : seconds;
-            
-            var countdownEl = document.getElementById('countdown');
-            if (countdownEl) {
-                countdownEl.textContent = minutesStr + ':' + secondsStr;
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Show success message
+                const btn = event.target.closest('.copy-btn');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                btn.style.background = '#4caf50';
+                btn.style.color = 'white';
                 
-                if (timeLeft <= 0) {
-                    countdownEl.textContent = 'EXPIRED';
-                    countdownEl.style.color = '#dc3545';
-                    return;
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 2000);
+            }).catch(function() {
+                alert('Failed to copy text. Please copy manually.');
+            });
+        }
+        
+        function confirmPayment() {
+            if (confirm('Have you completed the bank transfer of the deposit amount?')) {
+                // Submit form to process payment
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '${pageContext.request.contextPath}/PaymentGateway';
+                
+                const fields = {
+                    'action': 'processPayment',
+                    'paymentId': '<%= request.getAttribute("paymentId") %>',
+                    'reservationId': '<%= request.getAttribute("reservation") != null ? ((model.Reservation)request.getAttribute("reservation")).getId() : "" %>',
+                    'method': 'BANK_TRANSFER',
+                    'status': 'PENDING',
+                    'transactionId': 'BANK-TRANSFER-' + Date.now()
+                };
+                
+                for (const [key, value] of Object.entries(fields)) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    form.appendChild(input);
                 }
                 
-                if (timeLeft <= 60) {
-                    countdownEl.style.color = '#dc3545';
-                    countdownEl.style.fontSize = '1.4rem';
-                }
+                document.body.appendChild(form);
+                form.submit();
             }
-            
-            timeLeft--;
         }
         
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
+        function cancelPayment() {
+            if (confirm('Are you sure you want to cancel this payment?')) {
+                window.location.href = '${pageContext.request.contextPath}/RoomListServlet';
+            }
+        }
     </script>
 </body>
 </html>

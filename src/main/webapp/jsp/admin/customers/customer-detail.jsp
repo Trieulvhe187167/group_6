@@ -119,7 +119,7 @@
                                     <td>
                                         <a href="mailto:${customer.email}">${customer.email}</a>
                                         <button class="btn btn-sm btn-outline-primary ml-2" 
-                                                onclick="requestQuickChange('email', '${customer.email}', ${customer.id}, 'customer')"
+                                                onclick="requestQuickChange('email', '${customer.email}', ${customer.id}, 'customers')"
                                                 title="Request email change">
                                             <i class="fas fa-edit"></i>
                                         </button>
@@ -132,7 +132,7 @@
                                             <c:when test="${not empty customer.phone}">
                                                 <a href="tel:${customer.phone}">${customer.phone}</a>
                                                 <button class="btn btn-sm btn-outline-primary ml-2" 
-                                                        onclick="requestQuickChange('phone', '${customer.phone}', ${customer.id}, 'customer')"
+                                                        onclick="requestQuickChange('phone', '${customer.phone}', ${customer.id}, 'customers')"
                                                         title="Request phone change">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
@@ -140,7 +140,7 @@
                                             <c:otherwise>
                                                 <span class="text-muted">Not provided</span>
                                                 <button class="btn btn-sm btn-outline-success ml-2" 
-                                                        onclick="requestQuickChange('phone', '', ${customer.id}, 'customer')"
+                                                        onclick="requestQuickChange('phone', '', ${customer.id}, 'customers')"
                                                         title="Add phone number">
                                                     <i class="fas fa-plus"></i>
                                                 </button>

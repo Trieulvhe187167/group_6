@@ -174,6 +174,112 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        <span class="badge ${staff.statusBadgeClass}">
+                                            ${staff.statusDisplayName}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user-circle"></i> Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="30%">Date of Birth:</th>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty staff.dateOfBirth}">
+                                        <fmt:formatDate value="${staff.dateOfBirth}" pattern="dd/MM/yyyy"/>
+                                        <c:if test="${staff.age > 0}">
+                                            <span class="text-muted">(${staff.age} years old)</span>
+                                        </c:if>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="text-muted">Not provided</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Gender:</th>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty staff.gender}">
+                                        ${staff.genderDisplayName}
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="text-muted">Not specified</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Address:</th>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty staff.address}">
+                                        ${staff.address}
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="text-muted">Not provided</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>City:</th>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty staff.city}">
+                                        ${staff.city}
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="text-muted">Not provided</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Country:</th>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty staff.country}">
+                                        ${staff.country}
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="text-muted">Not provided</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Full Address:</th>
+                            <td>${staff.fullAddress}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Employment Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-briefcase"></i> Employment Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
                                     <th>Department:</th>
                                     <td>
                                         <c:choose>
@@ -200,6 +306,23 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <th>Years of Service:</th>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${staff.yearsOfService > 0}">
+                                                ${staff.yearsOfService} years
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-muted">New employee</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
                                     <th>Salary:</th>
                                     <td>
                                         <c:choose>
@@ -213,11 +336,15 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Status:</th>
+                                    <th>Employment Type:</th>
                                     <td>
-                                        <span class="badge ${staff.statusBadgeClass}">
-                                            ${staff.statusDisplayName}
-                                        </span>
+                                        <span class="badge badge-primary">Full-time</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Employee ID:</th>
+                                    <td>
+                                        <code>EMP${String.format("%04d", staff.id)}</code>
                                     </td>
                                 </tr>
                             </table>
@@ -262,17 +389,9 @@
                         <div class="col-md-4">
                             <div class="stat-box">
                                 <h3 class="text-info">
-                                    <c:choose>
-                                        <c:when test="${not empty staff.hireDate}">
-                                            <c:set var="today" value="<%= new java.util.Date() %>" />
-                                            <fmt:formatDate value="${today}" pattern="yyyy" var="currentYear"/>
-                                            <fmt:formatDate value="${staff.hireDate}" pattern="yyyy" var="hireYear"/>
-                                            ${currentYear - hireYear}
-                                        </c:when>
-                                        <c:otherwise>N/A</c:otherwise>
-                                    </c:choose>
+                                    ${staff.profileCompletionPercentage}%
                                 </h3>
-                                <p class="mb-0">Years of Service</p>
+                                <p class="mb-0">Profile Complete</p>
                             </div>
                         </div>
                     </div>
@@ -468,62 +587,10 @@
             </div>
             </c:if>
 
-            <!-- Employment Information -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-briefcase"></i> Employment Information</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm table-borderless">
-                        <tr>
-                            <th>Employee ID:</th>
-                            <td class="text-right">
-                                <code>EMP${String.format("%04d", staff.id)}</code>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Department:</th>
-                            <td class="text-right">
-                                <c:choose>
-                                    <c:when test="${not empty staff.department}">
-                                        <span class="badge badge-primary">${staff.department}</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="text-muted">Not assigned</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Employment Type:</th>
-                            <td class="text-right">
-                                <span class="badge badge-success">Full-time</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Shift:</th>
-                            <td class="text-right">
-                                <c:choose>
-                                    <c:when test="${staff.role == 'RECEPTIONIST'}">
-                                        <span class="badge badge-info">24/7 Rotation</span>
-                                    </c:when>
-                                    <c:when test="${staff.role == 'HOUSEKEEPER'}">
-                                        <span class="badge badge-info">Day Shift</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="badge badge-info">Regular Hours</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Account Information -->
+            <!-- Contact & Account Information -->
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Account Information</h5>
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Account Summary</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-sm table-borderless">
@@ -560,6 +627,15 @@
                                 </div>
                             </td>
                         </tr>
+                        <c:if test="${staff.hasMissingCriticalInfo()}">
+                            <tr>
+                                <td colspan="2">
+                                    <div class="alert alert-warning mt-2 mb-0">
+                                        <small><i class="fas fa-exclamation-triangle"></i> ${staff.missingInfoWarning}</small>
+                                    </div>
+                                </td>
+                            </tr>
+                        </c:if>
                     </table>
                 </div>
             </div>

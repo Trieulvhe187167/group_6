@@ -1,5 +1,6 @@
 package dal;
 
+import static dal.DBContext.getConnection;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -748,5 +749,19 @@ public class RoomDAO {
 
         return rooms;
     }
-
+public int getAvailableRoomsCount() {
+    String sql = "SELECT COUNT(*) FROM Rooms WHERE Status = 'AVAILABLE'";
+    
+    try (Connection conn = getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+        
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return 0;
+}
 }
