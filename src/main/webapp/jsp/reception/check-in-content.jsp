@@ -13,16 +13,21 @@
                 </h5>
                                     <div class="d-flex align-items-center">
                         <div class="mr-3 d-flex align-items-center">
-                            <div style="width: 15px; height: 15px; background-color: #17a2b8; margin-right: 5px;"></div>
+                            <div style="width: 15px; height: 15px; background-color: #17a2b8; margin-right: 5px; border: 1px solid black;"></div>
                             <span class="small">Booking</span>
                         </div>
                         <div class="mr-3 d-flex align-items-center">
-                            <div style="width: 15px; height: 15px; background-color: #dc3545; margin-right: 5px;"></div>
-                            <span class="small">Đang sử dụng</span>
+                            <div style="width: 15px; height: 15px; background-color: #dc3545; margin-right: 5px; border: 1px solid black;"></div>
+                            <span class="small">Occupied</span>
+                        </div>
+                        <div class="mr-3 d-flex align-items-center">
+                            <div style="width: 15px; height: 15px; background-color: #28a745; margin-right: 5px; border: 1px solid black;"></div>
+                            <span class="small">Free</span>
                         </div>
                         <div class="mr-4 d-flex align-items-center">
-                            <div style="width: 15px; height: 15px; background-color: #28a745; margin-right: 5px;"></div>
-                            <span class="small">Free</span>
+                            <button id="toggleAllRoomTypes" class="btn btn-sm btn-outline-light" title="Expand/Collapse All Room Types">
+                                <i class="fas fa-expand-alt"></i> <span id="toggleAllRoomTypesText">Show All</span>
+                            </button>
                         </div>
                     </div>
                 <div class="btn-group">
@@ -452,13 +457,175 @@
 
 <script>
     let currentReservationId = null;
+    let allRoomsExpanded = false; // Set default to collapsed
     
     // Execute when DOM is fully loaded
     document.addEventListener('DOMContentLoaded', function() {
         console.log("DOM loaded - initialization complete");
         // Set default date for calendar picker to today
         document.getElementById('calendarDatePicker').valueAsDate = new Date();
+        
+        // Add event listener for the toggle all button
+        document.getElementById('toggleAllRoomTypes').addEventListener('click', toggleAllRoomTypes);
+        
+        // Load saved room type states or hide all by default
+        setTimeout(function() {
+            loadRoomTypeStates();
+        }, 200); // Small delay to ensure DOM is fully processed
     });
+    
+    // Function to save room type states to localStorage
+    function saveRoomTypeStates() {
+        const roomTypeStates = {};
+        const roomTypeHeaders = document.querySelectorAll('tr.room-type-header');
+        
+        roomTypeHeaders.forEach(header => {
+            const roomTypeId = header.getAttribute('data-room-type');
+            if (roomTypeId) {
+                roomTypeStates[roomTypeId] = header.classList.contains('collapsed');
+            }
+        });
+        
+        localStorage.setItem('roomTypeStates', JSON.stringify(roomTypeStates));
+        console.log("Room type states saved:", roomTypeStates);
+    }
+    
+    // Function to load room type states from localStorage
+    function loadRoomTypeStates() {
+        try {
+            const savedStates = localStorage.getItem('roomTypeStates');
+            
+            if (savedStates) {
+                const roomTypeStates = JSON.parse(savedStates);
+                console.log("Loading saved room type states:", roomTypeStates);
+                
+                // Apply saved states to room types
+                const roomTypeHeaders = document.querySelectorAll('tr.room-type-header');
+                let allCollapsed = true;
+                
+                roomTypeHeaders.forEach(header => {
+                    const roomTypeId = header.getAttribute('data-room-type');
+                    if (roomTypeId && roomTypeStates.hasOwnProperty(roomTypeId)) {
+                        const shouldBeCollapsed = roomTypeStates[roomTypeId];
+                        
+                        // If current state doesn't match saved state, toggle it
+                        const isCurrentlyCollapsed = header.classList.contains('collapsed');
+                        if (shouldBeCollapsed !== isCurrentlyCollapsed) {
+                            toggleRoomType(roomTypeId);
+                        }
+                        
+                        if (!shouldBeCollapsed) {
+                            allCollapsed = false;
+                        }
+                    } else {
+                        // Default to collapsed for any new room types
+                        if (!header.classList.contains('collapsed')) {
+                            toggleRoomType(roomTypeId);
+                        }
+                    }
+                });
+                
+                // Update the toggle all button state
+                updateToggleAllButton(!allCollapsed);
+                return;
+            }
+        } catch (error) {
+            console.error("Error loading room type states:", error);
+        }
+        
+        // If no saved states or error, default to hiding all
+        hideAllRoomTypes();
+    }
+    
+    // Function to update the toggle all button appearance
+    function updateToggleAllButton(expanded) {
+        const toggleBtn = document.getElementById('toggleAllRoomTypes');
+        const toggleText = document.getElementById('toggleAllRoomTypesText');
+        const toggleIcon = toggleBtn.querySelector('i');
+        
+        if (expanded) {
+            toggleText.textContent = "Hide All";
+            toggleIcon.classList.remove('fa-expand-alt');
+            toggleIcon.classList.add('fa-compress-alt');
+            allRoomsExpanded = true;
+        } else {
+            toggleText.textContent = "Show All";
+            toggleIcon.classList.remove('fa-compress-alt');
+            toggleIcon.classList.add('fa-expand-alt');
+            allRoomsExpanded = false;
+        }
+    }
+    
+    // Function to toggle all room types visibility
+    function toggleAllRoomTypes() {
+        console.log("Toggling all room types");
+        
+        // Get all room type headers
+        const roomTypeHeaders = document.querySelectorAll('tr.room-type-header');
+        
+        if (allRoomsExpanded) {
+            // Hide all room types
+            roomTypeHeaders.forEach(header => {
+                const roomTypeId = header.getAttribute('data-room-type');
+                if (roomTypeId) {
+                    // Only toggle if not already collapsed
+                    if (!header.classList.contains('collapsed')) {
+                        toggleRoomType(roomTypeId);
+                    }
+                }
+            });
+            
+            // Update button appearance
+            updateToggleAllButton(false);
+        } else {
+            // Show all room types
+            roomTypeHeaders.forEach(header => {
+                const roomTypeId = header.getAttribute('data-room-type');
+                if (roomTypeId) {
+                    // Only toggle if already collapsed
+                    if (header.classList.contains('collapsed')) {
+                        toggleRoomType(roomTypeId);
+                    }
+                }
+            });
+            
+            // Update button appearance
+            updateToggleAllButton(true);
+        }
+        
+        // Note: We don't need to call saveRoomTypeStates() here
+        // because each toggleRoomType() call already saves the state
+    }
+    
+    // Function to hide all room types (used at page load)
+    function hideAllRoomTypes() {
+        console.log("Hiding all room types on page load");
+        
+        // Get all room type headers
+        const roomTypeHeaders = document.querySelectorAll('tr.room-type-header');
+        
+        // Force all rooms to be hidden
+        roomTypeHeaders.forEach(header => {
+            const roomTypeId = header.getAttribute('data-room-type');
+            if (roomTypeId) {
+                // Add collapsed class to the header
+                header.classList.add('collapsed');
+                
+                // Hide all room rows for this type
+                const roomRows = document.querySelectorAll('tr.room-row[data-room-type="' + roomTypeId + '"]');
+                roomRows.forEach(row => {
+                    row.style.display = 'none';
+                });
+                
+                // Update the toggle icon
+                const toggleIcon = header.querySelector('.toggle-icon');
+                if (toggleIcon) {
+                    toggleIcon.classList.remove('fa-chevron-down');
+                    toggleIcon.classList.add('fa-chevron-up');
+                }
+            }
+        });
+    }
     
     // Function to toggle room type visibility
     function toggleRoomType(roomTypeId) {
@@ -505,6 +672,9 @@
         console.log(isCollapsed 
             ? "Collapsed room type: " + roomTypeId
             : "Expanded room type: " + roomTypeId);
+            
+        // Save the current state to localStorage
+        saveRoomTypeStates();
     }
     
     function startCheckIn(reservationId) {
