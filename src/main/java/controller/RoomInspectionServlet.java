@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
 import dal.*;
@@ -92,7 +88,17 @@ public class RoomInspectionServlet extends HttpServlet {
     private void showStartInspection(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, Exception {
 
-        int reservationId = Integer.parseInt(request.getParameter("reservationId"));
+        String reservationIdStr = request.getParameter("reservationId");
+        if (reservationIdStr == null || reservationIdStr.trim().isEmpty()) {
+            throw new Exception("Reservation ID is required");
+        }
+
+        int reservationId;
+        try {
+            reservationId = Integer.parseInt(reservationIdStr);
+        } catch (NumberFormatException e) {
+            throw new Exception("Invalid reservation ID format");
+        }
 
         // Get reservation details
         Reservation reservation = reservationDAO.getReservationById(reservationId);
@@ -108,8 +114,18 @@ public class RoomInspectionServlet extends HttpServlet {
             return;
         }
 
-        // Get room amenities
-        List<RoomAmenity> amenities = inspectionDAO.getRoomAmenities(reservation.getRoomId());
+        // Get room amenities - handle null or empty list
+        List<RoomAmenity> amenities = new ArrayList<>();
+        try {
+            amenities = inspectionDAO.getRoomAmenities(reservation.getRoomId());
+            if (amenities == null) {
+                amenities = new ArrayList<>();
+            }
+        } catch (Exception e) {
+            // Log the error but continue with empty amenities list
+            e.printStackTrace();
+            amenities = new ArrayList<>();
+        }
 
         request.setAttribute("reservation", reservation);
         request.setAttribute("amenities", amenities);
@@ -122,17 +138,46 @@ public class RoomInspectionServlet extends HttpServlet {
     private void createInspection(HttpServletRequest request, HttpServletResponse response, User inspector)
             throws Exception {
 
-        int reservationId = Integer.parseInt(request.getParameter("reservationId"));
+        String reservationIdStr = request.getParameter("reservationId");
         String roomCondition = request.getParameter("roomCondition");
-        int cleanlinessScore = Integer.parseInt(request.getParameter("cleanlinessScore"));
+        String cleanlinessScoreStr = request.getParameter("cleanlinessScore");
         String notes = request.getParameter("notes");
+
+        // Validate inputs
+        if (reservationIdStr == null || reservationIdStr.trim().isEmpty()) {
+            throw new Exception("Reservation ID is required");
+        }
+        if (roomCondition == null || roomCondition.trim().isEmpty()) {
+            throw new Exception("Room condition is required");
+        }
+        if (cleanlinessScoreStr == null || cleanlinessScoreStr.trim().isEmpty()) {
+            throw new Exception("Cleanliness score is required");
+        }
+
+        int reservationId;
+        int cleanlinessScore;
+        
+        try {
+            reservationId = Integer.parseInt(reservationIdStr);
+        } catch (NumberFormatException e) {
+            throw new Exception("Invalid reservation ID format");
+        }
+        
+        try {
+            cleanlinessScore = Integer.parseInt(cleanlinessScoreStr);
+            if (cleanlinessScore < 1 || cleanlinessScore > 10) {
+                throw new Exception("Cleanliness score must be between 1 and 10");
+            }
+        } catch (NumberFormatException e) {
+            throw new Exception("Invalid cleanliness score format");
+        }
 
         RoomInspection inspection = new RoomInspection();
         inspection.setReservationId(reservationId);
         inspection.setInspectorId(inspector.getId());
         inspection.setRoomCondition(roomCondition);
         inspection.setCleanlinessScore(cleanlinessScore);
-        inspection.setNotes(notes);
+        inspection.setNotes(notes != null ? notes : "");
 
         int inspectionId = inspectionDAO.startInspection(inspection);
 
@@ -143,7 +188,17 @@ public class RoomInspectionServlet extends HttpServlet {
     private void editInspection(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, Exception {
 
-        int inspectionId = Integer.parseInt(request.getParameter("id"));
+        String idStr = request.getParameter("id");
+        if (idStr == null || idStr.trim().isEmpty()) {
+            throw new Exception("Inspection ID is required");
+        }
+
+        int inspectionId;
+        try {
+            inspectionId = Integer.parseInt(idStr);
+        } catch (NumberFormatException e) {
+            throw new Exception("Invalid inspection ID format");
+        }
 
         RoomInspection inspection = inspectionDAO.getInspectionById(inspectionId);
         if (inspection == null) {
@@ -151,12 +206,21 @@ public class RoomInspectionServlet extends HttpServlet {
         }
 
         // Get room amenities for adding items
-        List<RoomAmenity> amenities = inspectionDAO.getRoomAmenities(inspection.getReservation().getRoomId());
+        List<RoomAmenity> amenities = new ArrayList<>();
+        try {
+            amenities = inspectionDAO.getRoomAmenities(inspection.getReservation().getRoomId());
+            if (amenities == null) {
+                amenities = new ArrayList<>();
+            }
+        } catch (Exception e) {
+            // Log the error but continue with empty amenities list
+            e.printStackTrace();
+            amenities = new ArrayList<>();
+        }
 
         request.setAttribute("inspection", inspection);
         request.setAttribute("amenities", amenities);
         request.setAttribute("pageTitle", "Edit Inspection - Room " + inspection.getReservation().getRoomNumber());
-
         request.setAttribute("activePage", "inspection");
         request.setAttribute("contentPage", "/jsp/inspector/edit-inspection.jsp");
         request.getRequestDispatcher("/jsp/inspector/inspector-template.jsp").forward(request, response);
@@ -292,7 +356,17 @@ public class RoomInspectionServlet extends HttpServlet {
     private void viewInspection(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, Exception {
 
-        int inspectionId = Integer.parseInt(request.getParameter("id"));
+        String idStr = request.getParameter("id");
+        if (idStr == null || idStr.trim().isEmpty()) {
+            throw new Exception("Inspection ID is required");
+        }
+
+        int inspectionId;
+        try {
+            inspectionId = Integer.parseInt(idStr);
+        } catch (NumberFormatException e) {
+            throw new Exception("Invalid inspection ID format");
+        }
 
         RoomInspection inspection = inspectionDAO.getInspectionById(inspectionId);
         if (inspection == null) {
@@ -305,5 +379,4 @@ public class RoomInspectionServlet extends HttpServlet {
         request.setAttribute("contentPage", "/jsp/inspector/view-inspection.jsp");
         request.getRequestDispatcher("/jsp/inspector/inspector-template.jsp").forward(request, response);
     }
-
 }

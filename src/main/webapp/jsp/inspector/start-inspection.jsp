@@ -59,22 +59,19 @@
                         <option value="GOOD">Good - Minor cleaning needed</option>
                         <option value="FAIR">Fair - Some issues found</option>
                         <option value="POOR">Poor - Multiple issues</option>
-                        <option value="DAMAGED">Damaged - Significant damage</option>
                     </select>
                 </div>
             </div>
             
             <div class="col-md-6">
                 <div class="form-group">
-                    <label>Cleanliness Score <span class="text-danger">*</span></label>
+                    <label for="cleanlinessScore">Cleanliness Score <span class="text-danger">*</span></label>
                     <div class="cleanliness-rating">
-                        <c:forEach begin="1" end="10" var="i">
-                            <input type="radio" id="score${i}" name="cleanlinessScore" value="${i}" required>
-                            <label for="score${i}">
-                                <i class="fas fa-star"></i>
-                            </label>
+                        <c:forEach var="i" begin="1" end="10">
+                            <input type="radio" name="cleanlinessScore" value="${i}" id="score${i}" required>
+                            <label for="score${i}"><i class="far fa-star"></i></label>
                         </c:forEach>
-                        <span class="ml-3" id="scoreText">Select a rating</span>
+                        <span id="scoreText" class="ml-2"></span>
                     </div>
                 </div>
             </div>
@@ -83,14 +80,13 @@
         <div class="form-group">
             <label for="notes">Initial Notes</label>
             <textarea class="form-control" id="notes" name="notes" rows="4" 
-                      placeholder="Enter any initial observations..."></textarea>
+                      placeholder="Enter any initial observations or concerns..."></textarea>
         </div>
         
-        <!-- Available Amenities Checklist -->
-        <h4 class="mb-3 mt-4">Room Amenities Checklist</h4>
+        <h4 class="mb-3 mt-4">Room Amenities</h4>
         <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> 
-            Below are the chargeable amenities for this room. You'll be able to record usage in the next step.
+            <i class="fas fa-info-circle"></i> These amenities are available in the room. 
+            You'll be able to record usage in the next step.
         </div>
         
         <div class="row">
