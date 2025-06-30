@@ -1,15 +1,21 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-
 <!DOCTYPE html>
+<!-- Bootstrap CSS -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- jQuery (phải có trước Bootstrap JS) -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking History</title>
+    <title>My Bookings</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -158,113 +164,26 @@
             font-size: 1.1rem;
         }
 
-        /* Filter Section */
-        .filter-section {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        .filter-row {
-            display: flex;
-            gap: 20px;
-            align-items: end;
-            flex-wrap: wrap;
-        }
-
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .filter-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #495057;
-        }
-
-        .filter-group select,
-        .filter-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
+        /* Alert Messages */
+        .alert {
+            padding: 15px 20px;
+            margin-bottom: 20px;
             border-radius: 10px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .filter-group select:focus,
-        .filter-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .filter-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-left: 10px;
+            font-weight: 500;
         }
 
-        .filter-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border-left: 4px solid #28a745;
         }
 
-        /* Stats Section */
-        .stats-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .alert-error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
         }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #6c757d;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-card.total .stat-icon { color: #667eea; }
-        .stat-card.completed .stat-icon { color: #28a745; }
-        .stat-card.cancelled .stat-icon { color: #dc3545; }
-        .stat-card.amount .stat-icon { color: #ffc107; }
 
         /* Booking Cards */
         .booking-card {
@@ -276,18 +195,6 @@
             margin-bottom: 25px;
             transition: all 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .booking-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
         }
 
         .booking-card:hover {
@@ -310,7 +217,7 @@
             color: #495057;
         }
 
-        .booking-date {
+        .booking-id {
             font-size: 0.9rem;
             color: #6c757d;
             background: #f8f9fa;
@@ -357,18 +264,18 @@
             letter-spacing: 0.5px;
         }
 
-        .badge.completed {
+        .badge.confirmed {
             background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .badge.pending {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
             color: white;
         }
 
         .badge.cancelled {
             background: linear-gradient(135deg, #dc3545, #e83e8c);
-            color: white;
-        }
-
-        .badge.no-show {
-            background: linear-gradient(135deg, #6c757d, #495057);
             color: white;
         }
 
@@ -391,6 +298,60 @@
         .note-title i {
             margin-right: 8px;
             color: #667eea;
+        }
+
+        /* Action Buttons */
+        .booking-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
         }
 
         .empty-message {
@@ -420,21 +381,93 @@
             font-size: 1.1rem;
         }
 
-        /* Rating Section */
-        .rating-section {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e9ecef;
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
         }
 
-        .rating-stars {
-            color: #ffc107;
-            margin-right: 10px;
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
         }
 
-        .rating-text {
-            font-size: 0.9rem;
-            color: #6c757d;
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .close {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .modal-body p {
+            font-size: 1.1rem;
+            color: #495057;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
         }
 
         /* Responsive Design */
@@ -479,18 +512,25 @@
                 padding: 25px 20px;
             }
 
-            .filter-row {
+            .booking-actions {
                 flex-direction: column;
-                gap: 15px;
             }
 
-            .filter-group {
-                min-width: auto;
+            .btn {
+                justify-content: center;
             }
 
-            .stats-section {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+
+            .modal-actions {
+                flex-direction: column;
             }
         }
 
@@ -529,13 +569,13 @@
             </div>
             <ul class="sidebar-menu">
                 <li>
-                    <a href="${pageContext.request.contextPath}/customer/bookings">
+                    <a href="#" class="active">
                         <i class="fas fa-calendar-check"></i>
                         <span>My Bookings</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="active">
+                    <a href="${pageContext.request.contextPath}/customer/history">
                         <i class="fas fa-history"></i>
                         <span>Booking History</span>
                     </a>
@@ -585,124 +625,52 @@
         <!-- Main Content -->
         <main class="main-content">
             <div class="content-header">
-                <h2><i class="fas fa-history"></i> Booking History</h2>
-                <p>View and manage your past hotel reservations</p>
+                <h2><i class="fas fa-calendar-check"></i> My Bookings</h2>
+                <p>Manage and view your current hotel reservations</p>
             </div>
 
-            <!-- Stats Section -->
-            <div class="stats-section">
-                <div class="stat-card total">
-                    <div class="stat-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="stat-number">
-                        <c:set var="totalBookings" value="${fn:length(historyBookings)}" />
-                        ${totalBookings}
-                    </div>
-                    <div class="stat-label">Total Bookings</div>
-                </div>
-                
-                <div class="stat-card completed">
-                    <div class="stat-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-number">
-                        <c:set var="completedCount" value="0" />
-                        <c:forEach var="booking" items="${historyBookings}">
-                            <c:if test="${booking.status == 'COMPLETED'}">
-                                <c:set var="completedCount" value="${completedCount + 1}" />
-                            </c:if>
-                        </c:forEach>
-                        ${completedCount}
-                    </div>
-                    <div class="stat-label">Completed</div>
-                </div>
-                
-                <div class="stat-card cancelled">
-                    <div class="stat-icon">
-                        <i class="fas fa-times-circle"></i>
-                    </div>
-                    <div class="stat-number">
-                        <c:set var="cancelledCount" value="0" />
-                        <c:forEach var="booking" items="${historyBookings}">
-                            <c:if test="${booking.status == 'CANCELLED'}">
-                                <c:set var="cancelledCount" value="${cancelledCount + 1}" />
-                            </c:if>
-                        </c:forEach>
-                        ${cancelledCount}
-                    </div>
-                    <div class="stat-label">Cancelled</div>
-                </div>
-                
-                <div class="stat-card amount">
-                    <div class="stat-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <div class="stat-number">
-                        <c:set var="totalAmount" value="0" />
-                        <c:forEach var="booking" items="${historyBookings}">
-                            <c:if test="${booking.status == 'COMPLETED'}">
-                                <c:set var="totalAmount" value="${totalAmount + booking.basePrice}" />
-                            </c:if>
-                        </c:forEach>
-                        <fmt:formatNumber value="${totalAmount}" type="currency" maxFractionDigits="0" />
-                    </div>
-                    <div class="stat-label">Total Spent</div>
-                </div>
-            </div>
-
-            <!-- Filter Section -->
-            <div class="filter-section">
-                <form method="GET" action="booking-history.jsp">
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <label for="status">Filter by Status</label>
-                            <select id="status" name="status">
-                                <option value="">All Status</option>
-                                <option value="COMPLETED">Completed</option>
-                                <option value="CANCELLED">Cancelled</option>
-                                <option value="NO_SHOW">No Show</option>
-                            </select>
-                        </div>
-                        
-                        <div class="filter-group">
-                            <label for="dateFrom">From Date</label>
-                            <input type="date" id="dateFrom" name="dateFrom">
-                        </div>
-                        
-                        <div class="filter-group">
-                            <label for="dateTo">To Date</label>
-                            <input type="date" id="dateTo" name="dateTo">
-                        </div>
-                        
-                        <div class="filter-group">
-                            <button type="submit" class="filter-btn">
-                                <i class="fas fa-filter"></i> Filter
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <c:if test="${empty historyBookings}">
-                <div class="empty-message">
-                    <div class="empty-icon">
-                        <i class="fas fa-history"></i>
-                    </div>
-                    <div class="empty-title">No Booking History</div>
-                    <div class="empty-text">You don't have any past bookings yet. Start exploring our rooms!</div>
+            <!-- Alert Messages -->
+            <c:if test="${not empty successMessage}">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> ${successMessage}
                 </div>
             </c:if>
 
-            <c:forEach var="booking" items="${historyBookings}">
+            <c:if test="${not empty errorMessage}">
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-triangle"></i> ${errorMessage}
+                </div>
+            </c:if>
+            <c:if test="${param.cancel == 'success'}">
+            <div class="alert alert-success">
+             <i class="fas fa-check-circle"></i> Your booking was cancelled successfully.
+             </div>
+            </c:if>
+
+            <c:if test="${param.cancel == 'failed'}">
+    <div class="alert alert-error">
+        <i class="fas fa-exclamation-triangle"></i> Failed to cancel booking. Please try again later.
+    </div>
+            </c:if>
+
+            <c:if test="${empty bookings}">
+                <div class="empty-message">
+                    <div class="empty-icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <div class="empty-title">No Bookings Found</div>
+                    <div class="empty-text">You don't have any current bookings. Ready to plan your next stay?</div>
+                </div>
+            </c:if>
+
+            <c:forEach var="booking" items="${bookings}">
                 <div class="booking-card">
                     <div class="booking-header">
                         <div class="booking-title">
                             <i class="fas fa-bed"></i> Room ${booking.roomName} - ${booking.roomTypeName}
                         </div>
-                        <div class="booking-date">
-                            <i class="fas fa-calendar"></i>
-                            <fmt:formatDate value="${booking.bookingDate}" pattern="MMM dd, yyyy" />
+                        <div class="booking-id">
+                            ID: #${booking.id}
                         </div>
                     </div>
                     
@@ -725,9 +693,9 @@
                         
                         <div class="detail-item">
                             <i class="fas fa-dollar-sign"></i>
-                            <span class="detail-label">Total Paid:</span>
+                            <span class="detail-label">Total Amount:</span>
                             <span class="detail-value">
-                                <fmt:formatNumber value="${booking.basePrice}" type="currency" />
+                                <fmt:formatNumber value="${booking.totalAmount}" type="currency" />
                             </span>
                         </div>
                         
@@ -748,32 +716,53 @@
                         </div>
                     </c:if>
 
-                    <!-- Rating Section (if booking was completed) -->
-                    <c:if test="${booking.status == 'COMPLETED'}">
-                        <div class="rating-section">
-                            <c:choose>
-                                <c:when test="${not empty booking.rating}">
-                                    <span class="rating-stars">
-                                        <c:forEach begin="1" end="5" var="star">
-                                            <i class="fas fa-star ${star <= booking.rating ? 'active' : ''}"></i>
-                                        </c:forEach>
-                                    </span>
-                                    <span class="rating-text">You rated this stay ${booking.rating}/5 stars</span>
-                                </c:when>
-                                <c:otherwise>
-                                    <a href="rate-booking.jsp?id=${booking.id}" class="rating-text">
-                                        <i class="fas fa-star"></i> Rate your stay
-                                    </a>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-                    </c:if>
+                    <!-- Action Buttons -->
+                    <div class="booking-actions">
+                        <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                        
+                       <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
+                        <button type="button" class="btn btn-danger" onclick="confirmCancel(${booking.id}, '${booking.roomName}')">
+                            <i class="fas fa-times"></i> Cancel Booking
+                        </button>
+                        </c:if>
+
+                    </div>
                 </div>
             </c:forEach>
         </main>
     </div>
 
+    <!-- Cancel Confirmation Modal -->
+    <!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">Confirm Cancellation</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to cancel your booking for <strong id="roomNameText"></strong>?
+      </div>
+      <div class="modal-footer">
+        <form id="cancelForm" method="post" action="${pageContext.request.contextPath}/customer/cancel-booking">
+          <input type="hidden" name="id" id="cancelBookingId">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+          <button type="submit" class="btn btn-danger">Yes, Cancel</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
     <script>
+        let bookingToCancel = null;
+
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
@@ -782,20 +771,40 @@
             overlay.classList.toggle('active');
         }
 
-        // Close sidebar when clicking on overlay
-        document.querySelector('.sidebar-overlay').addEventListener('click', function() {
-            toggleSidebar();
-        });
+        function showCancelModal(bookingId, roomName) {
+            bookingToCancel = bookingId;
+            document.getElementById('roomNameText').textContent = roomName;
+            document.getElementById('cancelModal').style.display = 'block';
+        }
 
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                const sidebar = document.getElementById('sidebar');
-                const overlay = document.querySelector('.sidebar-overlay');
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            }
-        });
+        function closeCancelModal() {
+            document.getElementById('cancelModal').style.display = 'none';
+            bookingToCancel = null;
+        }
+
+         function confirmCancel(bookingId, roomName) {
+    document.getElementById("cancelBookingId").value = bookingId;
+    document.getElementById("roomNameText").innerText = roomName;
+    $('#confirmCancelModal').modal('show');
+  }
+
+  // Close sidebar when clicking on overlay
+  document.querySelector('.sidebar-overlay').addEventListener('click', function() {
+    toggleSidebar();
+  });
+
+  // Auto-hide alerts after 5 seconds
+  setTimeout(function () {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function (alert) {
+      alert.style.opacity = '0';
+      setTimeout(function () {
+        alert.style.display = 'none';
+      }, 300);
+    });
+  }, 5000);
     </script>
+    
 </body>
+
 </html>
