@@ -172,12 +172,12 @@
                                         <div class="widget-post-bx">
                                             <div class="widget-post clearfix">
                                                 <div class="ttr-post-media"> 
-                                                    <img src="${pageContext.request.contextPath}/assets/images/uploads/suite.jpg" 
+                                                    <img src="${pageContext.request.contextPath}/assets/images/uploads/presidential_suite.jpg" 
                                                          width="200" height="143" alt="Featured Room"> 
                                                 </div>
                                                 <div class="ttr-post-info">
                                                     <div class="ttr-post-header">
-                                                        <h6 class="post-title"><a href="/RoomDetailServlet?id=13">Presidential Suite</a></h6>
+                                                        <h6 class="post-title"><a href="/RoomDetailServlet?id=1002">Presidential Suite</a></h6>
                                                     </div>
                                                     <div class="ttr-post-meta">
                                                         <ul>
