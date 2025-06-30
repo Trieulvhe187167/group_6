@@ -14,6 +14,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Arrays" %>
 <%@ page import="java.text.DecimalFormat" %>
+<%@ page import="java.io.File" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -991,6 +992,20 @@
         font-size: 1.1rem;
         color: #28a745;
     }
+    .room-gallery .item img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+/* Cho khung popup hơi mờ nền */
+.mfp-bg {
+  opacity: 0.8 !important;
+}
+/* Cho ảnh trong popup bo góc nhẹ */
+.mfp-img {
+  border-radius: 8px;
+}
         </style>
     </head>
     <body id="bg">
@@ -1054,11 +1069,51 @@
                             <div class="col-lg-8">
                                 <div class="booking-form">
                                     <!-- Room Gallery -->
-                                    <div class="room-gallery">
-                                        <img id="mainImage" src="${pageContext.request.contextPath}/assets/images/uploads/<%= roomTypes.getImageUrl() %>" 
-                                             alt="<%= roomTypes.getName() %>" class="main-image">
-                                       
-                                    </div>
+                                 <!-- Room Gallery Slider -->
+<div class="room-gallery owl-carousel owl-theme">
+    <%
+        // Lấy đường dẫn tuyệt đối đến thư mục chứa ảnh
+        String imgDirPath = application.getRealPath("/") 
+            + "assets/images/room-type/" + roomTypes.getName();
+        File imgDir = new File(imgDirPath);
+        // Lọc các file ảnh theo đuôi
+        File[] imageFiles = imgDir.listFiles((dir, name) -> {
+            String low = name.toLowerCase();
+            return low.endsWith(".jpg") 
+                || low.endsWith(".jpeg") 
+                || low.endsWith(".png") 
+                || low.endsWith(".webp");
+        });
+        if (imageFiles != null) {
+            // Sắp xếp tên file (nếu cần)
+            Arrays.sort(imageFiles);
+            for (File img : imageFiles) {
+    %>
+  <div class="item">
+        <a href="${pageContext.request.contextPath}/assets/images/room-type/<%= roomTypes.getName() %>/<%= img.getName() %>" class="image-popup">
+            <img 
+              src="${pageContext.request.contextPath}/assets/images/room-type/<%= roomTypes.getName() %>/<%= img.getName() %>" 
+              alt="<%= roomTypes.getName() %>" 
+              class="main-image"
+            >
+        </a>
+    </div>
+    <%
+            }
+        } else {
+    %>
+    <div class="item">
+        <img 
+          src="${pageContext.request.contextPath}/assets/images/room-type/default.jpg" 
+          alt="No image" 
+          class="main-image"
+        >
+    </div>
+    <%
+        }
+    %>
+</div>
+
 
                                     <!-- Room Info -->
                                     <div class="room-info mb-4">
@@ -2612,6 +2667,39 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 100);
 });
 </script>
+<script>
+  $(document).ready(function(){
+    // 1. Khởi tạo Owl Carousel
+    $(".room-gallery").owlCarousel({
+      items: 1,
+      loop: true,
+      nav: true,
+      dots: true,
+      autoplay: true,
+      autoplayTimeout: 5000,
+      navText: ['<i class="fa fa-chevron-left"></i>','<i class="fa fa-chevron-right"></i>']
+    });
+
+    // 2. Khởi tạo Magnific Popup cho gallery
+    $('.room-gallery').magnificPopup({
+      delegate: 'a.image-popup', // chọn các <a> chứa ảnh
+      type: 'image',
+      gallery: {
+        enabled: true, // bật navigation giữa các ảnh
+        navigateByImgClick: true,
+        preload: [0,2] // preload trước/sau 2 ảnh
+      },
+      zoom: {
+        enabled: true,
+        duration: 300, // thời gian zoom
+        opener: function(el) {
+          return el.find('img');
+        }
+      }
+    });
+  });
+</script>
+
 
     </body>
 </html>
