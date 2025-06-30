@@ -3,6 +3,10 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -700,11 +704,7 @@
                         <div class="booking-title">
                             <i class="fas fa-bed"></i> Room ${booking.roomName} - ${booking.roomTypeName}
                         </div>
-                        <div class="booking-date">
-                            <i class="fas fa-calendar"></i>
-                            <fmt:formatDate value="${booking.bookingDate}" pattern="MMM dd, yyyy" />
-                        </div>
-                    </div>
+                        
                     
                     <div class="booking-details">
                         <div class="detail-item">
@@ -727,7 +727,7 @@
                             <i class="fas fa-dollar-sign"></i>
                             <span class="detail-label">Total Paid:</span>
                             <span class="detail-value">
-                                <fmt:formatNumber value="${booking.basePrice}" type="currency" />
+                                <fmt:formatNumber value="${booking.totalAmount}" type="currency" />
                             </span>
                         </div>
                         
@@ -747,6 +747,13 @@
                             <div>${booking.note}</div>
                         </div>
                     </c:if>
+                        <div class="booking-actions">
+                        <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                        </div>
 
                     <!-- Rating Section (if booking was completed) -->
                     <c:if test="${booking.status == 'COMPLETED'}">
@@ -797,5 +804,83 @@
             }
         });
     </script>
+    <script>
+function viewBookingDetail(id) {
+  fetch('${pageContext.request.contextPath}/admin/api/booking-detail?id=' + id)
+    .then(res => res.json())
+    .then(data => {
+  console.log("📦 Booking data:", data); // debug console
+
+  document.getElementById("customerName").innerText = data.userFullName;
+  document.getElementById("customerPhone").innerText = data.customerPhone;  // ✅ sửa
+  document.getElementById("customerEmail").innerText = data.userEmail;  // ✅ sửa
+
+  document.getElementById("bookingId").innerText = "#" + data.id;
+  document.getElementById("bookingStatus").innerText = data.status;
+  document.getElementById("bookingStatus").className = "badge " +
+    (data.status === 'CONFIRMED' ? 'badge-success' : 'badge-secondary');
+
+  document.getElementById("bookingCreated").innerText = data.createdAt;
+  document.getElementById("roomNumber").innerText = data.roomNumber;
+  document.getElementById("roomType").innerText = data.roomTypeName; // ✅ sửa
+  document.getElementById("checkInDate").innerText = data.checkIn;
+  document.getElementById("checkOutDate").innerText = data.checkOut;
+  document.getElementById("nights").innerText = data.nights;
+
+  document.getElementById("totalAmount").innerText = data.totalAmount;
+  document.getElementById("paymentStatus").innerText = data.paymentStatus;
+  document.getElementById("paymentStatus").className = "badge " +
+    (data.paymentStatus === 'Paid' ? 'badge-success' : 'badge-warning');
+
+  $('#bookingDetailModal').modal('show');
+});
+}
+</script>
+
 </body>
+<div class="modal fade" id="bookingDetailModal" tabindex="-1" role="dialog" aria-labelledby="bookingDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reservation Details</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body row">
+        <!-- Customer Information -->
+        <div class="col-md-6">
+          <h6>Customer Information</h6>
+          <p><strong>Name:</strong> <span id="customerName"></span></p>
+          <p><strong>Phone:</strong> <span id="customerPhone"></span></p>
+          <p><strong>Email:</strong> <span id="customerEmail"></span></p>
+
+          <h6>Booking Information</h6>
+          <p><strong>ID:</strong> <span id="bookingId"></span></p>
+          <p><strong>Status:</strong> <span id="bookingStatus" class="badge"></span></p>
+          <p><strong>Created:</strong> <span id="bookingCreated"></span></p>
+        </div>
+
+        <!-- Room & Payment Info -->
+        <div class="col-md-6">
+          <h6>Room Information</h6>
+          <p><strong>Room:</strong> <span id="roomNumber"></span></p>
+          <p><strong>Type:</strong> <span id="roomType"></span></p>
+          <p><strong>Check-in:</strong> <span id="checkInDate"></span></p>
+          <p><strong>Check-out:</strong> <span id="checkOutDate"></span></p>
+          <p><strong>Nights:</strong> <span id="nights"></span></p>
+
+          <h6>Payment</h6>
+          <p><strong>Total:</strong> <span id="totalAmount"></span></p>
+          <p><strong>Payment Status:</strong> <span id="paymentStatus" class="badge"></span></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button class="btn btn-primary" onclick="window.print()">Print</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </html>

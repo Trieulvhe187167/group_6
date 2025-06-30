@@ -10,6 +10,19 @@ import java.sql.Date;
 import model.Reservation;
 
 public class BookingDAO {
+
+    public boolean cancelBooking(int bookingId) {
+    String sql = "UPDATE Reservations SET Status = 'CANCELLED', UpdatedAt = GETDATE() WHERE Id = ?";
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, bookingId);
+        return ps.executeUpdate() > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
     public List<Reservation> getUpcomingBookings(int userId) {
     String sql = """
         SELECT r.*, room.RoomNumber, 
