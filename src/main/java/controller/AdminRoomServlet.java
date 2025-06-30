@@ -20,9 +20,13 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import model.RoomType;
 import model.Room;
 import model.RoomTypeImage;
@@ -188,6 +192,14 @@ public class AdminRoomServlet extends HttpServlet {
             roomTypes = dao.getAllRoomTypes();
         }
 
+        // === Sau khi đã có danh sách roomTypes thì mới map hình ảnh ===
+        Map<Integer, List<RoomTypeImage>> imageMap = new HashMap<>();
+        for (RoomType rt : roomTypes) {
+            List<RoomTypeImage> images = dao.getImagesByRoomTypeId(rt.getId());
+            imageMap.put(rt.getId(), images);
+        }
+        request.setAttribute("roomTypeImagesMap", imageMap);
+
         // Calculate pagination
         int totalRecords = roomTypes.size();
         int totalPages = (int) Math.ceil(totalRecords * 1.0 / RECORDS_PER_PAGE);
@@ -216,6 +228,8 @@ public class AdminRoomServlet extends HttpServlet {
         RoomType roomType = null;
         boolean isEdit = false;
 
+        String imageFolder = null;
+
         if (roomType == null) {
             String idStr = request.getParameter("id");
             if (idStr != null) {
@@ -223,6 +237,7 @@ public class AdminRoomServlet extends HttpServlet {
                     int id = Integer.parseInt(idStr);
                     RoomTypeDAO dao = new RoomTypeDAO();
                     roomType = dao.getRoomTypesById(id);
+                    imageFolder = dao.getRoomImageFolderUrl(id);
                     isEdit = true;
                 } catch (NumberFormatException e) {
                     // Invalid ID
@@ -233,6 +248,7 @@ public class AdminRoomServlet extends HttpServlet {
         }
 
         request.setAttribute("roomType", roomType);
+        request.setAttribute("imageFolder", imageFolder);
         request.setAttribute("isEdit", isEdit);
         request.setAttribute("pageTitle", isEdit ? "Edit Room Type" : "Create Room Type");
         request.setAttribute("activePage", "rooms");
@@ -324,12 +340,15 @@ public class AdminRoomServlet extends HttpServlet {
             RoomTypeDAO dao = new RoomTypeDAO();
             RoomType roomType = dao.getRoomTypesById(id);
 
+            String imageFolder = dao.getRoomImageFolderUrl(id);
+
             if (roomType == null) {
                 request.setAttribute("error", "Room type not found");
                 listRoomTypes(request, response);
                 return;
             }
 
+            request.setAttribute("imageFolder", imageFolder);
             request.setAttribute("roomType", roomType);
             request.setAttribute("isEdit", true);
             request.setAttribute("pageTitle", "Edit Room Type");
@@ -425,24 +444,50 @@ public class AdminRoomServlet extends HttpServlet {
             int roomTypeId = dao.insert(roomType); // insert và lấy ID
 
             // === [Upload ảnh nếu có] ===
+            String[] orderValues = request.getParameterValues("displayOrders");
             Collection<Part> parts = request.getParts();
-            for (Part part : parts) {
-                if (part.getName().equals("imageFiles") && part.getSize() > 0) {
-                    String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
 
-                    // Đường dẫn upload
-                    String uploadPath = getServletContext().getRealPath("/assets/images/room-type/" + imageFolder);
-                    File uploadDir = new File(uploadPath);
-                    if (!uploadDir.exists()) {
-                        uploadDir.mkdirs();
-                    }
+// B1: Lọc các ảnh hợp lệ
+            List<Part> imageParts = parts.stream()
+                    .filter(p -> "imageFiles".equals(p.getName()) && p.getSubmittedFileName() != null && p.getSize() > 0)
+                    .collect(Collectors.toList());
 
-                    // Ghi ảnh vào thư mục
-                    part.write(uploadPath + File.separator + fileName);
-
-                    // Thêm vào DB
-                    dao.insertRoomTypeImage(roomTypeId, fileName, imageFolder);
+// B2: Sắp xếp ảnh theo tên ưu tiên
+            List<String> priority = Arrays.asList("overview", "window", "table", "bathroom", "amenities");
+            imageParts.sort((p1, p2) -> {
+                String name1 = p1.getSubmittedFileName().toLowerCase();
+                String name2 = p2.getSubmittedFileName().toLowerCase();
+                int prio1 = getPriority(name1, priority);
+                int prio2 = getPriority(name2, priority);
+                if (prio1 != prio2) {
+                    return Integer.compare(prio1, prio2);
                 }
+                return name1.compareTo(name2);
+            });
+
+// B3: Ghi ảnh và insert DB
+            int fileIndex = 0;
+            for (Part part : imageParts) {
+                String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+
+                // Đường dẫn upload
+                String uploadPath = getServletContext().getRealPath("/assets/images/room-type/" + imageFolder);
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs();
+                }
+
+                // Ghi ảnh vào thư mục
+                part.write(uploadPath + File.separator + fileName);
+
+                // Lấy thứ tự ảnh từ form hoặc theo thứ tự đã sắp
+                int displayOrder = (orderValues != null && fileIndex < orderValues.length)
+                        ? Integer.parseInt(orderValues[fileIndex])
+                        : fileIndex + 1;
+
+                // Thêm vào DB
+                dao.insertRoomTypeImage(roomTypeId, fileName, imageFolder, displayOrder);
+                fileIndex++;
             }
 
             request.getSession().setAttribute("success", "Room type created successfully");
@@ -478,7 +523,9 @@ public class AdminRoomServlet extends HttpServlet {
 
         String name = request.getParameter("name").trim();
         String originalName = request.getParameter("originalName").trim();
-        String description = request.getParameter("description").trim();
+        String bed = request.getParameter("bed") != null ? request.getParameter("bed").trim() : "";
+        String description = request.getParameter("description") != null ? request.getParameter("description").trim() : "";
+        String special = request.getParameter("special") != null ? request.getParameter("special").trim() : "";
         String basePriceStr = request.getParameter("basePrice").trim();
         String imageUrl = request.getParameter("imageUrl").trim(); // folder name (e.g., "Single")
         String capacityStr = request.getParameter("capacity").trim();
@@ -535,7 +582,7 @@ public class AdminRoomServlet extends HttpServlet {
             RoomType roomType = new RoomType();
             roomType.setId(id);
             roomType.setName(name);
-            roomType.setDescription(description);
+            roomType.setDescription(description + "," + bed + "," + special);
             roomType.setBasePrice(basePrice);
             roomType.setImageUrl(imageUrl);
             String imageFolder = request.getParameter("imageFolder").trim(); // thư mục ảnh, ví dụ: "Single
@@ -546,24 +593,50 @@ public class AdminRoomServlet extends HttpServlet {
             dao.updateRoomType(roomType);
 
             // === [Thêm ảnh nếu có upload] ===
+            String[] orderValues = request.getParameterValues("displayOrders");
             Collection<Part> parts = request.getParts();
-            for (Part part : parts) {
-                if (part.getName().equals("imageFiles") && part.getSize() > 0) {
-                    String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
 
-                    // Đường dẫn upload
-                    String uploadPath = getServletContext().getRealPath("/assets/images/room-type/" + imageFolder);
-                    File uploadDir = new File(uploadPath);
-                    if (!uploadDir.exists()) {
-                        uploadDir.mkdirs();
-                    }
+// B1: Lọc các ảnh hợp lệ
+            List<Part> imageParts = parts.stream()
+                    .filter(p -> "imageFiles".equals(p.getName()) && p.getSubmittedFileName() != null && p.getSize() > 0)
+                    .collect(Collectors.toList());
 
-                    // Ghi ảnh vào thư mục
-                    part.write(uploadPath + File.separator + fileName);
-
-                    // Thêm vào DB
-                    dao.insertRoomTypeImage(id, fileName, imageFolder);
+// B2: Sắp xếp theo tên ưu tiên
+            List<String> priority = Arrays.asList("overview", "window", "table", "bathroom", "amenities");
+            imageParts.sort((p1, p2) -> {
+                String name1 = p1.getSubmittedFileName().toLowerCase();
+                String name2 = p2.getSubmittedFileName().toLowerCase();
+                int prio1 = getPriority(name1, priority);
+                int prio2 = getPriority(name2, priority);
+                if (prio1 != prio2) {
+                    return Integer.compare(prio1, prio2);
                 }
+                return name1.compareTo(name2);
+            });
+
+// B3: Ghi ảnh theo thứ tự và insert vào DB
+            int fileIndex = 0;
+            for (Part part : imageParts) {
+                String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+
+                // Đường dẫn upload
+                String uploadPath = getServletContext().getRealPath("/assets/images/room-type/" + imageFolder);
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs();
+                }
+
+                // Ghi ảnh
+                part.write(uploadPath + File.separator + fileName);
+
+                // Xác định displayOrder
+                int displayOrder = (orderValues != null && fileIndex < orderValues.length)
+                        ? Integer.parseInt(orderValues[fileIndex])
+                        : fileIndex + 1;
+
+                // Ghi vào DB
+                dao.insertRoomTypeImage(id, fileName, imageFolder, displayOrder);
+                fileIndex++;
             }
 
             request.getSession().setAttribute("success", "Room type updated successfully");
@@ -572,6 +645,15 @@ public class AdminRoomServlet extends HttpServlet {
             request.setAttribute("error", "Error updating room type: " + e.getMessage());
             request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
         }
+    }
+
+    private int getPriority(String filename, List<String> order) {
+        for (int i = 0; i < order.size(); i++) {
+            if (filename.toLowerCase().startsWith(order.get(i))) {
+                return i;
+            }
+        }
+        return order.size(); // nếu không trùng thì cho xuống cuối
     }
 
     private String getMimeExtension(String contentType) {

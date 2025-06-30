@@ -102,391 +102,384 @@
                                     </span>
                                 </div>
                             </div>
+                        </div>
+                        <div class="col-md-8">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="30%">Room Type ID:</th>
+                                    <td>#${roomType.id}</td>
+                                </tr>
+                                <tr>
+                                    <th>Name:</th>
+                                    <td><h5 class="mb-0">${roomType.name}</h5></td>
+                                </tr>
+                                <tr>
+                                    <th>Base Price:</th>
+                                    <td>
+                                        <h4 class="text-primary mb-0">
+                                            <fmt:formatNumber value="${roomType.basePrice}" pattern="#,##0" />₫
+                                            <small class="text-muted">/night</small>
+                                        </h4>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Capacity:</th>
+                                    <td>
+                                        <span class="badge badge-info badge-lg">
+                                            <i class="fas fa-users"></i> ${roomType.capacity} guests
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        <span class="badge badge-${roomType.status == 'active' ? 'success' : 'danger'} badge-lg">
+                                            <i class="fas fa-${roomType.status == 'active' ? 'check-circle' : 'times-circle'}"></i>
+                                            ${roomType.status == 'active' ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Created Date:</th>
+                                    <td>
+                                        <fmt:formatDate value="${roomType.createdAt}" pattern="dd/MM/yyyy HH:mm:ss"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Last Updated:</th>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${roomType.updatedAt != null}">
+                                                <fmt:formatDate value="${roomType.updatedAt}" pattern="dd/MM/yyyy HH:mm:ss"/>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-muted">Never updated</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                            <div class="status-badge" style="position: absolute; top: 10px; right: 10px;">
-                                <span class="badge badge-${roomType.status == 'active' ? 'success' : 'danger'} badge-lg">
-                                    ${roomType.status == 'active' ? 'Active' : 'Inactive'}
-                                </span>
+            <!-- Description and Features Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-align-left"></i> Description & Features
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <c:set var="descriptionParts" value="${fn:split(roomType.description, ',')}" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle text-primary"></i> Description</h6>
+                            <c:choose>
+                                <c:when test="${fn:length(descriptionParts) > 0}">
+                                    <p class="text-justify">${fn:trim(descriptionParts[0])}</p>
+                                </c:when>
+                                <c:otherwise>
+                                    <p class="text-muted">No description available</p>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-bed text-primary"></i> Bed Type</h6>
+                            <c:choose>
+                                <c:when test="${fn:length(descriptionParts) > 1}">
+                                    <p><span class="badge badge-secondary">${fn:trim(descriptionParts[1])}</span></p>
+                                    </c:when>
+                                    <c:otherwise>
+                                    <p class="text-muted">Not specified</p>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+
+                    <c:if test="${fn:length(descriptionParts) > 2}">
+                        <hr>
+                        <h6><i class="fas fa-star text-primary"></i> Special Features</h6>
+                        <div class="row">
+                            <c:forEach var="feature" items="${descriptionParts}" varStatus="status">
+                                <c:if test="${status.index >= 2}">
+                                    <div class="col-md-6 mb-2">
+                                        <span class="badge badge-outline-primary">
+                                            <i class="fas fa-check"></i> ${fn:trim(feature)}
+                                        </span>
+                                    </div>
+                                </c:if>
+                            </c:forEach>
+                        </div>
+                    </c:if>
+
+                    <hr>
+                    <h6><i class="fas fa-file-alt text-primary"></i> Full Description</h6>
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-0">${roomType.description}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Room Statistics Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar"></i> Statistics & Performance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="stat-box">
+                                <h3 class="text-primary">${totalRooms}</h3>
+                                <p class="mb-0">Total Rooms</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-box">
+                                <h3 class="text-success">${availableRooms}</h3>
+                                <p class="mb-0">Available</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-box">
+                                <h3 class="text-danger">${occupiedRooms}</h3>
+                                <p class="mb-0">Occupied</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-box">
+                                <h3 class="text-warning">${maintenanceRooms + dirtyRooms}</h3>
+                                <p class="mb-0">Need Attention</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-8">
-                        <table class="table table-borderless">
-                            <tr>
-                                <th width="30%">Room Type ID:</th>
-                                <td>#${roomType.id}</td>
-                            </tr>
-                            <tr>
-                                <th>Name:</th>
-                                <td><h5 class="mb-0">${roomType.name}</h5></td>
-                            </tr>
-                            <tr>
-                                <th>Base Price:</th>
-                                <td>
-                                    <h4 class="text-primary mb-0">
-                                        <fmt:formatNumber value="${roomType.basePrice}" pattern="#,##0" />₫
-                                        <small class="text-muted">/night</small>
-                                    </h4>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Capacity:</th>
-                                <td>
-                                    <span class="badge badge-info badge-lg">
-                                        <i class="fas fa-users"></i> ${roomType.capacity} guests
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Status:</th>
-                                <td>
-                                    <span class="badge badge-${roomType.status == 'active' ? 'success' : 'danger'} badge-lg">
-                                        <i class="fas fa-${roomType.status == 'active' ? 'check-circle' : 'times-circle'}"></i>
-                                        ${roomType.status == 'active' ? 'Active' : 'Inactive'}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Created Date:</th>
-                                <td>
-                                    <fmt:formatDate value="${roomType.createdAt}" pattern="dd/MM/yyyy HH:mm:ss"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Last Updated:</th>
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${roomType.updatedAt != null}">
-                                            <fmt:formatDate value="${roomType.updatedAt}" pattern="dd/MM/yyyy HH:mm:ss"/>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="text-muted">Never updated</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Description and Features Card -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-align-left"></i> Description & Features
-                </h5>
-            </div>
-            <div class="card-body">
-                <c:set var="descriptionParts" value="${fn:split(roomType.description, ',')}" />
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-info-circle text-primary"></i> Description</h6>
-                        <c:choose>
-                            <c:when test="${fn:length(descriptionParts) > 0}">
-                                <p class="text-justify">${fn:trim(descriptionParts[0])}</p>
-                            </c:when>
-                            <c:otherwise>
-                                <p class="text-muted">No description available</p>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-bed text-primary"></i> Bed Type</h6>
-                        <c:choose>
-                            <c:when test="${fn:length(descriptionParts) > 1}">
-                                <p><span class="badge badge-secondary">${fn:trim(descriptionParts[1])}</span></p>
-                                </c:when>
-                                <c:otherwise>
-                                <p class="text-muted">Not specified</p>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
+            <!-- Rooms List Card -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-door-open"></i> Rooms of This Type
+                    </h5>
+                    <span class="badge badge-primary">${totalRooms} rooms</span>
                 </div>
-
-                <c:if test="${fn:length(descriptionParts) > 2}">
-                    <hr>
-                    <h6><i class="fas fa-star text-primary"></i> Special Features</h6>
-                    <div class="row">
-                        <c:forEach var="feature" items="${descriptionParts}" varStatus="status">
-                            <c:if test="${status.index >= 2}">
-                                <div class="col-md-6 mb-2">
-                                    <span class="badge badge-outline-primary">
-                                        <i class="fas fa-check"></i> ${fn:trim(feature)}
-                                    </span>
-                                </div>
-                            </c:if>
-                        </c:forEach>
-                    </div>
-                </c:if>
-
-                <hr>
-                <h6><i class="fas fa-file-alt text-primary"></i> Full Description</h6>
-                <div class="bg-light p-3 rounded">
-                    <p class="mb-0">${roomType.description}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Room Statistics Card -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-chart-bar"></i> Statistics & Performance
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-md-3">
-                        <div class="stat-box">
-                            <h3 class="text-primary">${totalRooms}</h3>
-                            <p class="mb-0">Total Rooms</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-box">
-                            <h3 class="text-success">${availableRooms}</h3>
-                            <p class="mb-0">Available</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-box">
-                            <h3 class="text-danger">${occupiedRooms}</h3>
-                            <p class="mb-0">Occupied</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-box">
-                            <h3 class="text-warning">${maintenanceRooms + dirtyRooms}</h3>
-                            <p class="mb-0">Need Attention</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rooms List Card -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="fas fa-door-open"></i> Rooms of This Type
-                </h5>
-                <span class="badge badge-primary">${totalRooms} rooms</span>
-            </div>
-            <div class="card-body">
-                <c:choose>
-                    <c:when test="${not empty rooms}">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Room Number</th>
-                                        <th>Status</th>
-                                        <th>Current Guest</th>
-                                        <th>Last Cleaned</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:forEach var="room" items="${rooms}">
+                <div class="card-body">
+                    <c:choose>
+                        <c:when test="${not empty rooms}">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
                                         <tr>
-                                            <td>
-                                                <strong>${room.roomNumber}</strong>
-                                            </td>
-                                            <td>
-                                                <span class="badge ${room.statusBadgeClass}">
-                                                    ${room.statusDisplayName}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <c:choose>
-                                                    <c:when test="${room.status == 'OCCUPIED'}">
-                                                        <span class="text-muted">Guest in room</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <span class="text-muted">-</span>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </td>
-                                            <td>
-                                                <span class="text-muted">
+                                            <th>Room Number</th>
+                                            <th>Status</th>
+                                            <th>Current Guest</th>
+                                            <th>Last Cleaned</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <c:forEach var="room" items="${rooms}">
+                                            <tr>
+                                                <td>
+                                                    <strong>${room.roomNumber}</strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge ${room.statusBadgeClass}">
+                                                        ${room.statusDisplayName}
+                                                    </span>
+                                                </td>
+                                                <td>
                                                     <c:choose>
-                                                        <c:when test="${room.status == 'DIRTY'}">
-                                                            Needs cleaning
-                                                        </c:when>
-                                                        <c:when test="${room.status == 'MAINTENANCE'}">
-                                                            Under maintenance
+                                                        <c:when test="${room.status == 'OCCUPIED'}">
+                                                            <span class="text-muted">Guest in room</span>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            Recently cleaned
+                                                            <span class="text-muted">-</span>
                                                         </c:otherwise>
                                                     </c:choose>
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="btn-group" role="group">
-                                                    <button class="btn btn-sm btn-outline-primary" 
-                                                            onclick="viewRoomDetails(${room.id}, '${room.roomNumber}')"
-                                                            title="View Details">
-                                                        <i class="fas fa-eye"></i>
-                                                    </button>
-                                                    <c:if test="${room.status == 'DIRTY'}">
-                                                        <button class="btn btn-sm btn-outline-warning" 
-                                                                onclick="scheduleClean(${room.id}, '${room.roomNumber}')"
-                                                                title="Schedule Cleaning">
-                                                            <i class="fas fa-broom"></i>
+                                                </td>
+                                                <td>
+                                                    <span class="text-muted">
+                                                        <c:choose>
+                                                            <c:when test="${room.status == 'DIRTY'}">
+                                                                Needs cleaning
+                                                            </c:when>
+                                                            <c:when test="${room.status == 'MAINTENANCE'}">
+                                                                Under maintenance
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                Recently cleaned
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <button class="btn btn-sm btn-outline-primary" 
+                                                                onclick="viewRoomDetails(${room.id}, '${room.roomNumber}')"
+                                                                title="View Details">
+                                                            <i class="fas fa-eye"></i>
                                                         </button>
-                                                    </c:if>
-                                                    <c:if test="${room.status == 'AVAILABLE'}">
-                                                        <button class="btn btn-sm btn-outline-success" 
-                                                                onclick="markOccupied(${room.id}, '${room.roomNumber}')"
-                                                                title="Mark as Occupied">
-                                                            <i class="fas fa-user"></i>
-                                                        </button>
-                                                    </c:if>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="text-center py-4">
-                            <i class="fas fa-door-open fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No rooms found for this room type</p>
-                            <button class="btn btn-primary" onclick="createRoom()">
-                                <i class="fas fa-plus"></i> Add First Room
-                            </button>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions Sidebar -->
-    <div class="col-md-4">
-        <!-- Quick Actions Card -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-bolt"></i> Quick Actions
-                </h5>
-            </div>
-            <div class="card-body">
-                <a href="${pageContext.request.contextPath}/admin/rooms?action=form&id=${roomType.id}" 
-                   class="btn btn-warning btn-block mb-2">
-                    <i class="fas fa-edit"></i> Edit Room Type
-                </a>
-
-                <button onclick="confirmStatusChange(${roomType.id}, '${roomType.status}', '${roomType.name}')" 
-                        class="btn btn-${roomType.status == 'active' ? 'danger' : 'success'} btn-block mb-2">
-                    <i class="fas fa-${roomType.status == 'active' ? 'ban' : 'check'}"></i> 
-                    ${roomType.status == 'active' ? 'Deactivate' : 'Activate'}
-                </button>
-
-                <a href="${pageContext.request.contextPath}/admin/rooms?action=form" 
-                   class="btn btn-success btn-block mb-2">
-                    <i class="fas fa-plus"></i> Create New Type
-                </a>
-
-                <hr>
-
-                <button class="btn btn-info btn-block mb-2">
-                    <i class="fas fa-eye"></i> View All Rooms
-                </button>
-
-                <button class="btn btn-secondary btn-block">
-                    <i class="fas fa-chart-line"></i> View Reports
-                </button>
+                                                        <c:if test="${room.status == 'DIRTY'}">
+                                                            <button class="btn btn-sm btn-outline-warning" 
+                                                                    onclick="scheduleClean(${room.id}, '${room.roomNumber}')"
+                                                                    title="Schedule Cleaning">
+                                                                <i class="fas fa-broom"></i>
+                                                            </button>
+                                                        </c:if>
+                                                        <c:if test="${room.status == 'AVAILABLE'}">
+                                                            <button class="btn btn-sm btn-outline-success" 
+                                                                    onclick="markOccupied(${room.id}, '${room.roomNumber}')"
+                                                                    title="Mark as Occupied">
+                                                                <i class="fas fa-user"></i>
+                                                            </button>
+                                                        </c:if>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="text-center py-4">
+                                <i class="fas fa-door-open fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No rooms found for this room type</p>
+                                <button class="btn btn-primary" onclick="createRoom()">
+                                    <i class="fas fa-plus"></i> Add First Room
+                                </button>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
             </div>
         </div>
 
-        <!-- Price Information Card -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-money-bill-wave"></i> Price Information
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="price-breakdown">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Base Price:</span>
-                        <strong><fmt:formatNumber value="${roomType.basePrice}" pattern="#,##0" />₫</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Weekly Rate (7 nights):</span>
-                        <strong><fmt:formatNumber value="${roomType.basePrice * 7 * 0.9}" pattern="#,##0" />₫</strong>
-                        <small class="text-success">(10% off)</small>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Monthly Rate (30 nights):</span>
-                        <strong><fmt:formatNumber value="${roomType.basePrice * 30 * 0.8}" pattern="#,##0" />₫</strong>
-                        <small class="text-success">(20% off)</small>
-                    </div>
+        <!-- Quick Actions Sidebar -->
+        <div class="col-md-4">
+            <!-- Quick Actions Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <a href="${pageContext.request.contextPath}/admin/rooms?action=form&id=${roomType.id}" 
+                       class="btn btn-warning btn-block mb-2">
+                        <i class="fas fa-edit"></i> Edit Room Type
+                    </a>
+
+                    <button onclick="confirmStatusChange(${roomType.id}, '${roomType.status}', '${roomType.name}')" 
+                            class="btn btn-${roomType.status == 'active' ? 'danger' : 'success'} btn-block mb-2">
+                        <i class="fas fa-${roomType.status == 'active' ? 'ban' : 'check'}"></i> 
+                        ${roomType.status == 'active' ? 'Deactivate' : 'Activate'}
+                    </button>
+
+                    <a href="${pageContext.request.contextPath}/admin/rooms?action=form" 
+                       class="btn btn-success btn-block mb-2">
+                        <i class="fas fa-plus"></i> Create New Type
+                    </a>
+
                     <hr>
-                    <div class="d-flex justify-content-between">
-                        <span>Price per guest:</span>
-                        <strong><fmt:formatNumber value="${roomType.basePrice / roomType.capacity}" pattern="#,##0" />₫</strong>
-                    </div>
+
+                    <button class="btn btn-info btn-block mb-2">
+                        <i class="fas fa-eye"></i> View All Rooms
+                    </button>
+
+                    <button class="btn btn-secondary btn-block">
+                        <i class="fas fa-chart-line"></i> View Reports
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Room Type Info Card -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-info"></i> Additional Information
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="info-item mb-3">
-                    <h6 class="text-muted mb-1">Created By</h6>
-                    <p class="mb-0">System Administrator</p>
+            <!-- Price Information Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-money-bill-wave"></i> Price Information
+                    </h5>
                 </div>
-
-                <div class="info-item mb-3">
-                    <h6 class="text-muted mb-1">Category</h6>
-                    <p class="mb-0">
-                        <c:choose>
-                            <c:when test="${roomType.basePrice < 500000}">
-                                <span class="badge badge-success">Economy</span>
-                            </c:when>
-                            <c:when test="${roomType.basePrice >= 500000 && roomType.basePrice < 1000000}">
-                                <span class="badge badge-warning">Standard</span>
-                            </c:when>
-                            <c:otherwise>
-                                <span class="badge badge-danger">Premium</span>
-                            </c:otherwise>
-                        </c:choose>
-                    </p>
-                </div>
-
-                <div class="info-item mb-3">
-                    <h6 class="text-muted mb-1">Occupancy Rate</h6>
-                    <div class="progress" style="height: 20px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 75%">
-                            75%
+                <div class="card-body">
+                    <div class="price-breakdown">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Base Price:</span>
+                            <strong><fmt:formatNumber value="${roomType.basePrice}" pattern="#,##0" />₫</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Weekly Rate (7 nights):</span>
+                            <strong><fmt:formatNumber value="${roomType.basePrice * 7 * 0.9}" pattern="#,##0" />₫</strong>
+                            <small class="text-success">(10% off)</small>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Monthly Rate (30 nights):</span>
+                            <strong><fmt:formatNumber value="${roomType.basePrice * 30 * 0.8}" pattern="#,##0" />₫</strong>
+                            <small class="text-success">(20% off)</small>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span>Price per guest:</span>
+                            <strong><fmt:formatNumber value="${roomType.basePrice / roomType.capacity}" pattern="#,##0" />₫</strong>
                         </div>
                     </div>
-                    <small class="text-muted">Average occupancy this month</small>
                 </div>
+            </div>
 
-                <div class="info-item">
-                    <h6 class="text-muted mb-1">Last Booking</h6>
-                    <p class="mb-0">2 days ago</p>
+            <!-- Room Type Info Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info"></i> Additional Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item mb-3">
+                        <h6 class="text-muted mb-1">Created By</h6>
+                        <p class="mb-0">System Administrator</p>
+                    </div>
+
+                    <div class="info-item mb-3">
+                        <h6 class="text-muted mb-1">Category</h6>
+                        <p class="mb-0">
+                            <c:choose>
+                                <c:when test="${roomType.basePrice < 500000}">
+                                    <span class="badge badge-success">Economy</span>
+                                </c:when>
+                                <c:when test="${roomType.basePrice >= 500000 && roomType.basePrice < 1000000}">
+                                    <span class="badge badge-warning">Standard</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge badge-danger">Premium</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </p>
+                    </div>
+
+                    <div class="info-item mb-3">
+                        <h6 class="text-muted mb-1">Occupancy Rate</h6>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 75%">
+                                75%
+                            </div>
+                        </div>
+                        <small class="text-muted">Average occupancy this month</small>
+                    </div>
+
+                    <div class="info-item">
+                        <h6 class="text-muted mb-1">Last Booking</h6>
+                        <p class="mb-0">2 days ago</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 </div>
 
 <!-- Status Change Confirmation Modal -->

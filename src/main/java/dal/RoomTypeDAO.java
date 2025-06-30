@@ -526,7 +526,7 @@ public class RoomTypeDAO {
         return images;
     }
 
-    public boolean insertRoomTypeImage(int roomTypeId, String fileName, String roomTypeName) {
+    public boolean insertRoomTypeImage(int roomTypeId, String fileName, String roomTypeName, int displayOrder) {
         String sql = "INSERT INTO RoomTypeImages (RoomTypeId, ImageUrl, ImageType, DisplayOrder, CreatedAt) "
                 + "VALUES (?, ?, ?, ?, GETDATE())";
         try (Connection con = DBContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -534,7 +534,7 @@ public class RoomTypeDAO {
             ps.setInt(1, roomTypeId);
             ps.setString(2, fileName); // imageUrl
             ps.setString(3, roomTypeName); // imageType
-            ps.setInt(4, getNextDisplayOrder(roomTypeId));
+            ps.setInt(4, displayOrder);
 
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
