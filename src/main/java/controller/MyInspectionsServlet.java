@@ -40,7 +40,7 @@ public class MyInspectionsServlet extends HttpServlet {
             request.setAttribute("myInspections", myInspections);
             request.setAttribute("currentUser", user);
             request.setAttribute("pageTitle", "My Inspections");
-            request.setAttribute("activePage", "my-inspections");
+            request.setAttribute("activePage", "myInspections");
             request.setAttribute("contentPage", "/jsp/inspector/my-inspections.jsp");
             request.getRequestDispatcher("/jsp/inspector/inspector-template.jsp").forward(request, response);
         } catch (Exception e) {
