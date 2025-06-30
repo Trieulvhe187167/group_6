@@ -11,8 +11,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import model.Room;
 import model.RoomType;
+import model.RoomTypeImage;
 
 /**
  *
@@ -219,7 +221,7 @@ public class RoomTypeDAO {
     }
 
     // Thêm RoomType mới
-    public void insert(RoomType roomType) throws SQLException {
+    public int insert(RoomType roomType) throws SQLException {
         String sql = "INSERT INTO RoomTypes (name, description, basePrice, imageUrl, capacity, status, createdAt, updatedAt) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -233,10 +235,18 @@ public class RoomTypeDAO {
             ps.setObject(7, roomType.getCreatedAt());
             ps.setObject(8, roomType.getUpdatedAt());
             ps.executeUpdate();
+
+            // Lấy RoomTypeId vừa insert
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         } catch (Exception e) {
-            System.err.println("Lỗi khi insert RoomType: " + e.getMessage());
+            System.err.println("Error insert RoomType: " + e.getMessage());
             throw e;
         }
+        return -1;
     }
 
     // Cập nhật status của RoomType
@@ -422,15 +432,12 @@ public class RoomTypeDAO {
         return false;
     }
 
-
     public List<RoomType> getAllActiveRoomTypes() {
         List<RoomType> roomTypes = new ArrayList<>();
         String sql = "SELECT * FROM RoomTypes WHERE Status = 'ACTIVE' ORDER BY Name";
-        
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 RoomType roomType = new RoomType();
                 roomType.setId(rs.getInt("Id"));
@@ -441,11 +448,113 @@ public class RoomTypeDAO {
                 roomType.setStatus(rs.getString("Status"));
                 roomTypes.add(roomType);
             }
-            
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
+
         return roomTypes;
     }
+
+    public String getRoomImageFolderUrl(int roomTypeId) {
+        String folderName = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        // Câu lệnh SQL đúng: Lấy tên thư mục ảnh (ImageType)
+        String sql = "SELECT TOP 1 ImageType FROM RoomTypeImages WHERE RoomTypeId = ?";
+
+        try {
+            conn = DBContext.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, roomTypeId);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                folderName = rs.getString("ImageType");
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error while fetching room image folder name: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return folderName;
+    }
+
+    public List<RoomTypeImage> getImagesByRoomTypeId(int roomTypeId) {
+        List<RoomTypeImage> images = new ArrayList<>();
+
+        String sql = "SELECT Id, RoomTypeId, ImageUrl, ImageType, DisplayOrder, CreatedAt "
+                + "FROM RoomTypeImages WHERE RoomTypeId = ? ORDER BY DisplayOrder ASC, CreatedAt ASC";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, roomTypeId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                RoomTypeImage img = new RoomTypeImage();
+                img.setId(rs.getInt("Id"));
+                img.setRoomTypeId(rs.getInt("RoomTypeId"));
+                img.setImageUrl(rs.getString("ImageUrl"));
+                img.setImageType(rs.getString("ImageType"));
+                img.setDisplayOrder(rs.getInt("DisplayOrder"));
+                img.setCreatedAt(rs.getTimestamp("CreatedAt"));
+
+                images.add(img);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return images;
+    }
+
+    public boolean insertRoomTypeImage(int roomTypeId, String fileName, String roomTypeName, int displayOrder) {
+        String sql = "INSERT INTO RoomTypeImages (RoomTypeId, ImageUrl, ImageType, DisplayOrder, CreatedAt) "
+                + "VALUES (?, ?, ?, ?, GETDATE())";
+        try (Connection con = DBContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, roomTypeId);
+            ps.setString(2, fileName); // imageUrl
+            ps.setString(3, roomTypeName); // imageType
+            ps.setInt(4, displayOrder);
+
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public int getNextDisplayOrder(int roomTypeId) {
+        String sql = "SELECT ISNULL(MAX(DisplayOrder), 0) + 1 FROM RoomTypeImages WHERE RoomTypeId = ?";
+        try (Connection con = DBContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, roomTypeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 1;
+    }
+
 }
