@@ -4,14 +4,6 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <div class="container-fluid">
-    <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2>Check-In Management</h2>
-            <p class="text-muted">Process guest check-ins quickly and efficiently</p>
-        </div>
-    </div>
-
     <!-- Calendar View -->
     <div id="calendarView" class="card mb-4">
         <div class="card-header bg-info text-white">
@@ -19,6 +11,20 @@
                 <h5 class="mb-0">
                     <i class="fas fa-calendar-alt mr-2"></i> Reservation Calendar
                 </h5>
+                                    <div class="d-flex align-items-center">
+                        <div class="mr-3 d-flex align-items-center">
+                            <div style="width: 15px; height: 15px; background-color: #17a2b8; margin-right: 5px;"></div>
+                            <span class="small">Booking</span>
+                        </div>
+                        <div class="mr-3 d-flex align-items-center">
+                            <div style="width: 15px; height: 15px; background-color: #dc3545; margin-right: 5px;"></div>
+                            <span class="small">Đang sử dụng</span>
+                        </div>
+                        <div class="mr-4 d-flex align-items-center">
+                            <div style="width: 15px; height: 15px; background-color: #28a745; margin-right: 5px;"></div>
+                            <span class="small">Free</span>
+                        </div>
+                    </div>
                 <div class="btn-group">
                     <a href="?weekOffset=${prevWeekOffset}" class="btn btn-sm btn-light">
                         <i class="fas fa-chevron-left"></i>
@@ -86,7 +92,7 @@
                                     <td class="align-middle">
                                         <div class="font-weight-bold text-center">${room.roomNumber}</div>
                                         <div class="text-center mt-1">
-                                            <span class="badge badge-${room.status == 'AVAILABLE' ? 'success' : (room.status == 'OCCUPIED' ? 'info' : (room.status == 'MAINTENANCE' ? 'danger' : 'warning'))}">${room.status}</span>
+                                            <span class="badge badge-${room.status == 'AVAILABLE' ? 'success' : (room.status == 'OCCUPIED' ? 'info' : (room.status == 'MAINTENANCE' ? 'danger' : 'warning'))}" style="width: 100%; padding: 8px 0; font-size: 14px;">${room.status}</span>
                                         </div>
                                     </td>
                                     <c:forEach var="date" items="${calendarDates}" varStatus="dateStatus">
@@ -103,32 +109,61 @@
                                                         <div data-reservation-id="${res.id}" 
                                                              class="reservation-bar reservation-${reservationClass}" 
                                                              style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-                                                                    background-color: #007bff; opacity: 0.8; 
-                                                                    border-top-left-radius: 4px; border-bottom-left-radius: 4px; 
                                                                     overflow: hidden; cursor: pointer; z-index: 1;">
-                                                            <div class="reservation-info p-1 text-white small">
-                                                                <i class="fas fa-sign-in-alt"></i> ${res.customerName}
-                                                            </div>
+                                                            <c:choose>
+                                                                <c:when test="${room.status == 'OCCUPIED'}">
+                                                                    <div class="reservation-info-occupied">
+                                                                        <fmt:formatNumber value="${res.getCheckInHour()}" pattern="0" var="checkInHour" />
+                                                                        ${checkInHour}h-24h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <div class="reservation-info">
+                                                                        <fmt:formatNumber value="${res.getCheckInHour()}" pattern="0" var="checkInHour" />
+                                                                        ${checkInHour}h-24h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </div>
                                                     </c:if>
                                                     <c:if test="${!isCheckIn && !isCheckOut}">
                                                         <div data-reservation-id="${res.id}" 
                                                              class="reservation-bar reservation-${reservationClass}" 
-                                                             style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-                                                                    background-color: #007bff; opacity: 0.6; 
+                                                             style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;  
                                                                     overflow: hidden; cursor: pointer; z-index: 1;">
+                                                            <c:choose>
+                                                                <c:when test="${room.status == 'OCCUPIED'}">
+                                                                    <div class="reservation-info-occupied">
+                                                                        00h-24h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <div class="reservation-info">
+                                                                        00h-24h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </div>
                                                     </c:if>
                                                     <c:if test="${isCheckOut}">
                                                         <div data-reservation-id="${res.id}" 
                                                              class="reservation-bar reservation-${reservationClass}" 
                                                              style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-                                                                    background-color: #007bff; opacity: 0.8; 
-                                                                    border-top-right-radius: 4px; border-bottom-right-radius: 4px; 
                                                                     overflow: hidden; cursor: pointer; z-index: 1;">
-                                                            <div class="reservation-info p-1 text-white small">
-                                                                <i class="fas fa-sign-out-alt"></i>
-                                                            </div>
+                                                            <c:choose>
+                                                                <c:when test="${room.status == 'OCCUPIED'}">
+                                                                    <div class="reservation-info-occupied">
+                                                                        <fmt:formatNumber value="${res.getCheckOutHour()}" pattern="0" var="checkOutHour" />
+                                                                        00h-${checkOutHour}h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <div class="reservation-info">
+                                                                        <fmt:formatNumber value="${res.getCheckOutHour()}" pattern="0" var="checkOutHour" />
+                                                                        00h-${checkOutHour}h:${res.customerName.split(" ")[0]}
+                                                                    </div>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </div>
                                                     </c:if>
                                                 </c:if>
@@ -375,10 +410,24 @@
     }
     .reservation-bar {
         transition: all 0.2s;
+        background-color: transparent !important; /* Changed from colored background to transparent */
     }
     .reservation-bar:hover {
         opacity: 1 !important;
         z-index: 10 !important;
+    }
+    .reservation-info {
+        font-size: 12px !important;
+        font-weight: bold;
+        padding: 4px !important;
+        color: #17a2b8 !important; /* Text color instead of background color */
+    }
+    /* Màu cho phòng đang sử dụng */
+    .reservation-info-occupied {
+        font-size: 12px !important;
+        font-weight: bold;
+        padding: 4px !important;
+        color: #dc3545 !important; /* Màu đỏ cho phòng đang sử dụng */
     }
     .bg-warning-light {
         background-color: rgba(255, 193, 7, 0.2);

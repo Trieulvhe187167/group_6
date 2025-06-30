@@ -134,11 +134,25 @@ public class CheckInServlet extends HttpServlet {
             
             request.setAttribute("rooms", rooms);
             
-            // Get calendar reservations for the date range
+            // Get calendar reservations for the date range - look for any overlapping reservations
             Date startDate = Date.valueOf(startOfWeek);
             Date endDate = Date.valueOf(startOfWeek.plusDays(6));
+            
+            // Get reservations that overlap with the calendar date range
             List<ReservationSummary> calendarReservations = 
                 reservationDAO.getReservationsByDateRange(startDate, endDate);
+                
+            // Also check if rooms are currently marked as occupied in the Room table
+            for (Room room : rooms) {
+                if ("OCCUPIED".equals(room.getStatus())) {
+                    // Get the current active reservation for this room if it exists
+                    ReservationSummary currentRes = reservationDAO.getCurrentRoomReservationSummary(room.getId());
+                    if (currentRes != null && !calendarReservations.contains(currentRes)) {
+                        calendarReservations.add(currentRes);
+                    }
+                }
+            }
+            
             request.setAttribute("calendarReservations", calendarReservations);
             
         } catch (Exception e) {
