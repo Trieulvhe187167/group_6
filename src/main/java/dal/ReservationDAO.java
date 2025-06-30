@@ -95,32 +95,55 @@ public class ReservationDAO {
     // Get reservations by date range
     public List<ReservationSummary> getReservationsByDateRange(Date startDate, Date endDate) {
         List<ReservationSummary> reservations = new ArrayList<>();
-        String sql = "SELECT r.Id, u.FullName as CustomerName, " +
-                    "rm.RoomNumber, r.CheckIn, r.CheckOut, r.Status, " +
-                    "r.TotalAmount, r.CreatedAt " +
+        String sql = "SELECT r.Id, u.FullName as CustomerName, r.UserId, u.Phone as CustomerPhone, u.Email as CustomerEmail, " +
+                    "r.RoomId, rm.RoomNumber, r.CheckIn, r.CheckOut, r.Status, " +
+                    "r.TotalAmount, r.CreatedAt, r.SpecialRequests, r.NumberOfCustomers " +
                     "FROM Reservations r " +
                     "INNER JOIN Users u ON r.UserId = u.Id " +
                     "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
-                    "WHERE r.CheckIn >= ? AND r.CheckOut <= ? " +
+                    "WHERE (r.CheckIn <= ? AND r.CheckOut >= ?) " + 
+                    "AND r.Status IN ('CONFIRMED', 'PENDING') " +
                     "ORDER BY r.CheckIn";
         
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
-            ps.setDate(1, startDate);
-            ps.setDate(2, endDate);
+            ps.setDate(1, endDate);    // End date is less than or equal to check-in
+            ps.setDate(2, startDate);  // Start date is greater than or equal to check-out
             ResultSet rs = ps.executeQuery();
             
             while (rs.next()) {
                 ReservationSummary res = new ReservationSummary();
                 res.setId(rs.getInt("Id"));
                 res.setCustomerName(rs.getString("CustomerName"));
+                res.setCustomerPhone(rs.getString("CustomerPhone"));
+                res.setCustomerEmail(rs.getString("CustomerEmail"));
+                res.setRoomId(rs.getInt("RoomId"));
                 res.setRoomNumber(rs.getString("RoomNumber"));
                 res.setCheckIn(rs.getDate("CheckIn"));
                 res.setCheckOut(rs.getDate("CheckOut"));
+                
+                // Create timestamps from date for check-in and check-out times
+                // Default check-in time to 14:00 (2 PM)
+                Timestamp checkInTs = new Timestamp(rs.getDate("CheckIn").getTime());
+                checkInTs.setHours(14);
+                checkInTs.setMinutes(0);
+                checkInTs.setSeconds(0);
+                res.setCheckInTime(checkInTs);
+                
+                // Default check-out time to 12:00 (noon)
+                Timestamp checkOutTs = new Timestamp(rs.getDate("CheckOut").getTime());
+                checkOutTs.setHours(12);
+                checkOutTs.setMinutes(0);
+                checkOutTs.setSeconds(0);
+                res.setCheckOutTime(checkOutTs);
+                
                 res.setStatus(rs.getString("Status"));
                 res.setTotalAmount(rs.getDouble("TotalAmount"));
                 res.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                res.setSpecialRequests(rs.getString("SpecialRequests"));
+                res.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
+                
                 reservations.add(res);
             }
         } catch (SQLException e) {
@@ -1137,5 +1160,63 @@ public class ReservationDAO {
     }
     return false;
 }
+
+    // Get current reservation for a room (used for occupied rooms)
+    public ReservationSummary getCurrentRoomReservationSummary(int roomId) {
+        String sql = "SELECT r.Id, u.FullName as CustomerName, r.UserId, u.Phone as CustomerPhone, u.Email as CustomerEmail, " +
+                    "r.RoomId, rm.RoomNumber, r.CheckIn, r.CheckOut, r.Status, " +
+                    "r.TotalAmount, r.CreatedAt, r.SpecialRequests, r.NumberOfCustomers " +
+                    "FROM Reservations r " +
+                    "INNER JOIN Users u ON r.UserId = u.Id " +
+                    "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
+                    "WHERE r.RoomId = ? " +
+                    "AND r.Status = 'CONFIRMED' " +
+                    "AND r.CheckIn <= CAST(GETDATE() AS DATE) " +
+                    "AND r.CheckOut >= CAST(GETDATE() AS DATE)";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, roomId);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                ReservationSummary res = new ReservationSummary();
+                res.setId(rs.getInt("Id"));
+                res.setCustomerName(rs.getString("CustomerName"));
+                res.setCustomerPhone(rs.getString("CustomerPhone"));
+                res.setCustomerEmail(rs.getString("CustomerEmail"));
+                res.setRoomId(rs.getInt("RoomId"));
+                res.setRoomNumber(rs.getString("RoomNumber"));
+                res.setCheckIn(rs.getDate("CheckIn"));
+                res.setCheckOut(rs.getDate("CheckOut"));
+                
+                // Create timestamps from date for check-in and check-out times
+                // For current occupancies, set check-in to 00:00 and check-out to 24:00
+                Timestamp checkInTs = new Timestamp(rs.getDate("CheckIn").getTime());
+                checkInTs.setHours(0);
+                checkInTs.setMinutes(0);
+                checkInTs.setSeconds(0);
+                res.setCheckInTime(checkInTs);
+                
+                Timestamp checkOutTs = new Timestamp(rs.getDate("CheckOut").getTime());
+                checkOutTs.setHours(23);
+                checkOutTs.setMinutes(59);
+                checkOutTs.setSeconds(59);
+                res.setCheckOutTime(checkOutTs);
+                
+                res.setStatus(rs.getString("Status"));
+                res.setTotalAmount(rs.getDouble("TotalAmount"));
+                res.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                res.setSpecialRequests(rs.getString("SpecialRequests"));
+                res.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
+                
+                return res;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
 
