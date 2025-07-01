@@ -8,12 +8,15 @@ public class DBContext {
     // Cách 1: tắt SSL
 
 
-     private static final String URL = "jdbc:sqlserver://LAPTOP-SVEKADBK\\HIEUHE187201:1433;"
-             + "databaseName=HotelManagement_newsql;encrypt=false;";
+
+    private static final String URL = "jdbc:sqlserver://LAPTOP-Q4D6UCM6\\MSSQLSERVER01:1433;"
+             + "databaseName=HotelManagement_3;encrypt=false;";
+
+
 
   
     private static final String USER = "sa";
-    private static final String PASSWORD = "qq123123";
+    private static final String PASSWORD = "123";
 
     public static Connection getConnection() throws SQLException {
         try {

@@ -127,7 +127,7 @@
                                 <th>Username</th>
                                 <th>Role</th>
                                 <th>Status</th>
-                                <th>Joined Date</th>
+                              
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -174,9 +174,7 @@
                                             ${member.statusDisplayName}
                                         </span>
                                     </td>
-                                    <td>
-                                        <fmt:formatDate value="${member.createdAt}" pattern="dd/MM/yyyy"/>
-                                    </td>
+                                    
                                     <td>
                                         <c:if test="${!isTrashView}">
                                             <div class="btn-group" role="group">
