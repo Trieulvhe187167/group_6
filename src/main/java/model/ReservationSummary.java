@@ -237,4 +237,7 @@ public class ReservationSummary {
         return checkedIn && !checkedOut && 
                (inspectionStatus == null || "PENDING".equals(inspectionStatus));
     }
+        public boolean getIsLate() {
+        return isLate();
+    }
 }

@@ -87,7 +87,7 @@
             </a>
         </div>
         <div class="col-lg-3 col-md-6">
-            <a href="${pageContext.request.contextPath}/receptionist/room-status" class="quick-action-card">
+            <a href="${pageContext.request.contextPath}/receptionist/amenities" class="quick-action-card">
                 <div class="quick-action-icon text-info">
                     <i class="fas fa-th"></i>
                 </div>
