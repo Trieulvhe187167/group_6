@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <div class="container-fluid">
     <!-- Breadcrumb -->
@@ -129,8 +130,10 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>#</th>
+                                        <th>Thumbnail</th>
                                         <th>Room Type Name</th>
                                         <th>Capacity</th>
+                                        <th>Bed Type</th>
                                         <th>Price</th>
                                         <th>Status</th>
                                         <th>Created / Updated</th>
@@ -140,10 +143,31 @@
                                 <tbody>
                                     <c:forEach var="roomType" items="${roomTypes}" varStatus="status">
                                         <c:if test="${status.index >= startIndex && status.index < endIndex}">
+                                            <c:set var="descParts" value="${fn:split(roomType.description, ',')}" />
+                                            <c:set var="roomTypeId" value="${roomType.id}" />
+                                            <c:set var="images" value="${roomTypeImagesMap[roomTypeId]}" />
+                                            <c:set var="imageFolder" value="${images[0].imageType}" />
+                                            <c:set var="thumbnail" value="${images[0].imageUrl}" />
                                             <tr>
                                                 <td>${status.index + 1}</td>
+                                                <td>
+                                                    <c:if test="${not empty images}">
+                                                        <img src="${pageContext.request.contextPath}/assets/images/room-type/${imageFolder}/${thumbnail}"
+                                                             alt="Thumbnail"
+                                                             class="img-thumbnail"
+                                                             style="width: 100px; height: 70px; object-fit: cover;" />
+                                                    </c:if>
+                                                    <c:if test="${empty images}">
+                                                        <span class="text-muted">No image</span>
+                                                    </c:if>
+                                                </td>
                                                 <td>${roomType.name}</td>
                                                 <td>${roomType.capacity} guests</td>
+                                                <td>
+                                                    <c:if test="${fn:length(descParts) > 1}">
+                                                        ${fn:trim(descParts[1])}
+                                                    </c:if>
+                                                </td>
                                                 <td>
                                                     <fmt:formatNumber value="${roomType.basePrice}" pattern="#,##0" />₫/night
                                                 </td>

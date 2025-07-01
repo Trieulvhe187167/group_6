@@ -69,75 +69,33 @@
                         <div class="col-md-4">
                             <div class="room-image-container" style="position: relative;">
                                 <!--images-->
-                                <%
-                                    RoomType roomType = (RoomType) request.getAttribute("roomType");
-                                    String folderPath = application.getRealPath("/") + "assets/images/room-type/" + roomType.getName();
-                                    File imageFolder = new File(folderPath);
-                                    File[] imageFiles = imageFolder.exists() ? imageFolder.listFiles() : new File[0];
-                                    
-                                    List<File> fileList = Arrays.asList(imageFiles);
-
-                                    // Danh sách thứ tự ưu tiên theo từ khóa
-                                    List<String> priority = Arrays.asList("overview", "livingroom", "window", "bed", "bathroom", "table");
-
-                                    // Sắp xếp ảnh theo thứ tự ưu tiên
-                                    fileList.sort((f1, f2) -> {
-                                        String name1 = f1.getName().toLowerCase();
-                                        String name2 = f2.getName().toLowerCase();
-
-                                        int index1 = priority.size(); // mặc định là cuối
-                                        int index2 = priority.size();
-
-                                        for (int i = 0; i < priority.size(); i++) {
-                                            if (name1.contains(priority.get(i))) index1 = i;
-                                            if (name2.contains(priority.get(i))) index2 = i;
-                                        }
-
-                                        // Nếu cả hai đều không nằm trong danh sách -> sắp tên bình thường
-                                        if (index1 == index2) return name1.compareTo(name2);
-
-                                        return Integer.compare(index1, index2);
-                                    });
-                                %>
-
                                 <div id="roomTypeCarousel" class="carousel slide" data-ride="carousel" style="width: 100%; height: 200px; position: relative;">
                                     <div class="carousel-inner" style="height: 100%;">
-                                        <%
-                                            for (int i = 0; i < imageFiles.length; i++) {
-                                                String imageName = imageFiles[i].getName();
-                                                String active = (i == 0) ? "active" : "";
-                                        %>
-                                        <div class="carousel-item <%= active %>" style="height: 100%;">
-                                            <!-- Link Lightbox -->
-                                            <a href="${pageContext.request.contextPath}/assets/images/room-type/<%= roomType.getName() %>/<%= imageName %>"
-                                               data-lightbox="room-gallery"
-                                               data-title="<%= imageName.replace(".jpg", "").replace("-", " ") %>">
-                                                <img src="${pageContext.request.contextPath}/assets/images/room-type/<%= roomType.getName() %>/<%= imageName %>"
-                                                     class="d-block w-100 rounded shadow"
-                                                     alt="RoomType Image"
-                                                     style="height: 100%; object-fit: cover;" />
-                                            </a>
-
-                                        </div>
-                                        <%
-                                            }
-                                        %>
+                                        <c:forEach var="img" items="${roomTypeImages}" varStatus="loop">
+                                            <div class="carousel-item ${loop.index == 0 ? 'active' : ''}" style="height: 100%;">
+                                                <a href="${pageContext.request.contextPath}/assets/images/room-type/${imageFolder}/${img.imageUrl}"
+                                                   data-lightbox="room-gallery"
+                                                   data-title="${img.imageUrl.replace('.jpg', '').replace('-', ' ')}">
+                                                    <img src="${pageContext.request.contextPath}/assets/images/room-type/${imageFolder}/${img.imageUrl}"
+                                                         class="d-block w-100 rounded shadow"
+                                                         alt="RoomType Image"
+                                                         style="height: 100%; object-fit: cover;" />
+                                                </a>
+                                            </div>
+                                        </c:forEach>
                                     </div>
+
+                                    <!-- Điều khiển carousel -->
                                     <a class="carousel-control-prev" href="#roomTypeCarousel" role="button" data-slide="prev">
                                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                     </a>
                                     <a class="carousel-control-next" href="#roomTypeCarousel" role="button" data-slide="next">
                                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                                     </a>
-
-                                    <!-- Status badge -->
-                                    <div class="status-badge" style="position: absolute; top: 10px; right: 10px;">
-                                        <span class="badge badge-${roomType.status == 'active' ? 'success' : 'danger'} badge-lg">
-                                            ${roomType.status == 'active' ? 'Active' : 'Inactive'}
-                                        </span>
-                                    </div>
                                 </div>
 
+
+                                <!-- Status badge -->
                                 <div class="status-badge" style="position: absolute; top: 10px; right: 10px;">
                                     <span class="badge badge-${roomType.status == 'active' ? 'success' : 'danger'} badge-lg">
                                         ${roomType.status == 'active' ? 'Active' : 'Inactive'}

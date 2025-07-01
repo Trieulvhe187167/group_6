@@ -13,6 +13,7 @@ public class DBContext {
              + "databaseName=HotelManagement_3;encrypt=false;";
 
 
+
   
     private static final String USER = "sa";
     private static final String PASSWORD = "123";

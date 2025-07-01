@@ -228,7 +228,7 @@
                                                     String[] features = description.split(",");
                                                     String bedType = features.length > 1 ? features[1].trim() : "Standard Bed";
                                         %>
-                                        <div class="col-md-6 col-lg-4 col-sm-6 m-b30">
+                                        <div class="col-md-6 col-lg-4 col-sm-6 m-b30" style="margin-bottom: 30px;">
                                             <div class="cours-bx">
                                                 <div class="action-box">
                                                     <img src="${pageContext.request.contextPath}/assets/images/uploads/<%= type.getImageUrl() %>" 

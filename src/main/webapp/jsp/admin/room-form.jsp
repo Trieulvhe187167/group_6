@@ -2,6 +2,10 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
+
+<%@ page import="model.RoomType" %>
+
+
 <style>
     .form-container {
         max-width: 900px;
@@ -178,7 +182,7 @@
                     </div>
                 </c:if>
 
-                <form method="post" action="${pageContext.request.contextPath}/admin/rooms" id="roomTypeForm">
+                <form method="post" action="${pageContext.request.contextPath}/admin/rooms" id="roomTypeForm" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="${isEdit ? 'update' : 'create'}">
                     <c:if test="${isEdit}">
                         <input type="hidden" name="id" value="${roomType.id}">
@@ -193,7 +197,7 @@
                             <input name="name" type="text" required 
                                    class="form-control" id="name"
                                    placeholder="Enter room type name"
-                                   maxlength="50"
+                                   maxlength="31"
                                    value="${roomType != null ? roomType.name : ''}">
                             <small class="form-text text-muted">
                                 Name must be between 1 and 30 characters.
@@ -206,10 +210,12 @@
                             <!-- Base Price -->
                             <div class="form-group col-md-6">
                                 <label for="basePrice">Base Price (₫/night) <span class="text-danger">*</span></label>
-                                <input name="basePrice" type="number" required 
+                                <input name="basePrice" type="text" required 
                                        class="form-control" id="basePrice"
                                        placeholder="Enter base price"
                                        min="0" max="100000000" step="1000"
+                                       maxlength="9"
+                                       onkeypress="return (event.charCode >= 48 && event.charCode <= 57)"
                                        value="${roomType != null ? roomType.basePrice : ''}">
                                 <small class="form-text text-muted">
                                     Must be between 0 and 100,000,000 VND.
@@ -223,6 +229,7 @@
                                        class="form-control" id="capacity"
                                        placeholder="Enter max capacity"
                                        min="1" max="10"
+                                       maxlength="2"
                                        value="${roomType != null ? roomType.capacity : ''}">
                                 <small class="form-text text-muted">
                                     Must be between 1 and 10 guests.
@@ -243,7 +250,7 @@
 
                     <!-- Room Details -->
                     <div class="form-section">
-                        <h3><i class="fas fa-bed"></i> Room Details</h3>
+                        <h3><i class="fas fa-image"></i> Upload Room Type Images</h3>
 
                         <div class="form-group">
                             <label for="imageUrl">Image URL <span class="text-danger">*</span></label>
@@ -254,16 +261,57 @@
                             <small class="text-muted">Image should be placed in /assets/images/uploads/ folder</small>
                         </div>
 
+                        <!-- Tên thư mục chứa ảnh (imageType) -->
+                        <div class="form-group">
+                            <label for="imageFolder">Image Folder Name <span class="text-danger">*</span></label>
+                            <input name="imageFolder" type="text" required 
+                                   class="form-control" id="imageFolder"
+                                   placeholder="Enter folder name (e.g., Single)"
+                                   value="${imageFolder != null ? imageFolder : ''}">
+                            <small class="text-muted">All uploaded images will be stored in /assets/images/room-type/[folder]</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Upload Gallery Images</label>
+                            <input type="file" name="imageFiles" multiple class="form-control" id="imageFilesInput" />
+                            <small class="text-muted">You can select multiple images for this room type gallery.</small>
+
+                            <!-- Vùng hiển thị preview ảnh -->
+<!--                            <div id="previewContainer" class="d-flex flex-wrap mt-2"></div>-->
+                        </div>
+
+
+
+                        <h3><i class="fas fa-bed"></i> Room Details</h3>
+
+                        <%
+                            RoomType roomType = (RoomType) request.getAttribute("roomType");
+                            String description = (roomType != null && roomType.getDescription() != null) ? roomType.getDescription() : "";
+                            String[] parts = description.split(",");
+                            
+                            String bed = (parts.length >= 2 && parts[1] != null) ? parts[1].trim() : "";
+                            
+                            StringBuilder specialBuilder = new StringBuilder();
+                            for (int i = 2; i < parts.length; i++) {
+                                if (parts[i] != null && !parts[i].trim().isEmpty()) {
+                                    if (specialBuilder.length() > 0) specialBuilder.append(", ");
+                                    specialBuilder.append(parts[i].trim());
+                                }
+                            }
+                            String special = specialBuilder.toString();
+                        %>
+
+
                         <div class="form-group">
                             <label for="bed">Bed Type <span class="text-danger">*</span></label>
                             <select name="bed" class="form-control" id="bed" required>
                                 <option value="">Select bed type</option>
-                                <option value="Single Bed">Single Bed</option>
-                                <option value="Double Bed">Double Bed</option>
-                                <option value="Queen Bed">Queen Bed</option>
-                                <option value="King Bed">King Bed</option>
-                                <option value="Twin Beds">Twin Beds</option>
-                                <option value="Bunk Bed">Bunk Bed</option>
+                                <option value="Single Bed" <%= "Single Bed".equals(bed) ? "selected" : "" %>>Single Bed</option>
+                                <option value="Double Bed" <%= "Double Bed".equals(bed) ? "selected" : "" %>>Double Bed</option>
+                                <option value="Queen Bed" <%= "Queen Bed".equals(bed) ? "selected" : "" %>>Queen Bed</option>
+                                <option value="King Bed" <%= "Queen Bed".equals(bed) ? "selected" : "" %>>King Bed</option>
+                                <option value="Twin Beds" <%= "Twin Beds".equals(bed) ? "selected" : "" %>>Twin Beds</option>
+                                <option value="Bunk Bed" <%= "Bunk Bed".equals(bed) ? "selected" : "" %>>Bunk Bed</option>
                             </select>
                         </div>
 
@@ -271,7 +319,7 @@
                             <label for="description">Description <span class="text-danger">*</span></label>
                             <textarea name="description" required 
                                       class="form-control" id="description" rows="4"
-                                      placeholder="Enter room type description">${roomType != null ? roomType.description : ''}</textarea>
+                                      placeholder="Enter room type description">${roomType != null ? roomType.description.split(",")[0] : ''}</textarea>
                         </div>
 
                         <div class="form-group">
@@ -357,6 +405,23 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<img id="previewImage" style="max-width:200px; display:none; margin-top:10px;" />
+
+<script>
+                                           document.getElementById("images").addEventListener("change", function (event) {
+                                               const files = event.target.files;
+                                               if (files.length > 0) {
+                                                   const reader = new FileReader();
+                                                   reader.onload = function (e) {
+                                                       const img = document.getElementById("previewImage");
+                                                       img.src = e.target.result;
+                                                       img.style.display = "block";
+                                                   };
+                                                   reader.readAsDataURL(files[0]); // chỉ xem trước ảnh đầu
+                                               }
+                                           });
+</script>
+
 <script>
     $(document).ready(function () {
         // Form validation
@@ -392,12 +457,12 @@
             }
 
             // Validate image URL
-            var imageUrl = $('#imageUrl').val();
-            if (imageUrl && !/\.(jpg|jpeg|png|gif|webp)$/i.test(imageUrl)) {
-                $('#imageUrl').addClass('is-invalid');
-                errorMessage = 'Image URL must end with a valid image extension (.jpg, .png, etc.)';
-                isValid = false;
-            }
+//            var imageUrl = $('#imageUrl').val();
+//            if (imageUrl && !/\.(jpg|jpeg|png|gif|webp)$/i.test(imageUrl)) {
+//                $('#imageUrl').addClass('is-invalid');
+//                errorMessage = 'Image URL must end with a valid image extension (.jpg, .png, etc.)';
+//                isValid = false;
+//            }
 
             if (!isValid) {
                 e.preventDefault();
@@ -506,6 +571,73 @@
             }
         });
     });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('imageFilesInput');
+    const container = document.getElementById('previewContainer');
+
+    if (!input || !container) return;
+
+    input.addEventListener('change', () => {
+        container.innerHTML = '';
+
+        const files = Array.from(input.files);
+
+        // 1. Ưu tiên nhóm tên
+        const priority = ['overview', 'window', 'table', 'bathroom', 'amenities'];
+
+        // 2. Sort file theo nhóm ưu tiên
+        files.sort((a, b) => {
+            const getPriorityIndex = (filename) => {
+                filename = filename.toLowerCase();
+                for (let i = 0; i < priority.length; i++) {
+                    if (filename.startsWith(priority[i])) return i;
+                }
+                return priority.length; // các file không nằm trong nhóm thì xếp sau
+            };
+
+            const priA = getPriorityIndex(a.name);
+            const priB = getPriorityIndex(b.name);
+
+            if (priA !== priB) return priA - priB;
+            return a.name.localeCompare(b.name); // nếu cùng nhóm thì sort theo tên
+        });
+
+        // 3. Hiển thị sau khi sort
+        files.forEach((file, i) => {
+            const wrapper = document.createElement('div');
+            wrapper.style.border = '1px solid #ccc';
+            wrapper.style.padding = '8px';
+            wrapper.style.margin = '4px';
+            wrapper.style.borderRadius = '6px';
+            wrapper.style.display = 'inline-block';
+            wrapper.style.minWidth = '200px';
+            wrapper.style.background = '#f9f9f9';
+
+            const fileName = document.createElement('p');
+            fileName.textContent = `${i + 1}. ${file.name}`;
+            fileName.style.fontWeight = 'bold';
+
+            const orderInput = document.createElement('input');
+            orderInput.type = 'number';
+            orderInput.name = 'displayOrders';
+            orderInput.value = i + 1;
+            orderInput.min = 1;
+            orderInput.className = 'form-control form-control-sm';
+            orderInput.style.width = '80px';
+
+            const orderLabel = document.createElement('small');
+            orderLabel.textContent = 'Order';
+
+            wrapper.appendChild(fileName);
+            wrapper.appendChild(orderInput);
+            wrapper.appendChild(orderLabel);
+
+            container.appendChild(wrapper);
+        });
+    });
+});
 </script>
 
 
