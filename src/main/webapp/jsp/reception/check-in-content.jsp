@@ -387,6 +387,99 @@
     </div>
 </div>
 
+<!-- Check-Out Modal -->
+<div class="modal fade" id="checkOutModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Process Check-Out</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form id="checkOutForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Guest Information</h6>
+                            <div class="card p-3 mb-3">
+                                <p><strong>Name:</strong> <span id="checkoutGuestName"></span></p>
+                                <p><strong>Phone:</strong> <span id="checkoutGuestPhone"></span></p>
+                                <p><strong>Email:</strong> <span id="checkoutGuestEmail"></span></p>
+                                <p class="mb-0"><strong>Booking ID:</strong> #<span id="checkoutBookingId"></span></p>
+                            </div>
+
+                            <h6>Room Information</h6>
+                            <div class="card p-3 mb-3">
+                                <p><strong>Room Number:</strong> <span id="checkoutRoomNumber"></span></p>
+                                <p><strong>Room Type:</strong> <span id="checkoutRoomType"></span></p>
+                                <p><strong>Check-in:</strong> <span id="checkoutCheckIn"></span></p>
+                                <p><strong>Check-out:</strong> <span id="checkoutCheckOut"></span></p>
+                                <p class="mb-0"><strong>Total Nights:</strong> <span id="checkoutNights"></span></p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6>Payment Summary</h6>
+                            <div class="card p-3 mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Room Charges:</span>
+                                    <span id="checkoutRoomCharges">0₫</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Additional Services:</span>
+                                    <span id="checkoutAdditionalServices">0₫</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Taxes & Fees:</span>
+                                    <span id="checkoutTaxes">0₫</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between font-weight-bold">
+                                    <span>Total Amount:</span>
+                                    <span id="checkoutTotalAmount">0₫</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-success mt-2">
+                                    <span>Amount Paid:</span>
+                                    <span id="checkoutAmountPaid">0₫</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-danger mt-2 font-weight-bold">
+                                    <span>Balance Due:</span>
+                                    <span id="checkoutBalanceDue">0₫</span>
+                                </div>
+                            </div>
+                            
+                            <h6>Room Status</h6>
+                            <div class="form-group">
+                                <select class="form-control" id="checkoutRoomStatus">
+                                    <option value="AVAILABLE">Available (Clean)</option>
+                                    <option value="CLEANING">Needs Cleaning</option>
+                                    <option value="MAINTENANCE">Needs Maintenance</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Notes</label>
+                                <textarea class="form-control" id="checkoutNotes" rows="3" 
+                                          placeholder="Enter any notes about the check-out or room condition..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-info" id="btnPrintInvoice">
+                        <i class="fas fa-print"></i> Print Invoice
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-door-open"></i> Complete Check-Out
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <style>
     .calendar-container {
         width: 100%;
@@ -467,6 +560,9 @@
         
         // Add event listener for the toggle all button
         document.getElementById('toggleAllRoomTypes').addEventListener('click', toggleAllRoomTypes);
+        
+        // Add event listeners for reservation cells
+        addReservationClickHandlers();
         
         // Load saved room type states or hide all by default
         setTimeout(function() {
@@ -716,6 +812,105 @@
         });
     }
     
+    function startCheckOut(reservationId) {
+        $.ajax({
+            url: '${pageContext.request.contextPath}/receptionist/check-out',
+            type: 'POST',
+            data: {
+                action: 'getReservation',
+                id: reservationId
+            },
+            success: function(data) {
+                // Fill modal with reservation data
+                $('#checkoutGuestName').text(data.customerName);
+                $('#checkoutGuestPhone').text(data.customerPhone);
+                $('#checkoutGuestEmail').text(data.customerEmail);
+                $('#checkoutBookingId').text(data.id);
+                $('#checkoutRoomNumber').text(data.roomNumber);
+                $('#checkoutRoomType').text(data.roomTypeName);
+                $('#checkoutCheckIn').text(data.checkIn);
+                $('#checkoutCheckOut').text(data.checkOut);
+                $('#checkoutNights').text(data.nights);
+                
+                // Format currency values
+                const formatter = new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                    minimumFractionDigits: 0
+                });
+                
+                // Fill payment details
+                $('#checkoutRoomCharges').text(formatter.format(data.roomCharges));
+                $('#checkoutAdditionalServices').text(formatter.format(data.additionalServices || 0));
+                $('#checkoutTaxes').text(formatter.format(data.taxes || 0));
+                $('#checkoutTotalAmount').text(formatter.format(data.totalAmount));
+                $('#checkoutAmountPaid').text(formatter.format(data.amountPaid || 0));
+                
+                // Calculate balance due
+                const balanceDue = data.totalAmount - (data.amountPaid || 0);
+                $('#checkoutBalanceDue').text(formatter.format(balanceDue));
+                
+                // Set default room status
+                $('#checkoutRoomStatus').val('CLEANING');
+                $('#checkoutNotes').val('');
+                
+                // Show the modal
+                $('#checkOutModal').modal('show');
+            },
+            error: function() {
+                alert('Error loading check-out details');
+            }
+        });
+    }
+    
+    $('#checkOutForm').submit(function(e) {
+        e.preventDefault();
+        
+        const checkOutData = {
+            reservationId: $('#checkoutBookingId').text(),
+            roomStatus: $('#checkoutRoomStatus').val(),
+            notes: $('#checkoutNotes').val(),
+            balancePaid: true // Assuming balance is paid at check-out
+        };
+        
+        $.ajax({
+            url: '${pageContext.request.contextPath}/receptionist/check-out',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(checkOutData),
+            dataType: 'json',
+            beforeSend: function() {
+                // Disable submit button
+                $('#checkOutForm button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+            },
+            success: function(response) {
+                // Close modal
+                $('#checkOutModal').modal('hide');
+                
+                // Show success message
+                alert('Check-out completed successfully!');
+                
+                // Reload the page to update the list
+                location.reload();
+            },
+            error: function(xhr) {
+                // Re-enable submit button
+                $('#checkOutForm button[type="submit"]').prop('disabled', false).html('<i class="fas fa-door-open"></i> Complete Check-Out');
+                
+                // Show error message
+                alert('Error during check-out: ' + (xhr.responseJSON ? xhr.responseJSON.error : 'Unknown error'));
+            }
+        });
+    });
+    
+    // Handle print invoice button click
+    $('#btnPrintInvoice').click(function() {
+        const reservationId = $('#checkoutBookingId').text();
+        
+        // Open invoice in a new window/tab
+        window.open('${pageContext.request.contextPath}/receptionist/invoice?id=' + reservationId, '_blank');
+    });
+    
     function searchReservation() {
         const searchValue = $('#searchInput').val().trim();
         if (!searchValue) {
@@ -866,5 +1061,30 @@
     // Function to go to today
     function goToToday() {
         window.location.href = '?weekOffset=0';
+    }
+
+    // Function to add click handlers to reservation cells
+    function addReservationClickHandlers() {
+        // Get all reservation bars
+        const reservationBars = document.querySelectorAll('.reservation-bar');
+        
+        // Add click event to each reservation bar
+        reservationBars.forEach(bar => {
+            bar.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const reservationId = this.getAttribute('data-reservation-id');
+                
+                // Check if this is an occupied room (has occupied class)
+                if (this.querySelector('.reservation-info-occupied')) {
+                    // This is an occupied room - show check-out modal
+                    startCheckOut(reservationId);
+                } else {
+                    // This is a booking - show check-in modal
+                    startCheckIn(reservationId);
+                }
+            });
+        });
     }
 </script>
