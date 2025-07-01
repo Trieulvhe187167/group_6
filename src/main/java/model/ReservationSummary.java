@@ -244,6 +244,7 @@ public class ReservationSummary {
         return isLate();
         }
 
+
     // New getters and setters for time fields
     public Timestamp getCheckInTime() {
         return checkInTime;
