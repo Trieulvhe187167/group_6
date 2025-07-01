@@ -12,6 +12,8 @@ public class ReservationSummary {
     private String roomTypeName;
     private Date checkIn;
     private Date checkOut;
+    private Timestamp checkInTime;
+    private Timestamp checkOutTime;
     private String status;
     private double totalAmount;
     private Timestamp createdAt;
@@ -237,7 +239,42 @@ public class ReservationSummary {
         return checkedIn && !checkedOut && 
                (inspectionStatus == null || "PENDING".equals(inspectionStatus));
     }
+
         public boolean getIsLate() {
         return isLate();
+
+    
+    // New getters and setters for time fields
+    public Timestamp getCheckInTime() {
+        return checkInTime;
+    }
+    
+    public void setCheckInTime(Timestamp checkInTime) {
+        this.checkInTime = checkInTime;
+    }
+    
+    public Timestamp getCheckOutTime() {
+        return checkOutTime;
+    }
+    
+    public void setCheckOutTime(Timestamp checkOutTime) {
+        this.checkOutTime = checkOutTime;
+    }
+    
+    // Format check-in hour for display
+    public int getCheckInHour() {
+        if (checkInTime != null) {
+            return new java.util.Date(checkInTime.getTime()).getHours();
+        }
+        return 12; // Default check-in time if not specified
+    }
+    
+    // Format check-out hour for display
+    public int getCheckOutHour() {
+        if (checkOutTime != null) {
+            return new java.util.Date(checkOutTime.getTime()).getHours();
+        }
+        return 12; // Default check-out time if not specified
+
     }
 }
