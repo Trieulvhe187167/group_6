@@ -432,6 +432,11 @@ public class BookingServlet extends HttpServlet {
         reservation.setCheckOut(formData.checkoutDate);
         reservation.setStatus("PENDING");
         reservation.setTotalAmount(formData.getTotalAmount());
+
+        // Set expected deposit (10% of total)
+        double depositAmount = formData.getTotalAmount() * 0.1;
+        reservation.setDepositAmount(depositAmount);
+        reservation.setDepositStatus("PENDING");
         
         // Build notes
         StringBuilder notes = new StringBuilder();

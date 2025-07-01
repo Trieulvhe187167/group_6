@@ -788,8 +788,8 @@ public class ReservationDAO {
     // Create reservation and return the generated ID (without room assignment)
     public int createReservationAndGetId(Reservation reservation) {
         String sql = "INSERT INTO Reservations (UserId, GroupBookingId, CreatedBy, RoomId, RoomTypeId, " +
-                    "CheckIn, CheckOut, Status, TotalAmount, Notes, CreatedAt) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
+                    "CheckIn, CheckOut, Status, TotalAmount, Notes, DepositAmount, DepositStatus, CreatedAt) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
         
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -830,13 +830,21 @@ public class ReservationDAO {
             ps.setDate(7, reservation.getCheckOut());
             ps.setString(8, reservation.getStatus());
             ps.setDouble(9, reservation.getTotalAmount());
-            
+
             // Handle nullable Notes
             if (reservation.getNotes() != null) {
                 ps.setString(10, reservation.getNotes());
             } else {
                 ps.setString(10, "");
             }
+
+            // Deposit info
+            if (reservation.getDepositAmount() != null) {
+                ps.setDouble(11, reservation.getDepositAmount());
+            } else {
+                ps.setNull(11, Types.DOUBLE);
+            }
+            ps.setString(12, reservation.getDepositStatus());
             
             System.out.println("SQL: " + ps.toString());
             
@@ -1125,6 +1133,15 @@ public class ReservationDAO {
         reservation.setTotalAmount(rs.getDouble("TotalAmount"));
         reservation.setNotes(rs.getString("Notes"));
         reservation.setCreatedAt(rs.getTimestamp("CreatedAt"));
+
+        // Deposit fields (may not exist in some queries)
+        try {
+            reservation.setDepositAmount(rs.getObject("DepositAmount") != null ? rs.getDouble("DepositAmount") : null);
+            reservation.setDepositPaidDate(rs.getDate("DepositPaidDate"));
+            reservation.setDepositStatus(rs.getString("DepositStatus"));
+        } catch (SQLException e) {
+            // ignore if columns not present
+        }
         
         // Additional fields if available
         try {
