@@ -1,12 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -15,6 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking History</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
     <style>
         * {
             margin: 0;
@@ -39,11 +35,11 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
-            padding: 0;
             position: fixed;
             height: 100vh;
             z-index: 1000;
             transition: transform 0.3s ease;
+            overflow-y: auto;
         }
 
         .sidebar-header {
@@ -138,6 +134,7 @@
             flex: 1;
             margin-left: 280px;
             padding: 40px;
+            min-height: 100vh;
             transition: margin-left 0.3s ease;
         }
 
@@ -160,6 +157,7 @@
         .content-header p {
             color: #6c757d;
             font-size: 1.1rem;
+            margin-bottom: 0;
         }
 
         /* Filter Section */
@@ -263,6 +261,7 @@
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-bottom: 0;
         }
 
         .stat-card.total .stat-icon { color: #667eea; }
@@ -312,19 +311,12 @@
             font-size: 1.4rem;
             font-weight: 700;
             color: #495057;
-        }
-
-        .booking-date {
-            font-size: 0.9rem;
-            color: #6c757d;
-            background: #f8f9fa;
-            padding: 5px 12px;
-            border-radius: 20px;
+            margin-bottom: 0;
         }
 
         .booking-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 20px;
         }
@@ -371,30 +363,41 @@
             color: white;
         }
 
-        .badge.no-show {
+        .badge.no_show {
             background: linear-gradient(135deg, #6c757d, #495057);
             color: white;
         }
 
-        .note {
+        .booking-actions {
             margin-top: 20px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            padding: 20px;
-            border-radius: 15px;
-            border-left: 4px solid #667eea;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
         }
 
-        .note-title {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 8px;
-            display: flex;
+        .btn {
+            display: inline-flex;
             align-items: center;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
         }
 
-        .note-title i {
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        .btn i {
             margin-right: 8px;
-            color: #667eea;
         }
 
         .empty-message {
@@ -422,6 +425,7 @@
         .empty-text {
             color: #6c757d;
             font-size: 1.1rem;
+            margin-bottom: 0;
         }
 
         /* Rating Section */
@@ -439,6 +443,28 @@
         .rating-text {
             font-size: 0.9rem;
             color: #6c757d;
+            text-decoration: none;
+        }
+
+        .rating-text:hover {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        /* Sidebar overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
         }
 
         /* Responsive Design */
@@ -496,22 +522,6 @@
                 grid-template-columns: repeat(2, 1fr);
                 gap: 15px;
             }
-        }
-
-        /* Sidebar overlay for mobile */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-
-        .sidebar-overlay.active {
-            display: block;
         }
     </style>
 </head>
@@ -688,6 +698,7 @@
                 </form>
             </div>
 
+            <!-- Bookings List -->
             <c:if test="${empty historyBookings}">
                 <div class="empty-message">
                     <div class="empty-icon">
@@ -704,7 +715,7 @@
                         <div class="booking-title">
                             <i class="fas fa-bed"></i> Room ${booking.roomName} - ${booking.roomTypeName}
                         </div>
-                        
+                    </div>
                     
                     <div class="booking-details">
                         <div class="detail-item">
@@ -738,14 +749,13 @@
                         </div>
                     </div>
 
-                   
-                        <div class="booking-actions">
+                    <div class="booking-actions">
                         <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}" 
                            class="btn btn-primary">
                             <i class="fas fa-eye"></i>
                             View Details
                         </a>
-                        </div>
+                    </div>
 
                     <!-- Rating Section (if booking was completed) -->
                     <c:if test="${booking.status == 'COMPLETED'}">
@@ -772,6 +782,9 @@
         </main>
     </div>
 
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -780,11 +793,6 @@
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
         }
-
-        // Close sidebar when clicking on overlay
-        document.querySelector('.sidebar-overlay').addEventListener('click', function() {
-            toggleSidebar();
-        });
 
         // Handle window resize
         window.addEventListener('resize', function() {
@@ -796,83 +804,5 @@
             }
         });
     </script>
-    <script>
-function viewBookingDetail(id) {
-  fetch('${pageContext.request.contextPath}/admin/api/booking-detail?id=' + id)
-    .then(res => res.json())
-    .then(data => {
-  console.log("📦 Booking data:", data); // debug console
-
-  document.getElementById("customerName").innerText = data.userFullName;
-  document.getElementById("customerPhone").innerText = data.customerPhone;  // ✅ sửa
-  document.getElementById("customerEmail").innerText = data.userEmail;  // ✅ sửa
-
-  document.getElementById("bookingId").innerText = "#" + data.id;
-  document.getElementById("bookingStatus").innerText = data.status;
-  document.getElementById("bookingStatus").className = "badge " +
-    (data.status === 'CONFIRMED' ? 'badge-success' : 'badge-secondary');
-
-  document.getElementById("bookingCreated").innerText = data.createdAt;
-  document.getElementById("roomNumber").innerText = data.roomNumber;
-  document.getElementById("roomType").innerText = data.roomTypeName; // ✅ sửa
-  document.getElementById("checkInDate").innerText = data.checkIn;
-  document.getElementById("checkOutDate").innerText = data.checkOut;
-  document.getElementById("nights").innerText = data.nights;
-
-  document.getElementById("totalAmount").innerText = data.totalAmount;
-  document.getElementById("paymentStatus").innerText = data.paymentStatus;
-  document.getElementById("paymentStatus").className = "badge " +
-    (data.paymentStatus === 'Paid' ? 'badge-success' : 'badge-warning');
-
-  $('#bookingDetailModal').modal('show');
-});
-}
-</script>
-
 </body>
-<div class="modal fade" id="bookingDetailModal" tabindex="-1" role="dialog" aria-labelledby="bookingDetailModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Reservation Details</h5>
-        <button type="button" class="close" data-dismiss="modal">
-          <span>&times;</span>
-        </button>
-      </div>
-      <div class="modal-body row">
-        <!-- Customer Information -->
-        <div class="col-md-6">
-          <h6>Customer Information</h6>
-          <p><strong>Name:</strong> <span id="customerName"></span></p>
-          <p><strong>Phone:</strong> <span id="customerPhone"></span></p>
-          <p><strong>Email:</strong> <span id="customerEmail"></span></p>
-
-          <h6>Booking Information</h6>
-          <p><strong>ID:</strong> <span id="bookingId"></span></p>
-          <p><strong>Status:</strong> <span id="bookingStatus" class="badge"></span></p>
-          <p><strong>Created:</strong> <span id="bookingCreated"></span></p>
-        </div>
-
-        <!-- Room & Payment Info -->
-        <div class="col-md-6">
-          <h6>Room Information</h6>
-          <p><strong>Room:</strong> <span id="roomNumber"></span></p>
-          <p><strong>Type:</strong> <span id="roomType"></span></p>
-          <p><strong>Check-in:</strong> <span id="checkInDate"></span></p>
-          <p><strong>Check-out:</strong> <span id="checkOutDate"></span></p>
-          <p><strong>Nights:</strong> <span id="nights"></span></p>
-
-          <h6>Payment</h6>
-          <p><strong>Total:</strong> <span id="totalAmount"></span></p>
-          <p><strong>Payment Status:</strong> <span id="paymentStatus" class="badge"></span></p>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button class="btn btn-primary" onclick="window.print()">Print</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 </html>
