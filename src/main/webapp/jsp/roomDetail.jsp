@@ -1485,7 +1485,7 @@
                                         </form>
                                     </div>
                                 </div>
-
+</div>
                                 <!-- Right Column - Booking Summary -->
                                 <div class="col-lg-4">
                                     <div class="booking-summary">
@@ -1533,7 +1533,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            
 
                             <!-- Room Policy -->
                             <div class="mt-5 booking-form">
