@@ -738,15 +738,7 @@
                         </div>
                     </div>
 
-                    <c:if test="${not empty booking.note}">
-                        <div class="note">
-                            <div class="note-title">
-                                <i class="fas fa-sticky-note"></i>
-                                Your Note:
-                            </div>
-                            <div>${booking.note}</div>
-                        </div>
-                    </c:if>
+                   
                         <div class="booking-actions">
                         <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}" 
                            class="btn btn-primary">
