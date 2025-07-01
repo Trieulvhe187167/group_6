@@ -3,18 +3,17 @@ package controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dal.BookingDAO;
 import dal.RoomDAO;
-import model.Booking;
+import model.Reservation;
 import model.Room;
-import model.RoomStatus;
 import model.User;
 import util.JsonResponse;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -55,7 +54,7 @@ public class CheckOutServlet extends HttpServlet {
     private void handleGetReservation(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             int reservationId = Integer.parseInt(request.getParameter("id"));
-            Booking booking = bookingDAO.getBookingById(reservationId);
+            Reservation booking = bookingDAO.getReservationById(reservationId);
             
             if (booking == null) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -69,26 +68,26 @@ public class CheckOutServlet extends HttpServlet {
             
             // Calculate nights
             long nights = ChronoUnit.DAYS.between(
-                booking.getCheckInDate().toLocalDate(),
-                booking.getCheckOutDate().toLocalDate()
+                booking.getCheckIn().toLocalDate(),
+                booking.getCheckOut().toLocalDate()
             );
             
             // Create response data
             Map<String, Object> data = new HashMap<>();
             data.put("id", booking.getId());
-            data.put("customerName", booking.getCustomer().getFullName());
-            data.put("customerPhone", booking.getCustomer().getPhone());
-            data.put("customerEmail", booking.getCustomer().getEmail());
+            data.put("customerName", booking.getUserFullName());
+            data.put("customerPhone", booking.getCustomerPhone());
+            data.put("customerEmail", booking.getUserEmail());
             data.put("roomNumber", room.getRoomNumber());
-            data.put("roomTypeName", room.getRoomType().getName());
-            data.put("checkIn", booking.getCheckInDate().toString());
-            data.put("checkOut", booking.getCheckOutDate().toString());
+            data.put("roomTypeName", room.getRoomTypeName());
+            data.put("checkIn", booking.getCheckIn().toString());
+            data.put("checkOut", booking.getCheckOut().toString());
             data.put("nights", nights);
             data.put("roomCharges", booking.getTotalAmount().doubleValue());
             data.put("additionalServices", 0); // Get from services if available
-            data.put("taxes", booking.getTotalAmount().multiply(new BigDecimal("0.1")).doubleValue()); // 10% tax example
-            data.put("totalAmount", booking.getTotalAmount().multiply(new BigDecimal("1.1")).doubleValue()); // Including tax
-            data.put("amountPaid", booking.getAmountPaid().doubleValue());
+            data.put("taxes", booking.getTotalAmount() * 0.1); // 10% tax example
+            data.put("totalAmount", booking.getTotalAmount() * 1.1); // Including tax
+            data.put("amountPaid", booking.getAmountPaid());
             
             response.getWriter().write(objectMapper.writeValueAsString(data));
         } catch (NumberFormatException e) {
@@ -113,7 +112,7 @@ public class CheckOutServlet extends HttpServlet {
             boolean balancePaid = (boolean) checkOutData.get("balancePaid");
             
             // Get booking
-            Booking booking = bookingDAO.getBookingById(reservationId);
+            Reservation booking = bookingDAO.getReservationById(reservationId);
             if (booking == null) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 response.getWriter().write(objectMapper.writeValueAsString(
@@ -123,21 +122,21 @@ public class CheckOutServlet extends HttpServlet {
             
             // Update booking status to COMPLETED
             booking.setStatus("COMPLETED");
-            booking.setActualCheckOutDate(java.sql.Timestamp.valueOf(java.time.LocalDateTime.now()));
+            booking.setUpdatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
             
             // If balance is paid, update payment status
             if (balancePaid) {
-                BigDecimal totalAmount = booking.getTotalAmount().multiply(new BigDecimal("1.1")); // Including tax
+                double totalAmount = booking.getTotalAmount() * 1.1; // Including tax
                 booking.setAmountPaid(totalAmount);
                 booking.setPaymentStatus("PAID");
             }
             
             // Update booking
-            bookingDAO.updateBooking(booking);
+            bookingDAO.updateReservation(booking);
             
             // Update room status
             Room room = roomDAO.getRoomById(booking.getRoomId());
-            room.setStatus(RoomStatus.valueOf(roomStatus));
+            room.setStatus(roomStatus);
             roomDAO.updateRoom(room);
             
             // Return success response
