@@ -35,9 +35,9 @@ public class AdminBookingServlet extends HttpServlet {
         System.out.println("From Date: " + fromDate);
         System.out.println("To Date: " + toDate);
         
-        // Get page parameters for pagination
+        // Get page parameters for pagination - Thay đổi từ 20 xuống 5
         int page = 1;
-        int recordsPerPage = 20;
+        int recordsPerPage = 5; // Thay đổi từ 20 xuống 5
         
         try {
             String pageParam = request.getParameter("page");
@@ -51,7 +51,7 @@ public class AdminBookingServlet extends HttpServlet {
         int offset = (page - 1) * recordsPerPage;
 
         try {
-            // Use the new DAO
+            // Use the new DAO - sắp xếp theo ngày tạo gần nhất
             List<Reservation> reservations = bookingDAO.getReservations(statusFilter, fromDate, toDate, offset, recordsPerPage);
             int totalRecords = bookingDAO.getTotalReservationCount(statusFilter, fromDate, toDate);
             int totalPages = (int) Math.ceil((double) totalRecords / recordsPerPage);
@@ -59,6 +59,8 @@ public class AdminBookingServlet extends HttpServlet {
             // Debug: Print results
             System.out.println("Total Records Found: " + totalRecords);
             System.out.println("Reservations List Size: " + reservations.size());
+            System.out.println("Current Page: " + page);
+            System.out.println("Total Pages: " + totalPages);
             
             if (reservations != null && !reservations.isEmpty()) {
                 System.out.println("First reservation ID: " + reservations.get(0).getId());
@@ -69,6 +71,7 @@ public class AdminBookingServlet extends HttpServlet {
             request.setAttribute("currentPage", page);
             request.setAttribute("totalPages", totalPages);
             request.setAttribute("totalRecords", totalRecords);
+            request.setAttribute("recordsPerPage", recordsPerPage);
             request.setAttribute("statusFilter", statusFilter);
             request.setAttribute("fromDate", fromDate);
             request.setAttribute("toDate", toDate);
