@@ -168,14 +168,15 @@ private void processPayment(HttpServletRequest request, HttpServletResponse resp
             // Update payment in database
             paymentDAO.updatePayment(payment);
             
-            // Update reservation with deposit information
+            // Update reservation deposit info and status
             reservation.setDepositAmount(depositAmount);
             reservation.setDepositPaidDate(new java.sql.Date(System.currentTimeMillis()));
             reservation.setDepositStatus("PAID");
             reservation.setStatus("CONFIRMED");
-            
-            // Update reservation in database
-            reservationDAO.updateReservation(reservation);
+
+            // Persist deposit info
+            paymentDAO.updateReservationDeposit(reservationId, depositAmount, "PAID");
+            reservationDAO.updateReservationStatus(reservationId, "CONFIRMED");
             
             // Log activity
             Activity activity = new Activity();

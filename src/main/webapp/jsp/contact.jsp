@@ -99,7 +99,13 @@
                     <div class="heading-bx left mb-4">
                         <h1 class="title-head display-4">Get <span>In</span> Touch</h1>
                     </div>
-                    <form action="${pageContext.request.contextPath}/assets/script/contact.php" method="post" class="flex-grow-1">
+                     <c:if test="${param.success == '1'}">
+                        <div class="alert alert-success" role="alert">Your message has been sent.</div>
+                    </c:if>
+                    <c:if test="${param.error == '1'}">
+                        <div class="alert alert-danger" role="alert">Failed to send message. Please try again.</div>
+                    </c:if>
+                    <form action="${pageContext.request.contextPath}/ContactServlet" method="post" class="flex-grow-1" id="contact">
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label for="name">Your Name</label>
