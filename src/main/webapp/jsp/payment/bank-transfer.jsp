@@ -5,7 +5,7 @@
 <%
     // Simple setup - use provided QR image URL
     String transferContent = "";
-    String accountNumber = "1024520090";
+    String accountNumber = "1024520080";
     String accountHolder = "LE VAN TRIEU";
     
     try {
@@ -301,7 +301,7 @@
                     <div class="bank-detail">
                         <span class="bank-label">Bank Name:</span>
                         <span class="bank-value">
-                            <strong>Techcombank (TCB)</strong>
+                            <strong>Vietcombank (VCB)</strong>
                             <span class="copy-btn" onclick="copyText('Techcombank')">
                                 <i class="fas fa-copy"></i> Copy
                             </span>

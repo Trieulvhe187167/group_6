@@ -216,7 +216,7 @@
             <button class="btn btn-link text-white d-md-none" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </button>
-            <a href="${pageContext.request.contextPath}/receptionist/dashboard" class="logo">
+            <a href="${pageContext.request.contextPath}/reception-dashboard" class="logo">
                 <img src="${pageContext.request.contextPath}/assets/images/logo-white.png" alt="Logo">
                 <span class="logo-text">Receptionist Portal</span>
             </a>
