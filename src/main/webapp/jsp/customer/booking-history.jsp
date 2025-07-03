@@ -2,6 +2,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -667,26 +669,27 @@
 
             <!-- Filter Section -->
             <div class="filter-section">
-                <form method="GET" action="booking-history.jsp">
+             <form method="GET" action="${pageContext.request.contextPath}/customer/history">
+
                     <div class="filter-row">
                         <div class="filter-group">
                             <label for="status">Filter by Status</label>
                             <select id="status" name="status">
                                 <option value="">All Status</option>
-                                <option value="COMPLETED">Completed</option>
-                                <option value="CANCELLED">Cancelled</option>
-                                <option value="NO_SHOW">No Show</option>
+                                <option value="COMPLETED" ${selectedStatus == 'COMPLETED' ? 'selected' : ''}>Completed</option>
+                                <option value="CANCELLED" ${selectedStatus == 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                                <option value="NO_SHOW" ${selectedStatus == 'NO_SHOW' ? 'selected' : ''}>No Show</option>
                             </select>
                         </div>
                         
                         <div class="filter-group">
                             <label for="dateFrom">From Date</label>
-                            <input type="date" id="dateFrom" name="dateFrom">
+                            <input type="date" id="dateFrom" name="dateFrom" value="${selectedDateFrom}">
                         </div>
                         
                         <div class="filter-group">
                             <label for="dateTo">To Date</label>
-                            <input type="date" id="dateTo" name="dateTo">
+                            <input type="date" id="dateTo" name="dateTo" value="${selectedDateTo}">
                         </div>
                         
                         <div class="filter-group">
@@ -782,7 +785,7 @@
         </main>
     </div>
 
-    <!-- JavaScript -->
+     <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
