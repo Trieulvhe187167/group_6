@@ -103,78 +103,117 @@
                                     <c:forEach var="date" items="${calendarDates}" varStatus="dateStatus">
                                         <td class="p-0 position-relative ${date.equals(today) ? 'bg-warning-light' : ''}">
                                             <c:set var="hasReservation" value="false" />
-                                            <c:forEach var="res" items="${calendarReservations}">
-                                                <c:if test="${res.roomId == room.id && (res.checkIn.toLocalDate().compareTo(date) <= 0 && res.checkOut.toLocalDate().compareTo(date) >= 0)}">
-                                                    <c:set var="hasReservation" value="true" />
-                                                    <c:set var="isCheckIn" value="${res.checkIn.toLocalDate().equals(date)}" />
-                                                    <c:set var="isCheckOut" value="${res.checkOut.toLocalDate().equals(date)}" />
-                                                    <c:set var="reservationClass" value="${isCheckIn ? 'start' : (isCheckOut ? 'end' : 'middle')}" />
-                                                    
-                                                    <c:if test="${isCheckIn}">
-                                                        <div data-reservation-id="${res.id}" 
-                                                             class="reservation-bar reservation-${reservationClass}" 
-                                                             style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-                                                                    overflow: hidden; cursor: pointer; z-index: 1;">
-                                                            <c:choose>
-                                                                <c:when test="${room.status == 'OCCUPIED'}">
+                                            
+                                            <c:if test="${room.status == 'OCCUPIED'}">
+                                                <c:forEach var="checkIn" items="${activeCheckIns}">
+                                                    <c:if test="${checkIn.roomId == room.id}">
+                                                        <c:set var="hasReservation" value="true" />
+                                                        
+                                                        <%-- Check if this date is the check-in date --%>
+                                                        <c:set var="isCheckInDate" value="${checkIn.checkInTime.toLocalDate().equals(date)}" />
+                                                        
+                                                        <%-- Check if this date is the check-out date --%>
+                                                        <c:set var="isCheckOutDate" value="${checkIn.estimatedCheckOutTime != null && checkIn.estimatedCheckOutTime.toLocalDate().equals(date)}" />
+                                                        
+                                                        <%-- Set class based on whether it's check-in, check-out, or middle date --%>
+                                                        <c:set var="reservationClass" value="${isCheckInDate ? 'start' : (isCheckOutDate ? 'end' : 'middle')}" />
+                                                        
+                                                        <c:choose>
+                                                            <%-- Check-in date --%>
+                                                            <c:when test="${isCheckInDate}">
+                                                                <c:set var="topPosition" value="${checkIn.getCheckInHour() < 12 ? '0' : '50'}" />
+                                                                <div data-check-in-id="${checkIn.id}" 
+                                                                     class="reservation-bar reservation-${reservationClass}" 
+                                                                     style="position: absolute; top: ${topPosition}%; left: 0; right: 0; height: 50%; 
+                                                                            overflow: hidden; cursor: pointer; z-index: 1;">
                                                                     <div class="reservation-info-occupied">
-                                                                        <fmt:formatNumber value="${res.getCheckInHour()}" pattern="0" var="checkInHour" />
-                                                                        ${checkInHour}h-24h:${res.customerName.split(" ")[0]}
+                                                                        <fmt:formatNumber value="${checkIn.getCheckInHour()}" pattern="0" var="checkInHour" />
+                                                                        ${checkInHour}h-24h:${checkIn.customerName}
+                                                                        <br/><small>(ID: ${checkIn.idType}-${checkIn.idNumber})</small>
                                                                     </div>
-                                                                </c:when>
-                                                                <c:otherwise>
-                                                                    <div class="reservation-info">
-                                                                        <fmt:formatNumber value="${res.getCheckInHour()}" pattern="0" var="checkInHour" />
-                                                                        ${checkInHour}h-24h:${res.customerName.split(" ")[0]}
-                                                                    </div>
-                                                                </c:otherwise>
-                                                            </c:choose>
-                                                        </div>
-                                                    </c:if>
-                                                    <c:if test="${!isCheckIn && !isCheckOut}">
-                                                        <div data-reservation-id="${res.id}" 
-                                                             class="reservation-bar reservation-${reservationClass}" 
-                                                             style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;  
-                                                                    overflow: hidden; cursor: pointer; z-index: 1;">
-                                                            <c:choose>
-                                                                <c:when test="${room.status == 'OCCUPIED'}">
+                                                                </div>
+                                                            </c:when>
+                                                            
+                                                            <%-- Middle date --%>
+                                                            <c:when test="${!isCheckInDate && !isCheckOutDate && (checkIn.checkInTime.toLocalDate().isBefore(date) && (checkIn.estimatedCheckOutTime == null || checkIn.estimatedCheckOutTime.toLocalDate().isAfter(date)))}">
+                                                                <div data-check-in-id="${checkIn.id}" 
+                                                                     class="reservation-bar reservation-${reservationClass}" 
+                                                                     style="position: absolute; top: 0; left: 0; right: 0; height: 100%;  
+                                                                            overflow: hidden; cursor: pointer; z-index: 1;">
                                                                     <div class="reservation-info-occupied">
-                                                                        00h-24h:${res.customerName.split(" ")[0]}
+                                                                        00h-24h:${checkIn.customerName}
+                                                                        <br/><small>(ID: ${checkIn.idType}-${checkIn.idNumber})</small>
                                                                     </div>
-                                                                </c:when>
-                                                                <c:otherwise>
-                                                                    <div class="reservation-info">
-                                                                        00h-24h:${res.customerName.split(" ")[0]}
-                                                                    </div>
-                                                                </c:otherwise>
-                                                            </c:choose>
-                                                        </div>
-                                                    </c:if>
-                                                    <c:if test="${isCheckOut}">
-                                                        <div data-reservation-id="${res.id}" 
-                                                             class="reservation-bar reservation-${reservationClass}" 
-                                                             style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-                                                                    overflow: hidden; cursor: pointer; z-index: 1;">
-                                                            <c:choose>
-                                                                <c:when test="${room.status == 'OCCUPIED'}">
+                                                                </div>
+                                                            </c:when>
+                                                            
+                                                            <%-- Check-out date --%>
+                                                            <c:when test="${isCheckOutDate}">
+                                                                <c:set var="topPosition" value="${checkIn.getCheckOutHour() > 12 ? '50' : '0'}" />
+                                                                <div data-check-in-id="${checkIn.id}" 
+                                                                     class="reservation-bar reservation-${reservationClass}" 
+                                                                     style="position: absolute; top: ${topPosition}%; left: 0; right: 0; height: 50%; 
+                                                                            overflow: hidden; cursor: pointer; z-index: 1;">
                                                                     <div class="reservation-info-occupied">
-                                                                        <fmt:formatNumber value="${res.getCheckOutHour()}" pattern="0" var="checkOutHour" />
-                                                                        00h-${checkOutHour}h:${res.customerName.split(" ")[0]}
+                                                                        <fmt:formatNumber value="${checkIn.getCheckOutHour()}" pattern="0" var="checkOutHour" />
+                                                                        00h-${checkOutHour}h:${checkIn.customerName}
+                                                                        <br/><small>(ID: ${checkIn.idType}-${checkIn.idNumber})</small>
                                                                     </div>
-                                                                </c:when>
-                                                                <c:otherwise>
-                                                                    <div class="reservation-info">
-                                                                        <fmt:formatNumber value="${res.getCheckOutHour()}" pattern="0" var="checkOutHour" />
-                                                                        00h-${checkOutHour}h:${res.customerName.split(" ")[0]}
-                                                                    </div>
-                                                                </c:otherwise>
-                                                            </c:choose>
-                                                        </div>
+                                                                </div>
+                                                            </c:when>
+                                                        </c:choose>
                                                     </c:if>
-                                                </c:if>
-                                            </c:forEach>
+                                                </c:forEach>
+                                            </c:if>
+                                            
+                                            <c:if test="${room.status != 'OCCUPIED'}">
+                                                <c:forEach var="res" items="${calendarReservations}">
+                                                    <c:if test="${res.roomId == room.id && res.status == 'CONFIRMED' && (res.checkIn.toLocalDate().compareTo(date) <= 0 && res.checkOut.toLocalDate().compareTo(date) >= 0)}">
+                                                        <c:set var="hasReservation" value="true" />
+                                                        <c:set var="isCheckIn" value="${res.checkIn.toLocalDate().equals(date)}" />
+                                                        <c:set var="isCheckOut" value="${res.checkOut.toLocalDate().equals(date)}" />
+                                                        <c:set var="reservationClass" value="${isCheckIn ? 'start' : (isCheckOut ? 'end' : 'middle')}" />
+                                                        
+                                                        <c:if test="${isCheckIn}">
+                                                            <c:set var="topPosition" value="${res.getCheckInHour() < 12 ? '0' : '50'}" />
+                                                            <div data-reservation-id="${res.id}" 
+                                                                 class="reservation-bar reservation-${reservationClass}" 
+                                                                 style="position: absolute; top: ${topPosition}%; left: 0; right: 0; height: 50%; 
+                                                                        overflow: hidden; cursor: pointer; z-index: 1;">
+                                                                <div class="reservation-info">
+                                                                    <fmt:formatNumber value="${res.getCheckInHour()}" pattern="0" var="checkInHour" />
+                                                                    ${checkInHour}h-24h:${res.customerName}
+                                                                </div>
+                                                            </div>
+                                                        </c:if>
+                                                        <c:if test="${!isCheckIn && !isCheckOut}">
+                                                            <div data-reservation-id="${res.id}" 
+                                                                 class="reservation-bar reservation-${reservationClass}" 
+                                                                 style="position: absolute; top: 0; left: 0; right: 0; height: 100%;  
+                                                                        overflow: hidden; cursor: pointer; z-index: 1;">
+                                                                <div class="reservation-info">
+                                                                    00h-24h:${res.customerName}
+                                                                </div>
+                                                            </div>
+                                                        </c:if>
+                                                        <c:if test="${isCheckOut}">
+                                                            <c:set var="topPosition" value="${res.getCheckOutHour() > 12 ? '50' : '0'}" />
+                                                            <div data-reservation-id="${res.id}" 
+                                                                 class="reservation-bar reservation-${reservationClass}" 
+                                                                 style="position: absolute; top: ${topPosition}%; left: 0; right: 0; height: 50%; 
+                                                                        overflow: hidden; cursor: pointer; z-index: 1;">
+                                                                <div class="reservation-info">
+                                                                    <fmt:formatNumber value="${res.getCheckOutHour()}" pattern="0" var="checkOutHour" />
+                                                                    00h-${checkOutHour}h:${res.customerName}
+                                                                </div>
+                                                            </div>
+                                                        </c:if>
+                                                    </c:if>
+                                                </c:forEach>
+                                            </c:if>
+                                            
                                             <c:if test="${!hasReservation}">
-                                                <div style="height: 30px;"></div>
+                                                <div style="height: 60px;"></div>
                                             </c:if>
                                         </td>
                                     </c:forEach>
@@ -236,60 +275,59 @@
                 <c:when test="${not empty todayCheckIns}">
                     <div class="row">
                         <c:forEach var="reservation" items="${todayCheckIns}">
-                            <div class="col-lg-6 mb-3">
-                                <div class="card ${reservation.checkedIn ? 'border-success' : ''}">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-8">
-                                                <h6>
-                                                    <i class="fas fa-user mr-2"></i>
-                                                    ${reservation.customerName}
-                                                    <c:if test="${reservation.status eq 'PENDING'}">
-                                                        <span class="badge badge-warning ml-2">Pending</span>
-                                                    </c:if>
-                                                    <c:if test="${reservation.checkedIn}">
-                                                        <span class="badge badge-success ml-2">Checked In</span>
-                                                    </c:if>
-                                                </h6>
-                                                <p class="mb-2">
-                                                    <i class="fas fa-phone mr-2"></i>${reservation.customerPhone}
-                                                    <i class="fas fa-envelope ml-3 mr-2"></i>${reservation.customerEmail}
-                                                </p>
-                                                <div class="bg-light p-2 rounded">
-                                                    <strong>Booking ID:</strong> #${reservation.id} |
-                                                    <strong>Room:</strong> ${reservation.roomNumber} |
-                                                    <strong>Type:</strong> ${reservation.roomTypeName} |
-                                                    <strong>Nights:</strong> ${reservation.nights}
+                            <c:if test="${reservation.status eq 'CONFIRMED'}">
+                                <div class="col-lg-6 mb-3">
+                                    <div class="card ${reservation.checkedIn ? 'border-success' : ''}">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <h6>
+                                                        <i class="fas fa-user mr-2"></i>
+                                                        ${reservation.customerName}
+                                                        <c:if test="${reservation.checkedIn}">
+                                                            <span class="badge badge-success ml-2">Checked In</span>
+                                                        </c:if>
+                                                    </h6>
+                                                    <p class="mb-2">
+                                                        <i class="fas fa-phone mr-2"></i>${reservation.customerPhone}
+                                                        <i class="fas fa-envelope ml-3 mr-2"></i>${reservation.customerEmail}
+                                                    </p>
+                                                    <div class="bg-light p-2 rounded">
+                                                        <strong>Booking ID:</strong> #${reservation.id} |
+                                                        <strong>Room:</strong> ${reservation.roomNumber} |
+                                                        <strong>Type:</strong> ${reservation.roomTypeName} |
+                                                        <strong>Nights:</strong> ${reservation.nights}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 text-right">
+                                                    <h5 class="text-info mb-3">
+                                                        <fmt:formatNumber value="${reservation.totalAmount}" pattern="#,##0"/>₫
+                                                    </h5>
+                                                    <c:choose>
+                                                        <c:when test="${reservation.checkedIn}">
+                                                            <button class="btn btn-secondary" disabled>
+                                                                <i class="fas fa-check-circle"></i> Checked In
+                                                            </button>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <button class="btn btn-info btn-lg" 
+                                                                    onclick="startCheckIn(${reservation.id})">
+                                                                <i class="fas fa-sign-in-alt"></i> Check In
+                                                            </button>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4 text-right">
-                                                <h5 class="text-info mb-3">
-                                                    <fmt:formatNumber value="${reservation.totalAmount}" pattern="#,##0"/>₫
-                                                </h5>
-                                                <c:choose>
-                                                    <c:when test="${reservation.checkedIn}">
-                                                        <button class="btn btn-secondary" disabled>
-                                                            <i class="fas fa-check-circle"></i> Checked In
-                                                        </button>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <button class="btn btn-info btn-lg" 
-                                                                onclick="startCheckIn(${reservation.id})">
-                                                            <i class="fas fa-sign-in-alt"></i> Check In
-                                                        </button>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
+                                            <c:if test="${not empty reservation.specialRequests}">
+                                                <div class="alert alert-info mt-3 mb-0">
+                                                    <i class="fas fa-info-circle"></i> 
+                                                    <strong>Special Requests:</strong> ${reservation.specialRequests}
+                                                </div>
+                                            </c:if>
                                         </div>
-                                        <c:if test="${not empty reservation.specialRequests}">
-                                            <div class="alert alert-info mt-3 mb-0">
-                                                <i class="fas fa-info-circle"></i> 
-                                                <strong>Special Requests:</strong> ${reservation.specialRequests}
-                                            </div>
-                                        </c:if>
                                     </div>
                                 </div>
-                            </div>
+                            </c:if>
                         </c:forEach>
                     </div>
                 </c:when>
@@ -372,6 +410,59 @@
                                                value="2" min="1" max="4">
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <!-- Thêm trường Key Card Numbers -->
+                            <div class="form-group">
+                                <label>Key Card Numbers</label>
+                                <input type="text" class="form-control" id="keyCardNumbers" name="keyCardNumbers" 
+                                       placeholder="Eg: C1001, C1002">
+                            </div>
+                            
+                            <!-- Thêm trường Security Deposit -->
+                            <div class="form-group">
+                                <label>Security Deposit <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">₫</span>
+                                    </div>
+                                    <input type="number" id="securityDeposit" name="securityDeposit" 
+                                           class="form-control" value="500000" min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <!-- Thêm trường Special Requests -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Special Requests</label>
+                                <textarea id="specialRequests" name="specialRequests" 
+                                          class="form-control" rows="3" 
+                                          placeholder="Enter any special guest requests..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Thêm trường Check-In Notes -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Check-In Notes</label>
+                                <textarea id="checkInNotes" name="checkInNotes" 
+                                          class="form-control" rows="3" 
+                                          placeholder="Enter any notes about the check-in..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Thêm trường Estimated Check-Out Time -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Estimated Check-Out Time</label>
+                                <input type="datetime-local" id="estimatedCheckOutTime" name="estimatedCheckOutTime" 
+                                       class="form-control">
+                                <small class="text-muted">Default: 12:00 PM on check-out day</small>
                             </div>
                         </div>
                     </div>
@@ -494,7 +585,7 @@
     .calendar-table td, .calendar-table th {
         border: 1px solid #dee2e6;
         padding: 0.25rem;
-        height: 30px;
+        height: 60px;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -994,54 +1085,63 @@
     $('#checkInForm').submit(function(e) {
         e.preventDefault();
         
-        // Validate form
-        if (!$('input[name="idType"]:checked').val()) {
-            alert('Please select an ID type');
-            return;
-        }
-        
-        if (!$('#idNumber').val().trim()) {
-            alert('Please enter ID number');
-            return;
-        }
-        
-        const checkInData = {
-            reservationId: currentReservationId,
+        // Get form values
+        var formData = {
+            reservationId: parseInt($('#modalBookingId').text()),
             idType: $('input[name="idType"]:checked').val(),
-            idNumber: $('#idNumber').val().trim(),
+            idNumber: $('#idNumber').val(),
             additionalGuests: parseInt($('#additionalGuests').val()),
             keyCards: parseInt($('#keyCards').val()),
-            keyCardNumbers: '',
-            checkInNotes: '',
-            securityDeposit: 0
+            keyCardNumbers: $('#keyCardNumbers').val(),
+            checkInNotes: $('#checkInNotes').val(),
+            specialRequests: $('#specialRequests').val(),
+            securityDeposit: parseFloat($('#securityDeposit').val()),
+            estimatedCheckOutTime: $('#estimatedCheckOutTime').val(),
+            amenities: []
         };
         
+        // Validate required fields
+        if (!formData.idType || !formData.idNumber || !formData.keyCards || !formData.keyCardNumbers) {
+            toastr.error('Please fill in all required fields');
+            return;
+        }
+
+        // Collect amenity data if available
+        $('.amenity-check').each(function() {
+            var amenityId = $(this).data('amenity-id');
+            var isPresent = $(this).prop('checked');
+            formData.amenities.push({
+                amenityId: amenityId,
+                present: isPresent
+            });
+        });
+        
+        // Submit check-in
         $.ajax({
             url: '${pageContext.request.contextPath}/receptionist/check-in',
             type: 'POST',
+            data: JSON.stringify(formData),
             contentType: 'application/json',
-            data: JSON.stringify(checkInData),
             dataType: 'json',
-            beforeSend: function() {
-                // Disable submit button
-                $('#checkInForm button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
-            },
             success: function(response) {
-                // Close modal
-                $('#checkInModal').modal('hide');
-                
-                // Show success message
-                alert('Check-in completed successfully!');
-                
-                // Reload the page to update the list
-                location.reload();
+                if (response.success) {
+                    toastr.success('Check-in completed successfully');
+                    $('#checkInModal').modal('hide');
+                    // Reload page after a short delay
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    toastr.error('Error processing check-in');
+                }
             },
             error: function(xhr) {
-                // Re-enable submit button
-                $('#checkInForm button[type="submit"]').prop('disabled', false).html('<i class="fas fa-check"></i> Complete Check-In');
-                
-                // Show error message
-                alert('Error during check-in: ' + (xhr.responseJSON ? xhr.responseJSON.error : 'Unknown error'));
+                try {
+                    var errorMsg = JSON.parse(xhr.responseText).error;
+                    toastr.error(errorMsg || 'Error processing check-in');
+                } catch(e) {
+                    toastr.error('Error processing check-in');
+                }
             }
         });
     });

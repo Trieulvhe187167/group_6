@@ -1,16 +1,22 @@
 package model;
 
+import java.util.Date;
 import java.util.List;
 
+/**
+ * Model for check-in request data from client
+ */
 public class CheckInRequest {
     private int reservationId;
     private String idType;
     private String idNumber;
-    private int additionalCustomers;
+    private int additionalGuests;
     private double securityDeposit;
     private int keyCards;
     private String keyCardNumbers;
     private String checkInNotes;
+    private String specialRequests;
+    private Date estimatedCheckOutTime;
     private List<AmenityCheck> amenities;
     
     // Getters and setters
@@ -38,12 +44,12 @@ public class CheckInRequest {
         this.idNumber = idNumber; 
     }
     
-    public int getAdditionalCustomers() { 
-        return additionalCustomers; 
+    public int getAdditionalGuests() { 
+        return additionalGuests; 
     }
     
-    public void setAdditionalCustomers(int additionalCustomers) { 
-        this.additionalCustomers = additionalCustomers; 
+    public void setAdditionalGuests(int additionalGuests) { 
+        this.additionalGuests = additionalGuests; 
     }
     
     public double getSecurityDeposit() { 
@@ -76,6 +82,22 @@ public class CheckInRequest {
     
     public void setCheckInNotes(String checkInNotes) { 
         this.checkInNotes = checkInNotes; 
+    }
+    
+    public String getSpecialRequests() {
+        return specialRequests;
+    }
+    
+    public void setSpecialRequests(String specialRequests) {
+        this.specialRequests = specialRequests;
+    }
+    
+    public Date getEstimatedCheckOutTime() {
+        return estimatedCheckOutTime;
+    }
+    
+    public void setEstimatedCheckOutTime(Date estimatedCheckOutTime) {
+        this.estimatedCheckOutTime = estimatedCheckOutTime;
     }
     
     public List<AmenityCheck> getAmenities() { 
