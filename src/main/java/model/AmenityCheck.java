@@ -1,5 +1,8 @@
 package model;
 
+/**
+ * Model for amenity check item during check-in
+ */
 public class AmenityCheck {
     private int amenityId;
     private boolean present;
