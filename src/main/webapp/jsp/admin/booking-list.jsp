@@ -307,10 +307,7 @@
             <h2 class="mb-4">Booking Management</h2>
             
             <!-- Latest Bookings Info -->
-            <div class="latest-bookings-info">
-                <i class="fas fa-info-circle"></i>
-                <strong>Booking List:</strong> Hiển thị 5 booking mỗi trang (sắp xếp theo thời gian tạo giảm dần)
-            </div>
+           
             
             <!-- Filter Section -->
             <div class="filter-section">
@@ -536,19 +533,7 @@
                 </c:if>
                 
                 <!-- Page Size Selector -->
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div class="text-muted">
-                        <small>Showing ${reservations.size()} of ${totalBookings} bookings</small>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <label class="mb-0 mr-2">Items per page:</label>
-                        <select class="form-control form-control-sm" style="width: auto;" onchange="changePageSize(this.value)">
-                            <option value="5" ${pageSize == 5 ? 'selected' : ''}>5</option>
-                            <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
-                            <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
-                            <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
-                        </select>
-                    </div>
+               
                 </div>
             </div>
         </div>
