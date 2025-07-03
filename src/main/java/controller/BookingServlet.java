@@ -120,6 +120,30 @@ public class BookingServlet extends HttpServlet {
                 return;
             }
             
+               RoomType roomType = roomTypeDAO.getRoomTypesById(formData.roomTypeId);
+               
+            if (roomType == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\": \"Room type not found\"}");
+                return;
+            }
+
+            int capacity = roomType.getCapacity();
+            if (formData.adults < 1 || formData.adults > capacity) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\": \"Invalid number of adults\"}");
+                return;
+            }
+
+            int allowedChildren = (formData.adults >= capacity)
+                    ? 1
+                    : (capacity - formData.adults) * 2;
+
+            if (formData.children > allowedChildren) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\": \"Number of children exceeds allowed limit\"}");
+                return;
+            }
             // Validate dates
             if (formData.checkoutDate.before(formData.checkinDate) || formData.checkoutDate.equals(formData.checkinDate)) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -260,8 +284,7 @@ public class BookingServlet extends HttpServlet {
                 sendBookingNotification(reservation, userId);
                 
                 // Send confirmation email
-                try {
-                    RoomType roomType = roomTypeDAO.getRoomTypesById(room.getRoomTypeId());
+                try {             
                     sendConfirmationEmail(reservation, room, roomType, isGuest, formData);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -432,11 +455,6 @@ public class BookingServlet extends HttpServlet {
         reservation.setCheckOut(formData.checkoutDate);
         reservation.setStatus("PENDING");
         reservation.setTotalAmount(formData.getTotalAmount());
-
-        // Set expected deposit (10% of total)
-        double depositAmount = formData.getTotalAmount() * 0.1;
-        reservation.setDepositAmount(depositAmount);
-        reservation.setDepositStatus("PENDING");
         
         // Build notes
         StringBuilder notes = new StringBuilder();

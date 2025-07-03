@@ -1254,8 +1254,7 @@
 
                                         <!-- Guest Selection -->
                                         <div class="mb-4">
-                                            <label>Number of Guests</label>
-                                            <div class="guest-counter">
+                    <label>Number of Guests <small class="text-muted">(max <%= roomTypes.getCapacity() %> adults, +1 child if full)</small></label>                                            <div class="guest-counter">
                                                 <div>
                                                     <span>Adults</span>
                                                 </div>
@@ -1263,8 +1262,8 @@
                                                     <button type="button" class="counter-btn" onclick="updateGuests('adults', -1)">
                                                         <i class="ti-minus"></i>
                                                     </button>
-                                                    <span id="adultsCount">2</span>
-                                                    <input type="hidden" name="adults" id="adultsInput" value="2">
+                                                    <span id="adultsCount">1</span>
+                                                    <input type="hidden" name="adults" id="adultsInput" value="1">
                                                     <button type="button" class="counter-btn" onclick="updateGuests('adults', 1)">
                                                         <i class="ti-plus"></i>
                                                     </button>
@@ -1448,7 +1447,7 @@
 
                                     <div class="mb-3 pb-3 border-bottom">
                                         <h5><%= roomTypes.getName() %></h5>
-                                        <p class="text-muted mb-1"><span id="nightsDisplay">1</span> night(s), <span id="guestsDisplay">2 adults</span></p>
+                                       <p class="text-muted mb-1"><span id="nightsDisplay">1</span> night(s), <span id="guestsDisplay">1 adult</span></p>
                                     </div>
 
                                     <div class="price-breakdown">
@@ -1537,9 +1536,17 @@
          // Complete Optimized JavaScript for Room Booking Page
 
 const basePrice = <%= roomTypes.getBasePrice() %>;
+const maxAdults = <%= roomTypes.getCapacity() %>;
 let nights = 1;
-let adults = 2;
+let adults = Math.min(1, maxAdults);
 let children = 0;
+
+function getMaxChildren(currentAdults) {
+    if (currentAdults >= maxAdults) {
+        return 1;
+    }
+    return (maxAdults - currentAdults) * 2;
+}
 
 // ============================================================================
 // IMAGE GALLERY FUNCTIONS
@@ -1848,14 +1855,29 @@ function disableBookingButton() {
 
 function updateGuests(type, change) {
     if (type === 'adults') {
-        adults = Math.max(1, Math.min(4, adults + change));
-        document.getElementById('adultsCount').textContent = adults;
-        document.getElementById('adultsInput').value = adults;
+       let newAdults = adults + change;
+        if (newAdults < 1) newAdults = 1;
+        if (newAdults > maxAdults) newAdults = maxAdults;
+        adults = newAdults;
+
+        // Adjust children if they exceed new limit
+        const childLimit = getMaxChildren(adults);
+        if (children > childLimit) {
+            children = childLimit;
+        }
     } else {
-        children = Math.max(0, Math.min(3, children + change));
-        document.getElementById('childrenCount').textContent = children;
-        document.getElementById('childrenInput').value = children;
+        let newChildren = children + change;
+        if (newChildren < 0) newChildren = 0;
+        const childLimit = getMaxChildren(adults);
+        if (newChildren > childLimit) {
+            newChildren = childLimit;
+        }
+        children = newChildren;
     }
+     document.getElementById('adultsCount').textContent = adults;
+    document.getElementById('adultsInput').value = adults;
+    document.getElementById('childrenCount').textContent = children;
+    document.getElementById('childrenInput').value = children;
     updateGuestsDisplay();
 }
 
