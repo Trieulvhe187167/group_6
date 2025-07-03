@@ -68,10 +68,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Staff Details</h1>
         <div>
-            <a href="${pageContext.request.contextPath}/admin/staff?action=form&id=${staff.id}" 
-               class="btn btn-warning">
-                <i class="fas fa-edit"></i> Edit Staff
-            </a>
+            
             <a href="${pageContext.request.contextPath}/admin/staff" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
@@ -481,29 +478,9 @@
                     </c:if>
                     
                     <!-- VERIFICATION SYSTEM BUTTONS -->
-                    <div class="dropdown">
-                        <button class="btn btn-secondary btn-block dropdown-toggle mb-2" type="button" 
-                                id="staffChangeRequestDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-shield-alt"></i> Secure Account Changes
-                        </button>
-                        <div class="dropdown-menu w-100" aria-labelledby="staffChangeRequestDropdown">
-                            <a class="dropdown-item" href="#" onclick="requestChange('email', ${staff.id}, 'staff')">
-                                <i class="fas fa-envelope text-primary"></i> Change Email Address
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="requestChange('phone', ${staff.id}, 'staff')">
-                                <i class="fas fa-phone text-success"></i> Change Phone Number
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="requestChange('password', ${staff.id}, 'staff')">
-                                <i class="fas fa-key text-warning"></i> Reset Password
-                            </a>
-                        </div>
-                    </div>
                     
-                    <c:if test="${staff.status}">
-                        <button class="btn btn-secondary btn-block mb-2" onclick="resetPassword(${staff.id})">
-                            <i class="fas fa-key"></i> Reset Password (Direct)
-                        </button>
-                    </c:if>
+                    
+              
                     
                     <!-- Only show delete button if it's not the current logged-in user -->
                     <c:if test="${staff.status && staff.id != sessionScope.user.id}">
