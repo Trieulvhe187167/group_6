@@ -352,128 +352,127 @@
                     <span>&times;</span>
                 </button>
             </div>
-            <form id="checkInForm">
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Guest Information</h6>
-                            <div class="card p-3 mb-3">
-                                <p><strong>Name:</strong> <span id="modalGuestName"></span></p>
-                                <p><strong>Phone:</strong> <span id="modalGuestPhone"></span></p>
-                                <p><strong>Email:</strong> <span id="modalGuestEmail"></span></p>
-                                <p class="mb-0"><strong>Booking ID:</strong> #<span id="modalBookingId"></span></p>
-                            </div>
-
-                            <h6>Room Information</h6>
-                            <div class="card p-3 mb-3">
-                                <p><strong>Room Number:</strong> <span id="modalRoomNumber"></span></p>
-                                <p><strong>Room Type:</strong> <span id="modalRoomType"></span></p>
-                                <p><strong>Check-in:</strong> <span id="modalCheckIn"></span></p>
-                                <p class="mb-0"><strong>Check-out:</strong> <span id="modalCheckOut"></span></p>
-                            </div>
+            <div class="modal-body">
+                <div id="checkInFormAlert" class="alert alert-danger" style="display:none;"></div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Guest Information</h6>
+                        <div class="card p-3 mb-3">
+                            <p><strong>Name:</strong> <span id="modalGuestName"></span></p>
+                            <p><strong>Phone:</strong> <span id="modalGuestPhone"></span></p>
+                            <p><strong>Email:</strong> <span id="modalGuestEmail"></span></p>
+                            <p class="mb-0"><strong>Booking ID:</strong> #<span id="modalBookingId"></span></p>
                         </div>
 
-                        <div class="col-md-6">
-                            <h6>Verification Details</h6>
-                            <div class="btn-group btn-group-toggle d-flex mb-3" data-toggle="buttons">
-                                <label class="btn btn-outline-info">
-                                    <input type="radio" id="idTypePassport" name="idType" value="PASSPORT" required> 
-                                    <i class="fas fa-passport"></i> Passport
-                                </label>
-                                <label class="btn btn-outline-info">
-                                    <input type="radio" id="idTypeIdCard" name="idType" value="ID_CARD" required> 
-                                    <i class="fas fa-id-card"></i> ID Card
-                                </label>
-                                <label class="btn btn-outline-info">
-                                    <input type="radio" id="idTypeDriver" name="idType" value="DRIVER_LICENSE" required> 
-                                    <i class="fas fa-car"></i> Driver License
-                                </label>
-                            </div>
-
-                            <div class="form-group">
-                                <label>ID Number <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="idNumber" name="idNumber" required>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Additional Guests</label>
-                                        <input type="number" class="form-control" id="additionalGuests" name="additionalGuests"
-                                               value="0" min="0" max="5">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Key Cards</label>
-                                        <input type="number" class="form-control" id="keyCards" name="keyCards"
-                                               value="2" min="1" max="4">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Thêm trường Key Card Numbers -->
-                            <div class="form-group">
-                                <label>Key Card Numbers</label>
-                                <input type="text" class="form-control" id="keyCardNumbers" name="keyCardNumbers" 
-                                       placeholder="Eg: C1001, C1002">
-                            </div>
-                            
-                            <!-- Thêm trường Security Deposit -->
-                            <div class="form-group">
-                                <label>Security Deposit <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">₫</span>
-                                    </div>
-                                    <input type="number" id="securityDeposit" name="securityDeposit" 
-                                           class="form-control" value="500000" min="0" required>
-                                </div>
-                            </div>
+                        <h6>Room Information</h6>
+                        <div class="card p-3 mb-3">
+                            <p><strong>Room Number:</strong> <span id="modalRoomNumber"></span></p>
+                            <p><strong>Room Type:</strong> <span id="modalRoomType"></span></p>
+                            <p><strong>Check-in:</strong> <span id="modalCheckIn"></span></p>
+                            <p class="mb-0"><strong>Check-out:</strong> <span id="modalCheckOut"></span></p>
                         </div>
                     </div>
-                    
-                    <div class="row mt-3">
-                        <!-- Thêm trường Special Requests -->
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Special Requests</label>
-                                <textarea id="specialRequests" name="specialRequests" 
-                                          class="form-control" rows="3" 
-                                          placeholder="Enter any special guest requests..."></textarea>
+
+                    <div class="col-md-6">
+                        <h6>Verification Details</h6>
+                        <div class="btn-group btn-group-toggle d-flex mb-3" data-toggle="buttons">
+                            <label class="btn btn-outline-info">
+                                <input type="radio" id="idTypePassport" name="idType" value="PASSPORT" required> 
+                                <i class="fas fa-passport"></i> Passport
+                            </label>
+                            <label class="btn btn-outline-info">
+                                <input type="radio" id="idTypeIdCard" name="idType" value="ID_CARD" required> 
+                                <i class="fas fa-id-card"></i> ID Card
+                            </label>
+                            <label class="btn btn-outline-info">
+                                <input type="radio" id="idTypeDriver" name="idType" value="DRIVER_LICENSE" required> 
+                                <i class="fas fa-car"></i> Driver License
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>ID Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="idNumber" name="idNumber" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Additional Guests</label>
+                                    <input type="number" class="form-control" id="additionalGuests" name="additionalGuests"
+                                           value="0" min="0" max="5">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Key Cards</label>
+                                    <input type="number" class="form-control" id="keyCards" name="keyCards"
+                                           value="2" min="1" max="4">
+                                </div>
                             </div>
                         </div>
                         
-                        <!-- Thêm trường Check-In Notes -->
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Check-In Notes</label>
-                                <textarea id="checkInNotes" name="checkInNotes" 
-                                          class="form-control" rows="3" 
-                                          placeholder="Enter any notes about the check-in..."></textarea>
+                        <!-- Thêm trường Key Card Numbers -->
+                        <div class="form-group">
+                            <label>Key Card Numbers</label>
+                            <input type="text" class="form-control" id="keyCardNumbers" name="keyCardNumbers" 
+                                   placeholder="Eg: C1001, C1002">
+                        </div>
+                        
+                        <!-- Thêm trường Security Deposit -->
+                        <div class="form-group">
+                            <label>Security Deposit <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">₫</span>
+                                </div>
+                                <input type="number" id="securityDeposit" name="securityDeposit" 
+                                       class="form-control" value="500000" min="0" required>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <!-- Thêm trường Special Requests -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Special Requests</label>
+                            <textarea id="specialRequests" name="specialRequests" 
+                                      class="form-control" rows="3" 
+                                      placeholder="Enter any special guest requests..."></textarea>
                         </div>
                     </div>
                     
-                    <!-- Thêm trường Estimated Check-Out Time -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Estimated Check-Out Time</label>
-                                <input type="datetime-local" id="estimatedCheckOutTime" name="estimatedCheckOutTime" 
-                                       class="form-control">
-                                <small class="text-muted">Default: 12:00 PM on check-out day</small>
-                            </div>
+                    <!-- Thêm trường Check-In Notes -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Check-In Notes</label>
+                            <textarea id="checkInNotes" name="checkInNotes" 
+                                      class="form-control" rows="3" 
+                                      placeholder="Enter any notes about the check-in..."></textarea>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-info">
-                        <i class="fas fa-check"></i> Complete Check-In
-                    </button>
+                
+                <!-- Thêm trường Estimated Check-Out Time -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Estimated Check-Out Time</label>
+                            <input type="datetime-local" id="estimatedCheckOutTime" name="estimatedCheckOutTime" 
+                                   class="form-control">
+                            <small class="text-muted">Default: 12:00 PM on check-out day</small>
+                        </div>
+                    </div>
                 </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" id="btnCompleteCheckIn" class="btn btn-info" onclick="submitCheckInForm()">
+                    <i class="fas fa-check"></i> Complete Check-In
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -1082,70 +1081,6 @@
         $('#searchResults').show();
     }
     
-    $('#checkInForm').submit(function(e) {
-        e.preventDefault();
-        
-        // Get form values
-        var formData = {
-            reservationId: parseInt($('#modalBookingId').text()),
-            idType: $('input[name="idType"]:checked').val(),
-            idNumber: $('#idNumber').val(),
-            additionalGuests: parseInt($('#additionalGuests').val()),
-            keyCards: parseInt($('#keyCards').val()),
-            keyCardNumbers: $('#keyCardNumbers').val(),
-            checkInNotes: $('#checkInNotes').val(),
-            specialRequests: $('#specialRequests').val(),
-            securityDeposit: parseFloat($('#securityDeposit').val()),
-            estimatedCheckOutTime: $('#estimatedCheckOutTime').val(),
-            amenities: []
-        };
-        
-        // Validate required fields
-        if (!formData.idType || !formData.idNumber || !formData.keyCards || !formData.keyCardNumbers) {
-            toastr.error('Please fill in all required fields');
-            return;
-        }
-
-        // Collect amenity data if available
-        $('.amenity-check').each(function() {
-            var amenityId = $(this).data('amenity-id');
-            var isPresent = $(this).prop('checked');
-            formData.amenities.push({
-                amenityId: amenityId,
-                present: isPresent
-            });
-        });
-        
-        // Submit check-in
-        $.ajax({
-            url: '${pageContext.request.contextPath}/receptionist/check-in',
-            type: 'POST',
-            data: JSON.stringify(formData),
-            contentType: 'application/json',
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    toastr.success('Check-in completed successfully');
-                    $('#checkInModal').modal('hide');
-                    // Reload page after a short delay
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    toastr.error('Error processing check-in');
-                }
-            },
-            error: function(xhr) {
-                try {
-                    var errorMsg = JSON.parse(xhr.responseText).error;
-                    toastr.error(errorMsg || 'Error processing check-in');
-                } catch(e) {
-                    toastr.error('Error processing check-in');
-                }
-            }
-        });
-    });
-    
     function scanQRCode() {
         alert('QR Code scanning functionality not implemented yet.');
     }
@@ -1186,5 +1121,113 @@
                 }
             });
         });
+    }
+    
+    // Add click handler for the check-in button
+    $(document).ready(function() {
+        // Debug when document is ready
+        console.log('Document ready, setting up click handlers');
+        
+        // Add click handler for complete check-in button
+        $('#btnCompleteCheckIn').on('click', function() {
+            console.log('Complete Check-In button clicked');
+            submitCheckInForm();
+        });
+    });
+    
+    // Separate form submission function to ensure it uses AJAX
+    function submitCheckInForm() {
+        console.log('submitCheckInForm called');
+        
+        // Hide any previous error messages
+        $('#checkInFormAlert').hide();
+        
+        try {
+            // Get form values
+            var formData = {
+                reservationId: parseInt($('#modalBookingId').text()),
+                idType: $('input[name="idType"]:checked').val(),
+                idNumber: $('#idNumber').val(),
+                additionalGuests: parseInt($('#additionalGuests').val()) || 0,
+                keyCards: parseInt($('#keyCards').val()) || 0,
+                keyCardNumbers: $('#keyCardNumbers').val(),
+                checkInNotes: $('#checkInNotes').val() || '',
+                specialRequests: $('#specialRequests').val() || '',
+                securityDeposit: parseFloat($('#securityDeposit').val()) || 0,
+                estimatedCheckOutTime: $('#estimatedCheckOutTime').val() || ''
+            };
+            
+            // Debug output
+            console.log("Form data gathered:", formData);
+            
+            // Validate required fields
+            let validationError = '';
+            
+            if (!formData.idType) {
+                validationError = 'Please select an ID Type';
+            } else if (!formData.idNumber) {
+                validationError = 'Please enter an ID Number';
+            } else if (formData.keyCards <= 0) {
+                validationError = 'Please specify at least 1 key card';
+            } else if (!formData.keyCardNumbers) {
+                validationError = 'Please enter the key card numbers';
+            }
+            
+            if (validationError) {
+                $('#checkInFormAlert').text(validationError).show();
+                return;
+            }
+            
+            // Show processing state
+            $('#btnCompleteCheckIn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+            
+            // Submit check-in using XMLHttpRequest for more control
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '${pageContext.request.contextPath}/receptionist/check-in', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            
+            xhr.onload = function() {
+                console.log("Response received:", xhr.status, xhr.responseText);
+                
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            alert('Check-in completed successfully');
+                            $('#checkInModal').modal('hide');
+                            // Reload page after a short delay
+                            setTimeout(function() {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            $('#checkInFormAlert').text('Error: ' + (response.message || 'Unknown error')).show();
+                            $('#btnCompleteCheckIn').prop('disabled', false).html('<i class="fas fa-check"></i> Complete Check-In');
+                        }
+                    } catch (parseError) {
+                        console.error("Error parsing response:", parseError, xhr.responseText);
+                        $('#checkInFormAlert').text('Error: Could not parse server response').show();
+                        $('#btnCompleteCheckIn').prop('disabled', false).html('<i class="fas fa-check"></i> Complete Check-In');
+                    }
+                } else {
+                    console.error("HTTP error:", xhr.status, xhr.statusText, xhr.responseText);
+                    $('#checkInFormAlert').text('Server error: ' + xhr.status + ' ' + xhr.statusText).show();
+                    $('#btnCompleteCheckIn').prop('disabled', false).html('<i class="fas fa-check"></i> Complete Check-In');
+                }
+            };
+            
+            xhr.onerror = function() {
+                console.error("Network error occurred");
+                $('#checkInFormAlert').text('Network error occurred. Please try again.').show();
+                $('#btnCompleteCheckIn').prop('disabled', false).html('<i class="fas fa-check"></i> Complete Check-In');
+            };
+            
+            console.log("Sending data:", JSON.stringify(formData));
+            xhr.send(JSON.stringify(formData));
+            
+        } catch (e) {
+            console.error("Error in submitCheckInForm:", e);
+            $('#checkInFormAlert').text('Error: ' + e.message).show();
+            $('#btnCompleteCheckIn').prop('disabled', false).html('<i class="fas fa-check"></i> Complete Check-In');
+        }
     }
 </script>
