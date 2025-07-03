@@ -1414,14 +1414,14 @@
                                         <!-- Payment Method -->
                                         <div class="mb-4">
                                             <h4>Payment Method</h4>
-                                            <div class="form-check mb-2">
+<!--                                            <div class="form-check mb-2">
                                                 <input class="form-check-input" type="radio" name="paymentMethod" value="CREDIT_CARD" id="creditCardForm" checked>
                                                 <label class="form-check-label" for="creditCardForm">
                                                     Credit/Debit Card
                                                 </label>
-                                            </div>
+                                            </div>-->
                                             <div class="form-check mb-2">
-                                                <input class="form-check-input" type="radio" name="paymentMethod" value="BANK_TRANSFER" id="bankTransferForm">
+                                                <input class="form-check-input" type="radio" name="paymentMethod" value="BANK_TRANSFER" id="bankTransferForm" checked>
                                                 <label class="form-check-label" for="bankTransferForm">
                                                     Bank Transfer
                                                 </label>
