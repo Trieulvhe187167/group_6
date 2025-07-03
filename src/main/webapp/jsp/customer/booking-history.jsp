@@ -1,8 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,6 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking History</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
     <style>
         * {
             margin: 0;
@@ -35,11 +37,11 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
-            padding: 0;
             position: fixed;
             height: 100vh;
             z-index: 1000;
             transition: transform 0.3s ease;
+            overflow-y: auto;
         }
 
         .sidebar-header {
@@ -134,6 +136,7 @@
             flex: 1;
             margin-left: 280px;
             padding: 40px;
+            min-height: 100vh;
             transition: margin-left 0.3s ease;
         }
 
@@ -156,6 +159,7 @@
         .content-header p {
             color: #6c757d;
             font-size: 1.1rem;
+            margin-bottom: 0;
         }
 
         /* Filter Section */
@@ -259,6 +263,7 @@
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-bottom: 0;
         }
 
         .stat-card.total .stat-icon { color: #667eea; }
@@ -308,19 +313,12 @@
             font-size: 1.4rem;
             font-weight: 700;
             color: #495057;
-        }
-
-        .booking-date {
-            font-size: 0.9rem;
-            color: #6c757d;
-            background: #f8f9fa;
-            padding: 5px 12px;
-            border-radius: 20px;
+            margin-bottom: 0;
         }
 
         .booking-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 20px;
         }
@@ -367,30 +365,41 @@
             color: white;
         }
 
-        .badge.no-show {
+        .badge.no_show {
             background: linear-gradient(135deg, #6c757d, #495057);
             color: white;
         }
 
-        .note {
+        .booking-actions {
             margin-top: 20px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            padding: 20px;
-            border-radius: 15px;
-            border-left: 4px solid #667eea;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
         }
 
-        .note-title {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 8px;
-            display: flex;
+        .btn {
+            display: inline-flex;
             align-items: center;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
         }
 
-        .note-title i {
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        .btn i {
             margin-right: 8px;
-            color: #667eea;
         }
 
         .empty-message {
@@ -418,6 +427,7 @@
         .empty-text {
             color: #6c757d;
             font-size: 1.1rem;
+            margin-bottom: 0;
         }
 
         /* Rating Section */
@@ -435,6 +445,28 @@
         .rating-text {
             font-size: 0.9rem;
             color: #6c757d;
+            text-decoration: none;
+        }
+
+        .rating-text:hover {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        /* Sidebar overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
         }
 
         /* Responsive Design */
@@ -492,22 +524,6 @@
                 grid-template-columns: repeat(2, 1fr);
                 gap: 15px;
             }
-        }
-
-        /* Sidebar overlay for mobile */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-
-        .sidebar-overlay.active {
-            display: block;
         }
     </style>
 </head>
@@ -653,26 +669,27 @@
 
             <!-- Filter Section -->
             <div class="filter-section">
-                <form method="GET" action="booking-history.jsp">
+             <form method="GET" action="${pageContext.request.contextPath}/customer/history">
+
                     <div class="filter-row">
                         <div class="filter-group">
                             <label for="status">Filter by Status</label>
                             <select id="status" name="status">
                                 <option value="">All Status</option>
-                                <option value="COMPLETED">Completed</option>
-                                <option value="CANCELLED">Cancelled</option>
-                                <option value="NO_SHOW">No Show</option>
+                                <option value="COMPLETED" ${selectedStatus == 'COMPLETED' ? 'selected' : ''}>Completed</option>
+                                <option value="CANCELLED" ${selectedStatus == 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                                <option value="NO_SHOW" ${selectedStatus == 'NO_SHOW' ? 'selected' : ''}>No Show</option>
                             </select>
                         </div>
                         
                         <div class="filter-group">
                             <label for="dateFrom">From Date</label>
-                            <input type="date" id="dateFrom" name="dateFrom">
+                            <input type="date" id="dateFrom" name="dateFrom" value="${selectedDateFrom}">
                         </div>
                         
                         <div class="filter-group">
                             <label for="dateTo">To Date</label>
-                            <input type="date" id="dateTo" name="dateTo">
+                            <input type="date" id="dateTo" name="dateTo" value="${selectedDateTo}">
                         </div>
                         
                         <div class="filter-group">
@@ -684,6 +701,7 @@
                 </form>
             </div>
 
+            <!-- Bookings List -->
             <c:if test="${empty historyBookings}">
                 <div class="empty-message">
                     <div class="empty-icon">
@@ -699,10 +717,6 @@
                     <div class="booking-header">
                         <div class="booking-title">
                             <i class="fas fa-bed"></i> Room ${booking.roomName} - ${booking.roomTypeName}
-                        </div>
-                        <div class="booking-date">
-                            <i class="fas fa-calendar"></i>
-                            <fmt:formatDate value="${booking.bookingDate}" pattern="MMM dd, yyyy" />
                         </div>
                     </div>
                     
@@ -727,7 +741,7 @@
                             <i class="fas fa-dollar-sign"></i>
                             <span class="detail-label">Total Paid:</span>
                             <span class="detail-value">
-                                <fmt:formatNumber value="${booking.basePrice}" type="currency" />
+                                <fmt:formatNumber value="${booking.totalAmount}" type="currency" />
                             </span>
                         </div>
                         
@@ -738,15 +752,13 @@
                         </div>
                     </div>
 
-                    <c:if test="${not empty booking.note}">
-                        <div class="note">
-                            <div class="note-title">
-                                <i class="fas fa-sticky-note"></i>
-                                Your Note:
-                            </div>
-                            <div>${booking.note}</div>
-                        </div>
-                    </c:if>
+                    <div class="booking-actions">
+                        <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                    </div>
 
                     <!-- Rating Section (if booking was completed) -->
                     <c:if test="${booking.status == 'COMPLETED'}">
@@ -773,6 +785,9 @@
         </main>
     </div>
 
+     <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -781,11 +796,6 @@
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
         }
-
-        // Close sidebar when clicking on overlay
-        document.querySelector('.sidebar-overlay').addEventListener('click', function() {
-            toggleSidebar();
-        });
 
         // Handle window resize
         window.addEventListener('resize', function() {

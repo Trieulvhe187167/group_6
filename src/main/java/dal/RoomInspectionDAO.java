@@ -207,79 +207,84 @@ public class RoomInspectionDAO extends DBContext {
     }
     
     // Get inspector's inspections
-    public List<RoomInspection> getInspectorInspections(int inspectorId, String status) throws SQLException {
-        List<RoomInspection> inspections = new ArrayList<>();
-        String sql = "SELECT ri.*, " +
-                    "r.CheckIn, r.CheckOut, r.RoomId, " +
-                    "rm.RoomNumber, " +
-                    "u.FullName as CustomerName, " +
-                    "ISNULL((SELECT SUM(TotalPrice) FROM InspectionItems WHERE InspectionId = ri.Id), 0) as ItemCharges, " +
-                    "ISNULL((SELECT SUM(EstimatedCost) FROM RoomDamages WHERE InspectionId = ri.Id), 0) as DamageCharges " +
-                    "FROM RoomInspections ri " +
-                    "INNER JOIN Reservations r ON ri.ReservationId = r.Id " +
-                    "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
-                    "INNER JOIN Users u ON r.UserId = u.Id " +
-                    "WHERE ri.InspectorId = ? ";
-        
-        if (status != null && !status.isEmpty()) {
-            sql += "AND ri.Status = ? ";
-        }
-        sql += "ORDER BY ri.InspectionTime DESC";
-        
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, inspectorId);
-            if (status != null && !status.isEmpty()) {
-                stmt.setString(2, status);
-            }
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    RoomInspection inspection = new RoomInspection();
-                    inspection.setId(rs.getInt("Id"));
-                    inspection.setReservationId(rs.getInt("ReservationId"));
-                    inspection.setInspectorId(rs.getInt("InspectorId"));
-                    inspection.setInspectionTime(rs.getTimestamp("InspectionTime"));
-                    inspection.setRoomCondition(rs.getString("RoomCondition"));
-                    inspection.setCleanlinessScore(rs.getInt("CleanlinessScore"));
-                    inspection.setStatus(rs.getString("Status"));
-                    
-                    // Set charges - convert from double to BigDecimal
-                    inspection.setTotalItemCharges(BigDecimal.valueOf(rs.getDouble("ItemCharges")));
-                    inspection.setTotalDamageCharges(BigDecimal.valueOf(rs.getDouble("DamageCharges")));
-                    inspection.setTotalCharges(inspection.getTotalItemCharges().add(inspection.getTotalDamageCharges()));
-                    
-                    // Set reservation info
-                    Reservation res = new Reservation();
-                    res.setId(rs.getInt("ReservationId"));
-                    res.setCheckIn(rs.getDate("CheckIn"));
-                    res.setCheckOut(rs.getDate("CheckOut"));
-                    res.setRoomId(rs.getInt("RoomId"));
-                    res.setRoomNumber(rs.getString("RoomNumber"));
-                    res.setCustomerName(rs.getString("CustomerName"));
-                    
-                    inspection.setReservation(res);
-                    inspections.add(inspection);
-                }
-            }
-        }
-        return inspections;
+  public List<RoomInspection> getInspectorInspections(int inspectorId, String status) throws SQLException {
+    List<RoomInspection> inspections = new ArrayList<>();
+    String sql = "SELECT ri.*, " +
+                "r.CheckIn, r.CheckOut, r.RoomId, " +
+                "rm.RoomNumber, " +
+                "u.FullName as CustomerName, " +
+                "ISNULL((SELECT SUM(TotalPrice) FROM InspectionItems WHERE InspectionId = ri.Id), 0) as ItemCharges, " +
+                "ISNULL((SELECT SUM(EstimatedCost) FROM RoomDamages WHERE InspectionId = ri.Id), 0) as DamageCharges " +
+                "FROM RoomInspections ri " +
+                "INNER JOIN Reservations r ON ri.ReservationId = r.Id " +
+                "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
+                "INNER JOIN Users u ON r.UserId = u.Id " +
+                "WHERE ri.InspectorId = ? ";
+    
+    if (status != null && !status.isEmpty()) {
+        sql += "AND ri.Status = ? ";
     }
+    
+    sql += "ORDER BY ri.InspectionTime DESC";
+    
+    try (Connection conn = getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setInt(1, inspectorId);
+        if (status != null && !status.isEmpty()) {
+            stmt.setString(2, status);
+        }
+        
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                RoomInspection inspection = new RoomInspection();
+                
+                // Basic info
+                inspection.setId(rs.getInt("Id"));
+                inspection.setReservationId(rs.getInt("ReservationId"));
+                inspection.setInspectorId(inspectorId);
+                inspection.setInspectionTime(rs.getTimestamp("InspectionTime"));
+                inspection.setRoomCondition(rs.getString("RoomCondition"));
+                inspection.setCleanlinessScore(rs.getInt("CleanlinessScore"));
+                inspection.setNotes(rs.getString("Notes"));
+                inspection.setStatus(rs.getString("Status"));
+                
+                // Calculate totals
+                double itemCharges = rs.getDouble("ItemCharges");
+                double damageCharges = rs.getDouble("DamageCharges");
+                inspection.setTotalCharges(BigDecimal.valueOf(itemCharges + damageCharges));
+                
+                // Reservation info
+                Reservation res = new Reservation();
+                res.setId(rs.getInt("ReservationId"));
+                res.setCheckIn(rs.getDate("CheckIn"));
+                res.setCheckOut(rs.getDate("CheckOut"));
+                res.setRoomId(rs.getInt("RoomId"));
+                res.setRoomNumber(rs.getString("RoomNumber"));
+                res.setCustomerName(rs.getString("CustomerName"));
+                inspection.setReservation(res);
+                
+                inspections.add(inspection);
+            }
+        }
+    }
+    return inspections;
+}
     
   
     // Update inspection notes
     public void updateInspectionNotes(int inspectionId, String notes) throws SQLException {
-        String sql = "UPDATE RoomInspections SET Notes = ? WHERE Id = ?";
+    // Fixed: Removed SET UpdatedAt = GETDATE() as column might not exist
+    String sql = "UPDATE RoomInspections SET Notes = ? WHERE Id = ?";
+    
+    try (Connection conn = getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
         
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, notes);
-            stmt.setInt(2, inspectionId);
-            stmt.executeUpdate();
-        }
+        stmt.setString(1, notes);
+        stmt.setInt(2, inspectionId);
+        stmt.executeUpdate();
     }
+}
     
     // Delete inspection item
     public void deleteInspectionItem(int itemId) throws SQLException {
@@ -345,41 +350,7 @@ public class RoomInspectionDAO extends DBContext {
         return 0.0;
     }
     
-    // Helper method to map ResultSet to Reservation
-    private Reservation mapResultSetToReservation(ResultSet rs) throws SQLException {
-        Reservation reservation = new Reservation();
-        reservation.setId(rs.getInt("Id"));
-        reservation.setUserId(rs.getInt("UserId"));
-        
-        // Handle nullable fields
-        Object groupBookingId = rs.getObject("GroupBookingId");
-        if (groupBookingId != null) {
-            reservation.setGroupBookingId((Integer) groupBookingId);
-        }
-        
-        Object createdBy = rs.getObject("CreatedBy");
-        if (createdBy != null) {
-            reservation.setCreatedBy((Integer) createdBy);
-        }
-        
-        reservation.setRoomId(rs.getInt("RoomId"));
-        reservation.setCheckIn(rs.getDate("CheckIn"));
-        reservation.setCheckOut(rs.getDate("CheckOut"));
-        reservation.setStatus(rs.getString("Status"));
-        reservation.setTotalAmount(rs.getDouble("TotalAmount"));
-        
-        // Set display fields
-        reservation.setCustomerName(rs.getString("CustomerName"));
-        reservation.setCustomerEmail(rs.getString("CustomerEmail"));
-        reservation.setCustomerPhone(rs.getString("CustomerPhone"));
-        reservation.setRoomNumber(rs.getString("RoomNumber"));
-        reservation.setRoomTypeName(rs.getString("RoomTypeName"));
-        
-        // Calculate nights
-        reservation.calculateNights();
-        
-        return reservation;
-    }
+   
     
     // Helper method to map RoomInspection
     private RoomInspection mapRoomInspection(ResultSet rs) throws SQLException {
@@ -516,22 +487,24 @@ public class RoomInspectionDAO extends DBContext {
     // Add this method to RoomInspectionDAO.java
 
 public RoomInspection getInspectionByReservationId(int reservationId) throws SQLException {
-    String sql = "SELECT ri.*, " +
+    // Fixed: Use TOP 1 for SQL Server and correct column names
+    String sql = "SELECT TOP 1 ri.*, " +
                  "u.FullName as InspectorName, " +
-                 "r.CustomerName, r.CheckIn, r.CheckOut, r.TotalAmount, " +
-                 "rm.RoomNumber, rt.TypeName as RoomTypeName, " +
-                 "(SELECT COALESCE(SUM(TotalPrice), 0) FROM InspectionItems " +
+                 "usr.FullName as CustomerName, " +  // Join with Users to get customer name
+                 "r.CheckIn, r.CheckOut, r.TotalAmount, " +
+                 "rm.RoomNumber, rt.Name as RoomTypeName, " +  // Use rt.Name instead of rt.TypeName
+                 "(SELECT COALESCE(SUM(Quantity * UnitPrice), 0) FROM InspectionItems " +
                  " WHERE InspectionId = ri.Id) as ItemCharges, " +
                  "(SELECT COALESCE(SUM(EstimatedCost), 0) FROM RoomDamages " +
                  " WHERE InspectionId = ri.Id) as DamageCharges " +
                  "FROM RoomInspections ri " +
                  "JOIN Users u ON ri.InspectorId = u.Id " +
                  "JOIN Reservations r ON ri.ReservationId = r.Id " +
+                 "JOIN Users usr ON r.UserId = usr.Id " +  // Join to get customer info
                  "JOIN Rooms rm ON r.RoomId = rm.Id " +
                  "JOIN RoomTypes rt ON rm.RoomTypeId = rt.Id " +
                  "WHERE ri.ReservationId = ? " +
-                 "ORDER BY ri.InspectionTime DESC " +
-                 "LIMIT 1";
+                 "ORDER BY ri.InspectionTime DESC";
     
     try (Connection conn = getConnection();
          PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -555,7 +528,7 @@ public RoomInspection getInspectionByReservationId(int reservationId) throws SQL
                 inspector.setFullName(rs.getString("InspectorName"));
                 inspection.setInspector(inspector);
                 
-                // Set charges
+                // Set charges - handle as BigDecimal
                 inspection.setTotalItemCharges(BigDecimal.valueOf(rs.getDouble("ItemCharges")));
                 inspection.setTotalDamageCharges(BigDecimal.valueOf(rs.getDouble("DamageCharges")));
                 inspection.setTotalCharges(inspection.getTotalItemCharges().add(inspection.getTotalDamageCharges()));
@@ -578,9 +551,11 @@ public RoomInspection getInspectionByReservationId(int reservationId) throws SQL
     return null;
 }
 
+
 // Also add this method to update inspection status
 public boolean updateInspectionStatus(int inspectionId, String status) throws SQLException {
-    String sql = "UPDATE RoomInspections SET Status = ?, UpdatedAt = NOW() WHERE Id = ?";
+    // Only update Status, not UpdatedAt (column might not exist)
+    String sql = "UPDATE RoomInspections SET Status = ? WHERE Id = ?";
     
     try (Connection conn = getConnection();
          PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -590,5 +565,88 @@ public boolean updateInspectionStatus(int inspectionId, String status) throws SQ
         
         return stmt.executeUpdate() > 0;
     }
+}
+private Reservation mapResultSetToReservation(ResultSet rs) throws SQLException {
+    Reservation reservation = new Reservation();
+    reservation.setId(rs.getInt("Id"));
+    reservation.setUserId(rs.getInt("UserId"));
+    
+    // Handle nullable fields safely
+    try {
+        Object groupBookingId = rs.getObject("GroupBookingId");
+        if (groupBookingId != null) {
+            reservation.setGroupBookingId((Integer) groupBookingId);
+        }
+    } catch (SQLException e) {
+        // Column might not exist in this query
+    }
+    
+    try {
+        Object createdBy = rs.getObject("CreatedBy");
+        if (createdBy != null) {
+            reservation.setCreatedBy((Integer) createdBy);
+        }
+    } catch (SQLException e) {
+        // Column might not exist in this query
+    }
+    
+    // RoomId might be null for pending inspections
+    try {
+        Object roomId = rs.getObject("RoomId");
+        if (roomId != null) {
+            reservation.setRoomId((Integer) roomId);
+        }
+    } catch (SQLException e) {
+        // Handle if column doesn't exist
+    }
+    
+    // Handle RoomTypeId if it exists in the query
+    try {
+        Object roomTypeId = rs.getObject("RoomTypeId");
+        if (roomTypeId != null) {
+            reservation.setRoomTypeId((Integer) roomTypeId);
+        }
+    } catch (SQLException e) {
+        // Column might not exist in this query - this is OK
+    }
+    
+    reservation.setCheckIn(rs.getDate("CheckIn"));
+    reservation.setCheckOut(rs.getDate("CheckOut"));
+    reservation.setStatus(rs.getString("Status"));
+    reservation.setTotalAmount(rs.getDouble("TotalAmount"));
+    
+    // Set display fields - these should always exist in our queries
+    reservation.setCustomerName(rs.getString("CustomerName"));
+    reservation.setCustomerEmail(rs.getString("CustomerEmail"));
+    reservation.setCustomerPhone(rs.getString("CustomerPhone"));
+    reservation.setRoomNumber(rs.getString("RoomNumber"));
+    reservation.setRoomTypeName(rs.getString("RoomTypeName"));
+    
+    // Handle optional fields
+    try {
+        reservation.setNotes(rs.getString("Notes"));
+    } catch (SQLException e) {
+        // Notes might not be in all queries
+    }
+    
+    try {
+        reservation.setSpecialRequests(rs.getString("SpecialRequests"));
+    } catch (SQLException e) {
+        // SpecialRequests might not be in all queries
+    }
+    
+    try {
+        reservation.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
+    } catch (SQLException e) {
+        // NumberOfCustomers might not be in all queries
+        reservation.setNumberOfCustomers(1); // Default value
+    }
+    
+    // Calculate nights if dates are available
+    if (reservation.getCheckIn() != null && reservation.getCheckOut() != null) {
+        reservation.calculateNights();
+    }
+    
+    return reservation;
 }
 }

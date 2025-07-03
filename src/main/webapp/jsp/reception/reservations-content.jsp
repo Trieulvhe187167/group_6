@@ -1,6 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <div class="container-fluid">
     <!-- Page Header -->
@@ -206,7 +214,7 @@
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             </c:if>
-                                            <c:if test="${reservation.status eq 'CONFIRMED'}">
+                                            <c:if test="${reservation.status eq 'PENDING'}">
                                                 <button class="btn btn-sm btn-warning" onclick="editReservation(${reservation.id})"
                                                         title="Edit">
                                                     <i class="fas fa-edit"></i>
@@ -468,15 +476,18 @@
 
 <script>
     $(document).ready(function () {
-        // Customer select change
-        $('#customerSelect').change(function () {
-            if ($(this).val() === 'new') {
-                $('#newCustomerFields').show();
-                $('#customerName, #customerPhone').attr('required', true);
-            } else {
-                $('#newCustomerFields').hide();
-                $('#customerName, #customerPhone').attr('required', false);
-            }
+    // SỬA: Thêm event listener riêng cho edit modal
+    $('#editCheckIn, #editCheckOut').change(function () {
+        calculateTotal();
+        
+        // Validate ngày
+        const checkIn = new Date($('#editCheckIn').val());
+        const checkOut = new Date($('#editCheckOut').val());
+        
+        if (checkIn && checkOut && checkOut <= checkIn) {
+            alert('Check-out date must be after check-in date');
+            $(this).focus();
+        }
         });
 
         // Room type change - load available rooms
@@ -546,33 +557,37 @@
     }
 
     function calculateTotal() {
-        // For new reservation
-        const checkIn = new Date($('#newCheckIn').val());
-        const checkOut = new Date($('#newCheckOut').val());
-        const roomType = $('#roomTypeSelect option:selected');
+    // For new reservation
+    const checkIn = new Date($('#newCheckIn').val());
+    const checkOut = new Date($('#newCheckOut').val());
+    const roomType = $('#roomTypeSelect option:selected');
 
-        if (checkIn && checkOut && roomType.val() && checkOut > checkIn) {
-            const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-            const pricePerNight = parseFloat(roomType.data('price')) || 0;
-            const total = nights * pricePerNight;
+    if (checkIn && checkOut && roomType.val() && checkOut > checkIn) {
+        const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+        const pricePerNight = parseFloat(roomType.data('price')) || 0;
+        const total = nights * pricePerNight;
 
-            $('#nightsDisplay').text(nights);
-            $('#totalAmountDisplay').text(formatCurrency(total));
-        } else {
-            $('#nightsDisplay').text('0');
-            $('#totalAmountDisplay').text('0₫');
-        }
-
-        // For edit reservation
-        const editCheckIn = new Date($('#editCheckIn').val());
-        const editCheckOut = new Date($('#editCheckOut').val());
-
-        if (editCheckIn && editCheckOut && editCheckOut > editCheckIn) {
-            const editNights = Math.ceil((editCheckOut - editCheckIn) / (1000 * 60 * 60 * 24));
-            $('#editNightsDisplay').text(editNights);
-            // You can add price calculation for edit modal if needed
-        }
+        $('#nightsDisplay').text(nights);
+        $('#totalAmountDisplay').text(formatCurrency(total));
+    } else {
+        $('#nightsDisplay').text('0');
+        $('#totalAmountDisplay').text('0₫');
     }
+
+    // SỬA: Cải thiện tính toán cho edit reservation
+    const editCheckIn = new Date($('#editCheckIn').val());
+    const editCheckOut = new Date($('#editCheckOut').val());
+
+    if (editCheckIn && editCheckOut && editCheckOut > editCheckIn) {
+        const editNights = Math.ceil((editCheckOut - editCheckIn) / (1000 * 60 * 60 * 24));
+        $('#editNightsDisplay').text(editNights);
+        
+        // SỬA: Thêm tính toán tổng tiền cho edit modal nếu cần
+        // Bạn có thể thêm logic tính toán tổng tiền ở đây nếu có thông tin giá phòng
+    } else {
+        $('#editNightsDisplay').text('0');
+    }
+}
 
     function createReservation() {
         const formData = {
@@ -740,74 +755,101 @@
     }
 
     function editReservation(id) {
-        $.ajax({
-            url: '${pageContext.request.contextPath}/receptionist/reservations',
-            type: 'POST',
-            data: {
-                action: 'getReservationDetails',
-                id: id
-            },
-            success: function (data) {
-                // Format date to YYYY-MM-DD for input date fields
-                function formatDateForInput(dateStr) {
-                    if (!dateStr) return '';
+    $.ajax({
+        url: '${pageContext.request.contextPath}/receptionist/reservations',
+        type: 'POST',
+        data: {
+            action: 'getReservationDetails',
+            id: id
+        },
+        success: function (data) {
+            // Format date to YYYY-MM-DD for input date fields
+            function formatDateForInput(dateStr) {
+                if (!dateStr) return '';
+                try {
                     const date = new Date(dateStr);
+                    if (isNaN(date.getTime())) return '';
+                    
                     const year = date.getFullYear();
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const day = String(date.getDate()).padStart(2, '0');
-                    return `\${year}-\${month}-\${day}`;
+                    return year + '-' + month + '-' + day; // SỬA: Thay template literal bằng phép nối chuỗi
+                } catch (e) {
+                    console.error('Date formatting error:', e);
+                    return '';
                 }
-                
-                $('#editReservationId').val(data.id);
-                $('#editCustomerName').val(data.customerName);
-                $('#editRoomInfo').val(`Room \${data.roomNumber} (\${data.roomTypeName})`);
-                $('#editCheckIn').val(formatDateForInput(data.checkIn));
-                $('#editCheckOut').val(formatDateForInput(data.checkOut));
-                $('#editNumberOfCustomers').val(data.numberOfCustomers || 1);
-                $('#editStatus').val(data.status);
-                $('#editSpecialRequests').val(data.specialRequests || '');
-
-                calculateTotal();
-                $('#editReservationModal').modal('show');
-            },
-            error: function () {
-                alert('Error loading reservation details');
             }
-        });
+            
+            $('#editReservationId').val(data.id);
+            $('#editCustomerName').val(data.customerName);
+            $('#editRoomInfo').val('Room ' + data.roomNumber + ' (' + data.roomTypeName + ')'); // SỬA: Thay template literal
+            $('#editCheckIn').val(formatDateForInput(data.checkIn));
+            $('#editCheckOut').val(formatDateForInput(data.checkOut));
+            $('#editNumberOfCustomers').val(data.numberOfCustomers || 1);
+            $('#editStatus').val(data.status);
+            $('#editSpecialRequests').val(data.specialRequests || '');
+
+            calculateTotal();
+            $('#editReservationModal').modal('show');
+        },
+        error: function(xhr, status, error) {
+            console.error('Error loading reservation details:', error);
+            alert('Error loading reservation details: ' + error);
+        }
+    });
+}
+
+   
+function updateReservation() {
+    // Validate dữ liệu trước khi gửi
+    const checkInDate = new Date($('#editCheckIn').val());
+    const checkOutDate = new Date($('#editCheckOut').val());
+    
+    if (checkOutDate <= checkInDate) {
+        alert('Check-out date must be after check-in date');
+        return;
     }
+    
+    if (checkInDate < new Date().setHours(0,0,0,0)) {
+        alert('Check-in date cannot be in the past');
+        return;
+    }
+    
+    const formData = {
+        action: 'updateReservation', // SỬA: Thêm action vào formData
+        id: $('#editReservationId').val(),
+        checkIn: $('#editCheckIn').val(),
+        checkOut: $('#editCheckOut').val(),
+        numberOfCustomers: $('#editNumberOfCustomers').val(),
+        status: $('#editStatus').val(),
+        specialRequests: $('#editSpecialRequests').val()
+    };
 
-    function updateReservation() {
-        const formData = {
-            id: $('#editReservationId').val(),
-            checkIn: $('#editCheckIn').val(),
-            checkOut: $('#editCheckOut').val(),
-            numberOfCustomers: $('#editNumberOfCustomers').val(),
-            status: $('#editStatus').val(),
-            specialRequests: $('#editSpecialRequests').val()
-        };
-
-        $.ajax({
-            url: '${pageContext.request.contextPath}/receptionist/reservations',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                action: 'updateReservation',
-                ...formData
-            }),
-            success: function (response) {
-                if (response.success) {
-                    alert('Reservation updated successfully!');
-                    $('#editReservationModal').modal('hide');
-                    location.reload();
-                } else {
-                    alert('Error updating reservation: ' + (response.message || 'Unknown error'));
-                }
-            },
-            error: function () {
-                alert('Error updating reservation. Please try again.');
+    $.ajax({
+        url: '${pageContext.request.contextPath}/receptionist/reservations',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData), // SỬA: Gửi trực tiếp formData
+        success: function (response) {
+            console.log('Update response:', response); // SỬA: Thêm log để debug
+            
+            // SỬA: Kiểm tra response linh hoạt hơn
+            if (response && (response.success === true || response.success === 'true')) {
+                alert('Reservation updated successfully!');
+                $('#editReservationModal').modal('hide');
+                location.reload();
+            } else {
+                const errorMsg = response && response.message ? response.message : 'Unknown error';
+                alert('Error updating reservation: ' + errorMsg);
             }
-        });
-    }
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX Error:', {xhr: xhr, status: status, error: error});
+            console.error('Response text:', xhr.responseText);
+            alert('Error updating reservation: ' + error + '\nPlease check the console for details.');
+        }
+    });
+}
 
     function filterReservations() {
         const params = new URLSearchParams();
@@ -913,4 +955,5 @@
             return '0₫';
         return new Intl.NumberFormat('vi-VN').format(amount) + '₫';
     }
+    
 </script>

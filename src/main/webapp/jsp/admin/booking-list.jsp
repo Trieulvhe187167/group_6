@@ -179,6 +179,21 @@
         .breadcrumb-item.active {
             color: #6c757d;
         }
+        
+        /* Latest bookings info section */
+        .latest-bookings-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .latest-bookings-info i {
+            color: #2196f3;
+            margin-right: 8px;
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -291,6 +306,9 @@
             
             <h2 class="mb-4">Booking Management</h2>
             
+            <!-- Latest Bookings Info -->
+           
+            
             <!-- Filter Section -->
             <div class="filter-section">
                 <form class="row" method="GET">
@@ -326,7 +344,10 @@
             <!-- Booking Table -->
             <div class="table-responsive">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">All Bookings</h5>
+                    <h5 class="mb-0">Booking Management (Page ${currentPage})</h5>
+                    <div class="text-muted">
+                        <small>Total: ${totalBookings} bookings | Showing: ${((currentPage-1)*5)+1}-${(currentPage*5 > totalBookings) ? totalBookings : currentPage*5}</small>
+                    </div>
                 </div>
                 
                 <table class="table table-bordered table-hover">
@@ -347,9 +368,10 @@
                     <tbody>
                         <c:choose>
                             <c:when test="${not empty reservations}">
+                                <!-- Display current page bookings -->
                                 <c:forEach var="b" items="${reservations}" varStatus="i">
                                     <tr>
-                                        <td>${i.count}</td>
+                                        <td>${((currentPage-1)*5) + i.count}</td>
                                         <td>
                                             <strong>#${b.id}</strong>
                                         </td>
@@ -389,7 +411,6 @@
                                                      onclick="viewBookingDetail(${b.id})">
                                                         <i class="fas fa-eye"></i>
                                                 </button>
-
                                             </div>
                                         </td>
                                     </tr>
@@ -408,25 +429,112 @@
                 </table>
                 
                 <!-- Pagination -->
-                <c:if test="${not empty reservations}">
-                    <nav aria-label="Booking pagination">
+                <c:if test="${totalPages > 1}">
+                    <nav aria-label="Booking pagination" class="mt-4">
                         <ul class="pagination justify-content-center">
-                            <li class="page-item">
-                                <a class="page-link" href="#" aria-label="Previous">
+                            <!-- Previous Page -->
+                            <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                                <a class="page-link" href="?page=${currentPage - 1}&status=${param.status}&fromDate=${param.fromDate}&toDate=${param.toDate}" 
+                                   aria-label="Previous" ${currentPage == 1 ? 'tabindex="-1"' : ''}>
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
-                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                            <li class="page-item">
-                                <a class="page-link" href="#" aria-label="Next">
+                            
+                            <!-- Page Numbers -->
+                            <c:choose>
+                                <c:when test="${totalPages <= 7}">
+                                    <!-- Show all pages if total pages <= 7 -->
+                                    <c:forEach begin="1" end="${totalPages}" var="page">
+                                        <li class="page-item ${currentPage == page ? 'active' : ''}">
+                                            <a class="page-link" href="?page=${page}&status=${param.status}&fromDate=${param.fromDate}&toDate=${param.toDate}">
+                                                ${page}
+                                            </a>
+                                        </li>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <!-- Smart pagination for many pages -->
+                                    <c:choose>
+                                        <c:when test="${currentPage <= 4}">
+                                            <!-- Show first 5 pages -->
+                                            <c:forEach begin="1" end="5" var="page">
+                                                <li class="page-item ${currentPage == page ? 'active' : ''}">
+                                                    <a class="page-link" href="?page=${page}&status=${param.status}&fromDate=${param.fromDate}&toDate=${param.toDate}">
+                                                        ${page}
+                                                    </a>
+                                                </li>
+                                            </c:forEach>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page=${totalPages}&status=${param.status}&fromDate=${param.fromDate}&toDate=${param.toDate}">
+                                                    ${totalPages}
+                                                </a>
+                                            </li>
+                                        </c:when>
+                                        <c:when test="${currentPage >= totalPages - 3}">
+                                            <!-- Show last 5 pages -->
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page=1&status=${param.status}&fromDate=${param.fromDate}&toDate=${param.toDate}">
+                                                    1
+                                                </a>
+                                            </li>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                            <c:forEach begin="${totalPages - 4}" end="${totalPages}" var="page">
+                                                <li class="page-item ${currentPage == page ? 'active' : ''}">
+                                                    <a class="page-link" href="?page=${page}&status=${param.status}&fromDate=${param.fromDate}&toDate=${param.toDate}">
+                                                        ${page}
+                                                    </a>
+                                                </li>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <!-- Show middle pages -->
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page=1&status=${param.status}&fromDate=${param.fromDate}&toDate=${param.toDate}">
+                                                    1
+                                                </a>
+                                            </li>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                            <c:forEach begin="${currentPage - 1}" end="${currentPage + 1}" var="page">
+                                                <li class="page-item ${currentPage == page ? 'active' : ''}">
+                                                    <a class="page-link" href="?page=${page}&status=${param.status}&fromDate=${param.fromDate}&toDate=${param.toDate}">
+                                                        ${page}
+                                                    </a>
+                                                </li>
+                                            </c:forEach>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page=${totalPages}&status=${param.status}&fromDate=${param.fromDate}&toDate=${param.toDate}">
+                                                    ${totalPages}
+                                                </a>
+                                            </li>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </c:otherwise>
+                            </c:choose>
+                            
+                            <!-- Next Page -->
+                            <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                                <a class="page-link" href="?page=${currentPage + 1}&status=${param.status}&fromDate=${param.fromDate}&toDate=${param.toDate}" 
+                                   aria-label="Next" ${currentPage == totalPages ? 'tabindex="-1"' : ''}>
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
                         </ul>
                     </nav>
                 </c:if>
+                
+                <!-- Page Size Selector -->
+               
+                </div>
             </div>
         </div>
     </main>
@@ -478,6 +586,14 @@
         // Export to Excel
         function exportToExcel() {
             window.location.href = '${pageContext.request.contextPath}/admin/export-bookings?format=excel';
+        }
+        
+        // Change page size
+        function changePageSize(newSize) {
+            var url = new URL(window.location);
+            url.searchParams.set('pageSize', newSize);
+            url.searchParams.set('page', '1'); // Reset to first page
+            window.location.href = url.toString();
         }
     </script>
     <script>
@@ -561,6 +677,3 @@ function viewBookingDetail(id) {
 </div>
 
 </html>
-
-</html>
-

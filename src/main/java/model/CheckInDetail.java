@@ -2,6 +2,7 @@ package model;
 
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 public class CheckInDetail {
     private int id;
@@ -15,6 +16,7 @@ public class CheckInDetail {
     private String keyCardNumbers;
     private String checkInNotes;
     private Timestamp checkInTime;
+    private Date estimatedCheckOutTime;
     private int checkInBy;
     
     // Additional fields for display
@@ -123,5 +125,13 @@ public class CheckInDetail {
     
     public void setCheckInByName(String checkInByName) {
         this.checkInByName = checkInByName;
+    }
+    
+    public Date getEstimatedCheckOutTime() {
+        return estimatedCheckOutTime;
+    }
+    
+    public void setEstimatedCheckOutTime(Date estimatedCheckOutTime) {
+        this.estimatedCheckOutTime = estimatedCheckOutTime;
     }
 }

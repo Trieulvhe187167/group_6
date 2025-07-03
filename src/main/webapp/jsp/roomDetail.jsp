@@ -14,6 +14,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Arrays" %>
 <%@ page import="java.text.DecimalFormat" %>
+<%@ page import="java.io.File" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -991,6 +992,20 @@
         font-size: 1.1rem;
         color: #28a745;
     }
+    .room-gallery .item img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+/* Cho khung popup hơi mờ nền */
+.mfp-bg {
+  opacity: 0.8 !important;
+}
+/* Cho ảnh trong popup bo góc nhẹ */
+.mfp-img {
+  border-radius: 8px;
+}
         </style>
     </head>
     <body id="bg">
@@ -1054,11 +1069,51 @@
                             <div class="col-lg-8">
                                 <div class="booking-form">
                                     <!-- Room Gallery -->
-                                    <div class="room-gallery">
-                                        <img id="mainImage" src="${pageContext.request.contextPath}/assets/images/uploads/<%= roomTypes.getImageUrl() %>" 
-                                             alt="<%= roomTypes.getName() %>" class="main-image">
-                                       
-                                    </div>
+                                 <!-- Room Gallery Slider -->
+<div class="room-gallery owl-carousel owl-theme">
+    <%
+        // Lấy đường dẫn tuyệt đối đến thư mục chứa ảnh
+        String imgDirPath = application.getRealPath("/") 
+            + "assets/images/room-type/" + roomTypes.getName();
+        File imgDir = new File(imgDirPath);
+        // Lọc các file ảnh theo đuôi
+        File[] imageFiles = imgDir.listFiles((dir, name) -> {
+            String low = name.toLowerCase();
+            return low.endsWith(".jpg") 
+                || low.endsWith(".jpeg") 
+                || low.endsWith(".png") 
+                || low.endsWith(".webp");
+        });
+        if (imageFiles != null) {
+            // Sắp xếp tên file (nếu cần)
+            Arrays.sort(imageFiles);
+            for (File img : imageFiles) {
+    %>
+  <div class="item">
+        <a href="${pageContext.request.contextPath}/assets/images/room-type/<%= roomTypes.getName() %>/<%= img.getName() %>" class="image-popup">
+            <img 
+              src="${pageContext.request.contextPath}/assets/images/room-type/<%= roomTypes.getName() %>/<%= img.getName() %>" 
+              alt="<%= roomTypes.getName() %>" 
+              class="main-image"
+            >
+        </a>
+    </div>
+    <%
+            }
+        } else {
+    %>
+    <div class="item">
+        <img 
+          src="${pageContext.request.contextPath}/assets/images/room-type/default.jpg" 
+          alt="No image" 
+          class="main-image"
+        >
+    </div>
+    <%
+        }
+    %>
+</div>
+
 
                                     <!-- Room Info -->
                                     <div class="room-info mb-4">
@@ -1199,8 +1254,7 @@
 
                                         <!-- Guest Selection -->
                                         <div class="mb-4">
-                                            <label>Number of Guests</label>
-                                            <div class="guest-counter">
+                    <label>Number of Guests <small class="text-muted">(max <%= roomTypes.getCapacity() %> adults, +1 child if full)</small></label>                                            <div class="guest-counter">
                                                 <div>
                                                     <span>Adults</span>
                                                 </div>
@@ -1208,8 +1262,8 @@
                                                     <button type="button" class="counter-btn" onclick="updateGuests('adults', -1)">
                                                         <i class="ti-minus"></i>
                                                     </button>
-                                                    <span id="adultsCount">2</span>
-                                                    <input type="hidden" name="adults" id="adultsInput" value="2">
+                                                    <span id="adultsCount">1</span>
+                                                    <input type="hidden" name="adults" id="adultsInput" value="1">
                                                     <button type="button" class="counter-btn" onclick="updateGuests('adults', 1)">
                                                         <i class="ti-plus"></i>
                                                     </button>
@@ -1360,14 +1414,14 @@
                                         <!-- Payment Method -->
                                         <div class="mb-4">
                                             <h4>Payment Method</h4>
-                                            <div class="form-check mb-2">
+<!--                                            <div class="form-check mb-2">
                                                 <input class="form-check-input" type="radio" name="paymentMethod" value="CREDIT_CARD" id="creditCardForm" checked>
                                                 <label class="form-check-label" for="creditCardForm">
                                                     Credit/Debit Card
                                                 </label>
-                                            </div>
+                                            </div>-->
                                             <div class="form-check mb-2">
-                                                <input class="form-check-input" type="radio" name="paymentMethod" value="BANK_TRANSFER" id="bankTransferForm">
+                                                <input class="form-check-input" type="radio" name="paymentMethod" value="BANK_TRANSFER" id="bankTransferForm" checked>
                                                 <label class="form-check-label" for="bankTransferForm">
                                                     Bank Transfer
                                                 </label>
@@ -1393,7 +1447,7 @@
 
                                     <div class="mb-3 pb-3 border-bottom">
                                         <h5><%= roomTypes.getName() %></h5>
-                                        <p class="text-muted mb-1"><span id="nightsDisplay">1</span> night(s), <span id="guestsDisplay">2 adults</span></p>
+                                       <p class="text-muted mb-1"><span id="nightsDisplay">1</span> night(s), <span id="guestsDisplay">1 adult</span></p>
                                     </div>
 
                                     <div class="price-breakdown">
@@ -1482,9 +1536,17 @@
          // Complete Optimized JavaScript for Room Booking Page
 
 const basePrice = <%= roomTypes.getBasePrice() %>;
+const maxAdults = <%= roomTypes.getCapacity() %>;
 let nights = 1;
-let adults = 2;
+let adults = Math.min(1, maxAdults);
 let children = 0;
+
+function getMaxChildren(currentAdults) {
+    if (currentAdults >= maxAdults) {
+        return 1;
+    }
+    return (maxAdults - currentAdults) * 2;
+}
 
 // ============================================================================
 // IMAGE GALLERY FUNCTIONS
@@ -1793,14 +1855,29 @@ function disableBookingButton() {
 
 function updateGuests(type, change) {
     if (type === 'adults') {
-        adults = Math.max(1, Math.min(4, adults + change));
-        document.getElementById('adultsCount').textContent = adults;
-        document.getElementById('adultsInput').value = adults;
+       let newAdults = adults + change;
+        if (newAdults < 1) newAdults = 1;
+        if (newAdults > maxAdults) newAdults = maxAdults;
+        adults = newAdults;
+
+        // Adjust children if they exceed new limit
+        const childLimit = getMaxChildren(adults);
+        if (children > childLimit) {
+            children = childLimit;
+        }
     } else {
-        children = Math.max(0, Math.min(3, children + change));
-        document.getElementById('childrenCount').textContent = children;
-        document.getElementById('childrenInput').value = children;
+        let newChildren = children + change;
+        if (newChildren < 0) newChildren = 0;
+        const childLimit = getMaxChildren(adults);
+        if (newChildren > childLimit) {
+            newChildren = childLimit;
+        }
+        children = newChildren;
     }
+     document.getElementById('adultsCount').textContent = adults;
+    document.getElementById('adultsInput').value = adults;
+    document.getElementById('childrenCount').textContent = children;
+    document.getElementById('childrenInput').value = children;
     updateGuestsDisplay();
 }
 
@@ -2612,6 +2689,39 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 100);
 });
 </script>
+<script>
+  $(document).ready(function(){
+    // 1. Khởi tạo Owl Carousel
+    $(".room-gallery").owlCarousel({
+      items: 1,
+      loop: true,
+      nav: true,
+      dots: true,
+      autoplay: true,
+      autoplayTimeout: 5000,
+      navText: ['<i class="fa fa-chevron-left"></i>','<i class="fa fa-chevron-right"></i>']
+    });
+
+    // 2. Khởi tạo Magnific Popup cho gallery
+    $('.room-gallery').magnificPopup({
+      delegate: 'a.image-popup', // chọn các <a> chứa ảnh
+      type: 'image',
+      gallery: {
+        enabled: true, // bật navigation giữa các ảnh
+        navigateByImgClick: true,
+        preload: [0,2] // preload trước/sau 2 ảnh
+      },
+      zoom: {
+        enabled: true,
+        duration: 300, // thời gian zoom
+        opener: function(el) {
+          return el.find('img');
+        }
+      }
+    });
+  });
+</script>
+
 
     </body>
 </html>

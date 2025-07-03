@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.*;
 import java.sql.Date;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import java.io.BufferedReader;
 
 @WebServlet(name = "ReservationsServlet", urlPatterns = {"/receptionist/reservations"})
 public class ReservationsServlet extends ReceptionistBaseServlet {
@@ -86,26 +88,57 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+        response.setContentType("application/json");
+        request.setCharacterEncoding("UTF-8");
+
         if (!checkReceptionistAuth(request, response)) {
             return;
         }
-        
-        String action = request.getParameter("action");
-        
+
         try {
+            // First check if action is in URL parameters
+            String action = request.getParameter("action");
+            
+            // If no action in parameters, try to get from JSON body
+            if (action == null) {
+                String contentType = request.getContentType();
+                if (contentType != null && contentType.contains("application/json")) {
+                    // Parse JSON body
+                    BufferedReader reader = request.getReader();
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    String jsonBody = sb.toString();
+                    
+                    if (jsonBody != null && !jsonBody.trim().isEmpty()) {
+                        Gson gson = new Gson();
+                        Map<String, Object> requestData = gson.fromJson(jsonBody, Map.class);
+                        action = (String) requestData.get("action");
+                        
+                        // Handle actions that need JSON data
+                        if ("createReservation".equals(action) || "updateReservation".equals(action)) {
+                            handleJsonAction(action, requestData, request, response);
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            if (action == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"message\":\"Missing action parameter\"}");
+                return;
+            }
+
+            // Handle actions that use URL parameters
             switch (action) {
                 case "confirmReservation":
                     confirmReservation(request, response);
                     break;
                 case "cancelReservation":
                     cancelReservation(request, response);
-                    break;
-                case "createReservation":
-                    createReservation(request, response);
-                    break;
-                case "updateReservation":
-                    updateReservation(request, response);
                     break;
                 case "getReservationDetails":
                     getReservationDetails(request, response);
@@ -120,8 +153,29 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     response.getWriter().write("{\"success\":false,\"message\":\"Invalid action\"}");
             }
+        } catch (JsonSyntaxException e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"success\":false,\"message\":\"Invalid JSON format\"}");
         } catch (Exception e) {
-            handleError(request, response, e, "Error processing reservation action");
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
+        }
+    }
+
+    private void handleJsonAction(String action, Map<String, Object> requestData, 
+            HttpServletRequest request, HttpServletResponse response) throws IOException {
+        switch (action) {
+            case "createReservation":
+                createReservation(requestData, request, response);
+                break;
+            case "updateReservation":
+                updateReservation(requestData, request, response);
+                break;
+            default:
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"message\":\"Invalid JSON action\"}");
         }
     }
     
@@ -194,13 +248,9 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
         }
     }
     
-    private void createReservation(HttpServletRequest request, HttpServletResponse response) 
+    private void createReservation(Map<String, Object> reservationData, HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
         try {
-            // Parse JSON request body
-            Gson gson = new Gson();
-            Map<String, Object> reservationData = gson.fromJson(request.getReader(), Map.class);
-            
             HttpSession session = request.getSession();
             User currentUser = (User) session.getAttribute("user");
             
@@ -231,7 +281,15 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
             // Create reservation
             Reservation reservation = new Reservation();
             reservation.setUserId(customerId);
-            reservation.setRoomId(((Double) reservationData.get("roomId")).intValue());
+            Object roomIdObj = reservationData.get("roomId");
+int roomId = 0;
+if (roomIdObj instanceof Double) {
+    roomId = ((Double) roomIdObj).intValue();
+} else if (roomIdObj instanceof String) {
+    roomId = Integer.parseInt((String) roomIdObj);
+}
+reservation.setRoomId(roomId);
+
             reservation.setCheckIn(Date.valueOf((String) reservationData.get("checkIn")));
             reservation.setCheckOut(Date.valueOf((String) reservationData.get("checkOut")));
             reservation.setStatus("CONFIRMED");
@@ -239,7 +297,13 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
             reservation.setSpecialRequests((String) reservationData.get("specialRequests"));
             
             if (reservationData.get("numberOfCustomers") != null) {
-                reservation.setNumberOfCustomers(((Double) reservationData.get("numberOfCustomers")).intValue());
+                Object numCustomersObj = reservationData.get("numberOfCustomers");
+if (numCustomersObj instanceof Double) {
+    reservation.setNumberOfCustomers(((Double) numCustomersObj).intValue());
+} else if (numCustomersObj instanceof String) {
+    reservation.setNumberOfCustomers(Integer.parseInt((String) numCustomersObj));
+}
+
             }
             
             // Calculate total amount
@@ -272,60 +336,77 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
         }
     }
     
-    private void updateReservation(HttpServletRequest request, HttpServletResponse response) 
+    private void updateReservation(Map<String, Object> reservationData, HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         try {
-            Gson gson = new Gson();
-            Map<String, Object> reservationData = gson.fromJson(request.getReader(), Map.class);
-            
             HttpSession session = request.getSession();
             User currentUser = (User) session.getAttribute("user");
-            
-            int reservationId = ((Double) reservationData.get("id")).intValue();
-            
-            // Get existing reservation
+
+            Object idObj = reservationData.get("id");
+int reservationId = 0;
+if (idObj instanceof Double) {
+    reservationId = ((Double) idObj).intValue();
+} else if (idObj instanceof String) {
+    reservationId = Integer.parseInt((String) idObj);
+}
+
+
+            // Fetch existing reservation
             Reservation reservation = reservationDAO.getReservationById(reservationId);
             if (reservation == null) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 response.getWriter().write("{\"success\":false,\"message\":\"Reservation not found\"}");
                 return;
             }
-            
+
+            // Only allow update if status is PENDING
+            if (!"PENDING".equalsIgnoreCase(reservation.getStatus())) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"message\":\"Only PENDING reservations can be updated\"}");
+                return;
+            }
+
             // Update fields
             reservation.setCheckIn(Date.valueOf((String) reservationData.get("checkIn")));
             reservation.setCheckOut(Date.valueOf((String) reservationData.get("checkOut")));
             reservation.setStatus((String) reservationData.get("status"));
             reservation.setSpecialRequests((String) reservationData.get("specialRequests"));
-            
+
             if (reservationData.get("numberOfCustomers") != null) {
-                reservation.setNumberOfCustomers(((Double) reservationData.get("numberOfCustomers")).intValue());
+                Object numCustomersObj = reservationData.get("numberOfCustomers");
+if (numCustomersObj instanceof Double) {
+    reservation.setNumberOfCustomers(((Double) numCustomersObj).intValue());
+} else if (numCustomersObj instanceof String) {
+    reservation.setNumberOfCustomers(Integer.parseInt((String) numCustomersObj));
+}
+
             }
-            
+
             // Recalculate total amount
             Room room = roomDAO.getRoomById(reservation.getRoomId());
             long days = (reservation.getCheckOut().getTime() - reservation.getCheckIn().getTime()) / (1000 * 60 * 60 * 24);
             double totalAmount = days * room.getBasePrice();
             reservation.setTotalAmount(totalAmount);
-            
+
             boolean success = reservationDAO.updateReservation(reservation);
-            
+
             if (success) {
-                // Log activity
                 Activity activity = new Activity();
                 activity.setType("RESERVATION_UPDATE");
                 activity.setReservationId(reservationId);
                 activity.setUserId(currentUser.getId());
-                activity.setDescription("Updated reservation #" + reservationId);
+                activity.setDescription("Updated booking #" + reservationId);
                 activity.setIpAddress(request.getRemoteAddr());
                 activityDAO.logActivity(activity);
             }
-            
+
             response.setContentType("application/json");
             response.getWriter().write("{\"success\":" + success + "}");
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("application/json");
             response.getWriter().write("{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
         }
     }
