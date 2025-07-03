@@ -109,13 +109,7 @@
         <div class="info-row"><span class="info-label">Payment Status:</span> ${booking.paymentStatus}</div>
     </div>
 
-    <c:if test="${not empty booking.note}">
-        <div class="section">
-            <h4>Customer Note</h4>
-            <div>${booking.note}</div>
-        </div>
-    </c:if>
-   
+ 
 
     <a href="${pageContext.request.contextPath}/customer/bookings" class="back-button">← Back</a>
 </div>

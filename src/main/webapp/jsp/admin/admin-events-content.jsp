@@ -117,7 +117,7 @@
     <!-- Filter Section -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="get" action="${pageContext.request.contextPath}/admin /events" class="filter-form">
+            <form method="get" action="${pageContext.request.contextPath}/admin/events" class="filter-form">
                 <div class="filter-group">
                     <div class="form-group">
                         <label>Search:</label>

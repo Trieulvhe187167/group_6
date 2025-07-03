@@ -239,7 +239,12 @@ public class ReservationSummary {
         return checkedIn && !checkedOut && 
                (inspectionStatus == null || "PENDING".equals(inspectionStatus));
     }
-    
+
+        public boolean getIsLate() {
+        return isLate();
+        }
+
+
     // New getters and setters for time fields
     public Timestamp getCheckInTime() {
         return checkInTime;
@@ -271,5 +276,6 @@ public class ReservationSummary {
             return new java.util.Date(checkOutTime.getTime()).getHours();
         }
         return 12; // Default check-out time if not specified
+
     }
 }

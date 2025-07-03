@@ -5,9 +5,10 @@
 <%
     // Simple setup - use provided QR image URL
     String transferContent = "";
-    String accountNumber = "1024520090";
+    String accountNumber = "1024520080";
     String accountHolder = "LE VAN TRIEU";
-    
+    String bankName = "Vietcombank";
+    String bankCode = "VCB"; // Vietcombank short code
     try {
         Object paymentIdObj = request.getAttribute("paymentId");
         Object reservationObj = request.getAttribute("reservation");
@@ -27,6 +28,8 @@
             // Set attributes
             request.setAttribute("accountNumber", accountNumber);
             request.setAttribute("accountHolder", accountHolder);
+             request.setAttribute("bankName", bankName);
+                request.setAttribute("bankCode", bankCode);
             request.setAttribute("transferContent", transferContent);
             request.setAttribute("depositAmount", depositAmount);
             request.setAttribute("fullAmount", fullAmount);
@@ -301,8 +304,8 @@
                     <div class="bank-detail">
                         <span class="bank-label">Bank Name:</span>
                         <span class="bank-value">
-                            <strong>Techcombank (TCB)</strong>
-                            <span class="copy-btn" onclick="copyText('Techcombank')">
+                              <strong><%= bankName %> (VCB)</strong>
+                            <span class="copy-btn" onclick="copyText('<%= bankName %>')">
                                 <i class="fas fa-copy"></i> Copy
                             </span>
                         </span>
@@ -346,7 +349,7 @@
                     <div class="qr-section">
                         <div id="qr-loading">
                             <div class="spinner-border text-primary mb-3" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                                <span class="status">Loading...</span>
                             </div>
                             <p class="text-muted">Loading QR code...</p>
                         </div>
@@ -431,10 +434,11 @@
             const amount = <%= request.getAttribute("depositAmount") != null ? request.getAttribute("depositAmount") : "0" %>;
             const content = encodeURIComponent('<%= transferContent %>');
             
-            // Generate QR code URL (you can use your preferred QR code API)
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=` +
-                         encodeURIComponent(`Bank: Techcombank\nAccount: <%= accountNumber %>\nAmount: ${amount}\nContent: <%= transferContent %>`);
-            
+             // Generate VietQR URL for Vietcombank
+            const bankCode = '<%= bankCode %>';
+            const account = '<%= accountNumber %>';
+            const accountName = encodeURIComponent('<%= accountHolder %>');
+            const qrUrl = `${pageContext.request.contextPath}/assets/images/qr_code/qr.jpg`;
             qrImage.src = qrUrl;
         }
         

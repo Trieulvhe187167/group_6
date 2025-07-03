@@ -41,23 +41,64 @@ public class BookingDAO {
     return executeBookingQuery(sql, userId);
 }
 
-public List<Reservation> getPastBookings(int userId) {
-    String sql = """
-        SELECT r.*, room.RoomNumber, 
-               rt.Name AS roomTypeName, rt.BasePrice,
-               u.Phone AS UserPhone,
-               u.Email AS CustomerEmail,
-               u.FullName AS UserFullName
-        FROM Reservations r
-        JOIN Rooms room ON r.RoomId = room.Id
-        JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
-        JOIN Users u ON r.UserId = u.Id
-        WHERE r.UserId = ? 
-          AND (r.Status IN ('COMPLETED', 'CANCELLED') 
-               OR (r.Status = 'CHECKIN' AND r.CheckOut < CAST(GETDATE() AS DATE)))
-    """;
-    return executeBookingQuery(sql, userId);
+public List<Reservation> getPastBookings(int userId, String status, String fromDate, String toDate) {
+    List<Reservation> list = new ArrayList<>();
+    try (Connection conn = DBContext.getConnection()) {
+        StringBuilder sql = new StringBuilder("""
+            SELECT r.*, room.RoomNumber, 
+                   rt.Name AS roomTypeName, rt.BasePrice,
+                   u.Phone AS UserPhone,
+                   u.Email AS CustomerEmail,
+                   u.FullName AS UserFullName
+            FROM Reservations r
+            JOIN Rooms room ON r.RoomId = room.Id
+            JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
+            JOIN Users u ON r.UserId = u.Id
+            WHERE r.UserId = ?
+              AND (r.Status IN ('COMPLETED', 'CANCELLED') 
+                   OR (r.Status = 'CHECKIN' AND r.CheckOut < CAST(GETDATE() AS DATE)))
+        """);
+
+        // Append dynamic filters
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND r.Status = ?");
+        }
+        if (fromDate != null && !fromDate.isEmpty()) {
+            sql.append(" AND r.CheckIn >= ?");
+        }
+        if (toDate != null && !toDate.isEmpty()) {
+            sql.append(" AND r.CheckOut <= ?");
+        }
+
+        sql.append(" ORDER BY r.CheckOut DESC");
+
+        PreparedStatement ps = conn.prepareStatement(sql.toString());
+
+        // Set parameters
+        int index = 1;
+        ps.setInt(index++, userId);
+
+        if (status != null && !status.isEmpty()) {
+            ps.setString(index++, status);
+        }
+        if (fromDate != null && !fromDate.isEmpty()) {
+            ps.setDate(index++, Date.valueOf(fromDate));
+        }
+        if (toDate != null && !toDate.isEmpty()) {
+            ps.setDate(index++, Date.valueOf(toDate));
+        }
+
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(mapResultSetToReservation(rs));
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
 }
+
 private List<Reservation> executeBookingQuery(String sql, int userId) {
     List<Reservation> list = new ArrayList<>();
     try (Connection con = DBContext.getConnection();

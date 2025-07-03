@@ -12,6 +12,8 @@ import java.time.LocalDate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.Comparator;
+import java.text.SimpleDateFormat;
+import model.CheckInCalendarDTO;
 import com.google.gson.Gson;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -134,26 +136,19 @@ public class CheckInServlet extends HttpServlet {
             
             request.setAttribute("rooms", rooms);
             
-            // Get calendar reservations for the date range - look for any overlapping reservations
-            Date startDate = Date.valueOf(startOfWeek);
-            Date endDate = Date.valueOf(startOfWeek.plusDays(6));
-            
-            // Get reservations that overlap with the calendar date range
-            List<ReservationSummary> calendarReservations = 
-                reservationDAO.getReservationsByDateRange(startDate, endDate);
-                
-            // Also check if rooms are currently marked as occupied in the Room table
-            for (Room room : rooms) {
-                if ("OCCUPIED".equals(room.getStatus())) {
-                    // Get the current active reservation for this room if it exists
-                    ReservationSummary currentRes = reservationDAO.getCurrentRoomReservationSummary(room.getId());
-                    if (currentRes != null && !calendarReservations.contains(currentRes)) {
-                        calendarReservations.add(currentRes);
-                    }
-                }
-            }
-            
-            request.setAttribute("calendarReservations", calendarReservations);
+                    // Get calendar reservations for the date range - look for any overlapping reservations
+        Date startDate = Date.valueOf(startOfWeek);
+        Date endDate = Date.valueOf(startOfWeek.plusDays(6));
+        
+        // Get reservations that overlap with the calendar date range
+        List<ReservationSummary> calendarReservations = 
+            reservationDAO.getReservationsByDateRange(startDate, endDate);
+        
+        request.setAttribute("calendarReservations", calendarReservations);
+        
+        // Get active check-ins for occupied rooms
+        List<CheckInCalendarDTO> activeCheckIns = checkInOutDAO.getActiveCheckIns(startDate, endDate);
+        request.setAttribute("activeCheckIns", activeCheckIns);
             
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error setting up calendar data", e);
@@ -204,9 +199,9 @@ public class CheckInServlet extends HttpServlet {
         try {
             List<ReservationSummary> results = reservationDAO.searchReservations(query);
             
-            // Filter only today's check-ins or pending check-ins
+            // Filter only today's check-ins with CONFIRMED status
             Date today = Date.valueOf(LocalDate.now());
-            results.removeIf(r -> !r.getCheckIn().equals(today) || "CANCELLED".equals(r.getStatus()));
+            results.removeIf(r -> !r.getCheckIn().equals(today) || !"CONFIRMED".equals(r.getStatus()));
             
             // Add checked-in status
             for (ReservationSummary res : results) {
@@ -311,6 +306,23 @@ public class CheckInServlet extends HttpServlet {
             checkIn.setKeyCards(checkInRequest.getKeyCards());
             checkIn.setKeyCardNumbers(checkInRequest.getKeyCardNumbers());
             checkIn.setCheckInNotes(checkInRequest.getCheckInNotes());
+            checkIn.setSpecialRequests(checkInRequest.getSpecialRequests());
+            
+            // Process estimated check-out time if available
+            java.util.Date estimatedCheckOutTime = checkInRequest.getEstimatedCheckOutTime();
+            if (estimatedCheckOutTime != null) {
+                checkIn.setEstimatedCheckOutTime(estimatedCheckOutTime);
+            } else {
+                // Default to checkout date at noon if not specified
+                Reservation reservation = reservationDAO.getReservationById(checkInRequest.getReservationId());
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(reservation.getCheckOut());
+                calendar.set(Calendar.HOUR_OF_DAY, 12);
+                calendar.set(Calendar.MINUTE, 0);
+                calendar.set(Calendar.SECOND, 0);
+                checkIn.setEstimatedCheckOutTime(calendar.getTime());
+            }
+            
             checkIn.setCheckInBy(currentUser.getId());
             
             // Save check-in
@@ -371,45 +383,4 @@ public class CheckInServlet extends HttpServlet {
     }
 }
 
-// Helper classes for JSON parsing
-class CheckInRequest {
-    private int reservationId;
-    private String idType;
-    private String idNumber;
-    private int additionalGuests;
-    private double securityDeposit;
-    private int keyCards;
-    private String keyCardNumbers;
-    private String checkInNotes;
-    private List<AmenityCheck> amenities;
-    
-    // Getters and setters
-    public int getReservationId() { return reservationId; }
-    public void setReservationId(int reservationId) { this.reservationId = reservationId; }
-    public String getIdType() { return idType; }
-    public void setIdType(String idType) { this.idType = idType; }
-    public String getIdNumber() { return idNumber; }
-    public void setIdNumber(String idNumber) { this.idNumber = idNumber; }
-    public int getAdditionalGuests() { return additionalGuests; }
-    public void setAdditionalGuests(int additionalGuests) { this.additionalGuests = additionalGuests; }
-    public double getSecurityDeposit() { return securityDeposit; }
-    public void setSecurityDeposit(double securityDeposit) { this.securityDeposit = securityDeposit; }
-    public int getKeyCards() { return keyCards; }
-    public void setKeyCards(int keyCards) { this.keyCards = keyCards; }
-    public String getKeyCardNumbers() { return keyCardNumbers; }
-    public void setKeyCardNumbers(String keyCardNumbers) { this.keyCardNumbers = keyCardNumbers; }
-    public String getCheckInNotes() { return checkInNotes; }
-    public void setCheckInNotes(String checkInNotes) { this.checkInNotes = checkInNotes; }
-    public List<AmenityCheck> getAmenities() { return amenities; }
-    public void setAmenities(List<AmenityCheck> amenities) { this.amenities = amenities; }
-}
-
-class AmenityCheck {
-    private int amenityId;
-    private boolean present;
-    
-    public int getAmenityId() { return amenityId; }
-    public void setAmenityId(int amenityId) { this.amenityId = amenityId; }
-    public boolean isPresent() { return present; }
-    public void setPresent(boolean present) { this.present = present; }
-}
+// Use model classes from model package

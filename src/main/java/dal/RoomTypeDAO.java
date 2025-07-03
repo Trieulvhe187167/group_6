@@ -526,7 +526,8 @@ public class RoomTypeDAO {
         return images;
     }
 
-    public boolean insertRoomTypeImage(int roomTypeId, String fileName, String roomTypeName, int displayOrder) {
+
+public boolean insertRoomTypeImage(int roomTypeId, String fileName, String roomTypeName, int displayOrder) {
         String sql = "INSERT INTO RoomTypeImages (RoomTypeId, ImageUrl, ImageType, DisplayOrder, CreatedAt) "
                 + "VALUES (?, ?, ?, ?, GETDATE())";
         try (Connection con = DBContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
