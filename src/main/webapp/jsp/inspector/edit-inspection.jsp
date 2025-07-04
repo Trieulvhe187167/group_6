@@ -312,21 +312,21 @@
                             <div class="form-group">
                                 <label>Quantity</label>
                                 <input type="number" class="form-control" name="quantity" 
-                                       value="1" min="1" required>
+                                       value="1" min="1" maxlength="3" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Unit Price (₫)</label>
                                 <input type="number" class="form-control" name="unitPrice" 
-                                       id="unitPrice" required>
+                                       id="unitPrice" min="0" maxlength="9" required>
                             </div>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label>Notes (Optional)</label>
-                        <textarea class="form-control" name="notes" rows="2"></textarea>
+                        <textarea class="form-control" name="notes" rows="2" maxlength="200"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -388,7 +388,7 @@
                             <div class="form-group">
                                 <label>Estimated Cost (₫)</label>
                                 <input type="number" class="form-control" name="estimatedCost" 
-                                       min="0" required>
+                                       min="0" maxlength="9" required>
                             </div>
                         </div>
                     </div>
@@ -570,3 +570,66 @@ $('.custom-file-input').on('change', function() {
     $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
 });
 </script>
+<script>
+document.getElementById("addItemForm").addEventListener("submit", function (event) {
+    const quantityInput = this.querySelector('[name="quantity"]');
+    const unitPriceInput = this.querySelector('[name="unitPrice"]');
+    const notesInput = this.querySelector('[name="notes"]');
+
+    const quantity = quantityInput.value.trim();
+    const unitPrice = unitPriceInput.value.trim();
+    const notes = notesInput.value.trim();
+
+    let errors = [];
+
+    // Kiểm tra độ dài ký tự
+    if (quantity.length > 4) {
+        errors.push("Quantity must not exceed 4 digits.");
+    }
+
+    if (unitPrice.length > 9) {
+        errors.push("Unit Price must not exceed 9 digits.");
+    }
+
+    if (notes.length > 200) {
+        errors.push("Notes must be less than 200 characters.");
+    }
+
+    // Kiểm tra logic giá trị
+    if (parseInt(quantity) < 1 || !Number.isInteger(+quantity)) {
+        errors.push("Quantity must be a positive integer (≥ 1).");
+    }
+
+    if (parseFloat(unitPrice) < 0 || isNaN(unitPrice)) {
+        errors.push("Unit Price must be a positive number.");
+    }
+
+    if (errors.length > 0) {
+        event.preventDefault();
+        alert(errors.join("\n"));
+    }
+});
+document.getElementById("addDamageForm").addEventListener("submit", function (event) {
+    const estimatedCostInput = this.querySelector('[name="estimatedCost"]');
+
+    const estimatedCost = estimatedCostInput.value.trim();
+
+    let errors = [];
+
+    // Kiểm tra độ dài ký tự 
+    if (estimatedCost.length > 9) {
+        errors.push("Estimated Cost must not exceed 9 digits.");
+    }
+
+    // Kiểm tra logic giá trị
+    if (parseFloat(estimatedCost) < 0 || isNaN(estimatedCost)) {
+        errors.push("Estimated Cost must be a positive number.");
+    }
+
+    if (errors.length > 0) {
+        event.preventDefault();
+        alert(errors.join("\n"));
+    }
+});
+</script>
+
