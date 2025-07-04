@@ -29,14 +29,17 @@
                     <p>Don't have an account? <a href="Register.jsp">Register here</a></p>
                 </div>
 
-                <!-- Registration success message -->
+                <!-- Thông báo đăng ký thành công -->
                 <c:if test="${param.success == '1'}">
                     <div class="alert alert-success" style="color: green; font-weight: bold; margin-bottom: 15px;">
                         Registration successful! Please log in.
                     </div>
                 </c:if>
 
-                <!-- Login error message -->
+                <!-- Thông báo đăng nhập thành công -->
+                
+
+                <!-- Thông báo lỗi -->
                 <c:if test="${not empty errorMsg}">
                     <div class="alert alert-danger" style="color: red; font-weight: bold; margin-bottom: 15px;">
                         ${errorMsg}
@@ -48,14 +51,16 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <input name="username" type="text" required class="form-control" placeholder="Username">
+                                    <input name="username" type="text" required class="form-control" placeholder="Username"
+                                           value="${param.username != null ? param.username : ''}">
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-12">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <input name="password" type="password" required class="form-control" placeholder="Password">
+                                    <input name="password" type="password" required class="form-control" placeholder="Password"
+                                           value="${param.password != null ? param.password : ''}">
                                 </div>
                             </div>
                         </div>
@@ -64,7 +69,7 @@
                         </div>
                     </div>
                 </form>
-                        <p>Forget password? <a href="/jsp/forgotPassword.jsp">click here</a></p>
+                <p>Forget password? <a href="forgotPassword.jsp">click here</a></p>
             </div>
         </div>
     </div>
@@ -88,4 +93,3 @@
 
 </body>
 </html>
-
