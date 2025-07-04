@@ -111,6 +111,7 @@
                     <button class="btn btn-outline-primary active" data-floor="1" onclick="selectFloor(1)">Floor 1</button>
                     <button class="btn btn-outline-primary" data-floor="2" onclick="selectFloor(2)">Floor 2</button>
                     <button class="btn btn-outline-primary" data-floor="3" onclick="selectFloor(3)">Floor 3</button>
+                    <button class="btn btn-outline-primary" data-floor="4" onclick="selectFloor(4)">Floor 4</button>
                     <button class="btn btn-outline-primary" data-floor="5" onclick="selectFloor(5)">Floor 5</button>
                     <button class="btn btn-outline-primary" data-floor="6" onclick="selectFloor(6)">Floor 6</button>
                 </div>

@@ -64,7 +64,7 @@
                         </div>
                     </div>
                 </form>
-                        <p>Forget password? <a href="forgotPassword.jsp">click here</a></p>
+                        <p>Forget password? <a href="/jsp/forgotPassword.jsp">click here</a></p>
             </div>
         </div>
     </div>

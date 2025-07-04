@@ -614,7 +614,7 @@
                 </li>
                 <div class="menu-divider"></div>
                 <li>
-                    <a href="logout.jsp" style="color: #dc3545;">
+                    <a href="${pageContext.request.contextPath}/LogoutServlet" style="color: #dc3545;">
                         <i class="fas fa-sign-out-alt"></i>
                         <span>Logout</span>
                     </a>
