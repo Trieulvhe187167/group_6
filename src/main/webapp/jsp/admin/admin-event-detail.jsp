@@ -47,11 +47,7 @@
     
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Event Details</h1>
-        <div>
-            <a href="${pageContext.request.contextPath}/admin/events?action=edit&id=${event.id}" 
-               class="btn btn-warning">
-                <i class="fas fa-edit"></i> Edit Event
-            </a>
+       
             <a href="${pageContext.request.contextPath}/admin/events" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
