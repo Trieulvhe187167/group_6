@@ -9,7 +9,116 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReservationDAO {
-    
+    public boolean cancelBooking(int bookingId) {
+        String sql = "UPDATE Reservations SET Status = 'CANCELLED', UpdatedAt = GETDATE() WHERE Id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, bookingId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Reservation> getUpcomingBookings(int userId) {
+        String sql = """
+            SELECT r.*, room.RoomNumber, 
+                   rt.Name AS roomTypeName, rt.BasePrice,
+                   u.Phone AS UserPhone,
+                   u.Email AS CustomerEmail,
+                   u.FullName AS UserFullName
+            FROM Reservations r
+            JOIN Rooms room ON r.RoomId = room.Id
+            JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
+            JOIN Users u ON r.UserId = u.Id
+            WHERE r.UserId = ? 
+              AND r.Status IN ('PENDING', 'CONFIRMED', 'CHECKIN') 
+              AND r.CheckOut >= CAST(GETDATE() AS DATE)
+        """;
+        return executeBookingQuery(sql, userId);
+    }
+
+    public List<Reservation> getPastBookings(int userId, String status, String fromDate, String toDate) {
+        List<Reservation> list = new ArrayList<>();
+        try (Connection conn = DBContext.getConnection()) {
+            StringBuilder sql = new StringBuilder("""
+                SELECT r.*, room.RoomNumber, 
+                       rt.Name AS roomTypeName, rt.BasePrice,
+                       u.Phone AS UserPhone,
+                       u.Email AS CustomerEmail,
+                       u.FullName AS UserFullName
+                FROM Reservations r
+                JOIN Rooms room ON r.RoomId = room.Id
+                JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
+                JOIN Users u ON r.UserId = u.Id
+                WHERE r.UserId = ?
+                  AND (r.Status IN ('COMPLETED', 'CANCELLED') 
+                       OR (r.Status = 'CHECKIN' AND r.CheckOut < CAST(GETDATE() AS DATE)))
+            """);
+
+            if (status != null && !status.isEmpty()) {
+                sql.append(" AND r.Status = ?");
+            }
+            if (fromDate != null && !fromDate.isEmpty()) {
+                sql.append(" AND r.CheckIn >= ?");
+            }
+            if (toDate != null && !toDate.isEmpty()) {
+                sql.append(" AND r.CheckOut <= ?");
+            }
+
+            sql.append(" ORDER BY r.CheckOut DESC");
+            PreparedStatement ps = conn.prepareStatement(sql.toString());
+            int index = 1;
+            ps.setInt(index++, userId);
+
+            if (status != null && !status.isEmpty()) {
+                ps.setString(index++, status);
+            }
+            if (fromDate != null && !fromDate.isEmpty()) {
+                ps.setDate(index++, Date.valueOf(fromDate));
+            }
+            if (toDate != null && !toDate.isEmpty()) {
+                ps.setDate(index++, Date.valueOf(toDate));
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToReservation(rs));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private List<Reservation> executeBookingQuery(String sql, int userId) {
+        List<Reservation> list = new ArrayList<>();
+        try (Connection con = DBContext.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Reservation r = mapResultSetToReservation(rs);
+                r.setRoomName(rs.getString("roomNumber"));
+                r.setRoomTypeName(rs.getString("roomTypeName"));
+                r.setBasePrice(rs.getDouble("BasePrice"));
+                r.setCustomerPhone(rs.getString("UserPhone"));
+                r.setCustomerEmail(rs.getString("CustomerEmail"));
+                r.setUserFullName(rs.getString("UserFullName"));
+
+                list.add(r);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     // Get today's check-ins count
     public int getTodayCheckInsCount() {
         String sql = "SELECT COUNT(*) FROM Reservations " +
@@ -941,17 +1050,26 @@ public class ReservationDAO {
     
     // Get reservation by ID
     public Reservation getReservationById(int reservationId) {
-        String sql = "SELECT r.*, u.FullName as CustomerName, u.Email as CustomerEmail, " +
-                    "u.Phone as CustomerPhone, " +
-                    "CASE WHEN r.RoomId IS NOT NULL THEN rm.RoomNumber ELSE 'Not Assigned' END as RoomNumber, " +
-                    "COALESCE(rt.Name, rt2.Name) as RoomTypeName " +
-                    "FROM Reservations r " +
-                    "INNER JOIN Users u ON r.UserId = u.Id " +
-                    "LEFT JOIN Rooms rm ON r.RoomId = rm.Id " +
-                    "LEFT JOIN RoomTypes rt ON rm.RoomTypeId = rt.Id " +
-                    "LEFT JOIN RoomTypes rt2 ON r.RoomTypeId = rt2.Id " +
-                    "WHERE r.Id = ?";
-        
+       String sql = """
+    SELECT 
+        r.Id, r.UserId, r.GroupBookingId, r.CreatedBy, r.RoomId, r.RoomTypeId,
+        r.CheckIn, r.CheckOut, r.Status, r.TotalAmount, r.Notes, r.SpecialRequests,
+        r.NumberOfCustomers, r.CreatedAt, r.UpdatedAt,
+        u.FullName AS CustomerName,
+        u.Email AS CustomerEmail,
+        u.Phone AS CustomerPhone,
+        room.RoomNumber,
+        rt.Name AS RoomTypeName,
+        DATEDIFF(DAY, r.CheckIn, r.CheckOut) AS Nights,
+        p.Status AS PaymentStatus
+    FROM Reservations r
+    LEFT JOIN Users u ON r.UserId = u.Id
+    LEFT JOIN Rooms room ON r.RoomId = room.Id
+    LEFT JOIN RoomTypes rt ON r.RoomTypeId = rt.Id
+    LEFT JOIN Payments p ON r.Id = p.ReservationId
+    WHERE r.Id = ?
+""";
+
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
@@ -1112,55 +1230,149 @@ public class ReservationDAO {
     }
     
     // Helper method to map ResultSet to Reservation
-    private Reservation mapResultSetToReservation(ResultSet rs) throws SQLException {
-        Reservation reservation = new Reservation();
-        reservation.setId(rs.getInt("Id"));
-        reservation.setUserId(rs.getInt("UserId"));
-        reservation.setGroupBookingId(rs.getObject("GroupBookingId") != null ? rs.getInt("GroupBookingId") : null);
-        reservation.setCreatedBy(rs.getObject("CreatedBy") != null ? rs.getInt("CreatedBy") : null);
-        reservation.setRoomId(rs.getObject("RoomId") != null ? rs.getInt("RoomId") : null);
-        
-        // Try to get RoomTypeId if it exists
-        try {
-            reservation.setRoomTypeId(rs.getObject("RoomTypeId") != null ? rs.getInt("RoomTypeId") : null);
-        } catch (SQLException e) {
-            // Column might not exist in older tables
-        }
-        
-        reservation.setCheckIn(rs.getDate("CheckIn"));
-        reservation.setCheckOut(rs.getDate("CheckOut"));
-        reservation.setStatus(rs.getString("Status"));
-        reservation.setTotalAmount(rs.getDouble("TotalAmount"));
-        reservation.setNotes(rs.getString("Notes"));
-        reservation.setCreatedAt(rs.getTimestamp("CreatedAt"));
+   public Reservation mapResultSetToReservation(ResultSet rs) throws SQLException {
+    Reservation reservation = new Reservation();
 
-        // Deposit fields (may not exist in some queries)
-        try {
-            reservation.setDepositAmount(rs.getObject("DepositAmount") != null ? rs.getDouble("DepositAmount") : null);
-            reservation.setDepositPaidDate(rs.getDate("DepositPaidDate"));
-            reservation.setDepositStatus(rs.getString("DepositStatus"));
-        } catch (SQLException e) {
-            // ignore if columns not present
+    // Các trường chính
+    reservation.setId(rs.getInt("Id"));
+    reservation.setUserId(rs.getInt("UserId"));
+    reservation.setGroupBookingId(rs.getObject("GroupBookingId") != null ? rs.getInt("GroupBookingId") : null);
+    reservation.setCreatedBy(rs.getInt("CreatedBy"));
+    reservation.setRoomId(rs.getInt("RoomId"));
+    reservation.setRoomTypeId(rs.getInt("RoomTypeId"));
+    reservation.setCheckIn(rs.getDate("CheckIn"));
+    reservation.setCheckOut(rs.getDate("CheckOut"));
+    reservation.setStatus(rs.getString("Status"));
+    reservation.setTotalAmount(rs.getDouble("TotalAmount"));
+    reservation.setNotes(rs.getString("Notes"));
+    reservation.setSpecialRequests(rs.getString("SpecialRequests"));
+    reservation.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
+    reservation.setCreatedAt(rs.getTimestamp("CreatedAt"));
+    reservation.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+    ResultSetMetaData metaData = rs.getMetaData();
+int columnCount = metaData.getColumnCount();
+for (int i = 1; i <= columnCount; i++) {
+    System.out.println("Column " + i + ": " + metaData.getColumnLabel(i));
+}
+    // Các thông tin bổ sung từ bảng liên kết
+    reservation.setCustomerPhone(rs.getString("CustomerPhone"));
+reservation.setCustomerEmail(rs.getString("CustomerEmail"));
+reservation.setUserFullName(rs.getString("CustomerName"));
+reservation.setRoomNumber(rs.getString("RoomNumber"));
+reservation.setRoomTypeName(rs.getString("RoomTypeName"));
+
+    // Các thông tin thêm nếu có
+    try {
+        reservation.setNights(rs.getInt("Nights"));
+    } catch (SQLException ignore) {}
+
+    try {
+        reservation.setPaymentStatus(rs.getString("PaymentStatus"));
+    } catch (SQLException ignore) {}
+
+    return reservation;
+}
+        public int getTotalReservationCount(String statusFilter, String fromDate, String toDate) 
+            throws SQLException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT COUNT(*) FROM reservations r WHERE 1=1 ");
+        
+        List<Object> parameters = new ArrayList<>();
+        
+        if (statusFilter != null && !statusFilter.isEmpty()) {
+            sql.append("AND r.Status = ? ");
+            parameters.add(statusFilter);
         }
         
-        // Additional fields if available
-        try {
-            reservation.setCustomerName(rs.getString("CustomerName"));
-            reservation.setCustomerEmail(rs.getString("CustomerEmail"));
-            reservation.setCustomerPhone(rs.getString("CustomerPhone"));
-            reservation.setRoomNumber(rs.getString("RoomNumber"));
-            reservation.setRoomTypeName(rs.getString("RoomTypeName"));
-        } catch (SQLException e) {
-            // These fields might not be in all queries
+        if (fromDate != null && !fromDate.isEmpty()) {
+            sql.append("AND r.CheckIn >= ? ");
+            parameters.add(fromDate);
         }
         
-        // Calculate nights
-        if (reservation.getCheckIn() != null && reservation.getCheckOut() != null) {
-            reservation.calculateNights();
+        if (toDate != null && !toDate.isEmpty()) {
+            sql.append("AND r.CheckOut <= ? ");
+            parameters.add(toDate);
+        }
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            
+            for (int i = 0; i < parameters.size(); i++) {
+                stmt.setObject(i + 1, parameters.get(i));
+            }
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         }
         
-        return reservation;
+        return 0;
     }
+       public List<Reservation> getReservations(String status, String fromDate, String toDate, int offset, int limit) {
+    List<Reservation> reservations = new ArrayList<>();
+    
+    StringBuilder sql = new StringBuilder("""
+        SELECT 
+            r.Id, r.UserId, r.GroupBookingId, r.CreatedBy, r.RoomId, r.RoomTypeId,
+            r.CheckIn, r.CheckOut, r.Status, r.TotalAmount, r.Notes, r.SpecialRequests,
+            r.NumberOfCustomers, r.CreatedAt, r.UpdatedAt,
+            u.FullName AS CustomerName,
+            u.Email AS CustomerEmail,
+            u.Phone AS CustomerPhone,
+            room.RoomNumber,
+            rt.Name AS RoomTypeName,
+            DATEDIFF(DAY, r.CheckIn, r.CheckOut) AS Nights,
+            p.Status AS PaymentStatus
+        FROM Reservations r
+        LEFT JOIN Users u ON r.UserId = u.Id
+        LEFT JOIN Rooms room ON r.RoomId = room.Id
+        LEFT JOIN RoomTypes rt ON r.RoomTypeId = rt.Id
+        LEFT JOIN Payments p ON r.Id = p.ReservationId
+        WHERE 1=1
+    """);
+
+    if (status != null && !status.isEmpty()) {
+        sql.append(" AND r.Status = ?");
+    }
+    if (fromDate != null && !fromDate.isEmpty()) {
+        sql.append(" AND r.CheckIn >= ?");
+    }
+    if (toDate != null && !toDate.isEmpty()) {
+        sql.append(" AND r.CheckOut <= ?");
+    }
+
+    sql.append(" ORDER BY r.CreatedAt DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+        int paramIndex = 1;
+        if (status != null && !status.isEmpty()) {
+            ps.setString(paramIndex++, status);
+        }
+        if (fromDate != null && !fromDate.isEmpty()) {
+            ps.setString(paramIndex++, fromDate);
+        }
+        if (toDate != null && !toDate.isEmpty()) {
+            ps.setString(paramIndex++, toDate);
+        }
+        ps.setInt(paramIndex++, offset);
+        ps.setInt(paramIndex, limit);
+
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            reservations.add(mapResultSetToReservation(rs));
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return reservations;
+}
+
+
    public boolean updateDepositStatus(int reservationId, String depositStatus) {
     String sql = "UPDATE Reservations SET DepositStatus = ?, UpdatedAt = GETDATE() WHERE Id = ?";
     
