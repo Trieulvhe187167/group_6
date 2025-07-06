@@ -3,6 +3,8 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!-- Bootstrap CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -174,25 +176,25 @@
                                         <fmt:parseNumber var="nights" value="${(reservation.checkOut.time - reservation.checkIn.time) / (1000 * 60 * 60 * 24)}" integerOnly="true"/>
                                         <span class="badge badge-secondary">${nights} nights</span>
                                     </td>
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${reservation.status eq 'PENDING'}">
-                                                <span class="badge badge-warning">Pending</span>
-                                            </c:when>
-                                            <c:when test="${reservation.status eq 'CONFIRMED'}">
-                                                <span class="badge badge-success">Confirmed</span>
-                                            </c:when>
-                                            <c:when test="${reservation.status eq 'CANCELLED'}">
-                                                <span class="badge badge-danger">Cancelled</span>
-                                            </c:when>
-                                            <c:when test="${reservation.status eq 'COMPLETED'}">
-                                                <span class="badge badge-info">Completed</span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="badge badge-secondary">${reservation.status}</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
+                                   <td>
+    <c:choose>
+        <c:when test="${reservation.status == 'CONFIRMED'}">
+            <span class="badge bg-success">Confirmed</span>
+        </c:when>
+        <c:when test="${reservation.status == 'PENDING'}">
+            <span class="badge bg-warning text-dark">Pending</span>
+        </c:when>
+        <c:when test="${reservation.status == 'CANCELLED'}">
+            <span class="badge bg-danger">Cancelled</span>
+        </c:when>
+        <c:when test="${reservation.status == 'COMPLETED'}">
+            <span class="badge bg-primary">Completed</span>
+        </c:when>
+        <c:otherwise>
+            <span class="badge bg-secondary">${reservation.status}</span>
+        </c:otherwise>
+    </c:choose>
+<!--</td>-->
                                     <td>
                                         <strong class="text-primary">
                                             <fmt:formatNumber value="${reservation.totalAmount}" pattern="#,##0"/>₫
