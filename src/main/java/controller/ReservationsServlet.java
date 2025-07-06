@@ -1,33 +1,347 @@
 package controller;
 
-import dal.*;
-import model.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.BufferedReader;
+import java.util.List;
+import java.util.Map;
+import java.sql.Date;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
-import java.io.IOException;
-import java.util.*;
-import java.sql.Date;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import java.io.BufferedReader;
 
-@WebServlet(name = "ReservationsServlet", urlPatterns = {"/receptionist/reservations"})
-public class ReservationsServlet extends ReceptionistBaseServlet {
-    
+import model.*;
+import dal.*;
+import util.MailUtil;
+
+@WebServlet(urlPatterns = {
+    "/admin/bookings",
+    "/admin/api/booking-detail", 
+    "/customer/bookings",
+    "/customer/history",
+    "/customer/booking-detail",
+    "/customer/cancel-booking",
+    "/receptionist/reservations"
+})
+public class ReservationsServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
     private final ReservationDAO reservationDAO = new ReservationDAO();
     private final UserDAO userDAO = new UserDAO();
     private final RoomDAO roomDAO = new RoomDAO();
     private final RoomTypeDAO roomTypeDAO = new RoomTypeDAO();
     private final ActivityDAO activityDAO = new ActivityDAO();
-    
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        if (!checkReceptionistAuth(request, response)) {
+
+        String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        String path = uri.substring(contextPath.length());
+
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            response.sendRedirect(contextPath + "/login.jsp");
             return;
         }
+
+        try {
+            switch (path) {
+                case "/admin/bookings":
+                    if (!"ADMIN".equals(user.getRole())) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        return;
+                    }
+                    handleAdminBookings(request, response);
+                    break;
+
+                case "/admin/api/booking-detail":
+                    if (!"ADMIN".equals(user.getRole())) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        return;
+                    }
+                    handleAdminBookingDetail(request, response);
+                    break;
+
+                case "/customer/bookings":
+                    if (!"CUSTOMER".equals(user.getRole())) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        return;
+                    }
+                    handleCustomerBookings(request, response);
+                    break;
+
+                case "/customer/history":
+                    if (!"CUSTOMER".equals(user.getRole())) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        return;
+                    }
+                    handleCustomerHistory(request, response);
+                    break;
+
+                case "/customer/booking-detail":
+                    if (!"CUSTOMER".equals(user.getRole())) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        return;
+                    }
+                    handleCustomerBookingDetail(request, response);
+                    break;
+
+                case "/receptionist/reservations":
+                    if (!"RECEPTIONIST".equals(user.getRole())) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        return;
+                    }
+                    handleReceptionistReservations(request, response);
+                    break;
+
+                default:
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: " + e.getMessage());
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        String path = uri.substring(contextPath.length());
+
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            response.sendRedirect(contextPath + "/login.jsp");
+            return;
+        }
+
+        try {
+            switch (path) {
+                case "/customer/cancel-booking":
+                    if (!"CUSTOMER".equals(user.getRole())) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        return;
+                    }
+                    handleCustomerCancelBooking(request, response);
+                    break;
+
+                case "/receptionist/reservations":
+                    if (!"RECEPTIONIST".equals(user.getRole())) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        return;
+                    }
+                    handleReceptionistReservationsPost(request, response);
+                    break;
+
+                default:
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: " + e.getMessage());
+        }
+    }
+
+    // ======================= ADMIN =======================
+    private void handleAdminBookings(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String statusFilter = request.getParameter("status");
+        String fromDate = request.getParameter("fromDate");
+        String toDate = request.getParameter("toDate");
+
+        int page = 1;
+        int recordsPerPage = 5;
+
+        try {
+            String pageParam = request.getParameter("page");
+            if (pageParam != null && !pageParam.isEmpty()) {
+                page = Integer.parseInt(pageParam);
+            }
+        } catch (NumberFormatException e) {
+            page = 1;
+        }
+
+        int offset = (page - 1) * recordsPerPage;
+
+        try {
+            List<Reservation> reservations = reservationDAO.getReservations(statusFilter, fromDate, toDate, offset, recordsPerPage);
+            int totalRecords = reservationDAO.getTotalReservationCount(statusFilter, fromDate, toDate);
+            int totalPages = (int) Math.ceil((double) totalRecords / recordsPerPage);
+
+            request.setAttribute("reservations", reservations);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("totalRecords", totalRecords);
+            request.setAttribute("recordsPerPage", recordsPerPage);
+            request.setAttribute("statusFilter", statusFilter);
+            request.setAttribute("fromDate", fromDate);
+            request.setAttribute("toDate", toDate);
+
+            request.getRequestDispatcher("/jsp/admin/booking-list.jsp").forward(request, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("errorMessage", "Error loading bookings: " + e.getMessage());
+            request.getRequestDispatcher("/jsp/admin/booking-list.jsp").forward(request, response);
+        }
+    }
+
+    private void handleAdminBookingDetail(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String idParam = request.getParameter("id");
+
+        if (idParam == null || !idParam.matches("\\d+")) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid or missing booking ID");
+            return;
+        }
+
+        try {
+            int bookingId = Integer.parseInt(idParam);
+            Reservation reservation = reservationDAO.getReservationById(bookingId);
+
+            if (reservation != null) {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+
+                String json = new Gson().toJson(reservation);
+                PrintWriter out = response.getWriter();
+                out.print(json);
+                out.flush();
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Booking not found");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error occurred");
+        }
+    }
+
+    // ======================= CUSTOMER =======================
+    private void handleCustomerBookings(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        int userId = user.getId();
+        List<Reservation> bookings = reservationDAO.getUpcomingBookings(userId);
+        request.setAttribute("bookings", bookings);
+        request.getRequestDispatcher("/jsp/customer/my-booking.jsp").forward(request, response);
+    }
+
+    private void handleCustomerHistory(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        int userId = user.getId();
+
+        String status = request.getParameter("status");
+        String fromDate = request.getParameter("fromDate");
+        String toDate = request.getParameter("toDate");
+
+        List<Reservation> historyBookings = reservationDAO.getPastBookings(userId, status, fromDate, toDate);
+
+        request.setAttribute("historyBookings", historyBookings);
+        request.setAttribute("selectedStatus", status);
+        request.setAttribute("selectedDateFrom", fromDate);
+        request.setAttribute("selectedDateTo", toDate);
+        request.getRequestDispatcher("/jsp/customer/booking-history.jsp").forward(request, response);
+    }
+
+    private void handleCustomerBookingDetail(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        try {
+            String idParam = request.getParameter("id");
+            if (idParam == null || idParam.isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/customer/bookings");
+                return;
+            }
+
+            int bookingId = Integer.parseInt(idParam);
+            Reservation booking = reservationDAO.getReservationById(bookingId);
+
+            if (booking == null || booking.getUserId() != user.getId()) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
+                return;
+            }
+
+            request.setAttribute("booking", booking);
+            request.getRequestDispatcher("/jsp/customer/customer-booking-detail.jsp").forward(request, response);
+
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/customer/bookings");
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void handleCustomerCancelBooking(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        try {
+            int bookingId = Integer.parseInt(request.getParameter("id"));
+
+            Reservation booking = reservationDAO.getReservationById(bookingId);
+            if (booking == null || booking.getUserId() != user.getId()) {
+                response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=unauthorized");
+                return;
+            }
+
+            boolean success = reservationDAO.cancelBooking(bookingId);
+            if (success) {
+                String to = user.getEmail();
+                String subject = "Booking Cancellation Confirmation";
+                String message = "Dear " + user.getFullName() + ",\n\n" +
+                        "Your booking with ID #" + bookingId + " has been successfully cancelled.\n\n" +
+                        "Room: " + booking.getRoomName() + " (" + booking.getRoomTypeName() + ")\n" +
+                        "Check-in: " + booking.getCheckIn() + "\n" +
+                        "Check-out: " + booking.getCheckOut() + "\n\n" +
+                        "If you have any questions, feel free to contact us.\n\n" +
+                        "Best regards,\nHotel Management";
+
+                MailUtil.sendEmail(to, subject, message);
+                response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=success");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=failed");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=error");
+        }
+    }
+
+    // =========================== RECEPTIONIST METHODS ===========================
+    
+    private void handleReceptionistReservations(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         
         try {
             // Handle export action
@@ -76,24 +390,23 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
             request.setAttribute("todayCheckIns", todayCheckIns);
             request.setAttribute("currentUser", request.getSession().getAttribute("user"));
             
-            // Forward to template
-            forwardToTemplate(request, response, "Reservations Management", "reservations", 
-                    "/jsp/reception/reservations-content.jsp");
+            // Forward to JSP
+           request.setAttribute("activePage", "reservations");
+request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
+
             
         } catch (Exception e) {
-            handleError(request, response, e, "Error loading reservations");
+            e.printStackTrace();
+            request.setAttribute("errorMessage", "Error loading reservations: " + e.getMessage());
+            request.getRequestDispatcher("/jsp/reception/reservations-content.jsp").forward(request, response);
         }
     }
     
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    private void handleReceptionistReservationsPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        
         response.setContentType("application/json");
         request.setCharacterEncoding("UTF-8");
-
-        if (!checkReceptionistAuth(request, response)) {
-            return;
-        }
 
         try {
             // First check if action is in URL parameters
@@ -103,7 +416,6 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
             if (action == null) {
                 String contentType = request.getContentType();
                 if (contentType != null && contentType.contains("application/json")) {
-                    // Parse JSON body
                     BufferedReader reader = request.getReader();
                     StringBuilder sb = new StringBuilder();
                     String line;
@@ -163,7 +475,9 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
             response.getWriter().write("{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
         }
     }
-
+    
+    // =========================== HELPER METHODS ===========================
+    
     private void handleJsonAction(String action, Map<String, Object> requestData, 
             HttpServletRequest request, HttpServletResponse response) throws IOException {
         switch (action) {
@@ -281,14 +595,15 @@ public class ReservationsServlet extends ReceptionistBaseServlet {
             // Create reservation
             Reservation reservation = new Reservation();
             reservation.setUserId(customerId);
+            
             Object roomIdObj = reservationData.get("roomId");
-int roomId = 0;
-if (roomIdObj instanceof Double) {
-    roomId = ((Double) roomIdObj).intValue();
-} else if (roomIdObj instanceof String) {
-    roomId = Integer.parseInt((String) roomIdObj);
-}
-reservation.setRoomId(roomId);
+            int roomId = 0;
+            if (roomIdObj instanceof Double) {
+                roomId = ((Double) roomIdObj).intValue();
+            } else if (roomIdObj instanceof String) {
+                roomId = Integer.parseInt((String) roomIdObj);
+            }
+            reservation.setRoomId(roomId);
 
             reservation.setCheckIn(Date.valueOf((String) reservationData.get("checkIn")));
             reservation.setCheckOut(Date.valueOf((String) reservationData.get("checkOut")));
@@ -298,12 +613,11 @@ reservation.setRoomId(roomId);
             
             if (reservationData.get("numberOfCustomers") != null) {
                 Object numCustomersObj = reservationData.get("numberOfCustomers");
-if (numCustomersObj instanceof Double) {
-    reservation.setNumberOfCustomers(((Double) numCustomersObj).intValue());
-} else if (numCustomersObj instanceof String) {
-    reservation.setNumberOfCustomers(Integer.parseInt((String) numCustomersObj));
-}
-
+                if (numCustomersObj instanceof Double) {
+                    reservation.setNumberOfCustomers(((Double) numCustomersObj).intValue());
+                } else if (numCustomersObj instanceof String) {
+                    reservation.setNumberOfCustomers(Integer.parseInt((String) numCustomersObj));
+                }
             }
             
             // Calculate total amount
@@ -343,13 +657,12 @@ if (numCustomersObj instanceof Double) {
             User currentUser = (User) session.getAttribute("user");
 
             Object idObj = reservationData.get("id");
-int reservationId = 0;
-if (idObj instanceof Double) {
-    reservationId = ((Double) idObj).intValue();
-} else if (idObj instanceof String) {
-    reservationId = Integer.parseInt((String) idObj);
-}
-
+            int reservationId = 0;
+            if (idObj instanceof Double) {
+                reservationId = ((Double) idObj).intValue();
+            } else if (idObj instanceof String) {
+                reservationId = Integer.parseInt((String) idObj);
+            }
 
             // Fetch existing reservation
             Reservation reservation = reservationDAO.getReservationById(reservationId);
@@ -374,12 +687,11 @@ if (idObj instanceof Double) {
 
             if (reservationData.get("numberOfCustomers") != null) {
                 Object numCustomersObj = reservationData.get("numberOfCustomers");
-if (numCustomersObj instanceof Double) {
-    reservation.setNumberOfCustomers(((Double) numCustomersObj).intValue());
-} else if (numCustomersObj instanceof String) {
-    reservation.setNumberOfCustomers(Integer.parseInt((String) numCustomersObj));
-}
-
+                if (numCustomersObj instanceof Double) {
+                    reservation.setNumberOfCustomers(((Double) numCustomersObj).intValue());
+                } else if (numCustomersObj instanceof String) {
+                    reservation.setNumberOfCustomers(Integer.parseInt((String) numCustomersObj));
+                }
             }
 
             // Recalculate total amount
@@ -432,7 +744,7 @@ if (numCustomersObj instanceof Double) {
         }
     }
     
-    private void getAvailableRooms(HttpServletRequest request, HttpServletResponse response) 
+     private void getAvailableRooms(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
         try {
             int roomTypeId = Integer.parseInt(request.getParameter("roomTypeId"));
