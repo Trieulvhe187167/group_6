@@ -9,9 +9,15 @@
     <title>${pageTitle} - Luxury Hotel Receptionist</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+    <!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Font Awesome 6 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- DataTables Bootstrap 5 -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
 
     <style>
         * {
@@ -206,8 +212,44 @@
             .main-content {
                 margin-left: 0;
             }
+            td.status-column {
+    color: #212529 !important; /* Màu chữ tối */
+    font-weight: 500;
+}
+.table td, .table th {
+    color: #212529; /* màu chữ mặc định đen của Bootstrap */
+}
+.table-container table td {
+    color: #000 !important;
+}
+table.dataTable tbody td {
+    color: #000;
+}
+.badge-info {
+    color: #000 !important; /* hoặc màu đậm khác: #212529 */
+    background-color: #d1ecf1; /* nền xanh nhạt dễ nhìn */
+}
+
+.badge-secondary {
+    color: #000 !important;
+    background-color: #e2e3e5; /* nền xám nhạt */
+}
         }
+        
     </style>
+    <style>
+    /* Cách này dùng selector cụ thể hơn để đè Bootstrap */
+    td span.badge.badge-info {
+        color: #000 !important;
+        background-color: #d1ecf1 !important;
+    }
+
+    td span.badge.badge-secondary {
+        color: #000 !important;
+        background-color: #e2e3e5 !important;
+    }
+</style>
+
 </head>
 <body>
     <!-- Header -->
@@ -335,8 +377,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
         // Common JavaScript functions for Receptionist template
