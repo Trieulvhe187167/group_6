@@ -182,7 +182,7 @@
         </div>
         
         <div class="action-buttons">
-            <a href="${pageContext.request.contextPath}/RoomListServlet" class="btn btn-secondary">
+            <a href="${pageContext.request.contextPath}/SearchAvailableRoomsServlet" class="btn btn-secondary">
                 <i class="fa fa-arrow-left"></i> Back to Rooms
             </a>
             <% if (reservationId != null) { %>

@@ -34,7 +34,7 @@ public class PaymentGatewayServlet extends HttpServlet {
             
             if (reservationIdStr == null || method == null) {
                 System.out.println("ERROR: Missing required parameters");
-                response.sendRedirect("RoomListServlet");
+                response.sendRedirect("SearchAvailableRoomsServlet");
                 return;
             }
             
@@ -44,7 +44,7 @@ public class PaymentGatewayServlet extends HttpServlet {
             Reservation reservation = reservationDAO.getReservationById(reservationId);
             if (reservation == null) {
                 System.out.println("ERROR: Reservation not found with ID: " + reservationId);
-                response.sendRedirect("RoomListServlet");
+                response.sendRedirect("SearchAvailableRoomsServlet");
                 return;
             }
             
@@ -55,7 +55,7 @@ public class PaymentGatewayServlet extends HttpServlet {
             Payment payment = paymentDAO.getPaymentByReservationId(reservationId);
             if (payment == null) {
                 System.out.println("ERROR: No payment record found for reservation: " + reservationId);
-                response.sendRedirect("RoomListServlet");
+                response.sendRedirect("SearchAvailableRoomsServlet");
                 return;
             }
             
@@ -84,11 +84,11 @@ public class PaymentGatewayServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             System.out.println("ERROR: NumberFormatException - " + e.getMessage());
             e.printStackTrace();
-            response.sendRedirect("RoomListServlet");
+            response.sendRedirect("SearchAvailableRoomsServlet");
         } catch (Exception e) {
             System.out.println("ERROR: General Exception - " + e.getMessage());
             e.printStackTrace();
-            response.sendRedirect("RoomListServlet");
+            response.sendRedirect("SearchAvailableRoomsServlet");
         }
         
         System.out.println("=== PaymentGatewayServlet.doGet() END ===");
@@ -129,7 +129,7 @@ public class PaymentGatewayServlet extends HttpServlet {
         if ("processPayment".equals(action)) {
             processPayment(request, response);
         } else {
-            response.sendRedirect("RoomListServlet");
+            response.sendRedirect("SearchAvailableRoomsServlet");
         }
     }
     
@@ -222,7 +222,7 @@ private void processPayment(HttpServletRequest request, HttpServletResponse resp
         
     } catch (Exception e) {
         e.printStackTrace();
-        response.sendRedirect("RoomListServlet");
+        response.sendRedirect("SearchAvailableRoomsServlet");
     }
 }
     

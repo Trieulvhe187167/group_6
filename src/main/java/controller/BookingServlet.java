@@ -60,7 +60,7 @@ public class BookingServlet extends HttpServlet {
         }
         
         // Redirect to room list if accessed directly
-        response.sendRedirect("RoomListServlet");
+        response.sendRedirect("SearchAvailableRoomsServlet");
     }
     
     @Override

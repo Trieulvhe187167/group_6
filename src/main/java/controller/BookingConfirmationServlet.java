@@ -41,7 +41,7 @@ public class BookingConfirmationServlet extends HttpServlet {
         }
         
         if (reservationId == null) {
-            response.sendRedirect("RoomListServlet");
+            response.sendRedirect("SearchAvailableRoomsServlet");
             return;
         }
         
@@ -49,14 +49,14 @@ public class BookingConfirmationServlet extends HttpServlet {
             // Get reservation details with deposit info
             Reservation reservation = reservationDAO.getReservationById(reservationId);
             if (reservation == null) {
-                response.sendRedirect("RoomListServlet");
+                response.sendRedirect("SearchAvailableRoomsServlet");
                 return;
             }
             
             // Get room details
             Room room = roomDAO.getRoomById(reservation.getRoomId());
             if (room == null) {
-                response.sendRedirect("RoomListServlet");
+                response.sendRedirect("SearchAvailableRoomsServlet");
                 return;
             }
             
@@ -85,7 +85,7 @@ public class BookingConfirmationServlet extends HttpServlet {
             
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("RoomListServlet");
+            response.sendRedirect("SearchAvailableRoomsServlet");
         }
     }
     

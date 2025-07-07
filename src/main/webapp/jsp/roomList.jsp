@@ -121,23 +121,48 @@
                                     <!-- Search -->
                                     <div class="search-section">
                                         <h5 class="widget-title">Search Rooms</h5>
-                                        <form action="RoomListServlet" method="get">
-                                            <div class="input-group">
-                                                <input name="keyword" type="text" class="form-control" 
-                                                       placeholder="Search by room type..." value="${keyword}">
-                                                <div class="input-group-append">
-                                                    <button type="submit" class="btn btn-primary">
-                                                        <i class="fa fa-search"></i>
-                                                    </button>
-                                                </div>
+                                        <form action="SearchAvailableRoomsServlet" method="get" id="roomListSearchForm">
+                                            <!-- Preserve selected filters when performing a new search -->
+                                            <input type="hidden" name="price" value="${selectedPrice}">
+                                            <input type="hidden" name="capacity" value="${selectedCapacity}">
+                                            <div class="form-group">
+                                                <label>Check-in</label>
+                                                <input type="date" name="checkIn" class="form-control"
+                                                       value="${searchCheckIn}"
+                                                       min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>"
+                                                       required>
                                             </div>
+                                            <div class="form-group">
+                                                <label>Check-out</label>
+                                                <input type="date" name="checkOut" class="form-control"
+                                                       value="${searchCheckOut}"
+                                                       min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 24*60*60*1000)) %>"
+                                                       required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Room Type</label>
+                                                <select name="roomTypeId" class="form-control">
+                                                    <option value="">All Room Types</option>
+                                                    <c:forEach var="roomType" items="${searchRoomTypes}">
+                                                        <option value="${roomType.id}"
+                                                                <c:if test="${searchRoomTypeId eq roomType.id}">selected</c:if>>
+                                                            ${roomType.name}
+                                                        </option>
+                                                    </c:forEach>
+                                                </select>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary btn-block">Search</button>
                                         </form>
                                     </div>
 
                                     <!-- Filters -->
                                     <div class="filter-section">
                                         <h5 class="widget-title">Filter by</h5>
-                                        <form action="RoomListServlet" method="get">
+                                        <form action="SearchAvailableRoomsServlet" method="get">
+                                            <!-- Keep current search parameters when filtering -->
+                                            <input type="hidden" name="checkIn" value="${searchCheckIn}">
+                                            <input type="hidden" name="checkOut" value="${searchCheckOut}">
+                                            <input type="hidden" name="roomTypeId" value="${searchRoomTypeId}">
                                             <div class="form-group">
                                                 <label>Price Range</label>
                                                 <select name="price" class="form-control" onchange="this.form.submit()">
@@ -154,12 +179,13 @@
                                                     <option value="">All Capacities</option>
                                                     <option value="1" ${selectedCapacity == '1' ? 'selected' : ''}>1 Guest</option>
                                                     <option value="2" ${selectedCapacity == '2' ? 'selected' : ''}>2 Guests</option>
-                                                    <option value="3" ${selectedCapacity == '3' ? 'selected' : ''}>3+ Guests</option>
+                                                    <option value="3" ${selectedCapacity == '3' ? 'selected' : ''}>3 Guests</option>
+                                                    <option value="4" ${selectedCapacity == '4' ? 'selected' : ''}>4+ Guests</option>
                                                 </select>
                                             </div>
 
                                             <c:if test="${not empty selectedPrice || not empty selectedCapacity}">
-                                                <a href="RoomListServlet" class="btn btn-secondary btn-block">
+                                                <a href="SearchAvailableRoomsServlet?checkIn=${searchCheckIn}&checkOut=${searchCheckOut}&roomTypeId=${searchRoomTypeId}" class="btn btn-secondary btn-block">
                                                     <i class="fa fa-times"></i> Clear Filters
                                                 </a>
                                             </c:if>
@@ -188,9 +214,9 @@
                                                                 <i class="fa fa-star" style="color: #ffc107"></i>
                                                                 <i class="fa fa-star" style="color: #ffc107"></i>
                                                                 <i class="fa fa-star" style="color: #ffc107"></i>
-                                                                
+
                                                             </li>
-                                                           
+
                                                         </ul>
                                                     </div>
                                                 </div>
@@ -222,8 +248,7 @@
                                                 int startIndex = (currentPage - 1) * recordsPerPage;
                                                 int endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
                                             
-                                                for (int i = startIndex; i < endIndex; i++) {
-                                                    RoomType type = roomTypes.get(i);
+                                                for (RoomType type : roomTypes) {
                                                     String description = type.getDescription();
                                                     String[] features = description.split(",");
                                                     String bedType = features.length > 1 ? features[1].trim() : "Standard Bed";
@@ -269,7 +294,7 @@
                                                 <i class="fa fa-bed"></i>
                                                 <h4>No rooms found</h4>
                                                 <p>Try adjusting your search criteria or browse all available rooms.</p>
-                                                <a href="RoomListServlet" class="btn btn-primary">View All Rooms</a>
+                                                <a href="SearchAvailableRoomsServlet" class="btn btn-primary">View All Rooms</a>
                                             </div>
                                         </div>
                                         <%
@@ -290,8 +315,7 @@
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <li class="previous">
-                                                                    <a href="?page=${currentPage - 1}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}">
-                                                                        <i class="ti-arrow-left"></i> Previous
+                                                                    <a href="?page=${currentPage - 1}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}&checkIn=${searchCheckIn}&checkOut=${searchCheckOut}">                                                                        <i class="ti-arrow-left"></i> Previous
                                                                     </a>
                                                                 </li>
                                                             </c:otherwise>
@@ -305,7 +329,7 @@
                                                                         </c:when>
                                                                         <c:otherwise>
                                                                     <li>
-                                                                        <a href="?page=${i}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}">
+                                                                        <a href="?page=${i}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}&checkIn=${searchCheckIn}&checkOut=${searchCheckOut}">
                                                                             ${i}
                                                                         </a>
                                                                     </li>
@@ -322,7 +346,7 @@
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <li class="next">
-                                                                    <a href="?page=${currentPage + 1}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}">
+                                                                    <a href="?page=${currentPage + 1}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}&checkIn=${searchCheckIn}&checkOut=${searchCheckOut}">
                                                                         Next <i class="ti-arrow-right"></i>
                                                                     </a>
                                                                 </li>

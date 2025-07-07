@@ -508,7 +508,7 @@
         
         function cancelPayment() {
             if (confirm('Are you sure you want to cancel this payment?')) {
-                window.location.href = '${pageContext.request.contextPath}/RoomListServlet';
+                window.location.href = '${pageContext.request.contextPath}/SearchAvailableRoomsServlet';
             }
         }
     </script>
