@@ -474,6 +474,7 @@ request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
         }
+        
     }
     
     // =========================== HELPER METHODS ===========================
@@ -651,77 +652,91 @@ request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward
     }
     
     private void updateReservation(Map<String, Object> reservationData, HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        try {
-            HttpSession session = request.getSession();
-            User currentUser = (User) session.getAttribute("user");
+        throws IOException {
+    try {
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
 
-            Object idObj = reservationData.get("id");
-            int reservationId = 0;
-            if (idObj instanceof Double) {
-                reservationId = ((Double) idObj).intValue();
-            } else if (idObj instanceof String) {
-                reservationId = Integer.parseInt((String) idObj);
-            }
-
-            // Fetch existing reservation
-            Reservation reservation = reservationDAO.getReservationById(reservationId);
-            if (reservation == null) {
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                response.getWriter().write("{\"success\":false,\"message\":\"Reservation not found\"}");
-                return;
-            }
-
-            // Only allow update if status is PENDING
-            if (!"PENDING".equalsIgnoreCase(reservation.getStatus())) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"success\":false,\"message\":\"Only PENDING reservations can be updated\"}");
-                return;
-            }
-
-            // Update fields
-            reservation.setCheckIn(Date.valueOf((String) reservationData.get("checkIn")));
-            reservation.setCheckOut(Date.valueOf((String) reservationData.get("checkOut")));
-            reservation.setStatus((String) reservationData.get("status"));
-            reservation.setSpecialRequests((String) reservationData.get("specialRequests"));
-
-            if (reservationData.get("numberOfCustomers") != null) {
-                Object numCustomersObj = reservationData.get("numberOfCustomers");
-                if (numCustomersObj instanceof Double) {
-                    reservation.setNumberOfCustomers(((Double) numCustomersObj).intValue());
-                } else if (numCustomersObj instanceof String) {
-                    reservation.setNumberOfCustomers(Integer.parseInt((String) numCustomersObj));
-                }
-            }
-
-            // Recalculate total amount
-            Room room = roomDAO.getRoomById(reservation.getRoomId());
-            long days = (reservation.getCheckOut().getTime() - reservation.getCheckIn().getTime()) / (1000 * 60 * 60 * 24);
-            double totalAmount = days * room.getBasePrice();
-            reservation.setTotalAmount(totalAmount);
-
-            boolean success = reservationDAO.updateReservation(reservation);
-
-            if (success) {
-                Activity activity = new Activity();
-                activity.setType("RESERVATION_UPDATE");
-                activity.setReservationId(reservationId);
-                activity.setUserId(currentUser.getId());
-                activity.setDescription("Updated booking #" + reservationId);
-                activity.setIpAddress(request.getRemoteAddr());
-                activityDAO.logActivity(activity);
-            }
-
-            response.setContentType("application/json");
-            response.getWriter().write("{\"success\":" + success + "}");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
+        Object idObj = reservationData.get("id");
+        int reservationId = 0;
+        if (idObj instanceof Double) {
+            reservationId = ((Double) idObj).intValue();
+        } else if (idObj instanceof String) {
+            reservationId = Integer.parseInt((String) idObj);
         }
+
+        // Fetch existing reservation
+        Reservation reservation = reservationDAO.getReservationById(reservationId);
+        if (reservation == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"success\":false,\"message\":\"Reservation not found\"}");
+            return;
+        }
+
+        // Only allow update if status is PENDING
+        if (!"PENDING".equalsIgnoreCase(reservation.getStatus())) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"success\":false,\"message\":\"Only PENDING reservations can be updated\"}");
+            return;
+        }
+
+        // Parse and set new dates
+        Date newCheckIn = Date.valueOf((String) reservationData.get("checkIn"));
+        Date newCheckOut = Date.valueOf((String) reservationData.get("checkOut"));
+
+        // Check room availability (excluding this reservation)
+        boolean isAvailable = reservationDAO.isRoomAvailableForUpdate(
+                reservation.getRoomId(),
+                newCheckIn,
+                newCheckOut,
+                reservation.getId()
+        );
+
+       if (!isAvailable) {
+    response.setStatus(HttpServletResponse.SC_CONFLICT);
+    response.setContentType("application/json");
+    response.getWriter().write("{\"success\":false," +
+            "\"message\":\"This room is already booked during the selected dates. " +
+            "Please choose another date or room.\"}");
+    return;
+}
+
+
+        // Update allowed fields
+        reservation.setCheckIn(newCheckIn);
+        reservation.setCheckOut(newCheckOut);
+        reservation.setStatus((String) reservationData.get("status"));
+        reservation.setSpecialRequests((String) reservationData.get("specialRequests"));
+
+        // Recalculate total amount
+        Room room = roomDAO.getRoomById(reservation.getRoomId());
+        long days = (reservation.getCheckOut().getTime() - reservation.getCheckIn().getTime()) / (1000 * 60 * 60 * 24);
+        double totalAmount = days * room.getBasePrice();
+        reservation.setTotalAmount(totalAmount);
+
+        boolean success = reservationDAO.updateReservation(reservation);
+
+        if (success) {
+            Activity activity = new Activity();
+            activity.setType("RESERVATION_UPDATE");
+            activity.setReservationId(reservationId);
+            activity.setUserId(currentUser.getId());
+            activity.setDescription("Updated booking #" + reservationId);
+            activity.setIpAddress(request.getRemoteAddr());
+            activityDAO.logActivity(activity);
+        }
+
+        response.setContentType("application/json");
+        response.getWriter().write("{\"success\":" + success + "}");
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
     }
+}
+
     
     private void getReservationDetails(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
@@ -730,7 +745,8 @@ request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward
             ReservationDetail reservation = reservationDAO.getReservationDetail(reservationId);
             
             if (reservation != null) {
-                response.setContentType("application/json");
+               
+                
                 Gson gson = new Gson();
                 response.getWriter().write(gson.toJson(reservation));
             } else {
