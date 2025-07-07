@@ -28,20 +28,23 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         try {
             // Get search parameters
             String roomTypeIdStr = request.getParameter("roomTypeId");
             String checkInStr = request.getParameter("checkIn");
             String checkOutStr = request.getParameter("checkOut");
             String capacityStr = request.getParameter("capacity");
-            
+            String keyword = request.getParameter("keyword");
+            String priceRange = request.getParameter("price");
             // Store search parameters to maintain in form
             request.setAttribute("searchRoomTypeId", roomTypeIdStr);
             request.setAttribute("searchCheckIn", checkInStr);
             request.setAttribute("searchCheckOut", checkOutStr);
             request.setAttribute("searchCapacity", capacityStr);
-            
+            request.setAttribute("selectedCapacity", capacityStr);
+            request.setAttribute("selectedPrice", priceRange);
+            request.setAttribute("keyword", keyword);
             // Get page parameter
             String pageStr = request.getParameter("page");
             int currentPage = 1;
@@ -53,10 +56,56 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
                 }
             }
 
-            // Validate required parameters
-            if (checkInStr == null || checkOutStr == null || 
-                checkInStr.trim().isEmpty() || checkOutStr.trim().isEmpty()) {
-                request.setAttribute("error", "Please select check-in and check-out dates");
+           // If check-in or check-out missing, show room list only.
+            if (checkInStr == null || checkInStr.trim().isEmpty()
+                    || checkOutStr == null || checkOutStr.trim().isEmpty()) {
+
+                RoomTypeDAO dao = new RoomTypeDAO();
+                List<RoomType> roomTypes;
+
+                if (roomTypeIdStr != null && !roomTypeIdStr.trim().isEmpty()) {
+                    try {
+                        int rtId = Integer.parseInt(roomTypeIdStr);
+                        RoomType rt = dao.getRoomTypesById(rtId);
+                        if (rt != null && "active".equalsIgnoreCase(rt.getStatus())) {
+                            roomTypes = new ArrayList<>();
+                            roomTypes.add(rt);
+                        } else {
+                            roomTypes = new ArrayList<>();
+                        }
+                    } catch (NumberFormatException e) {
+                        roomTypes = new ArrayList<>();
+                    }
+                    request.setAttribute("searchRoomTypeId", roomTypeIdStr);
+                } else if (keyword != null && !keyword.trim().isEmpty()) {
+                    roomTypes = dao.searchRooms(keyword.trim());
+                    roomTypes.removeIf(room -> !"active".equalsIgnoreCase(room.getStatus()));
+                    request.setAttribute("keyword", keyword);
+                } else if ((priceRange != null && !priceRange.isEmpty())
+                        || (capacityStr != null && !capacityStr.isEmpty())) {
+                    roomTypes = dao.filterRoomTypes(priceRange, capacityStr, "active");
+                    request.setAttribute("selectedPrice", priceRange);
+                    request.setAttribute("selectedCapacity", capacityStr);
+                } else {
+                    roomTypes = dao.getAllRoomTypesActive();
+                }
+
+                int totalRecords = roomTypes.size();
+                int totalPages = (int) Math.ceil(totalRecords * 1.0 / RECORDS_PER_PAGE);
+
+                int start = (currentPage - 1) * RECORDS_PER_PAGE;
+                int end = Math.min(start + RECORDS_PER_PAGE, totalRecords);
+                List<RoomType> paginatedRoomTypes = new ArrayList<>();
+                if (start < totalRecords) {
+                    paginatedRoomTypes = roomTypes.subList(start, end);
+                }
+
+                request.setAttribute("roomTypes", paginatedRoomTypes);
+                request.setAttribute("currentPage", currentPage);
+                request.setAttribute("recordsPerPage", RECORDS_PER_PAGE);
+                request.setAttribute("totalPages", totalPages);
+                request.setAttribute("totalRecords", totalRecords);
+                request.setAttribute("isSearchMode", false);
                 request.getRequestDispatcher("/jsp/roomList.jsp").forward(request, response);
                 return;
             }
@@ -73,7 +122,7 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
             cal.set(Calendar.SECOND, 0);
             cal.set(Calendar.MILLISECOND, 0);
             Date today = new Date(cal.getTimeInMillis());
-            
+
             // Compare dates without time component
             if (checkIn.before(today)) {
                 request.setAttribute("error", "Check-in date cannot be in the past");
@@ -107,18 +156,18 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
 
             // Get available room types
             List<RoomType> availableRoomTypes = new ArrayList<>();
-            
+
             if (roomTypeIdStr != null && !roomTypeIdStr.trim().isEmpty() && !roomTypeIdStr.equals("")) {
                 // Search for specific room type
                 try {
                     int roomTypeId = Integer.parseInt(roomTypeIdStr);
                     RoomType roomType = roomTypeDAO.getRoomTypesById(roomTypeId);
-                    
+
                     if (roomType != null && "active".equals(roomType.getStatus())) {
                         // Check if this room type has available rooms
                         List<Room> availableRooms = roomDAO.getAvailableRoomsByTypeAndDate(
-                            roomTypeId, checkIn, checkOut);
-                        
+                                roomTypeId, checkIn, checkOut);
+
                         if (!availableRooms.isEmpty() && roomType.getCapacity() >= capacity) {
                             // Set available room count for display
                             roomType.setAvailableRoomCount(availableRooms.size());
@@ -132,28 +181,28 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
                 // Search all room types
                 List<RoomType> allActiveRoomTypes = roomTypeDAO.getAllRoomTypesActive();
                 System.out.println("Total active room types: " + allActiveRoomTypes.size());
-                
+
                 // Debug reservations
                 roomDAO.debugReservations(checkIn, checkOut);
-                
+
                 for (RoomType roomType : allActiveRoomTypes) {
                     // Skip if capacity is insufficient
                     if (roomType.getCapacity() < capacity) {
                         System.out.println("Skipping " + roomType.getName() + " - capacity " + roomType.getCapacity() + " < required " + capacity);
                         continue;
                     }
-                    
+
                     // First check rooms without date restriction
                     List<Room> roomsNoDate = roomDAO.getAvailableRoomsByTypeNoDateCheck(roomType.getId());
-                    
+
                     // Then check with date restriction
                     List<Room> availableRooms = roomDAO.getAvailableRoomsByTypeAndDate(
-                        roomType.getId(), checkIn, checkOut);
-                    
-                    System.out.println("Room Type: " + roomType.getName() + 
-                                     " - Total available (no date): " + roomsNoDate.size() +
-                                     " - Available for dates: " + availableRooms.size());
-                    
+                            roomType.getId(), checkIn, checkOut);
+
+                    System.out.println("Room Type: " + roomType.getName()
+                            + " - Total available (no date): " + roomsNoDate.size()
+                            + " - Available for dates: " + availableRooms.size());
+
                     if (!availableRooms.isEmpty()) {
                         // Set available room count for display
                         roomType.setAvailableRoomCount(availableRooms.size());
@@ -161,9 +210,43 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
                     }
                 }
             }
+   // Filter by keyword if specified
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String lowerKeyword = keyword.toLowerCase();
+                List<RoomType> filteredByKeyword = new ArrayList<>();
+                for (RoomType rt : availableRoomTypes) {
+                    if (rt.getName().toLowerCase().contains(lowerKeyword)) {
+                        filteredByKeyword.add(rt);
+                    }
+                }
+                availableRoomTypes = filteredByKeyword;
+            }
 
+            // Filter by price range if specified
+            if (priceRange != null && !priceRange.isEmpty()) {
+                List<RoomType> filteredByPrice = new ArrayList<>();
+                for (RoomType rt : availableRoomTypes) {
+                    boolean match = true;
+                    switch (priceRange) {
+                        case "1":
+                            match = rt.getBasePrice().compareTo(new java.math.BigDecimal(500000)) < 0;
+                            break;
+                        case "2":
+                            match = rt.getBasePrice().compareTo(new java.math.BigDecimal(500000)) >= 0
+                                    && rt.getBasePrice().compareTo(new java.math.BigDecimal(1000000)) <= 0;
+                            break;
+                        case "3":
+                            match = rt.getBasePrice().compareTo(new java.math.BigDecimal(1000000)) > 0;
+                            break;
+                    }
+                    if (match) {
+                        filteredByPrice.add(rt);
+                    }
+                }
+                availableRoomTypes = filteredByPrice;
+            }
             // Sort by price (ascending)
-            availableRoomTypes.sort((a, b) -> 
+             availableRoomTypes.sort((a, b) ->
                 a.getBasePrice().compareTo(b.getBasePrice()));
 
             // Calculate nights
@@ -173,11 +256,11 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
             // Pagination
             int totalRecords = availableRoomTypes.size();
             int totalPages = (int) Math.ceil(totalRecords * 1.0 / RECORDS_PER_PAGE);
-            
+
             // Get records for current page
             int start = (currentPage - 1) * RECORDS_PER_PAGE;
             int end = Math.min(start + RECORDS_PER_PAGE, totalRecords);
-            
+
             List<RoomType> paginatedRoomTypes = new ArrayList<>();
             if (start < totalRecords) {
                 paginatedRoomTypes = availableRoomTypes.subList(start, end);
@@ -193,16 +276,16 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
             request.setAttribute("roomTypeId", roomTypeIdStr);
             request.setAttribute("nights", nights);
             request.setAttribute("totalAvailableRooms", totalRecords);
-            
+
             // Pagination attributes
             request.setAttribute("currentPage", currentPage);
             request.setAttribute("recordsPerPage", RECORDS_PER_PAGE);
             request.setAttribute("totalPages", totalPages);
             request.setAttribute("totalRecords", totalRecords);
-            
+
             // Search mode flag
             request.setAttribute("isSearchMode", true);
-            
+
             // Format dates for display
             SimpleDateFormat displayFormat = new SimpleDateFormat("MMM dd, yyyy");
             request.setAttribute("checkInDisplay", displayFormat.format(checkIn));
