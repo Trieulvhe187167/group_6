@@ -84,7 +84,7 @@
                             </p>
                         </div>
                     </div>
-                    
+                     
                     <div class="form-group mt-3">
                         <label for="inspectionNotes">Inspection Notes:</label>
                         <textarea class="form-control" id="inspectionNotes" rows="3">${inspection.notes}</textarea>
