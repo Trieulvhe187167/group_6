@@ -435,7 +435,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Number of Customers</label>
-                                <input type="number" class="form-control" id="editNumberOfCustomers" 
+                                <input type="number" class="form-control" id="editNumberOfCustomers" readonly
                                        min="1" max="10">
                             </div>
                         </div>
@@ -748,6 +748,9 @@
                 }
 
                 $('#reservationDetails').html(html);
+                $('#reservationDetails').html(html).css('color', '#000'); // Màu đen
+                $('#editReservationModal').modal('hide');
+
                 $('#viewDetailsModal').modal('show');
             },
             error: function () {
@@ -841,15 +844,23 @@ function updateReservation() {
                 $('#editReservationModal').modal('hide');
                 location.reload();
             } else {
-                const errorMsg = response && response.message ? response.message : 'Unknown error';
-                alert('Error updating reservation: ' + errorMsg);
+                const errorMsg = response.message || 'Could not update reservation due to an unknown error.';
+                alert('⚠️ ' + errorMsg);
             }
         },
         error: function(xhr, status, error) {
-            console.error('AJAX Error:', {xhr: xhr, status: status, error: error});
-            console.error('Response text:', xhr.responseText);
-            alert('Error updating reservation: ' + error + '\nPlease check the console for details.');
-        }
+    let errorMessage = 'Error updating reservation: ';
+    try {
+        const json = JSON.parse(xhr.responseText);
+        errorMessage += json.message || error;
+    } catch (e) {
+        errorMessage += error;
+    }
+
+    console.error('AJAX Error:', {xhr, status, error});
+    alert('⚠️ ' + errorMessage);
+}
+
     });
 }
 
@@ -959,3 +970,16 @@ function updateReservation() {
     }
     
 </script>
+<style>
+  #reservationDetails, #reservationDetails * {
+    color: #212529 !important;
+  }
+</style>
+<!-- Cuối file reservations-content.jsp -->
+<!-- View Details Modal -->
+<div class="modal fade" id="viewDetailsModal" tabindex="-1">...</div>
+
+<!-- Edit Reservation Modal -->
+<div class="modal fade" id="editReservationModal" tabindex="-1">...</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
