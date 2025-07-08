@@ -3,33 +3,45 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <style>
-.item-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 10px;
-    transition: all 0.3s;
-}
+    .item-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        transition: all 0.3s;
+    }
 
-.item-card:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
+    .item-card:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
 
-.damage-card {
-    border: 1px solid #dc3545;
-    background-color: #fff5f5;
-}
+    .damage-card {
+        border: 1px solid #dc3545;
+        background-color: #fff5f5;
+    }
 
-.severity-badge {
-    font-size: 12px;
-    padding: 3px 8px;
-    border-radius: 12px;
-}
+    .severity-badge {
+        font-size: 12px;
+        padding: 3px 8px;
+        border-radius: 12px;
+    }
 
-.severity-minor { background: #d1ecf1; color: #0c5460; }
-.severity-moderate { background: #fff3cd; color: #856404; }
-.severity-major { background: #f8d7da; color: #721c24; }
-.severity-severe { background: #d1616a; color: white; }
+    .severity-minor {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    .severity-moderate {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .severity-major {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .severity-severe {
+        background: #d1616a;
+        color: white;
+    }
 </style>
 
 <div class="container-fluid">
@@ -39,7 +51,7 @@
             <li class="breadcrumb-item active">Edit Inspection</li>
         </ol>
     </nav>
-    
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Room Inspection - ${inspection.reservation.roomNumber}</h1>
         <div>
@@ -51,7 +63,7 @@
             </button>
         </div>
     </div>
-    
+
     <!-- Inspection Summary -->
     <div class="row">
         <div class="col-md-8">
@@ -84,14 +96,14 @@
                             </p>
                         </div>
                     </div>
-                     
+
                     <div class="form-group mt-3">
                         <label for="inspectionNotes">Inspection Notes:</label>
                         <textarea class="form-control" id="inspectionNotes" rows="3">${inspection.notes}</textarea>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Minibar & Amenities Usage -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -129,10 +141,10 @@
                                     </div>
                                     <c:if test="${not empty item.notes}">
                                         <small class="text-muted mt-1"><i>${item.notes}</i></small>
-                                    </c:if>
+                                            </c:if>
                                 </div>
                             </c:forEach>
-                            
+
                             <div class="text-right mt-3">
                                 <h6>Subtotal: 
                                     <span class="text-primary">
@@ -147,7 +159,7 @@
                     </c:choose>
                 </div>
             </div>
-            
+
             <!-- Room Damages -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -192,7 +204,7 @@
                                     </div>
                                 </div>
                             </c:forEach>
-                            
+
                             <div class="text-right mt-3">
                                 <h6>Total Damage Cost: 
                                     <span class="text-danger">
@@ -208,7 +220,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Summary Sidebar -->
         <div class="col-md-4">
             <div class="card bg-light">
@@ -239,7 +251,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Quick Add Buttons -->
             <div class="card mt-3">
                 <div class="card-header">
@@ -281,7 +293,7 @@
             <form id="addItemForm">
                 <div class="modal-body">
                     <input type="hidden" name="inspectionId" value="${inspection.id}">
-                    
+
                     <div class="form-group">
                         <label>Item Category</label>
                         <select class="form-control" name="itemCategory" required>
@@ -291,10 +303,10 @@
                             <option value="OTHER">Other</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>Item Name</label>
-                        <select class="form-control" id="itemSelect" name="itemName" required>
+                        <select class="form-control" id="itemSelect" required>
                             <option value="">Select an item...</option>
                             <c:forEach var="amenity" items="${amenities}">
                                 <option value="${amenity.name}" data-price="${amenity.unitPrice}">
@@ -303,10 +315,13 @@
                             </c:forEach>
                             <option value="custom">Other (Custom Item)</option>
                         </select>
+
+                        <!-- Custom item input -->
                         <input type="text" class="form-control mt-2" id="customItemName" 
                                name="customItemName" placeholder="Enter item name" style="display:none;">
                     </div>
-                    
+
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -323,7 +338,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>Notes (Optional)</label>
                         <textarea class="form-control" name="notes" rows="2" maxlength="200"></textarea>
@@ -351,7 +366,7 @@
             <form id="addDamageForm" enctype="multipart/form-data">
                 <div class="modal-body">
                     <input type="hidden" name="inspectionId" value="${inspection.id}">
-                    
+
                     <div class="form-group">
                         <label>Damage Type</label>
                         <select class="form-control" name="damageType" required>
@@ -365,13 +380,13 @@
                             <option value="OTHER">Other</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>Description</label>
                         <textarea class="form-control" name="description" rows="3" required
                                   placeholder="Describe the damage in detail..."></textarea>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -392,7 +407,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>Photo Evidence (Optional)</label>
                         <div class="custom-file">
@@ -411,38 +426,50 @@
     </div>
 </div>
 
+                    <!-- Thêm jQuery nếu chưa có -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
 // Item selection handling
-$('#itemSelect').on('change', function() {
-    if ($(this).val() === 'custom') {
-        $('#customItemName').show().attr('required', true);
-        $('#unitPrice').val('').attr('readonly', false);
-    } else {
-        $('#customItemName').hide().attr('required', false);
-        const price = $(this).find(':selected').data('price');
-        if (price) {
-            $('#unitPrice').val(price).attr('readonly', true);
+    $('#itemSelect').on('change', function () {
+        if ($(this).val() === 'custom') {
+            $('#customItemName').show().attr('required', true);
+            $('#unitPrice').val('').attr('readonly', false);
+        } else {
+            $('#customItemName').hide().attr('required', false);
+            const price = $(this).find(':selected').data('price');
+            if (price) {
+                $('#unitPrice').val(price).attr('readonly', true);
+            }
         }
-    }
-});
+    });
 
 // Add item form submission
-$('#addItemForm').on('submit', function(e) {
+$('#addItemForm').on('submit', function (e) {
     e.preventDefault();
-    
+
     const formData = new FormData(this);
-    if ($('#itemSelect').val() === 'custom') {
-        formData.set('itemName', $('#customItemName').val());
+
+    // Lấy itemName thủ công
+    let itemName = $('#itemSelect').val();
+    if (itemName === 'custom') {
+        itemName = $('#customItemName').val();
     }
+
+    formData.append('itemName', itemName); // LUÔN thêm key itemName
     formData.append('action', 'addItem');
-    
+ // 🔍 Debug: xem toàn bộ FormData đang có gì
+    for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+    }
     $.ajax({
         url: '${pageContext.request.contextPath}/inspector/inspection',
         type: 'POST',
         data: formData,
         processData: false,
         contentType: false,
-        success: function(response) {
+        success: function (response) {
+            console.log(response); // debug
             if (response.success) {
                 showToast('Item added successfully');
                 $('#addItemModal').modal('hide');
@@ -451,185 +478,185 @@ $('#addItemForm').on('submit', function(e) {
                 showToast(response.message || 'Error adding item', 'danger');
             }
         },
-        error: function() {
+        error: function () {
             showToast('Error adding item', 'danger');
         }
     });
 });
 
 // Add damage form submission
-$('#addDamageForm').on('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    formData.append('action', 'addDamage');
-    
-    $.ajax({
-        url: '${pageContext.request.contextPath}/inspector/inspection',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(response) {
-            if (response.success) {
-                showToast('Damage reported successfully');
-                $('#addDamageModal').modal('hide');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showToast(response.message || 'Error reporting damage', 'danger');
+    $('#addDamageForm').on('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        formData.append('action', 'addDamage');
+
+        $.ajax({
+            url: '${pageContext.request.contextPath}/inspector/inspection',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.success) {
+                    showToast('Damage reported successfully');
+                    $('#addDamageModal').modal('hide');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(response.message || 'Error reporting damage', 'danger');
+                }
+            },
+            error: function () {
+                showToast('Error reporting damage', 'danger');
             }
-        },
-        error: function() {
-            showToast('Error reporting damage', 'danger');
-        }
+        });
     });
-});
 
 // Quick add item
-function quickAddItem(name, category, price) {
-    const data = {
-        action: 'addItem',
-        inspectionId: ${inspection.id},
-        itemName: name,
-        itemCategory: category,
-        quantity: 1,
-        unitPrice: price,
-        notes: 'Quick add'
-    };
-    
-    $.post('${pageContext.request.contextPath}/inspector/inspection', data, function(response) {
-        if (response.success) {
-            showToast('Item added successfully');
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            showToast(response.message || 'Error adding item', 'danger');
-        }
-    });
-}
+    function quickAddItem(name, category, price) {
+        const data = {
+            action: 'addItem',
+            inspectionId: ${inspection.id},
+            itemName: name,
+            itemCategory: category,
+            quantity: 1,
+            unitPrice: price,
+            notes: 'Quick add'
+        };
+
+        $.post('${pageContext.request.contextPath}/inspector/inspection', data, function (response) {
+            if (response.success) {
+                showToast('Item added successfully');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast(response.message || 'Error adding item', 'danger');
+            }
+        });
+    }
 
 // Delete item
-function deleteItem(itemId) {
-    if (confirm('Are you sure you want to delete this item?')) {
-        $.post('${pageContext.request.contextPath}/inspector/inspection', {
-            action: 'deleteItem',
-            itemId: itemId
-        }, function(response) {
-            if (response.success) {
-                showToast('Item deleted successfully');
-                setTimeout(() => location.reload(), 1000);
-            }
-        });
+    function deleteItem(itemId) {
+        if (confirm('Are you sure you want to delete this item?')) {
+            $.post('${pageContext.request.contextPath}/inspector/inspection', {
+                action: 'deleteItem',
+                itemId: itemId
+            }, function (response) {
+                if (response.success) {
+                    showToast('Item deleted successfully');
+                    setTimeout(() => location.reload(), 1000);
+                }
+            });
+        }
     }
-}
 
 // Delete damage
-function deleteDamage(damageId) {
-    if (confirm('Are you sure you want to delete this damage report?')) {
+    function deleteDamage(damageId) {
+        if (confirm('Are you sure you want to delete this damage report?')) {
+            $.post('${pageContext.request.contextPath}/inspector/inspection', {
+                action: 'deleteDamage',
+                damageId: damageId
+            }, function (response) {
+                if (response.success) {
+                    showToast('Damage report deleted successfully');
+                    setTimeout(() => location.reload(), 1000);
+                }
+            });
+        }
+    }
+
+// Save progress
+    function saveProgress() {
+        const notes = $('#inspectionNotes').val();
+
         $.post('${pageContext.request.contextPath}/inspector/inspection', {
-            action: 'deleteDamage',
-            damageId: damageId
-        }, function(response) {
+            action: 'saveProgress',
+            inspectionId: ${inspection.id},
+            notes: notes
+        }, function (response) {
             if (response.success) {
-                showToast('Damage report deleted successfully');
-                setTimeout(() => location.reload(), 1000);
+                showToast('Progress saved successfully');
             }
         });
     }
-}
-
-// Save progress
-function saveProgress() {
-    const notes = $('#inspectionNotes').val();
-    
-    $.post('${pageContext.request.contextPath}/inspector/inspection', {
-        action: 'saveProgress',
-        inspectionId: ${inspection.id},
-        notes: notes
-    }, function(response) {
-        if (response.success) {
-            showToast('Progress saved successfully');
-        }
-    });
-}
 
 // Complete inspection
-function completeInspection() {
-    if (confirm('Are you sure you want to complete this inspection? This action cannot be undone.')) {
-        $.post('${pageContext.request.contextPath}/inspector/inspection', {
-            action: 'complete',
-            inspectionId: ${inspection.id}
-        }, function() {
-            window.location.href = '${pageContext.request.contextPath}/inspector/dashboard';
-        });
+    function completeInspection() {
+        if (confirm('Are you sure you want to complete this inspection? This action cannot be undone.')) {
+            $.post('${pageContext.request.contextPath}/inspector/inspection', {
+                action: 'complete',
+                inspectionId: ${inspection.id}
+            }, function () {
+                window.location.href = '${pageContext.request.contextPath}/inspector/dashboard';
+            });
+        }
     }
-}
 
 // File input label update
-$('.custom-file-input').on('change', function() {
-    const fileName = $(this).val().split('\\').pop();
-    $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
-});
+    $('.custom-file-input').on('change', function () {
+        const fileName = $(this).val().split('\\').pop();
+        $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+    });
 </script>
 <script>
-document.getElementById("addItemForm").addEventListener("submit", function (event) {
-    const quantityInput = this.querySelector('[name="quantity"]');
-    const unitPriceInput = this.querySelector('[name="unitPrice"]');
-    const notesInput = this.querySelector('[name="notes"]');
+    document.getElementById("addItemForm").addEventListener("submit", function (event) {
+        const quantityInput = this.querySelector('[name="quantity"]');
+        const unitPriceInput = this.querySelector('[name="unitPrice"]');
+        const notesInput = this.querySelector('[name="notes"]');
 
-    const quantity = quantityInput.value.trim();
-    const unitPrice = unitPriceInput.value.trim();
-    const notes = notesInput.value.trim();
+        const quantity = quantityInput.value.trim();
+        const unitPrice = unitPriceInput.value.trim();
+        const notes = notesInput.value.trim();
 
-    let errors = [];
+        let errors = [];
 
-    // Kiểm tra độ dài ký tự
-    if (quantity.length > 4) {
-        errors.push("Quantity must not exceed 4 digits.");
-    }
+        // Kiểm tra độ dài ký tự
+        if (quantity.length > 4) {
+            errors.push("Quantity must not exceed 4 digits.");
+        }
 
-    if (unitPrice.length > 9) {
-        errors.push("Unit Price must not exceed 9 digits.");
-    }
+        if (unitPrice.length > 9) {
+            errors.push("Unit Price must not exceed 9 digits.");
+        }
 
-    if (notes.length > 200) {
-        errors.push("Notes must be less than 200 characters.");
-    }
+        if (notes.length > 200) {
+            errors.push("Notes must be less than 200 characters.");
+        }
 
-    // Kiểm tra logic giá trị
-    if (parseInt(quantity) < 1 || !Number.isInteger(+quantity)) {
-        errors.push("Quantity must be a positive integer (≥ 1).");
-    }
+        // Kiểm tra logic giá trị
+        if (parseInt(quantity) < 1 || !Number.isInteger(+quantity)) {
+            errors.push("Quantity must be a positive integer (≥ 1).");
+        }
 
-    if (parseFloat(unitPrice) < 0 || isNaN(unitPrice)) {
-        errors.push("Unit Price must be a positive number.");
-    }
+        if (parseFloat(unitPrice) < 0 || isNaN(unitPrice)) {
+            errors.push("Unit Price must be a positive number.");
+        }
 
-    if (errors.length > 0) {
-        event.preventDefault();
-        alert(errors.join("\n"));
-    }
-});
-document.getElementById("addDamageForm").addEventListener("submit", function (event) {
-    const estimatedCostInput = this.querySelector('[name="estimatedCost"]');
+        if (errors.length > 0) {
+            event.preventDefault();
+            alert(errors.join("\n"));
+        }
+    });
+    document.getElementById("addDamageForm").addEventListener("submit", function (event) {
+        const estimatedCostInput = this.querySelector('[name="estimatedCost"]');
 
-    const estimatedCost = estimatedCostInput.value.trim();
+        const estimatedCost = estimatedCostInput.value.trim();
 
-    let errors = [];
+        let errors = [];
 
-    // Kiểm tra độ dài ký tự 
-    if (estimatedCost.length > 9) {
-        errors.push("Estimated Cost must not exceed 9 digits.");
-    }
+        // Kiểm tra độ dài ký tự 
+        if (estimatedCost.length > 9) {
+            errors.push("Estimated Cost must not exceed 9 digits.");
+        }
 
-    // Kiểm tra logic giá trị
-    if (parseFloat(estimatedCost) < 0 || isNaN(estimatedCost)) {
-        errors.push("Estimated Cost must be a positive number.");
-    }
+        // Kiểm tra logic giá trị
+        if (parseFloat(estimatedCost) < 0 || isNaN(estimatedCost)) {
+            errors.push("Estimated Cost must be a positive number.");
+        }
 
-    if (errors.length > 0) {
-        event.preventDefault();
-        alert(errors.join("\n"));
-    }
-});
+        if (errors.length > 0) {
+            event.preventDefault();
+            alert(errors.join("\n"));
+        }
+    });
 </script>
 
