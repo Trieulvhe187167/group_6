@@ -25,9 +25,9 @@ public class ReservationDAO {
         String sql = """
             SELECT r.*, room.RoomNumber, 
                    rt.Name AS roomTypeName, rt.BasePrice,
-                   u.Phone AS UserPhone,
+                   u.Phone AS CustomerPhone,
                    u.Email AS CustomerEmail,
-                   u.FullName AS UserFullName
+                   u.FullName AS CustomerName
             FROM Reservations r
             JOIN Rooms room ON r.RoomId = room.Id
             JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
@@ -45,9 +45,9 @@ public class ReservationDAO {
             StringBuilder sql = new StringBuilder("""
                 SELECT r.*, room.RoomNumber, 
                        rt.Name AS roomTypeName, rt.BasePrice,
-                       u.Phone AS UserPhone,
+                       u.Phone AS CustomerPhone,
                        u.Email AS CustomerEmail,
-                       u.FullName AS UserFullName
+                       u.FullName AS CustomerName
                 FROM Reservations r
                 JOIN Rooms room ON r.RoomId = room.Id
                 JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
@@ -106,9 +106,9 @@ public class ReservationDAO {
                 r.setRoomName(rs.getString("roomNumber"));
                 r.setRoomTypeName(rs.getString("roomTypeName"));
                 r.setBasePrice(rs.getDouble("BasePrice"));
-                r.setCustomerPhone(rs.getString("UserPhone"));
+                r.setCustomerPhone(rs.getString("CustomerPhone"));
                 r.setCustomerEmail(rs.getString("CustomerEmail"));
-                r.setUserFullName(rs.getString("UserFullName"));
+                r.setUserFullName(rs.getString("CustomerName"));
 
                 list.add(r);
             }
@@ -1066,7 +1066,12 @@ public class ReservationDAO {
     LEFT JOIN Users u ON r.UserId = u.Id
     LEFT JOIN Rooms room ON r.RoomId = room.Id
     LEFT JOIN RoomTypes rt ON r.RoomTypeId = rt.Id
-    LEFT JOIN Payments p ON r.Id = p.ReservationId
+    OUTER APPLY (
+        SELECT TOP 1 Status
+        FROM Payments
+        WHERE ReservationId = r.Id
+        ORDER BY CreatedAt DESC
+    ) p
     WHERE r.Id = ?
 """;
 
@@ -1255,12 +1260,13 @@ for (int i = 1; i <= columnCount; i++) {
     System.out.println("Column " + i + ": " + metaData.getColumnLabel(i));
 }
     // Các thông tin bổ sung từ bảng liên kết
+    
     reservation.setCustomerPhone(rs.getString("CustomerPhone"));
 reservation.setCustomerEmail(rs.getString("CustomerEmail"));
 reservation.setUserFullName(rs.getString("CustomerName"));
 reservation.setRoomNumber(rs.getString("RoomNumber"));
 reservation.setRoomTypeName(rs.getString("RoomTypeName"));
-
+ 
     // Các thông tin thêm nếu có
     try {
         reservation.setNights(rs.getInt("Nights"));
@@ -1371,6 +1377,36 @@ reservation.setRoomTypeName(rs.getString("RoomTypeName"));
 
     return reservations;
 }
+public boolean isRoomAvailableForNewBooking(int roomId, Date checkIn, Date checkOut) {
+    return isRoomAvailableForUpdate(roomId, checkIn, checkOut, -1); // -1 để đảm bảo không trùng Id nào
+}
+
+public boolean isRoomAvailableForUpdate(int roomId, Date checkIn, Date checkOut, int excludeReservationId) {
+    String sql = "SELECT COUNT(*) FROM Reservations " +
+                 "WHERE RoomId = ? AND Status IN ('CONFIRMED', 'PENDING') " +
+                 "AND NOT (CheckOut <= ? OR CheckIn >= ?) " +
+                 "AND Id != ?";
+
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+        ps.setInt(1, roomId);
+        ps.setDate(2, checkIn);
+        ps.setDate(3, checkOut);
+        ps.setInt(4, excludeReservationId);
+
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            int count = rs.getInt(1);
+            System.out.println("Room check update - roomId: " + roomId + ", conflicts: " + count);
+            return count == 0;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
 
 
    public boolean updateDepositStatus(int reservationId, String depositStatus) {

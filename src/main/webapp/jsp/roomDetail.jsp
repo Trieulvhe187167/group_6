@@ -1053,7 +1053,7 @@
                     <div class="container">
                         <ul class="list-inline">
                             <li><a href="#">Home</a></li>
-                            <li><a href="RoomListServlet">Room List</a></li>
+                            <li><a href="SearchAvailableRoomsServlet">Room List</a></li>
                             <li>Room Booking</li>
                         </ul>
                     </div>
@@ -1813,7 +1813,7 @@ function updateAvailabilityStatus(data) {
                 'Please try different dates or consider other room types.' +
             '</div>' +
             '<div class="availability-actions">' +
-                '<a href="' + getContextPath() + '/RoomListServlet" class="btn btn-primary">' +
+                '<a href="' + getContextPath() + '/SearchAvailableRoomsServlet" class="btn btn-primary">' +
                     '<i class="fa fa-search"></i> View Other Room Types' +
                 '</a>' +
             '</div>';

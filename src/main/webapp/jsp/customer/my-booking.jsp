@@ -715,7 +715,7 @@
                             View Details
                         </a>
                         
-                       <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
+                       <c:if test="${booking.status == 'PENDING' }">
                         <button type="button" class="btn btn-danger" onclick="confirmCancel(${booking.id}, '${booking.roomName}')">
                             <i class="fas fa-times"></i> Cancel Booking
                         </button>
@@ -799,3 +799,4 @@
 </body>
 
 </html>
+

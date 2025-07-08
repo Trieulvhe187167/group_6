@@ -258,7 +258,7 @@
                     <div class="container">
                         <ul class="list-inline">
                             <li><a href="#">Home</a></li>
-                            <li><a href="RoomListServlet">Room List</a></li>
+                            <li><a href="SearchAvailableRoomsServlet">Room List</a></li>
                             <li>Booking Confirmation</li>
                         </ul>
                     </div>
@@ -411,7 +411,7 @@
                                 <button onclick="window.print()" class="btn btn-secondary">
                                     <i class="fa fa-print"></i> Print Confirmation
                                 </button>
-                                <a href="RoomListServlet" class="btn">
+                                <a href="SearchAvailableRoomsServlet" class="btn">
                                     <i class="fa fa-home"></i> Back to Rooms
                                 </a>
                             </div>

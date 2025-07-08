@@ -27,7 +27,7 @@
         if (fullAmount == null) System.out.println("- Amount is NULL");
         
         // Redirect with error message
-        response.sendRedirect(request.getContextPath() + "/RoomListServlet?error=payment_data_missing");
+        response.sendRedirect(request.getContextPath() + "/SearchAvailableRoomsServlet?error=payment_data_missing");
         return;
     }
     
@@ -516,7 +516,7 @@
         
         function cancelPayment() {
             if (confirm('Are you sure you want to cancel this payment?')) {
-                window.location.href = '${pageContext.request.contextPath}/RoomListServlet';
+                window.location.href = '${pageContext.request.contextPath}/SearchAvailableRoomsServlet';
             }
         }
         

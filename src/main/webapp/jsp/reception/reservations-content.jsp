@@ -445,6 +445,9 @@
                             <div class="form-group">
                                 <label>Check-in Date <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control" id="editCheckIn" required>
+                                <label>Number of Customers</label>
+                                <input type="number" class="form-control" id="editNumberOfCustomers" readonly
+                                       min="1" max="10">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1035,7 +1038,6 @@ function updateEditTotalAmountDisplay() {
     color: #212529 !important;
   }
 </style>
-<!-- Edit Reservation Modal -->
 
 <!-- Cuối file reservations-content.jsp -->
 <!-- View Details Modal -->
@@ -1044,3 +1046,4 @@ function updateEditTotalAmountDisplay() {
 <!-- Edit Reservation Modal -->
 <div class="modal fade" id="editReservationModal" tabindex="-1">...</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
