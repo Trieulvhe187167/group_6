@@ -80,6 +80,7 @@
                     <div class="row placeani">
                         <div class="col-lg-12">
                             <div class="form-group">
+                                <label for="fullNameInput">Full Name</label>
                                 <div class="input-group">
                                     <input name="name" type="text" required class="form-control"
                                            placeholder="Full Name" maxlength="25"
@@ -90,6 +91,7 @@
 
                         <div class="col-lg-12">
                             <div class="form-group">
+                                <label for="userNameInput">User Name</label>
                                 <div class="input-group">
                                     <input name="username" type="text" required class="form-control"
                                            placeholder="Username" maxlength="25"
@@ -100,6 +102,7 @@
 
                         <div class="col-lg-12">
                             <div class="form-group">
+                                <label for="EmailInput">Email</label>
                                 <div class="input-group">
                                     <input name="email" type="email" required class="form-control"
                                            placeholder="Email" maxlength="50"
@@ -110,6 +113,7 @@
 
                         <div class="col-lg-12">
                             <div class="form-group">
+                                <label for="PasswordInput">Password</label>
                                 <div class="input-group">
                                     <input name="password" type="password" required class="form-control"
                                            placeholder="Password">
@@ -119,6 +123,7 @@
 
                         <div class="col-lg-12">
                             <div class="form-group">
+                                <label for="PhoneInput">Phone number</label>
                                 <div class="input-group">
                                     <input name="phone" type="text" required class="form-control"
                                            placeholder="Phone number"

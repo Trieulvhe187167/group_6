@@ -14,11 +14,12 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        
-        UserDAO userDAO = new UserDAO();
-        User user = userDAO.login(username, password);
+       String username = request.getParameter("username");
+String password = request.getParameter("hashedPassword"); // <-- Rất quan trọng!
+
+UserDAO userDAO = new UserDAO();
+User user = userDAO.login(username, password);
+
         
         if (user != null) {
             
