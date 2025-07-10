@@ -37,6 +37,14 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
             String capacityStr = request.getParameter("capacity");
             String keyword = request.getParameter("keyword");
             String priceRange = request.getParameter("price");
+            
+              // Persist search parameters in session for back navigation
+            jakarta.servlet.http.HttpSession session = request.getSession();
+            if (checkInStr != null) session.setAttribute("lastSearchCheckIn", checkInStr);
+            if (checkOutStr != null) session.setAttribute("lastSearchCheckOut", checkOutStr);
+            if (roomTypeIdStr != null) session.setAttribute("lastSearchRoomTypeId", roomTypeIdStr);
+            if (capacityStr != null) session.setAttribute("lastSearchCapacity", capacityStr);
+            
             // Store search parameters to maintain in form
             request.setAttribute("searchRoomTypeId", roomTypeIdStr);
             request.setAttribute("searchCheckIn", checkInStr);

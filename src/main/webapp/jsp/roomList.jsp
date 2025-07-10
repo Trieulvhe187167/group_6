@@ -79,6 +79,44 @@
                     margin-bottom: 30px;
                 }
             }
+            /* 1) container relative + overflow để cắt nội dung ngoài khung */
+            .cours-bx .action-box {
+                position: relative;
+                overflow: hidden;
+            }
+
+            /* 2) Hai nút ở trạng thái off-screen (vẫn giữ không gian để animation hoạt động) */
+            .cours-bx .action-box a.btn-add,
+            .cours-bx .action-box a.btn-detail {
+                position: absolute;
+                top: 50%;
+                width: 45%;
+                opacity: 0;
+                transition: left 0.3s ease, right 0.3s ease, opacity 0.3s ease;
+                z-index: 100;
+            }
+
+            /* Đẩy hoàn toàn ra ngoài khung */
+            .cours-bx .action-box a.btn-add {
+                left: -100%;
+                transform: translateY(-50%);
+            }
+            .cours-bx .action-box a.btn-detail {
+                right: -100%;
+                transform: translateY(-50%);
+            }
+
+            /* 3) Khi hover: kéo vào đúng vị trí và fade in */
+            .cours-bx:hover .action-box a.btn-add {
+                left: 5%;
+                opacity: 1;
+            }
+            .cours-bx:hover .action-box a.btn-detail {
+                right: 5%;
+                opacity: 1;
+            }
+
+
         </style>
     </head>
 
@@ -114,6 +152,9 @@
                 <div class="content-block">
                     <div class="section-area section-sp1">
                         <div class="container">
+                             <c:if test="${param.added eq '1'}">
+                                <div class="alert alert-success text-center mb-3">Add to cart room successful!</div>
+                            </c:if>
                             <div class="row">
                                 <!-- Sidebar -->
                                 <div class="col-lg-3 col-md-4 col-sm-12 m-b30 sidebar-filters">
@@ -258,17 +299,39 @@
                                                 <div class="action-box">
                                                     <img src="${pageContext.request.contextPath}/assets/images/uploads/<%= type.getImageUrl() %>" 
                                                          alt="<%= type.getName() %>" style="height: 200px; object-fit: cover;">
-                                                    <a href="RoomDetailServlet?id=<%= type.getId() %>" class="btn">Booking Room</a>
+                                                    <c:choose>
+                                                        <c:when test="${not empty searchCheckIn && not empty searchCheckOut}">
+                                                            <% if (type.getAvailableRoomCount() > 0) { %>
+                                                                <a href="CartServlet?action=add&roomTypeId=<%= type.getId() %>&roomTypeName=<%= java.net.URLEncoder.encode(type.getName(), "UTF-8") %>&price=<%= type.getBasePrice() %>&checkIn=${searchCheckIn}&checkOut=${searchCheckOut}" class="btn btn-primary">Add to Cart</a>
+                                                            <% } else { %>
+                                                                <span class="btn btn-secondary disabled">Sold Out</span>
+                                                            <% } %>
+                                                          
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <a href="RoomDetailServlet?id=<%= type.getId() %>" class="btn">View Detail</a>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </div>
                                                 <div class="info-bx text-center">
-                                                    <h5><a href="RoomDetailServlet?id=<%= type.getId() %>"><%= type.getName() %></a></h5>
+                                                    <c:choose>
+                                                        <c:when test="${not empty searchCheckIn && not empty searchCheckOut}">
+                                                            <h5><a href="RoomDetailServlet?id=<%= type.getId() %>&checkIn=${searchCheckIn}&checkOut=${searchCheckOut}"><%= type.getName() %></a></h5>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <h5><a href="RoomDetailServlet?id=<%= type.getId() %>"><%= type.getName() %></a></h5>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                     <span class="capacity-badge">
                                                         <i class="fa fa-users"></i> <%= type.getCapacity() %> guests
                                                     </span>
                                                     <span class="capacity-badge ml-2">
                                                         <i class="fa fa-bed"></i> <%= bedType %>
                                                     </span>
-                                                </div>
+                                               <div class="mt-2">
+                                                        <small><%= type.getAvailabilityMessage() %></small>
+                                                    </div>
+                                               </div>
                                                 <div class="cours-more-info">
                                                     <div class="review">
                                                         <span>4.5/5 </span><i class="fa fa-star" style="color: #ffc107"></i>
@@ -385,8 +448,8 @@
         <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script> 
 
-        <script>
-                                                    // Auto-submit form when filter changes
+      <script>
+                                                      // Auto-submit form when filter changes
                                                     $(document).ready(function () {
                                                         $('.filter-form select').on('change', function () {
                                                             $(this).closest('form').submit();
