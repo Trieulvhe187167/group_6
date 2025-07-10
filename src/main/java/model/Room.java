@@ -103,6 +103,7 @@ public class Room {
             case "OCCUPIED": return "Occupied";
             case "MAINTENANCE": return "Maintenance";
             case "DIRTY": return "Dirty";
+            case "HELD": return "Held";
             default: return status;
         }
     }
@@ -114,6 +115,7 @@ public class Room {
             case "OCCUPIED": return "badge-danger";
             case "MAINTENANCE": return "badge-warning";
             case "DIRTY": return "badge-warning";
+            case "HELD": return "badge-info";
             default: return "badge-secondary";
         }
     }
@@ -130,6 +132,9 @@ public class Room {
         return "DIRTY".equals(status);
     }
     
+    public boolean isHeld() {
+        return "HELD".equals(status);
+    }
     public boolean isUnderMaintenance() {
         return "MAINTENANCE".equals(status);
     }

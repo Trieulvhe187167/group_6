@@ -182,7 +182,19 @@
         </div>
         
         <div class="action-buttons">
-            <a href="${pageContext.request.contextPath}/SearchAvailableRoomsServlet" class="btn btn-secondary">
+              <%
+                String ci = (String) session.getAttribute("lastSearchCheckIn");
+                String co = (String) session.getAttribute("lastSearchCheckOut");
+             String rt = (String) session.getAttribute("lastSearchRoomTypeId");
+String cap = (String) session.getAttribute("lastSearchCapacity");
+StringBuilder backUrl = new StringBuilder(request.getContextPath()+"/SearchAvailableRoomsServlet");
+if(ci != null && co != null){
+    backUrl.append("?checkIn=").append(ci).append("&checkOut=").append(co);
+    if(rt != null) backUrl.append("&roomTypeId=").append(rt);
+    if(cap != null) backUrl.append("&capacity=").append(cap);
+}
+            %>
+            <a href="<%= backUrl.toString() %>" class="btn btn-secondary">
                 <i class="fa fa-arrow-left"></i> Back to Rooms
             </a>
             <% if (reservationId != null) { %>

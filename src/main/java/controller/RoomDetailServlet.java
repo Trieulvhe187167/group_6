@@ -27,7 +27,15 @@ public class RoomDetailServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String idStr = request.getParameter("id");
+        String checkInParam = request.getParameter("checkIn");
+        String checkOutParam = request.getParameter("checkOut");
 
+        if (checkInParam != null && !checkInParam.isEmpty()) {
+            request.setAttribute("searchCheckIn", checkInParam);
+        }
+        if (checkOutParam != null && !checkOutParam.isEmpty()) {
+            request.setAttribute("searchCheckOut", checkOutParam);
+        }
         if (idStr == null || idStr.trim().isEmpty()) {
             response.sendRedirect("SearchAvailableRoomsServlet");
             return;
