@@ -5,21 +5,55 @@ import model.Reservation;
 import model.ReservationDetail;
 import model.ReservationSummary;
 import java.sql.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ReservationDAO {
     public boolean cancelBooking(int bookingId) {
-        String sql = "UPDATE Reservations SET Status = 'CANCELLED', UpdatedAt = GETDATE() WHERE Id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    String getCheckInSql = "SELECT CheckIn FROM Reservations WHERE Id = ?";
+   String sql = """
+    UPDATE Reservations
+    SET Status = 'CANCELLED',
+        DepositStatus = ?,     -- LOST / REFUNDED
+        UpdatedAt = GETDATE()
+    WHERE Id = ?
+""";
+
+
+    try (Connection conn = DBContext.getConnection()) {
+        // Lấy thời gian CheckIn
+        LocalDateTime checkIn = null;
+        try (PreparedStatement ps = conn.prepareStatement(getCheckInSql)) {
             ps.setInt(1, bookingId);
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    checkIn = rs.getTimestamp("CheckIn").toLocalDateTime();
+                }
+            }
         }
+
+        if (checkIn == null) return false;
+
+        // Tính xem có huỷ trễ hay không
+        LocalDateTime now = LocalDateTime.now();
+        long hoursDiff = Duration.between(now, checkIn).toHours();
+        String depositStatus = hoursDiff >= 24 ? "REFUNDED" : "LOST";
+
+        // Thực hiện cập nhật huỷ
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, depositStatus);
+            ps.setInt(2, bookingId);
+            return ps.executeUpdate() > 0;
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
     }
+}
+
 
     public List<Reservation> getUpcomingBookings(int userId) {
         String sql = """
