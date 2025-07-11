@@ -300,43 +300,55 @@ public class ReservationsServlet extends HttpServlet {
     }
 
     private void handleCustomerCancelBooking(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
+    HttpSession session = request.getSession();
+    User user = (User) session.getAttribute("user");
 
-        try {
-            int bookingId = Integer.parseInt(request.getParameter("id"));
+    try {
+        int bookingId = Integer.parseInt(request.getParameter("id"));
 
-            Reservation booking = reservationDAO.getReservationById(bookingId);
-            if (booking == null || booking.getUserId() != user.getId()) {
-                response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=unauthorized");
-                return;
-            }
-
-            boolean success = reservationDAO.cancelBooking(bookingId);
-            if (success) {
-                String to = user.getEmail();
-                String subject = "Booking Cancellation Confirmation";
-                String message = "Dear " + user.getFullName() + ",\n\n" +
-                        "Your booking with ID #" + bookingId + " has been successfully cancelled.\n\n" +
-                        "Room: " + booking.getRoomName() + " (" + booking.getRoomTypeName() + ")\n" +
-                        "Check-in: " + booking.getCheckIn() + "\n" +
-                        "Check-out: " + booking.getCheckOut() + "\n\n" +
-                        "If you have any questions, feel free to contact us.\n\n" +
-                        "Best regards,\nHotel Management";
-
-                MailUtil.sendEmail(to, subject, message);
-                response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=success");
-            } else {
-                response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=failed");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=error");
+        Reservation booking = reservationDAO.getReservationById(bookingId);
+        if (booking == null || booking.getUserId() != user.getId()) {
+            response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=unauthorized");
+            return;
         }
+
+        boolean success = reservationDAO.cancelBooking(bookingId);
+
+        if (success) {
+            // Tải lại trạng thái mới sau khi hủy
+            Reservation updatedBooking = reservationDAO.getReservationById(bookingId);
+
+            String depositNote = "";
+            if ("LOST".equals(updatedBooking.getDepositStatus())) {
+                depositNote = "\nNote: You have cancelled too close to your check-in time, and your deposit has been forfeited.";
+            } else if ("REFUNDED".equals(updatedBooking.getDepositStatus())) {
+                depositNote = "\nNote: Your deposit has been refunded.";
+            }
+
+            String to = user.getEmail();
+            String subject = "Booking Cancellation Confirmation";
+            String message = "Dear " + user.getFullName() + ",\n\n" +
+                    "Your booking with ID #" + bookingId + " has been successfully cancelled.\n\n" +
+                    "Room: " + updatedBooking.getRoomName() + " (" + updatedBooking.getRoomTypeName() + ")\n" +
+                    "Check-in: " + updatedBooking.getCheckIn() + "\n" +
+                    "Check-out: " + updatedBooking.getCheckOut() + "\n" +
+                    depositNote + "\n\n" +
+                    "If you have any questions, feel free to contact us.\n\n" +
+                    "Best regards,\nHotel Management";
+
+            MailUtil.sendEmail(to, subject, message);
+            response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=success");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=failed");
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        response.sendRedirect(request.getContextPath() + "/customer/bookings?cancel=error");
     }
+}
 
     // =========================== RECEPTIONIST METHODS ===========================
     
