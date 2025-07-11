@@ -14,8 +14,8 @@ public class RoomAmenityDAO {
     public List<RoomAmenity> getRoomAmenities(int roomId) {
         List<RoomAmenity> amenities = new ArrayList<>();
         String sql = "SELECT a.*, ra.Quantity as RoomQuantity "
-                + "FROM Amenities a "
-                + "LEFT JOIN RoomAmenities ra ON a.Id = ra.AmenityId AND ra.RoomId = ? "
+                + "FROM RoomAmenities a "
+                + "LEFT JOIN RoomAmenities ra ON a.Id = ra.Id AND ra.RoomId = ? "
                 + "WHERE a.Status = 'ACTIVE' "
                 + "ORDER BY a.Category, a.Name";
 
@@ -69,8 +69,8 @@ public class RoomAmenityDAO {
     public List<RoomAmenity> getChargeableAmenities(int roomId) {
         List<RoomAmenity> amenities = new ArrayList<>();
         String sql = "SELECT a.*, ra.Quantity as RoomQuantity "
-                + "FROM Amenities a "
-                + "LEFT JOIN RoomAmenities ra ON a.Id = ra.AmenityId AND ra.RoomId = ? "
+                + "FROM RoomAmenities a "
+                + "LEFT JOIN RoomAmenities ra ON a.Id = ra.Id AND ra.RoomId = ? "
                 + "WHERE a.Status = 'ACTIVE' AND a.IsChargeable = 1 "
                 + "ORDER BY a.Category, a.Name";
 
@@ -100,7 +100,7 @@ public class RoomAmenityDAO {
     // Get amenities by category
     public List<RoomAmenity> getAmenitiesByCategory(String category) {
         List<RoomAmenity> amenities = new ArrayList<>();
-        String sql = "SELECT * FROM Amenities WHERE Category = ? AND Status = 'ACTIVE' ORDER BY Name";
+        String sql = "SELECT * FROM RoomAmenities WHERE Category = ? AND Status = 'ACTIVE' ORDER BY Name";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -144,8 +144,9 @@ public class RoomAmenityDAO {
     }
 
     // Record amenity usage during stay
-    public boolean recordAmenityUsage(int reservationId, int amenityId, int quantity, double unitPrice, int recordedBy) {
-        String sql = "INSERT INTO AmenityUsage (ReservationId, AmenityId, Quantity, UnitPrice, TotalPrice, UsageDate, RecordedBy) "
+    public boolean recordAmenityUsage(int reservationId, int amenityId, int quantity, double unitPrice, int checkedBy) {
+        String sql = "INSERT INTO ReservationAmenityUsage "
+                + "(ReservationId, AmenityId, Quantity, UnitPrice, TotalPrice, CheckedAt, CheckedBy) "
                 + "VALUES (?, ?, ?, ?, ?, GETDATE(), ?)";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -157,7 +158,7 @@ public class RoomAmenityDAO {
             ps.setInt(3, quantity);
             ps.setDouble(4, unitPrice);
             ps.setDouble(5, totalPrice);
-            ps.setInt(6, recordedBy);
+            ps.setInt(6, checkedBy);
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -167,12 +168,13 @@ public class RoomAmenityDAO {
     }
 
     // Get current amenity usage for a reservation
-    public Map<Integer, Integer> getCurrentAmenityUsage(int reservationId) {
-        Map<Integer, Integer> usage = new HashMap<>();
-        String sql = "SELECT AmenityId, SUM(Quantity) as TotalQuantity "
-                + "FROM AmenityUsage "
-                + "WHERE ReservationId = ? "
-                + "GROUP BY AmenityId";
+    public Map<String, Integer> getCurrentAmenityUsage(int reservationId) {
+        Map<String, Integer> usage = new HashMap<>();
+        String sql = "SELECT ItemName, ItemCategory, SUM(Quantity) as TotalQuantity "
+                + "FROM InspectionItems i "
+                + "JOIN Inspections ins ON i.InspectionId = ins.Id "
+                + "WHERE ins.ReservationId = ? "
+                + "GROUP BY ItemName, ItemCategory";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -180,8 +182,10 @@ public class RoomAmenityDAO {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                usage.put(rs.getInt("AmenityId"), rs.getInt("TotalQuantity"));
+                String key = rs.getString("ItemCategory") + "::" + rs.getString("ItemName");
+                usage.put(key, rs.getInt("TotalQuantity"));
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -191,18 +195,18 @@ public class RoomAmenityDAO {
     // Get amenity usage logs for a reservation
     public List<AmenityUsageLog> getAmenityUsageLogs(int reservationId) {
         List<AmenityUsageLog> logs = new ArrayList<>();
-        String sql = "SELECT au.*, a.Name as AmenityName, a.Category, "
-                + "u.FullName as RecordedByName, r.Id as ReservationId, rm.RoomNumber "
-                + "FROM AmenityUsage au "
-                + "INNER JOIN Amenities a ON au.AmenityId = a.Id "
-                + "INNER JOIN Users u ON au.RecordedBy = u.Id "
-                + "INNER JOIN Reservations r ON au.ReservationId = r.Id "
+        String sql = "SELECT ii.*, ra.Id AS AmenityId, ra.Name AS AmenityName, ra.Category, "
+                + "u.FullName AS RecordedByName, r.Id AS ReservationId, rm.RoomNumber "
+                + "FROM InspectionItems ii "
+                + "INNER JOIN Inspections i ON ii.InspectionId = i.Id "
+                + "LEFT JOIN RoomAmenities ra ON ii.ItemName = ra.Name "
+                + "LEFT JOIN Users u ON i.CheckedBy = u.Id "
+                + "INNER JOIN Reservations r ON i.ReservationId = r.Id "
                 + "INNER JOIN Rooms rm ON r.RoomId = rm.Id "
-                + "WHERE au.ReservationId = ? "
-                + "ORDER BY au.UsageDate DESC";
+                + "WHERE i.ReservationId = ? "
+                + "ORDER BY i.CheckedAt DESC";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setInt(1, reservationId);
             ResultSet rs = ps.executeQuery();
 
@@ -210,14 +214,13 @@ public class RoomAmenityDAO {
                 AmenityUsageLog log = new AmenityUsageLog();
                 log.setId(rs.getInt("Id"));
                 log.setReservationId(rs.getInt("ReservationId"));
-                log.setAmenityId(rs.getInt("AmenityId"));
+                log.setAmenityId(rs.getInt("AmenityId")); // có thể null nếu không khớp
                 log.setAmenityName(rs.getString("AmenityName"));
                 log.setCategory(rs.getString("Category"));
                 log.setQuantity(rs.getInt("Quantity"));
                 log.setUnitPrice(rs.getDouble("UnitPrice"));
                 log.setTotalPrice(rs.getDouble("TotalPrice"));
-                log.setUsageDate(rs.getTimestamp("UsageDate"));
-                log.setRecordedBy(rs.getInt("RecordedBy"));
+                log.setUsageDate(rs.getTimestamp("CheckedAt")); // hoặc lấy Timestamp của `i.CheckedAt`
                 log.setRecordedByName(rs.getString("RecordedByName"));
                 log.setRoomNumber(rs.getString("RoomNumber"));
                 logs.add(log);
@@ -231,19 +234,19 @@ public class RoomAmenityDAO {
     // Get recent amenity usage logs across all rooms
     public List<AmenityUsageLog> getRecentAmenityLogs(int limit) {
         List<AmenityUsageLog> logs = new ArrayList<>();
-        String sql = "SELECT TOP (?) au.*, a.Name as AmenityName, a.Category, a.IsChargeable, "
-                + "u.FullName as RecordedByName, r.Id as ReservationId, rm.RoomNumber, "
-                + "guest.FullName as CustomerName "
-                + "FROM AmenityUsage au "
-                + "INNER JOIN Amenities a ON au.AmenityId = a.Id "
-                + "INNER JOIN Users u ON au.RecordedBy = u.Id "
-                + "INNER JOIN Reservations r ON au.ReservationId = r.Id "
+        String sql = "SELECT TOP (?) ii.*, ra.Id AS AmenityId, ra.Name AS AmenityName, ra.Category, ra.IsChargeable, "
+                + "u.FullName AS RecordedByName, r.Id AS ReservationId, rm.RoomNumber, guest.FullName AS CustomerName, "
+                + "i.CheckedAt AS UsageDate "
+                + "FROM InspectionItems ii "
+                + "INNER JOIN Inspections i ON ii.InspectionId = i.Id "
+                + "LEFT JOIN RoomAmenities ra ON ii.ItemName = ra.Name AND ii.ItemCategory = ra.Category "
+                + "LEFT JOIN Users u ON i.CheckedBy = u.Id "
+                + "INNER JOIN Reservations r ON i.ReservationId = r.Id "
                 + "INNER JOIN Rooms rm ON r.RoomId = rm.Id "
                 + "INNER JOIN Users guest ON r.UserId = guest.Id "
-                + "ORDER BY au.UsageDate DESC";
+                + "ORDER BY i.CheckedAt DESC";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setInt(1, limit);
             ResultSet rs = ps.executeQuery();
 
@@ -251,14 +254,13 @@ public class RoomAmenityDAO {
                 AmenityUsageLog log = new AmenityUsageLog();
                 log.setId(rs.getInt("Id"));
                 log.setReservationId(rs.getInt("ReservationId"));
-                log.setAmenityId(rs.getInt("AmenityId"));
+                log.setAmenityId(rs.getInt("AmenityId")); // có thể null nếu không match
                 log.setAmenityName(rs.getString("AmenityName"));
                 log.setCategory(rs.getString("Category"));
                 log.setQuantity(rs.getInt("Quantity"));
                 log.setUnitPrice(rs.getDouble("UnitPrice"));
                 log.setTotalPrice(rs.getDouble("TotalPrice"));
                 log.setUsageDate(rs.getTimestamp("UsageDate"));
-                log.setRecordedBy(rs.getInt("RecordedBy"));
                 log.setRecordedByName(rs.getString("RecordedByName"));
                 log.setRoomNumber(rs.getString("RoomNumber"));
                 log.setCustomerName(rs.getString("CustomerName"));
@@ -273,7 +275,7 @@ public class RoomAmenityDAO {
 
     // Get total amenity charges for a reservation
     public double getReservationAmenityTotal(int reservationId) {
-        String sql = "SELECT ISNULL(SUM(TotalPrice), 0) FROM AmenityUsage WHERE ReservationId = ?";
+        String sql = "SELECT ISNULL(SUM(TotalPrice), 0) FROM InspectionItems WHERE ReservationId = ?";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -291,7 +293,7 @@ public class RoomAmenityDAO {
 
     // Create new amenity
     public boolean createAmenity(RoomAmenity amenity) {
-        String sql = "INSERT INTO Amenities (Name, Description, Category, IsChargeable, UnitPrice, Status, CreatedAt, CreatedBy) "
+        String sql = "INSERT INTO RoomAmenities (Name, Description, Category, IsChargeable, UnitPrice, Status, CreatedAt, CreatedBy) "
                 + "VALUES (?, ?, ?, ?, ?, 'ACTIVE', GETDATE(), ?)";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -312,7 +314,7 @@ public class RoomAmenityDAO {
 
     // Update amenity
     public boolean updateAmenity(RoomAmenity amenity) {
-        String sql = "UPDATE Amenities SET Name = ?, Description = ?, Category = ?, "
+        String sql = "UPDATE RoomAmenities SET Name = ?, Description = ?, Category = ?, "
                 + "IsChargeable = ?, UnitPrice = ?, UpdatedAt = GETDATE() WHERE Id = ?";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -360,11 +362,11 @@ public class RoomAmenityDAO {
         return rooms;
     }
 
-    public RoomAmenity getAmenityById(int amenityId) throws SQLException {
+    public RoomAmenity getAmenityById(int id) throws SQLException {
         String sql = "SELECT * FROM RoomAmenities WHERE Id = ?";
-        try (Connection con = DBContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, amenityId);
+            ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     RoomAmenity amenity = new RoomAmenity();
@@ -374,6 +376,7 @@ public class RoomAmenityDAO {
                     amenity.setCategory(rs.getString("Category"));
                     amenity.setIsChargeable(rs.getBoolean("IsChargeable"));
                     amenity.setUnitPrice(rs.getDouble("UnitPrice"));
+                    amenity.setStatus(rs.getString("Status"));
                     amenity.setCreatedAt(rs.getTimestamp("CreatedAt"));
                     amenity.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
                     amenity.setCreatedBy(rs.getInt("CreatedBy"));
@@ -454,6 +457,49 @@ public class RoomAmenityDAO {
             if (con != null) {
                 con.close();
             }
+        }
+    }
+
+    public int getOrCreateInspection(int reservationId, int inspectorId) throws SQLException {
+        // Kiểm tra đã tồn tại Inspection chưa
+        String checkSql = "SELECT Id FROM RoomInspections WHERE ReservationId = ?";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(checkSql)) {
+
+            ps.setInt(1, reservationId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Id");
+            }
+        }
+
+        // Chưa có thì insert mới
+        String insertSql = "INSERT INTO RoomInspections (ReservationId, InspectorId, InspectionTime, RoomCondition, CleanlinessScore, Status) VALUES (?, ?, GETDATE(), 'GOOD', 10, 'PENDING')";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setInt(1, reservationId);
+            ps.setInt(2, inspectorId);
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+
+        return -1;
+    }
+
+    public boolean insertInspectionItem(int inspectionId, String itemName, String itemCategory, int quantity, BigDecimal unitPrice, String notes) throws SQLException {
+        String sql = "INSERT INTO InspectionItems (InspectionId, ItemName, ItemCategory, Quantity, UnitPrice, Notes) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, inspectionId);
+            ps.setString(2, itemName);
+            ps.setString(3, itemCategory);
+            ps.setInt(4, quantity);
+            ps.setBigDecimal(5, unitPrice);
+            ps.setString(6, notes);
+            return ps.executeUpdate() > 0;
         }
     }
 

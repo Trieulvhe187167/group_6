@@ -18,6 +18,7 @@ public class AmenitiesServlet extends HttpServlet {
     private ReservationDAO reservationDAO = new ReservationDAO();
     private CheckInOutDAO checkInOutDAO = new CheckInOutDAO();
     private ActivityDAO activityDAO = new ActivityDAO();
+    private InspectionDAO inspectionDAO = new InspectionDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -161,7 +162,7 @@ public class AmenitiesServlet extends HttpServlet {
             boolean success = true;
 
             // 1. Tạo hoặc lấy Inspection hiện tại
-            int inspectionId = amenityDAO.getOrCreateInspection(reservationId, currentUser.getId());
+            int inspectionId = inspectionDAO.getOrCreateInspection(reservationId, currentUser.getId());
 
             for (Map<String, Object> usage : amenityUsage) {
                 int amenityId = ((Double) usage.get("amenityId")).intValue();
