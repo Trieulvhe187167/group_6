@@ -1,6 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
 <!-- Bootstrap CSS -->
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -10,6 +13,11 @@
 
 <!-- Bootstrap JS -->
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap 5 Bundle JS (includes Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <html lang="en">
 <head>
@@ -664,6 +672,8 @@
             </c:if>
 
             <c:forEach var="booking" items="${bookings}">
+                <c:set var="formattedCheckIn" value="${booking.checkIn}" />
+<fmt:formatDate value="${formattedCheckIn}" pattern="yyyy-MM-dd" var="checkInStr" />
                 <div class="booking-card">
                     <div class="booking-header">
                         <div class="booking-title">
@@ -715,11 +725,21 @@
                             View Details
                         </a>
                         
-                       <c:if test="${booking.status == 'PENDING' }">
-                        <button type="button" class="btn btn-danger" onclick="confirmCancel(${booking.id}, '${booking.roomName}')">
-                            <i class="fas fa-times"></i> Cancel Booking
-                        </button>
-                        </c:if>
+
+              <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
+  <button type="button" class="btn btn-danger"
+    onclick="confirmCancel(
+      ${booking.id},
+      '${booking.roomName}', 
+      '${booking.status}', 
+      '<c:out value="${checkInStr}" />'
+    )">
+    <i class="fas fa-times"></i> Cancel Booking
+  </button>
+</c:if>
+
+
+
 
                     </div>
                 </div>
@@ -728,28 +748,25 @@
     </div>
 
     <!-- Cancel Confirmation Modal -->
-    <!-- Cancel Confirmation Modal -->
-<div class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal fade" id="confirmCancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-warning">
-        <h5 class="modal-title">Confirm Cancellation</h5>
-        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+    <div class="modal-content border-danger">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="cancelModalLabel">Cancel Booking Confirmation</h5>
+        
       </div>
       <div class="modal-body">
-        Are you sure you want to cancel your booking for <strong id="roomNameText"></strong>?
+        <p id="cancelModalMessage">Are you sure you want to cancel this booking?</p>
+        <div id="cancelWarningText" class="alert alert-warning d-none mt-2"></div>
       </div>
       <div class="modal-footer">
-        <form id="cancelForm" method="post" action="${pageContext.request.contextPath}/customer/cancel-booking">
-          <input type="hidden" name="id" id="cancelBookingId">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-          <button type="submit" class="btn btn-danger">Yes, Cancel</button>
-        </form>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <a id="confirmCancelBtn" href="#" class="btn btn-danger">Yes, Cancel Booking</a>
+        
       </div>
     </div>
   </div>
 </div>
-
 
     <script>
         let bookingToCancel = null;
@@ -773,11 +790,44 @@
             bookingToCancel = null;
         }
 
-         function confirmCancel(bookingId, roomName) {
-    document.getElementById("cancelBookingId").value = bookingId;
-    document.getElementById("roomNameText").innerText = roomName;
-    $('#confirmCancelModal').modal('show');
-  }
+   function confirmCancel(id, roomName, status, checkInDate) {
+    setTimeout(() => {
+        console.log("DEBUG - Cancel Booking", { id, roomName, status, checkInDate });
+
+        const safeRoomName = roomName.replace(/&/g, "&amp;")
+                                     .replace(/</g, "&lt;")
+                                     .replace(/>/g, "&gt;")
+                                     .replace(/"/g, "&quot;")
+                                     .replace(/'/g, "&#039;");
+
+        const messageEl = document.getElementById("cancelModalMessage");
+        if (messageEl) {
+            messageEl.innerHTML =
+                `Are you sure you want to cancel your booking for room "<strong>${safeRoomName}</strong>"?`;
+        }
+
+        const warningEl = document.getElementById("cancelWarningText");
+        if (status === "CONFIRMED") {
+            warningEl.classList.remove("d-none");
+            warningEl.innerHTML = `
+                <strong>⚠️ Warning:</strong> Your booking is already confirmed.<br>
+                You may lose your deposit depending on how close it is to the check-in time.<br><br>
+                <strong>Check-in:</strong> ${checkInDate}
+            `;
+        } else {
+            warningEl.classList.add("d-none");
+            warningEl.innerHTML = '';
+        }
+
+        document.getElementById("confirmCancelBtn").href = `/customer/cancel-booking?id=${id}`;
+
+        const modal = new bootstrap.Modal(document.getElementById('confirmCancelModal'));
+        modal.show();
+    }, 0); // Delay 1 tick để đảm bảo DOM sẵn sàng
+}
+
+
+
 
   // Close sidebar when clicking on overlay
   document.querySelector('.sidebar-overlay').addEventListener('click', function() {
@@ -786,15 +836,20 @@
 
   // Auto-hide alerts after 5 seconds
   setTimeout(function () {
-    const alerts = document.querySelectorAll('.alert');
+    const alerts = document.querySelectorAll('.alert:not(#cancelWarningText)');
     alerts.forEach(function (alert) {
-      alert.style.opacity = '0';
-      setTimeout(function () {
-        alert.style.display = 'none';
-      }, 300);
+        alert.style.opacity = '0';
+        setTimeout(function () {
+            alert.style.display = 'none';
+        }, 300);
     });
-  }, 5000);
+}, 5000);
+
     </script>
+   
+<!-- Confirm Cancel Modal -->
+
+
     
 </body>
 
