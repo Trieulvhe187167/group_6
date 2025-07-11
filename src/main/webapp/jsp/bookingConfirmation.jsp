@@ -219,21 +219,25 @@
 
             <%
                 Reservation reservation = (Reservation) request.getAttribute("reservation");
-                Room room = (Room) request.getAttribute("room");
-                RoomType roomType = (RoomType) request.getAttribute("roomType");
+                List<Reservation> reservationList = (List<Reservation>) request.getAttribute("reservationList");
                 Payment payment = (Payment) request.getAttribute("payment");
                 List<ServiceOrder> services = (List<ServiceOrder>) request.getAttribute("services");
+                Room room = (Room) request.getAttribute("room");
+                RoomType roomType = (RoomType) request.getAttribute("roomType");
                 
                 DecimalFormat df = new DecimalFormat("#,###");
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
                 
-                // Calculate nights
+                 // Calculate nights using first reservation
                 long diffInMillies = reservation.getCheckOut().getTime() - reservation.getCheckIn().getTime();
                 int nights = (int) (diffInMillies / (1000 * 60 * 60 * 24));
                 
-                // Calculate deposit and remaining amounts
-                double totalAmount = reservation.getTotalAmount();
-                double depositAmount = totalAmount * 0.1; // 10% deposit
+                
+                double totalAmount = request.getAttribute("totalAmount") != null ?
+                        (Double) request.getAttribute("totalAmount") : reservation.getTotalAmount();
+                double depositAmount = request.getAttribute("depositAmount") != null ?
+                        (Double) request.getAttribute("depositAmount") :
+                        (reservation.getDepositAmount() != null ? reservation.getDepositAmount() : totalAmount * 0.1);
                 double remainingAmount = totalAmount - depositAmount;
                 boolean hasDepositPaid = payment != null && "SUCCESS".equals(payment.getStatus());
                 
@@ -304,11 +308,11 @@
                             <div class="deposit-info">
                                 <h4>
                                     <i class="fa fa-check-circle icon"></i>
-                                    10% Deposit Payment Confirmed
+                                    Deposit Payment Confirmed
                                 </h4>
                                 <p>Your deposit has been successfully received.</p>
                                 <ul style="margin-left: 20px;">
-                                    <li><strong>Deposit Amount:</strong> <%= df.format(depositAmount) %>₫ (10% of total)</li>
+                                    <li><strong>Deposit Amount:</strong> <%= df.format(depositAmount) %>₫</li>
                                     <li><strong>Payment Method:</strong> <%= payment.getMethod().replace("_", " ") %></li>
                                     <li><strong>Transaction ID:</strong> <%= payment.getTransactionId() %></li>
                                 </ul>
@@ -323,50 +327,75 @@
                             <div class="booking-details">
                                 <h4 class="mb-4">Booking Details</h4>
 
-                                <div class="detail-row">
-                                    <span class="detail-label">Guest Name:</span>
-                                    <span class="detail-value"><%= reservation.getCustomerName() %></span>
-                                </div>
+                                 <% if (reservationList != null && reservationList.size() > 1) { %>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Reservation ID</th>
+                                                <th>Room</th>
+                                                <th>Check-in</th>
+                                                <th>Check-out</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        <% for (Reservation r : reservationList) { %>
+                                            <tr>
+                                                  <td>#<%= r.getId() %></td>
+                                                <td><%= r.getRoomNumber() %> (<%= r.getRoomTypeName() %>)</td>
+                                                <td><%= dateFormat.format(r.getCheckIn()) %></td>
+                                                <td><%= dateFormat.format(r.getCheckOut()) %></td>
+                                                <td><%= df.format(r.getTotalAmount()) %>₫</td>
+                                            </tr>
+                                        <% } %>
+                                        </tbody>
+                                    </table>
+                                <% } else { %>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Guest Name:</span>
+                                        <span class="detail-value"><%= reservation.getCustomerName() %></span>
+                                    </div>
 
-                                <div class="detail-row">
-                                    <span class="detail-label">Email:</span>
-                                    <span class="detail-value"><%= reservation.getCustomerEmail() %></span>
-                                </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Email:</span>
+                                        <span class="detail-value"><%= reservation.getCustomerEmail() %></span>
+                                    </div>
 
-                                <div class="detail-row">
-                                    <span class="detail-label">Phone:</span>
-                                    <span class="detail-value"><%= reservation.getCustomerPhone() %></span>
-                                </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Phone:</span>
+                                        <span class="detail-value"><%= reservation.getCustomerPhone() %></span>
+                                    </div>
 
-                                <div class="detail-row">
-                                    <span class="detail-label">Room Type:</span>
-                                    <span class="detail-value"><%= roomType.getName() %></span>
-                                </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Room Type:</span>
+                                        <span class="detail-value"><%= roomType.getName() %></span>
+                                    </div>
 
-                                <div class="detail-row">
-                                    <span class="detail-label">Room Number:</span>
-                                    <span class="detail-value"><%= room.getRoomNumber() %></span>
-                                </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Room Number:</span>
+                                        <span class="detail-value"><%= room.getRoomNumber() %></span>
+                                    </div>
 
-                                <div class="detail-row">
-                                    <span class="detail-label">Check-in Date:</span>
-                                    <span class="detail-value"><%= dateFormat.format(reservation.getCheckIn()) %></span>
-                                </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Check-in Date:</span>
+                                        <span class="detail-value"><%= dateFormat.format(reservation.getCheckIn()) %></span>
+                                    </div>
 
-                                <div class="detail-row">
-                                    <span class="detail-label">Check-out Date:</span>
-                                    <span class="detail-value"><%= dateFormat.format(reservation.getCheckOut()) %></span>
-                                </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Check-out Date:</span>
+                                        <span class="detail-value"><%= dateFormat.format(reservation.getCheckOut()) %></span>
+                                    </div>
 
-                                <div class="detail-row">
-                                    <span class="detail-label">Number of Nights:</span>
-                                    <span class="detail-value"><%= nights %></span>
-                                </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Number of Nights:</span>
+                                        <span class="detail-value"><%= nights %></span>
+                                    </div>
 
-                                <div class="detail-row">
-                                    <span class="detail-label">Number of Guests:</span>
-                                    <span class="detail-value"><%= reservation.getNumberOfCustomers() %></span>
-                                </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Number of Guests:</span>
+                                        <span class="detail-value"><%= reservation.getNumberOfCustomers() %></span>
+                                    </div>
+                                <% } %>
 
                                 <% if (services != null && !services.isEmpty()) { %>
                                 <div class="detail-row">
@@ -398,7 +427,7 @@
 
                                 <% if (hasDepositPaid) { %>
                                 <div class="amount-row deposit">
-                                    <span>Deposit paid (10%):</span>
+                                    <span>Deposit paid:</span>
                                     <span style="color: #4caf50;">-<%= df.format(depositAmount) %>₫</span>
                                 </div>
 
@@ -449,7 +478,7 @@
                                     <li>For any changes or cancellations, please contact us at least 3 days before check-in</li>
                                     <li>A confirmation email has been sent to <%= reservation.getCustomerEmail() %></li>
                                         <% if (hasDepositPaid) { %>
-                                    <li><strong>Your 10% deposit (<%= df.format(depositAmount) %>₫) will be refunded at check-out</strong></li>
+                                     <li><strong>Your deposit (<%= df.format(depositAmount) %>₫) will be refunded at check-out</strong></li>
                                         <% } %>
                                 </ul>
                             </div>

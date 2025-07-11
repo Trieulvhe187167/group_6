@@ -1065,7 +1065,7 @@ public class ReservationDAO {
     FROM Reservations r
     LEFT JOIN Users u ON r.UserId = u.Id
     LEFT JOIN Rooms room ON r.RoomId = room.Id
-    LEFT JOIN RoomTypes rt ON r.RoomTypeId = rt.Id
+    LEFT JOIN RoomTypes rt ON ISNULL(r.RoomTypeId, room.RoomTypeId) = rt.Id
     OUTER APPLY (
         SELECT TOP 1 Status
         FROM Payments
@@ -1262,10 +1262,12 @@ for (int i = 1; i <= columnCount; i++) {
     // Các thông tin bổ sung từ bảng liên kết
     
     reservation.setCustomerPhone(rs.getString("CustomerPhone"));
-reservation.setCustomerEmail(rs.getString("CustomerEmail"));
-reservation.setUserFullName(rs.getString("CustomerName"));
-reservation.setRoomNumber(rs.getString("RoomNumber"));
-reservation.setRoomTypeName(rs.getString("RoomTypeName"));
+    reservation.setCustomerEmail(rs.getString("CustomerEmail"));
+    // Preserve both legacy customerName and new userFullName fields
+    String custName = rs.getString("CustomerName");
+    reservation.setUserFullName(custName);
+    reservation.setCustomerName(custName);
+    reservation.setRoomNumber(rs.getString("RoomNumber"));
  
     // Các thông tin thêm nếu có
     try {

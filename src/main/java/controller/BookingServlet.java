@@ -390,6 +390,8 @@ public class BookingServlet extends HttpServlet {
               
            List<Integer> reservationIds = new ArrayList<>();
             List<Integer> paymentIds = new ArrayList<>();
+            double grandTotal = 0;
+            List<Reservation> emailReservations = new ArrayList<>();
 
             for (CartItem ci : cart) {
                 Date ciCheckIn = Date.valueOf(ci.getCheckIn());
@@ -447,13 +449,15 @@ public class BookingServlet extends HttpServlet {
                     int payId = paymentDAO.createPaymentAndGetId(payment);
                     logBookingActivity(res, r, request.getRemoteAddr());
                     sendBookingNotification(res, userId);
-                    try {
-                        sendConfirmationEmail(res, r, rt, isGuest, itemData);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    // Prepare data for confirmation email
+                    res.setRoomNumber(r.getRoomNumber());
+                    res.setRoomTypeName(rt.getName());
+                    res.setCustomerName(formData.fullName);
+                    res.setCustomerEmail(formData.email);
+                    emailReservations.add(res);
                     reservationIds.add(resId);
                     paymentIds.add(payId);
+                    grandTotal += res.getTotalAmount();
                 }
             }
 
@@ -467,11 +471,34 @@ public class BookingServlet extends HttpServlet {
             if (!reservationIds.isEmpty()) {
                 session.setAttribute("lastReservationId", reservationIds.get(0));
                 session.setAttribute("lastPaymentId", paymentIds.get(0));
+                session.setAttribute("lastReservationIds", reservationIds);
+                session.setAttribute("lastPaymentIds", paymentIds);
                 session.setAttribute("isGuestBooking", isGuest);
               
               
   
-  response.getWriter().write("{\"success\": true, \"reservationId\": " + reservationIds.get(0) + ", \"paymentId\": " + paymentIds.get(0) + "}");                
+                String resIdsStr = reservationIds.stream().map(Object::toString)
+                        .collect(java.util.stream.Collectors.joining(","));
+                String payIdsStr = paymentIds.stream().map(Object::toString)
+                        .collect(java.util.stream.Collectors.joining(","));
+                   // Send confirmation email(s)
+                try {
+                    if (emailReservations.size() > 1) {
+                        emailService.sendGroupBookingPendingEmail(emailReservations);
+                        if (isGuest) {
+                            sendAccountCompletionEmail(emailReservations.get(0), formData);
+                        }
+                    } else if (emailReservations.size() == 1) {
+                        Reservation er = emailReservations.get(0);
+                        Room roomObj = roomDAO.getRoomById(er.getRoomId());
+                        RoomType rtObj = roomTypeDAO.getRoomTypesById(er.getRoomTypeId());
+                        sendConfirmationEmail(er, roomObj, rtObj, isGuest, formData);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                response.getWriter().write("{\"success\": true, \"reservationIds\": \"" + resIdsStr + "\", \"paymentIds\": \"" + payIdsStr + "\"}");           
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                  response.getWriter().write("{\"error\": \"Failed to create reservation\"}");
@@ -668,7 +695,7 @@ public class BookingServlet extends HttpServlet {
             String subject = "Luxury Hotel - Booking Pending #" + reservation.getId();
             String content = String.format(
                 "Dear %s,\n\n" +
-                "Your booking has been Pending can you payment 10% to confirmed!\n\n" +
+                "Your booking has been Pending can you payment 10%% to confirmed!\n\n" +
                 "Booking Details:\n" +
                 "- Booking ID: #%d\n" +
                 "- Room: %s (%s)\n" +
