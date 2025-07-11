@@ -172,7 +172,8 @@
         Integer paymentId = (Integer) request.getAttribute("paymentId");
         String method = (String) request.getAttribute("method");
         Double amount = (Double) request.getAttribute("amount");
-        
+        String reservationIdsStr = (String) request.getAttribute("reservationIdsStr");
+        String paymentIdsStr = (String) request.getAttribute("paymentIdsStr");
         DecimalFormat df = new DecimalFormat("#,###");
         String formattedAmount = df.format(amount);
         
@@ -216,6 +217,12 @@
                 <input type="hidden" name="action" value="processPayment">
                 <input type="hidden" name="paymentId" value="<%= paymentId %>">
                 <input type="hidden" name="reservationId" value="<%= reservation.getId() %>">
+                 <c:if test="${not empty reservationIdsStr}">
+                    <input type="hidden" name="reservationIds" value="<%= reservationIdsStr %>">
+                </c:if>
+                <c:if test="${not empty paymentIdsStr}">
+                    <input type="hidden" name="paymentIds" value="<%= paymentIdsStr %>">
+                </c:if>
                 <input type="hidden" name="method" value="<%= method %>">
             </form>
             
@@ -260,6 +267,12 @@
                 <input type="hidden" name="action" value="processPayment">
                 <input type="hidden" name="paymentId" value="<%= paymentId %>">
                 <input type="hidden" name="reservationId" value="<%= reservation.getId() %>">
+                <c:if test="${not empty reservationIdsStr}">
+                    <input type="hidden" name="reservationIds" value="<%= reservationIdsStr %>">
+                </c:if>
+                <c:if test="${not empty paymentIdsStr}">
+                    <input type="hidden" name="paymentIds" value="<%= paymentIdsStr %>">
+                </c:if>
                 <input type="hidden" name="method" value="<%= method %>">
             </form>
             

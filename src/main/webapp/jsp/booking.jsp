@@ -120,16 +120,18 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p class="text-end"><strong>Subtotal: <span id="singleSubtotal">0₫</span></strong></p>
+                                <p class="text-end" style="color: red"><strong>Subtotal: <span id="singleSubtotal">0₫</span></strong></p>
 
-                    <h4>Customer Information</h4>
+                    
                     <c:choose>
                         <c:when test="${not empty sessionScope.user}">
+                            <h4>Booking By: ${sessionScope.user.fullName} </h4>
                             <input type="hidden" name="fullName" value="${sessionScope.user.fullName}">
                             <input type="hidden" name="email" value="${sessionScope.user.email}">
                             <input type="hidden" name="phone" value="${sessionScope.user.phone}">
                         </c:when>
                         <c:otherwise>
+                            <h4>Customer Information</h4>
                             <div class="form-group">
                                 <label>Full Name</label>
                                 <input type="text" name="fullName" class="form-control" required />
@@ -222,16 +224,18 @@
                         %>
                     </tbody>
                 </table>
-                <p class="text-end"><strong>Total: <%= df.format(grandTotal) %>₫</strong></p>
+                <p class="text-end" style="color: red"><strong>Total: <%= df.format(grandTotal) %>₫</strong></p>
                 <form id="bookingForm" action="${pageContext.request.contextPath}/BookingServlet" method="POST">
-                    <h4>Customer Information</h4>
+
                     <c:choose>
                         <c:when test="${not empty sessionScope.user}">
+                            <h4>Booking By: ${sessionScope.user.fullName} </h4>
                             <input type="hidden" name="fullName" value="${sessionScope.user.fullName}">
                             <input type="hidden" name="email" value="${sessionScope.user.email}">
                             <input type="hidden" name="phone" value="${sessionScope.user.phone}">
                         </c:when>
                         <c:otherwise>
+                             <h4>Customer Information</h4>
                             <div class="form-group">
                                 <label>Full Name</label>
                                 <input type="text" name="fullName" class="form-control" required />
@@ -350,8 +354,9 @@
                                                 $('#otpModal').modal('show');
                                             } else if (res.success) {
                                                 var method = $('input[name="paymentMethod"]:checked').val() || 'CASH';
-                                                window.location.href = '${pageContext.request.contextPath}/PaymentGateway?reservationId=' + res.reservationId + '&method=' + method;
-                                            } else if (res.error) {
+                                                var resIds = res.reservationIds ? res.reservationIds : res.reservationId;
+                                                var payIds = res.paymentIds ? res.paymentIds : res.paymentId;
+                                                window.location.href = '${pageContext.request.contextPath}/PaymentGateway?reservationIds=' + resIds + '&paymentIds=' + payIds + '&method=' + method;                                            } else if (res.error) {
                                                 alert(res.error);
                                             }
                                         }, 'json').fail(function () {
@@ -371,8 +376,9 @@
                                                 $.post('${pageContext.request.contextPath}/BookingServlet', pendingData, function (r) {
                                                     if (r.success) {
                                                         var method = $('input[name="paymentMethod"]:checked').val() || 'CASH';
-                                                        window.location.href = '${pageContext.request.contextPath}/PaymentGateway?reservationId=' + r.reservationId + '&method=' + method;
-                                                    } else if (r.error) {
+                                                        var resIds = r.reservationIds ? r.reservationIds : r.reservationId;
+                                                        var payIds = r.paymentIds ? r.paymentIds : r.paymentId;
+                                                        window.location.href = '${pageContext.request.contextPath}/PaymentGateway?reservationIds=' + resIds + '&paymentIds=' + payIds + '&method=' + method;                                                    } else if (r.error) {
                                                         alert(r.error);
                                                     }
                                                 }, 'json');
