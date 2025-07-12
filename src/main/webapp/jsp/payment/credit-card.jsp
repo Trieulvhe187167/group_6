@@ -11,7 +11,9 @@
     String paymentId = request.getAttribute("paymentId") != null ? request.getAttribute("paymentId").toString() : null;
     String method = (String) request.getAttribute("method");
     Double fullAmount = (Double) request.getAttribute("amount");
-    
+    String reservationIdsStr = (String) request.getAttribute("reservationIdsStr");
+    String paymentIdsStr = (String) request.getAttribute("paymentIdsStr");
+        java.util.List<model.Reservation> reservationList = (java.util.List<model.Reservation>) request.getAttribute("reservations");
     // Debug print
     System.out.println("Reservation: " + (reservation != null ? reservation.getId() : "NULL"));
     System.out.println("PaymentId: " + paymentId);
@@ -27,7 +29,7 @@
         if (fullAmount == null) System.out.println("- Amount is NULL");
         
         // Redirect with error message
-        response.sendRedirect(request.getContextPath() + "/RoomListServlet?error=payment_data_missing");
+        response.sendRedirect(request.getContextPath() + "/SearchAvailableRoomsServlet?error=payment_data_missing");
         return;
     }
     
@@ -324,7 +326,29 @@
                     <li>Remaining balance can be paid during your stay</li>
                 </ul>
             </div>
-            
+                    
+               <% if (reservationList != null && reservationList.size() > 1) { %>
+            <table class="table table-bordered mt-3">
+                <thead>
+                    <tr>
+                        <th>Room</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <% for (model.Reservation r : reservationList) { %>
+                    <tr>
+                        <td><%= r.getRoomNumber() %> (<%= r.getRoomTypeName() %>)</td>
+                        <td><%= r.getCheckIn() %></td>
+                        <td><%= r.getCheckOut() %></td>
+                        <td><%= formatter.format(r.getTotalAmount()) %>₫</td>
+                    </tr>
+                <% } %>
+                </tbody>
+            </table>
+            <% } %>
             <!-- Amount Breakdown -->
             <div class="amount-breakdown">
                 <div class="amount-row">
@@ -370,6 +394,12 @@
                 <input type="hidden" name="action" value="processPayment">
                 <input type="hidden" name="paymentId" value="<%= paymentId %>">
                 <input type="hidden" name="reservationId" value="<%= reservation.getId() %>">
+                <c:if test="${not empty reservationIdsStr}">
+                    <input type="hidden" name="reservationIds" value="<%= reservationIdsStr %>">
+                </c:if>
+                <c:if test="${not empty paymentIdsStr}">
+                    <input type="hidden" name="paymentIds" value="<%= paymentIdsStr %>">
+                </c:if>
                 <input type="hidden" name="method" value="<%= method %>">
                 <input type="hidden" name="depositAmount" value="<%= depositAmount %>">
                 
@@ -516,7 +546,7 @@
         
         function cancelPayment() {
             if (confirm('Are you sure you want to cancel this payment?')) {
-                window.location.href = '${pageContext.request.contextPath}/RoomListServlet';
+                window.location.href = '${pageContext.request.contextPath}/SearchAvailableRoomsServlet';
             }
         }
         

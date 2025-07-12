@@ -19,6 +19,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.time.DayOfWeek;
 import java.time.format.DateTimeFormatter;
+import java.io.BufferedReader;
+import java.util.Calendar;
 
 @WebServlet(name = "CheckInServlet", urlPatterns = {"/receptionist/check-in"})
 public class CheckInServlet extends HttpServlet {
@@ -160,25 +162,34 @@ public class CheckInServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        LOGGER.info("Received POST request to CheckInServlet with Content-Type: " + request.getContentType());
+        
         String action = request.getParameter("action");
         
         try {
-            switch (action) {
-                case "searchReservation":
-                    searchReservation(request, response);
-                    break;
-                case "processCheckIn":
-                    processCheckIn(request, response);
-                    break;
-                case "getReservation":
-                    getReservation(request, response);
-                    break;
-                case "getRoomAmenities":
-                    getRoomAmenities(request, response);
-                    break;
-                default:
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().write("{\"error\":\"Invalid action\"}");
+            if (action != null) {
+                switch (action) {
+                    case "searchReservation":
+                        searchReservation(request, response);
+                        break;
+                    case "processCheckIn":
+                        processCheckIn(request, response);
+                        break;
+                    case "getReservation":
+                        getReservation(request, response);
+                        break;
+                    case "getRoomAmenities":
+                        getRoomAmenities(request, response);
+                        break;
+                    default:
+                        LOGGER.warning("Invalid action parameter: " + action);
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"error\":\"Invalid action\"}");
+                }
+            } else {
+                // No action parameter means it's a direct JSON request for check-in
+                LOGGER.info("No action parameter detected, treating as direct check-in request");
+                processCheckIn(request, response);
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error processing request", e);
@@ -283,18 +294,55 @@ public class CheckInServlet extends HttpServlet {
             throws IOException {
         try {
             // Parse JSON request
+            StringBuilder sb = new StringBuilder();
+            String line;
+            try (BufferedReader reader = request.getReader()) {
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+            }
+            String jsonBody = sb.toString();
+            LOGGER.info("Received check-in request data: " + jsonBody);
+            
+            if (jsonBody == null || jsonBody.trim().isEmpty()) {
+                LOGGER.warning("Empty JSON body received");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":false,\"message\":\"Empty request body\"}");
+                return;
+            }
+            
             Gson gson = new Gson();
-            CheckInRequest checkInRequest = gson.fromJson(request.getReader(), CheckInRequest.class);
+            CheckInRequest checkInRequest = gson.fromJson(jsonBody, CheckInRequest.class);
+            LOGGER.info("Parsed check-in request: " + checkInRequest);
             
             // Validate required fields
             if (!validateCheckInRequest(checkInRequest)) {
+                LOGGER.warning("Missing required fields in check-in request");
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\":\"Missing required fields\"}");
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":false,\"message\":\"Missing required fields\"}");
                 return;
             }
             
             HttpSession session = request.getSession();
             User currentUser = (User) session.getAttribute("user");
+            if (currentUser == null) {
+                LOGGER.warning("User not authenticated for check-in");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":false,\"message\":\"User not authenticated\"}");
+                return;
+            }
+            
+            // Check if this reservation is already checked in
+            if (checkInOutDAO.isCheckedIn(checkInRequest.getReservationId())) {
+                LOGGER.warning("Reservation " + checkInRequest.getReservationId() + " is already checked in");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":false,\"message\":\"This reservation is already checked in\"}");
+                return;
+            }
             
             // Create check-in detail
             CheckInDetail checkIn = new CheckInDetail();
@@ -312,64 +360,80 @@ public class CheckInServlet extends HttpServlet {
             java.util.Date estimatedCheckOutTime = checkInRequest.getEstimatedCheckOutTime();
             if (estimatedCheckOutTime != null) {
                 checkIn.setEstimatedCheckOutTime(estimatedCheckOutTime);
+                LOGGER.info("Using provided checkout time: " + estimatedCheckOutTime);
             } else {
                 // Default to checkout date at noon if not specified
                 Reservation reservation = reservationDAO.getReservationById(checkInRequest.getReservationId());
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(reservation.getCheckOut());
-                calendar.set(Calendar.HOUR_OF_DAY, 12);
-                calendar.set(Calendar.MINUTE, 0);
-                calendar.set(Calendar.SECOND, 0);
-                checkIn.setEstimatedCheckOutTime(calendar.getTime());
+                if (reservation != null) {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(reservation.getCheckOut());
+                    calendar.set(Calendar.HOUR_OF_DAY, 12);
+                    calendar.set(Calendar.MINUTE, 0);
+                    calendar.set(Calendar.SECOND, 0);
+                    checkIn.setEstimatedCheckOutTime(calendar.getTime());
+                    LOGGER.info("Using default checkout time: " + calendar.getTime());
+                } else {
+                    LOGGER.warning("Reservation not found for ID: " + checkInRequest.getReservationId());
+                }
             }
             
             checkIn.setCheckInBy(currentUser.getId());
             
             // Save check-in
+            LOGGER.info("Attempting to create check-in for reservation ID: " + checkInRequest.getReservationId());
             boolean success = checkInOutDAO.createCheckIn(checkIn);
             
             if (success) {
+                LOGGER.info("Check-in created successfully");
                 // Update room status to OCCUPIED
                 Reservation reservation = reservationDAO.getReservationById(checkInRequest.getReservationId());
-                roomDAO.updateRoomStatus(reservation.getRoomId(), "OCCUPIED");
-                
-                // Create housekeeping task for room preparation
-                HousekeepingTask task = new HousekeepingTask();
-                task.setRoomId(reservation.getRoomId());
-                task.setStatus("PENDING");
-                task.setNotes("Guest checked in - daily cleaning required");
-                housekeepingDAO.createTask(task);
-                
-                // Save amenity inventory
-                if (checkInRequest.getAmenities() != null) {
-                    RoomAmenityDAO amenityDAO = new RoomAmenityDAO();
-                    for (AmenityCheck amenity : checkInRequest.getAmenities()) {
-                        amenityDAO.recordAmenityInventory(
-                            checkInRequest.getReservationId(),
-                            amenity.getAmenityId(),
-                            amenity.isPresent() ? 1 : 0,
-                            currentUser.getId()
-                        );
+                if (reservation != null && reservation.getRoomId() != 0) {
+                    roomDAO.updateRoomStatus(reservation.getRoomId(), "OCCUPIED");
+                    
+                    // Create housekeeping task for room preparation
+                    HousekeepingTask task = new HousekeepingTask();
+                    task.setRoomId(reservation.getRoomId());
+                    task.setStatus("PENDING");
+                    task.setNotes("Guest checked in - daily cleaning required");
+                    housekeepingDAO.createTask(task);
+                    
+                    // Save amenity inventory
+                    if (checkInRequest.getAmenities() != null) {
+                        RoomAmenityDAO amenityDAO = new RoomAmenityDAO();
+                        for (AmenityCheck amenity : checkInRequest.getAmenities()) {
+                            amenityDAO.recordAmenityInventory(
+                                checkInRequest.getReservationId(),
+                                amenity.getAmenityId(),
+                                amenity.isPresent() ? 1 : 0,
+                                currentUser.getId()
+                            );
+                        }
                     }
+                    
+                    // Log activity
+                    Activity activity = new Activity();
+                    activity.setType("CHECK_IN");
+                    activity.setReservationId(checkInRequest.getReservationId());
+                    activity.setUserId(currentUser.getId());
+                    activity.setDescription("Checked in guest to room " + roomDAO.getRoomById(reservation.getRoomId()).getRoomNumber());
+                    activity.setIpAddress(request.getRemoteAddr());
+                    activityDAO.logActivity(activity);
+                } else {
+                    LOGGER.warning("Room ID not found or invalid for reservation: " + checkInRequest.getReservationId());
                 }
-                
-                // Log activity
-                Activity activity = new Activity();
-                activity.setType("CHECK_IN");
-                activity.setReservationId(checkInRequest.getReservationId());
-                activity.setUserId(currentUser.getId());
-                activity.setDescription("Checked in guest to room " + roomDAO.getRoomById(reservation.getRoomId()).getRoomNumber());
-                activity.setIpAddress(request.getRemoteAddr());
-                activityDAO.logActivity(activity);
+            } else {
+                LOGGER.severe("Failed to create check-in record");
             }
             
             response.setContentType("application/json");
-            response.getWriter().write("{\"success\":" + success + "}");
+            response.getWriter().write("{\"success\":" + success + ",\"message\":\"" + (success ? "Check-in completed successfully" : "Failed to create check-in record") + "\"}");
             
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error processing check-in", e);
+            LOGGER.log(Level.SEVERE, "Error processing check-in: " + e.getMessage(), e);
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+            response.setContentType("application/json");
+            response.getWriter().write("{\"success\":false,\"message\":\"Server error: " + e.getMessage().replace("\"", "'") + "\"}");
         }
     }
     

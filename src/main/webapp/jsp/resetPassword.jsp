@@ -59,6 +59,7 @@
                         <div class="row placeani">
                             <div class="col-lg-12">
                                 <div class="form-group">
+                                    <label for="NewPasswordInput">New Password</label>
                                     <div class="input-group">
                                         <input name="password" type="password" required class="form-control" placeholder="Enter new password">
                                     </div>
@@ -67,6 +68,7 @@
 
                             <div class="col-lg-12">
                                 <div class="form-group">
+                                    <label for="confirmPassword">Confirm Password</label>
                                     <div class="input-group">
                                         <input name="confirmPassword" type="password" required class="form-control" placeholder="Confirm new password">
                                     </div>

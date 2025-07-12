@@ -79,6 +79,44 @@
                     margin-bottom: 30px;
                 }
             }
+            /* 1) container relative + overflow để cắt nội dung ngoài khung */
+            .cours-bx .action-box {
+                position: relative;
+                overflow: hidden;
+            }
+
+            /* 2) Hai nút ở trạng thái off-screen (vẫn giữ không gian để animation hoạt động) */
+            .cours-bx .action-box a.btn-add,
+            .cours-bx .action-box a.btn-detail {
+                position: absolute;
+                top: 50%;
+                width: 45%;
+                opacity: 0;
+                transition: left 0.3s ease, right 0.3s ease, opacity 0.3s ease;
+                z-index: 100;
+            }
+
+            /* Đẩy hoàn toàn ra ngoài khung */
+            .cours-bx .action-box a.btn-add {
+                left: -100%;
+                transform: translateY(-50%);
+            }
+            .cours-bx .action-box a.btn-detail {
+                right: -100%;
+                transform: translateY(-50%);
+            }
+
+            /* 3) Khi hover: kéo vào đúng vị trí và fade in */
+            .cours-bx:hover .action-box a.btn-add {
+                left: 5%;
+                opacity: 1;
+            }
+            .cours-bx:hover .action-box a.btn-detail {
+                right: 5%;
+                opacity: 1;
+            }
+
+
         </style>
     </head>
 
@@ -114,6 +152,9 @@
                 <div class="content-block">
                     <div class="section-area section-sp1">
                         <div class="container">
+                             <c:if test="${param.added eq '1'}">
+                                <div class="alert alert-success text-center mb-3">Add to cart room successful!</div>
+                            </c:if>
                             <div class="row">
                                 <!-- Sidebar -->
                                 <div class="col-lg-3 col-md-4 col-sm-12 m-b30 sidebar-filters">
@@ -121,23 +162,48 @@
                                     <!-- Search -->
                                     <div class="search-section">
                                         <h5 class="widget-title">Search Rooms</h5>
-                                        <form action="RoomListServlet" method="get">
-                                            <div class="input-group">
-                                                <input name="keyword" type="text" class="form-control" 
-                                                       placeholder="Search by room type..." value="${keyword}">
-                                                <div class="input-group-append">
-                                                    <button type="submit" class="btn btn-primary">
-                                                        <i class="fa fa-search"></i>
-                                                    </button>
-                                                </div>
+                                        <form action="SearchAvailableRoomsServlet" method="get" id="roomListSearchForm">
+                                            <!-- Preserve selected filters when performing a new search -->
+                                            <input type="hidden" name="price" value="${selectedPrice}">
+                                            <input type="hidden" name="capacity" value="${selectedCapacity}">
+                                            <div class="form-group">
+                                                <label>Check-in</label>
+                                                <input type="date" name="checkIn" class="form-control"
+                                                       value="${searchCheckIn}"
+                                                       min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>"
+                                                       required>
                                             </div>
+                                            <div class="form-group">
+                                                <label>Check-out</label>
+                                                <input type="date" name="checkOut" class="form-control"
+                                                       value="${searchCheckOut}"
+                                                       min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 24*60*60*1000)) %>"
+                                                       required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Room Type</label>
+                                                <select name="roomTypeId" class="form-control">
+                                                    <option value="">All Room Types</option>
+                                                    <c:forEach var="roomType" items="${searchRoomTypes}">
+                                                        <option value="${roomType.id}"
+                                                                <c:if test="${searchRoomTypeId eq roomType.id}">selected</c:if>>
+                                                            ${roomType.name}
+                                                        </option>
+                                                    </c:forEach>
+                                                </select>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary btn-block">Search</button>
                                         </form>
                                     </div>
 
                                     <!-- Filters -->
                                     <div class="filter-section">
                                         <h5 class="widget-title">Filter by</h5>
-                                        <form action="RoomListServlet" method="get">
+                                        <form action="SearchAvailableRoomsServlet" method="get">
+                                            <!-- Keep current search parameters when filtering -->
+                                            <input type="hidden" name="checkIn" value="${searchCheckIn}">
+                                            <input type="hidden" name="checkOut" value="${searchCheckOut}">
+                                            <input type="hidden" name="roomTypeId" value="${searchRoomTypeId}">
                                             <div class="form-group">
                                                 <label>Price Range</label>
                                                 <select name="price" class="form-control" onchange="this.form.submit()">
@@ -154,12 +220,13 @@
                                                     <option value="">All Capacities</option>
                                                     <option value="1" ${selectedCapacity == '1' ? 'selected' : ''}>1 Guest</option>
                                                     <option value="2" ${selectedCapacity == '2' ? 'selected' : ''}>2 Guests</option>
-                                                    <option value="3" ${selectedCapacity == '3' ? 'selected' : ''}>3+ Guests</option>
+                                                    <option value="3" ${selectedCapacity == '3' ? 'selected' : ''}>3 Guests</option>
+                                                    <option value="4" ${selectedCapacity == '4' ? 'selected' : ''}>4+ Guests</option>
                                                 </select>
                                             </div>
 
                                             <c:if test="${not empty selectedPrice || not empty selectedCapacity}">
-                                                <a href="RoomListServlet" class="btn btn-secondary btn-block">
+                                                <a href="SearchAvailableRoomsServlet?checkIn=${searchCheckIn}&checkOut=${searchCheckOut}&roomTypeId=${searchRoomTypeId}" class="btn btn-secondary btn-block">
                                                     <i class="fa fa-times"></i> Clear Filters
                                                 </a>
                                             </c:if>
@@ -188,9 +255,9 @@
                                                                 <i class="fa fa-star" style="color: #ffc107"></i>
                                                                 <i class="fa fa-star" style="color: #ffc107"></i>
                                                                 <i class="fa fa-star" style="color: #ffc107"></i>
-                                                                
+
                                                             </li>
-                                                           
+
                                                         </ul>
                                                     </div>
                                                 </div>
@@ -222,8 +289,7 @@
                                                 int startIndex = (currentPage - 1) * recordsPerPage;
                                                 int endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
                                             
-                                                for (int i = startIndex; i < endIndex; i++) {
-                                                    RoomType type = roomTypes.get(i);
+                                                for (RoomType type : roomTypes) {
                                                     String description = type.getDescription();
                                                     String[] features = description.split(",");
                                                     String bedType = features.length > 1 ? features[1].trim() : "Standard Bed";
@@ -233,17 +299,39 @@
                                                 <div class="action-box">
                                                     <img src="${pageContext.request.contextPath}/assets/images/uploads/<%= type.getImageUrl() %>" 
                                                          alt="<%= type.getName() %>" style="height: 200px; object-fit: cover;">
-                                                    <a href="RoomDetailServlet?id=<%= type.getId() %>" class="btn">Booking Room</a>
+                                                    <c:choose>
+                                                        <c:when test="${not empty searchCheckIn && not empty searchCheckOut}">
+                                                            <% if (type.getAvailableRoomCount() > 0) { %>
+                                                                <a href="CartServlet?action=add&roomTypeId=<%= type.getId() %>&roomTypeName=<%= java.net.URLEncoder.encode(type.getName(), "UTF-8") %>&price=<%= type.getBasePrice() %>&checkIn=${searchCheckIn}&checkOut=${searchCheckOut}" class="btn btn-primary">Add to Cart</a>
+                                                            <% } else { %>
+                                                                <span class="btn btn-secondary disabled">Sold Out</span>
+                                                            <% } %>
+                                                          
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <a href="RoomDetailServlet?id=<%= type.getId() %>" class="btn">View Detail</a>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </div>
                                                 <div class="info-bx text-center">
-                                                    <h5><a href="RoomDetailServlet?id=<%= type.getId() %>"><%= type.getName() %></a></h5>
+                                                    <c:choose>
+                                                        <c:when test="${not empty searchCheckIn && not empty searchCheckOut}">
+                                                            <h5><a href="RoomDetailServlet?id=<%= type.getId() %>&checkIn=${searchCheckIn}&checkOut=${searchCheckOut}"><%= type.getName() %></a></h5>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <h5><a href="RoomDetailServlet?id=<%= type.getId() %>"><%= type.getName() %></a></h5>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                     <span class="capacity-badge">
                                                         <i class="fa fa-users"></i> <%= type.getCapacity() %> guests
                                                     </span>
                                                     <span class="capacity-badge ml-2">
                                                         <i class="fa fa-bed"></i> <%= bedType %>
                                                     </span>
-                                                </div>
+                                               <div class="mt-2">
+                                                        <small><%= type.getAvailabilityMessage() %></small>
+                                                    </div>
+                                               </div>
                                                 <div class="cours-more-info">
                                                     <div class="review">
                                                         <span>4.5/5 </span><i class="fa fa-star" style="color: #ffc107"></i>
@@ -269,7 +357,7 @@
                                                 <i class="fa fa-bed"></i>
                                                 <h4>No rooms found</h4>
                                                 <p>Try adjusting your search criteria or browse all available rooms.</p>
-                                                <a href="RoomListServlet" class="btn btn-primary">View All Rooms</a>
+                                                <a href="SearchAvailableRoomsServlet" class="btn btn-primary">View All Rooms</a>
                                             </div>
                                         </div>
                                         <%
@@ -290,8 +378,7 @@
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <li class="previous">
-                                                                    <a href="?page=${currentPage - 1}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}">
-                                                                        <i class="ti-arrow-left"></i> Previous
+                                                                    <a href="?page=${currentPage - 1}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}&checkIn=${searchCheckIn}&checkOut=${searchCheckOut}">                                                                        <i class="ti-arrow-left"></i> Previous
                                                                     </a>
                                                                 </li>
                                                             </c:otherwise>
@@ -305,7 +392,7 @@
                                                                         </c:when>
                                                                         <c:otherwise>
                                                                     <li>
-                                                                        <a href="?page=${i}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}">
+                                                                        <a href="?page=${i}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}&checkIn=${searchCheckIn}&checkOut=${searchCheckOut}">
                                                                             ${i}
                                                                         </a>
                                                                     </li>
@@ -322,7 +409,7 @@
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <li class="next">
-                                                                    <a href="?page=${currentPage + 1}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}">
+                                                                    <a href="?page=${currentPage + 1}&keyword=${keyword}&price=${selectedPrice}&capacity=${selectedCapacity}&checkIn=${searchCheckIn}&checkOut=${searchCheckOut}">
                                                                         Next <i class="ti-arrow-right"></i>
                                                                     </a>
                                                                 </li>
@@ -361,8 +448,8 @@
         <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script> 
 
-        <script>
-                                                    // Auto-submit form when filter changes
+      <script>
+                                                      // Auto-submit form when filter changes
                                                     $(document).ready(function () {
                                                         $('.filter-form select').on('change', function () {
                                                             $(this).closest('form').submit();

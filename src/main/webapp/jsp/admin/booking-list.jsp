@@ -677,3 +677,4 @@ function viewBookingDetail(id) {
 </div>
 
 </html>
+

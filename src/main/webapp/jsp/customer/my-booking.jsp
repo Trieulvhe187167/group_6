@@ -1,6 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
 <!DOCTYPE html>
 <!-- Bootstrap CSS -->
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -10,6 +12,11 @@
 
 <!-- Bootstrap JS -->
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap 5 Bundle JS (includes Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <html lang="en">
 <head>
@@ -381,95 +388,6 @@
             font-size: 1.1rem;
         }
 
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: modalSlideIn 0.3s ease;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #dc3545, #e83e8c);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 20px 20px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            margin: 0;
-            font-weight: 600;
-        }
-
-        .close {
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background-color 0.3s ease;
-        }
-
-        .close:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .modal-body {
-            padding: 30px;
-            text-align: center;
-        }
-
-        .modal-body p {
-            font-size: 1.1rem;
-            color: #495057;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-
         /* Responsive Design */
         @media (max-width: 768px) {
             .mobile-toggle {
@@ -614,7 +532,7 @@
                 </li>
                 <div class="menu-divider"></div>
                 <li>
-                    <a href="logout.jsp" style="color: #dc3545;">
+                    <a href="${pageContext.request.contextPath}/LogoutServlet" style="color: #dc3545;">
                         <i class="fas fa-sign-out-alt"></i>
                         <span>Logout</span>
                     </a>
@@ -664,96 +582,103 @@
             </c:if>
 
             <c:forEach var="booking" items="${bookings}">
-                <div class="booking-card">
-                    <div class="booking-header">
-                        <div class="booking-title">
-                            <i class="fas fa-bed"></i> Room ${booking.roomName} - ${booking.roomTypeName}
-                        </div>
-                        <div class="booking-id">
-                            ID: #${booking.id}
-                        </div>
-                    </div>
-                    
-                    <div class="booking-details">
-                        <div class="detail-item">
-                            <i class="fas fa-calendar-plus"></i>
-                            <span class="detail-label">Check-in:</span>
-                            <span class="detail-value">
-                                <fmt:formatDate value="${booking.checkIn}" pattern="MMM dd, yyyy" />
-                            </span>
-                        </div>
-                        
-                        <div class="detail-item">
-                            <i class="fas fa-calendar-minus"></i>
-                            <span class="detail-label">Check-out:</span>
-                            <span class="detail-value">
-                                <fmt:formatDate value="${booking.checkOut}" pattern="MMM dd, yyyy" />
-                            </span>
-                        </div>
-                        
-                        <div class="detail-item">
-                            <i class="fas fa-dollar-sign"></i>
-                            <span class="detail-label">Total Amount:</span>
-                            <span class="detail-value">
-                                <fmt:formatNumber value="${booking.totalAmount}" type="currency" />
-                            </span>
-                        </div>
-                        
-                        <div class="detail-item">
-                            <i class="fas fa-info-circle"></i>
-                            <span class="detail-label">Status:</span>
-                            <span class="badge ${booking.status.toLowerCase()}">${booking.status}</span>
-                        </div>
-                    </div>
+    <div class="booking-card">
+        <div class="booking-header">
+            <div class="booking-title">
+                <i class="fas fa-bed"></i> Room ${booking.roomName} - ${booking.roomTypeName}
+            </div>
+            <div class="booking-id">ID: #${booking.id}</div>
+        </div>
+        
+        <div class="booking-details">
+            <div class="detail-item">
+                <i class="fas fa-calendar-plus"></i>
+                <span class="detail-label">Check-in:</span>
+                <span class="detail-value">
+                    <fmt:formatDate value="${booking.checkIn}" pattern="MMM dd, yyyy" />
+                </span>
+            </div>
+            <div class="detail-item">
+                <i class="fas fa-calendar-minus"></i>
+                <span class="detail-label">Check-out:</span>
+                <span class="detail-value">
+                    <fmt:formatDate value="${booking.checkOut}" pattern="MMM dd, yyyy" />
+                </span>
+            </div>
+            <div class="detail-item">
+                <i class="fas fa-dollar-sign"></i>
+                <span class="detail-label">Total Amount:</span>
+                <span class="detail-value">
+                    <fmt:formatNumber value="${booking.totalAmount}" type="currency" />
+                </span>
+            </div>
+            <div class="detail-item">
+                <i class="fas fa-info-circle"></i>
+                <span class="detail-label">Status:</span>
+                <span class="badge ${booking.status.toLowerCase()}">${booking.status}</span>
+            </div>
+        </div>
 
-                    
-                    <!-- Action Buttons -->
-                    <div class="booking-actions">
-                        <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}" 
-                           class="btn btn-primary">
-                            <i class="fas fa-eye"></i>
-                            View Details
-                        </a>
-                        
-                       <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
-                        <button type="button" class="btn btn-danger" onclick="confirmCancel(${booking.id}, '${booking.roomName}')">
-                            <i class="fas fa-times"></i> Cancel Booking
-                        </button>
-                        </c:if>
+        <!-- Action Buttons -->
+        <div class="booking-actions">
+            <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}" class="btn btn-primary">
+                <i class="fas fa-eye"></i> View Details
+            </a>
 
-                    </div>
-                </div>
-            </c:forEach>
+          <fmt:formatDate value="${booking.checkIn}" pattern="yyyy-MM-dd" var="checkInISO" />
+<c:set var="checkInISO" value="${empty checkInISO ? 'N/A' : checkInISO}" />
+<c:set var="safeRoomName" value="${empty booking.roomName ? 'Unknown' : booking.roomName}" />
+
+<c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
+    <button type="button" class="btn btn-danger"
+            data-id="${booking.id}"
+            data-room="${fn:escapeXml(safeRoomName)}"
+            data-status="${booking.status}"
+            data-checkin="${checkInISO}"
+            onclick="openCancelModal(this)">
+        <i class="fas fa-times"></i> Cancel Booking
+    </button>
+</c:if>
+
+        </div>
+    </div>
+</c:forEach>
+
         </main>
     </div>
 
     <!-- Cancel Confirmation Modal -->
     <!-- Cancel Confirmation Modal -->
-<div class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-warning">
-        <h5 class="modal-title">Confirm Cancellation</h5>
-        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-      </div>
-      <div class="modal-body">
-        Are you sure you want to cancel your booking for <strong id="roomNameText"></strong>?
-      </div>
-      <div class="modal-footer">
-        <form id="cancelForm" method="post" action="${pageContext.request.contextPath}/customer/cancel-booking">
-          <input type="hidden" name="id" id="cancelBookingId">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-          <button type="submit" class="btn btn-danger">Yes, Cancel</button>
-        </form>
-      </div>
+<div class="modal fade" id="confirmCancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="cancelModalLabel">Cancel Booking Confirmation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="cancelModalMessage">Are you sure you want to cancel this booking?</p>
+                
+                <!-- Check-in Date Section -->
+                <div id="checkInDateDiv" style="background-color: #e3f2fd; padding: 10px; border-radius: 5px; border-left: 4px solid #2196f3; margin: 15px 0;">
+                    <strong>📅 Check-in Date:</strong> 
+                    <span style="color: #1976d2; font-weight: bold; font-size: 1.2em;">Loading...</span>
+                </div>
+                
+                <div id="cancelWarningText" class="alert alert-warning d-none mt-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a id="confirmCancelBtn" href="#" class="btn btn-danger">Yes, Cancel Booking</a>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
-
     <script>
-        let bookingToCancel = null;
-
+        // Get context path for JavaScript
+        const contextPath = '${pageContext.request.contextPath}';
+        
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
@@ -762,40 +687,136 @@
             overlay.classList.toggle('active');
         }
 
-        function showCancelModal(bookingId, roomName) {
-            bookingToCancel = bookingId;
-            document.getElementById('roomNameText').textContent = roomName;
-            document.getElementById('cancelModal').style.display = 'block';
+       
+
+        // Close sidebar when clicking on overlay
+        document.querySelector('.sidebar-overlay').addEventListener('click', function() {
+            toggleSidebar();
+        });
+
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function () {
+            const alerts = document.querySelectorAll('.alert:not(#cancelWarningText)');
+            alerts.forEach(function (alert) {
+                alert.style.opacity = '0';
+                setTimeout(function () {
+                    alert.style.display = 'none';
+                }, 300);
+            });
+        }, 5000);
+  function openCancelModal(button) {
+    const id = button.getAttribute("data-id");
+    const roomName = button.getAttribute("data-room");
+    const status = button.getAttribute("data-status");
+    const checkInRaw = button.getAttribute("data-checkin");
+
+    // Debug: Log all values
+    console.log("=== MODAL DEBUG ===");
+    console.log("ID:", id);
+    console.log("Room:", roomName);
+    console.log("Status:", status);
+    console.log("Check-in raw:", checkInRaw);
+
+    let checkInDisplay = "Not available";
+
+    // Attempt to parse and format the check-in date
+    if (checkInRaw && checkInRaw !== 'N/A' && checkInRaw !== 'null' && checkInRaw !== 'undefined') {
+        try {
+            // Create a Date object from the yyyy-MM-dd string
+            // Using new Date(year, monthIndex, day) is more reliable for yyyy-MM-dd
+            const parts = checkInRaw.split('-');
+            if (parts.length === 3) {
+                const year = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1; // Month is 0-based
+                const day = parseInt(parts[2], 10);
+                const dateObj = new Date(year, month, day);
+
+                // Check if the date is valid
+                if (dateObj && !isNaN(dateObj.getTime())) {
+                    checkInDisplay = dateObj.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: '2-digit'
+                    });
+                    console.log("Formatted date:", checkInDisplay);
+                } else {
+                    console.log("Invalid date object after parsing parts.");
+                }
+            } else {
+                console.log("checkInRaw is not in expected yyyy-MM-dd format parts.");
+                // Fallback for other potential date string formats if needed
+                const dateObj = new Date(checkInRaw);
+                if (dateObj && !isNaN(dateObj.getTime())) {
+                     checkInDisplay = dateObj.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: '2-digit'
+                    });
+                     console.log("Formatted date (fallback):", checkInDisplay);
+                }
+            }
+        } catch (e) {
+            console.log("Date parsing failed:", e);
         }
+    } else {
+        console.log("checkInRaw is empty or 'N/A'/'null'/'undefined'.");
+    }
 
-        function closeCancelModal() {
-            document.getElementById('cancelModal').style.display = 'none';
-            bookingToCancel = null;
+    console.log("Final check-in display:", checkInDisplay);
+
+    const safeRoomName = roomName && roomName !== 'null' && roomName !== 'undefined'
+        ? `"${roomName}"`
+        : '(unknown room)';
+
+    // Update main message
+    document.getElementById("cancelModalMessage").innerHTML =
+        `Are you sure you want to cancel your booking for <strong>${safeRoomName}</strong>?`;
+
+    // Update check-in date in the separate div
+    const checkInDateSpan = document.querySelector("#checkInDateDiv span"); // Select the span inside the div
+    if (checkInDateSpan) {
+        checkInDateSpan.textContent = checkInDisplay;
+    }
+
+    // Handle warning text
+    const warningEl = document.getElementById("cancelWarningText");
+    if (warningEl) {
+        warningEl.classList.remove("d-none");
+
+        if (status === "CONFIRMED") {
+            warningEl.innerHTML = `
+                <strong>⚠️ Warning:</strong> Your booking is already confirmed.<br>
+                You may lose your deposit depending on how close it is to the check-in time.
+            `;
+            warningEl.className = "alert alert-warning mt-2";
+        } else if (status === "PENDING") {
+            warningEl.innerHTML = `
+                <strong>📅 Note:</strong> This booking is still pending confirmation.
+            `;
+            warningEl.className = "alert alert-info mt-2";
+        } else {
+            warningEl.innerHTML = `
+                <strong>ℹ️ Info:</strong> Booking status: ${status}
+            `;
+            warningEl.className = "alert alert-secondary mt-2";
         }
+    }
 
-         function confirmCancel(bookingId, roomName) {
-    document.getElementById("cancelBookingId").value = bookingId;
-    document.getElementById("roomNameText").innerText = roomName;
-    $('#confirmCancelModal').modal('show');
-  }
+    // Set href for the confirm button
+    const confirmBtn = document.getElementById("confirmCancelBtn");
+    if (confirmBtn) {
+        confirmBtn.href = `${contextPath}/customer/cancel-booking?id=${id}`;
+    }
 
-  // Close sidebar when clicking on overlay
-  document.querySelector('.sidebar-overlay').addEventListener('click', function() {
-    toggleSidebar();
-  });
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('confirmCancelModal'));
+    modal.show();
 
-  // Auto-hide alerts after 5 seconds
-  setTimeout(function () {
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach(function (alert) {
-      alert.style.opacity = '0';
-      setTimeout(function () {
-        alert.style.display = 'none';
-      }, 300);
-    });
-  }, 5000);
+    console.log("=== END DEBUG ===");
+}
+
     </script>
-    
-</body>
+    <!-- Debug info - bỏ sau khi test xong -->
 
+</body>
 </html>

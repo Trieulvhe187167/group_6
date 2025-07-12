@@ -27,9 +27,17 @@ public class RoomDetailServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String idStr = request.getParameter("id");
+        String checkInParam = request.getParameter("checkIn");
+        String checkOutParam = request.getParameter("checkOut");
 
+        if (checkInParam != null && !checkInParam.isEmpty()) {
+            request.setAttribute("searchCheckIn", checkInParam);
+        }
+        if (checkOutParam != null && !checkOutParam.isEmpty()) {
+            request.setAttribute("searchCheckOut", checkOutParam);
+        }
         if (idStr == null || idStr.trim().isEmpty()) {
-            response.sendRedirect("RoomListServlet");
+            response.sendRedirect("SearchAvailableRoomsServlet");
             return;
         }
 
@@ -44,14 +52,14 @@ public class RoomDetailServlet extends HttpServlet {
 
             if (roomType == null) {
                 request.setAttribute("error", "Room type not found");
-                response.sendRedirect("RoomListServlet");
+                response.sendRedirect("SearchAvailableRoomsServlet");
                 return;
             }
 
             // Only show active room types to users
             if (!"active".equals(roomType.getStatus())) {
                 request.setAttribute("error", "Room type is not available");
-                response.sendRedirect("RoomListServlet");
+                response.sendRedirect("SearchAvailableRoomsServlet");
                 return;
             }
 
@@ -155,11 +163,11 @@ public class RoomDetailServlet extends HttpServlet {
             request.getRequestDispatcher("jsp/roomDetail.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
-            response.sendRedirect("RoomListServlet");
+            response.sendRedirect("SearchAvailableRoomsServlet");
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "An error occurred while loading room details");
-            response.sendRedirect("RoomListServlet");
+            response.sendRedirect("SearchAvailableRoomsServlet");
         }
     }
 

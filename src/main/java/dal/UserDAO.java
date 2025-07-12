@@ -21,7 +21,7 @@ public class UserDAO {
 
             if (rs.next()) {
                 String storedHash = rs.getString("PasswordHash");
-                String inputHash = hashPassword(password);
+                String inputHash = password;
                 
                 // Debug (tạm thời): In ra để kiểm tra giá trị hash
                 System.out.println("Stored Hash: " + storedHash);

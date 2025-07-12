@@ -67,10 +67,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Customer Details</h1>
         <div>
-            <a href="${pageContext.request.contextPath}/admin/customers?action=form&id=${customer.id}" 
-               class="btn btn-warning">
-                <i class="fas fa-edit"></i> Edit Customer
-            </a>
+          
             <a href="${pageContext.request.contextPath}/admin/customers" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
@@ -304,40 +301,7 @@
                         <i class="fas fa-edit"></i> Edit Profile
                     </a>
                     
-                    <a href="${pageContext.request.contextPath}/admin/bookings?customer=${customer.id}" 
-                       class="btn btn-info btn-block mb-2">
-                        <i class="fas fa-calendar-check"></i> View Bookings
-                    </a>
-                    
-                    <button class="btn btn-success btn-block mb-2" onclick="createBooking(${customer.id})">
-                        <i class="fas fa-plus"></i> Create Booking
-                    </button>
-                    
-                    <!-- VERIFICATION SYSTEM BUTTONS -->
-                    <div class="dropdown">
-                        <button class="btn btn-secondary btn-block dropdown-toggle mb-2" type="button" 
-                                id="changeRequestDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-shield-alt"></i> Secure Account Changes
-                        </button>
-                        <div class="dropdown-menu w-100" aria-labelledby="changeRequestDropdown">
-                            <a class="dropdown-item" href="#" onclick="requestChange('email', ${customer.id}, 'customer')">
-                                <i class="fas fa-envelope text-primary"></i> Change Email Address
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="requestChange('phone', ${customer.id}, 'customer')">
-                                <i class="fas fa-phone text-success"></i> Change Phone Number
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="requestChange('password', ${customer.id}, 'customer')">
-                                <i class="fas fa-key text-warning"></i> Reset Password
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <c:if test="${customer.status}">
-                        <button class="btn btn-secondary btn-block mb-2" onclick="resetPassword(${customer.id})">
-                            <i class="fas fa-key"></i> Reset Password (Direct)
-                        </button>
-                    </c:if>
-                    
+                
                     <c:if test="${customer.status}">
                         <button onclick="confirmDelete(${customer.id}, '${customer.fullName}')" 
                                 class="btn btn-danger btn-block">
