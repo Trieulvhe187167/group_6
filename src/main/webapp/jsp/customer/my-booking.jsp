@@ -582,7 +582,7 @@
                 </li>
                 <div class="menu-divider"></div>
                 <li>
-                    <a href="user-profile.jsp">
+                    <a href="${pageContext.request.contextPath}/customer/profile">
                         <i class="fas fa-user-edit"></i>
                         <span>User Profile</span>
                     </a>
