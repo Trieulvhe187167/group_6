@@ -9,14 +9,14 @@ public class DBContext {
 
 
 
-    private static final String URL = "jdbc:sqlserver://localhost:1433;"
-            + "databaseName=HotelManagement;"
+    private static final String URL = "jdbc:sqlserver://LAPTOP-SVEKADBK\\HIEUHE187201:1433;"
+            + "databaseName=HotelManagement_3;"
             + "encrypt=true;trustServerCertificate=true;";
 
 
   
     private static final String USER = "sa";
-    private static final String PASSWORD = "123";
+    private static final String PASSWORD = "qq123123";
 
     public static Connection getConnection() throws SQLException {
         try {
