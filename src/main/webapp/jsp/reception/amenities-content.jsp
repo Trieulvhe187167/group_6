@@ -475,7 +475,7 @@ function loadRoomAmenities(roomId) {
                 let minibarHtml = '';
                 if (data.minibarItems) {
                     data.minibarItems.forEach(function(item) {
-                        const usage = data.currentUsage[item.id] || 0;
+                        const usage = item.quantity || 0;
                         amenityUsage[item.id] = usage;
                         minibarHtml += createAmenityItem(item, usage);
                     });
@@ -486,7 +486,7 @@ function loadRoomAmenities(roomId) {
                 let amenityHtml = '';
                 if (data.roomAmenities) {
                     data.roomAmenities.forEach(function(item) {
-                        const usage = data.currentUsage[item.id] || 0;
+                        const usage = item.quantity || 0;
                         amenityUsage[item.id] = usage;
                         amenityHtml += createAmenityItem(item, usage);
                     });

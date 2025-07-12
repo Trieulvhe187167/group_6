@@ -248,7 +248,7 @@ public class RoomInspectionServlet extends HttpServlet {
 
         response.setContentType("application/json");
         response.getWriter().write("{\"success\": true, \"message\": \"Item added successfully\"}");
-    }
+    }  
 
     private void addRoomDamage(HttpServletRequest request, HttpServletResponse response)
             throws Exception {

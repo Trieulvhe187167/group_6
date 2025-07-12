@@ -14,11 +14,9 @@ public class DBContext {
              + "databaseName=HotelManagement_3;encrypt=false;";
 
 
-
-
   
     private static final String USER = "sa";
-    private static final String PASSWORD = "123";
+    private static final String PASSWORD = "qq123123";
 
     public static Connection getConnection() throws SQLException {
         try {

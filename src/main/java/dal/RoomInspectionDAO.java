@@ -108,7 +108,7 @@ public class RoomInspectionDAO extends DBContext {
     public int addInspectionItem(InspectionItem item) throws SQLException {
         String sql = "INSERT INTO InspectionItems (InspectionId, ItemName, ItemCategory, " +
                     "Quantity, UnitPrice, Notes) VALUES (?, ?, ?, ?, ?, ?)";
-        
+         
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
