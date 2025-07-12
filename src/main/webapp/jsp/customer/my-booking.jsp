@@ -704,79 +704,85 @@
                 }, 300);
             });
         }, 5000);
-   function openCancelModal(button) {
+  function openCancelModal(button) {
     const id = button.getAttribute("data-id");
     const roomName = button.getAttribute("data-room");
     const status = button.getAttribute("data-status");
     const checkInRaw = button.getAttribute("data-checkin");
 
-    // Debug: Log tất cả các giá trị
+    // Debug: Log all values
     console.log("=== MODAL DEBUG ===");
     console.log("ID:", id);
     console.log("Room:", roomName);
     console.log("Status:", status);
     console.log("Check-in raw:", checkInRaw);
-    
-    // Format ngày check-in
+
     let checkInDisplay = "Not available";
-    
+
+    // Attempt to parse and format the check-in date
     if (checkInRaw && checkInRaw !== 'N/A' && checkInRaw !== 'null' && checkInRaw !== 'undefined') {
-        console.log("Processing date:", checkInRaw);
-        
         try {
-            let dateObj = null;
-            
-            // Nếu là định dạng yyyy-mm-dd
-            if (checkInRaw.includes('-')) {
-                const parts = checkInRaw.split('-');
-                if (parts.length === 3) {
-                    const year = parseInt(parts[0]);
-                    const month = parseInt(parts[1]) - 1; // Month is 0-based
-                    const day = parseInt(parts[2]);
-                    dateObj = new Date(year, month, day);
+            // Create a Date object from the yyyy-MM-dd string
+            // Using new Date(year, monthIndex, day) is more reliable for yyyy-MM-dd
+            const parts = checkInRaw.split('-');
+            if (parts.length === 3) {
+                const year = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1; // Month is 0-based
+                const day = parseInt(parts[2], 10);
+                const dateObj = new Date(year, month, day);
+
+                // Check if the date is valid
+                if (dateObj && !isNaN(dateObj.getTime())) {
+                    checkInDisplay = dateObj.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: '2-digit'
+                    });
+                    console.log("Formatted date:", checkInDisplay);
+                } else {
+                    console.log("Invalid date object after parsing parts.");
                 }
             } else {
-                // Thử parse trực tiếp
-                dateObj = new Date(checkInRaw);
-            }
-            
-            if (dateObj && !isNaN(dateObj.getTime())) {
-                checkInDisplay = dateObj.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: '2-digit'
-                });
-                console.log("Formatted date:", checkInDisplay);
+                console.log("checkInRaw is not in expected yyyy-MM-dd format parts.");
+                // Fallback for other potential date string formats if needed
+                const dateObj = new Date(checkInRaw);
+                if (dateObj && !isNaN(dateObj.getTime())) {
+                     checkInDisplay = dateObj.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: '2-digit'
+                    });
+                     console.log("Formatted date (fallback):", checkInDisplay);
+                }
             }
         } catch (e) {
             console.log("Date parsing failed:", e);
         }
+    } else {
+        console.log("checkInRaw is empty or 'N/A'/'null'/'undefined'.");
     }
-    
+
     console.log("Final check-in display:", checkInDisplay);
 
     const safeRoomName = roomName && roomName !== 'null' && roomName !== 'undefined'
         ? `"${roomName}"`
         : '(unknown room)';
 
-    // Cập nhật message chính
+    // Update main message
     document.getElementById("cancelModalMessage").innerHTML =
         `Are you sure you want to cancel your booking for <strong>${safeRoomName}</strong>?`;
 
-    // Cập nhật check-in date trong div riêng biệt
-    const checkInDiv = document.getElementById("checkInDateDiv");
-    if (checkInDiv) {
-        checkInDiv.innerHTML = `
-            <strong>📅 Check-in Date:</strong> 
-            <span style="color: #1976d2; font-weight: bold; font-size: 1.2em;">${checkInDisplay}</span>
-        `;
+    // Update check-in date in the separate div
+    const checkInDateSpan = document.querySelector("#checkInDateDiv span"); // Select the span inside the div
+    if (checkInDateSpan) {
+        checkInDateSpan.textContent = checkInDisplay;
     }
 
-    // Xử lý warning text
+    // Handle warning text
     const warningEl = document.getElementById("cancelWarningText");
     if (warningEl) {
         warningEl.classList.remove("d-none");
-        
+
         if (status === "CONFIRMED") {
             warningEl.innerHTML = `
                 <strong>⚠️ Warning:</strong> Your booking is already confirmed.<br>
@@ -796,13 +802,13 @@
         }
     }
 
-    // Set href cho nút confirm
+    // Set href for the confirm button
     const confirmBtn = document.getElementById("confirmCancelBtn");
     if (confirmBtn) {
         confirmBtn.href = `${contextPath}/customer/cancel-booking?id=${id}`;
     }
 
-    // Hiển thị modal
+    // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('confirmCancelModal'));
     modal.show();
 
