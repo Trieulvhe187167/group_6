@@ -102,6 +102,7 @@ public class CartServlet extends HttpServlet {
                         reserved.add(rm.getId());
                     }
                     long holdUntil = System.currentTimeMillis() + 10 * 60 * 1000;
+                    
                     if (existing != null) {
                         existing.getRoomIds().addAll(reserved);
                         existing.setQuantity(existing.getQuantity() + quantity);

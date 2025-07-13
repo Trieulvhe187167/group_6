@@ -1241,8 +1241,32 @@
          bookingUrl += "&checkIn=" + searchIn + "&checkOut=" + searchOut;
      }
                                         %>
-                                        <a href="<%= bookingUrl %>" class="btn btn-primary">Book this room</a>
+                                       
+                                                        
+                                         <a href="<%= bookingUrl %>" class="btn btn-primary me-2">Book this room</a>
+                                        <%
+                                            Integer avail = (Integer) request.getAttribute("availableCount");
+                                            String addUrl = null;
+                                            if(searchIn != null && searchOut != null && (avail == null || avail > 0)){
+                                                addUrl = "CartServlet?action=add&roomTypeId=" + id +
+                                                        "&roomTypeName=" + java.net.URLEncoder.encode(roomTypes.getName(), "UTF-8") +
+                                                        "&price=" + roomTypes.getBasePrice() +
+                                                        "&checkIn=" + searchIn + "&checkOut=" + searchOut;
+                                            }
+                                            if(addUrl != null){
+                                        %>
+                                            <a href="<%= addUrl %>" class="btn btn-success">Add to Cart</a>
+                                        <%
+                                            } else if(searchIn != null && searchOut != null){
+                                        %>
+                                            <span class="btn btn-secondary disabled">Sold Out</span>
+                                        <%
+                                            }
+                                        %>
                                     </div>
+                                    <a href="javascript:history.back()" class="btn btn-outline-secondary px-4">
+    <i class="fas fa-arrow-left"></i> Back
+  </a>
                                 </div>
          <!-- Room Policy -->
                             <div class="mt-5 booking-form">
