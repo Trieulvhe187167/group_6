@@ -2,9 +2,10 @@ package controller;
 
 import dal.RoomDAO;
 import dal.RoomTypeDAO;
+import dal.FeedbackDAO;
 import model.Room;
 import model.RoomType;
-
+import model.RatingStats;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,7 +17,7 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Calendar;
-
+import java.util.stream.Collectors;
 /**
  * Servlet for searching available rooms based on date range and criteria
  */
@@ -106,6 +107,20 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
                 List<RoomType> paginatedRoomTypes = new ArrayList<>();
                 if (start < totalRecords) {
                     paginatedRoomTypes = roomTypes.subList(start, end);
+                }
+                
+                      // Fetch rating stats for displayed room types
+                FeedbackDAO feedbackDAO = new FeedbackDAO();
+                List<Integer> ids = paginatedRoomTypes.stream()
+                        .map(RoomType::getId)
+                        .collect(Collectors.toList());
+                Map<Integer, RatingStats> statsMap = feedbackDAO.getRatingStatsForRoomTypes(ids);
+                for (RoomType rt : paginatedRoomTypes) {
+                    RatingStats stats = statsMap.get(rt.getId());
+                    if (stats != null) {
+                        rt.setAverageRating(stats.getAverageRating());
+                        rt.setReviewCount(stats.getReviewCount());
+                    }
                 }
 
                 request.setAttribute("roomTypes", paginatedRoomTypes);
@@ -272,6 +287,20 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
             List<RoomType> paginatedRoomTypes = new ArrayList<>();
             if (start < totalRecords) {
                 paginatedRoomTypes = availableRoomTypes.subList(start, end);
+            }
+            
+                // Fetch rating stats for displayed room types
+            FeedbackDAO feedbackDAO = new FeedbackDAO();
+            List<Integer> ids = paginatedRoomTypes.stream()
+                    .map(RoomType::getId)
+                    .collect(Collectors.toList());
+            Map<Integer, RatingStats> statsMap = feedbackDAO.getRatingStatsForRoomTypes(ids);
+            for (RoomType rt : paginatedRoomTypes) {
+                RatingStats stats = statsMap.get(rt.getId());
+                if (stats != null) {
+                    rt.setAverageRating(stats.getAverageRating());
+                    rt.setReviewCount(stats.getReviewCount());
+                }
             }
 
             // Set attributes for JSP

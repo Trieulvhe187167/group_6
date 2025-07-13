@@ -9,7 +9,7 @@ public class Feedback {
     private int rating;
     private String comment;
     private Timestamp createdAt;
-
+    private String userFullName;
     public int getId() {
         return id;
     }
@@ -56,5 +56,12 @@ public class Feedback {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+     public String getUserFullName() {
+        return userFullName;
+    }
+
+    public void setUserFullName(String userFullName) {
+        this.userFullName = userFullName;
     }
 }

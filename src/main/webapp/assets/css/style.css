@@ -3470,3 +3470,44 @@ img[alt="Our Story"] {
     height: 100% !important;
     object-fit: cover !important;
 }
+/* Feedback styles */
+.reviews-summary {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.reviews-summary .display-4 {
+    font-size: 3rem;
+    line-height: 1;
+}
+.reviews-summary .star-rating i {
+    font-size: 1.5rem;
+}
+.feedback-container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+.reviews-list .review-item {
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+.reviews-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.review-item .screenshot {
+    max-width: 200px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+.like-btn {
+    color: #007bff;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.like-btn:hover {
+    color: #0056b3;}
