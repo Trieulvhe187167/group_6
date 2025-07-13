@@ -532,6 +532,9 @@
                                             <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/bookings">
                                                 <i class="fa fa-calendar"></i> My Bookings
                                             </a>
+                                                 <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services">
+                                                <i class="fa fa-concierge-bell"></i> Book Services
+                                            </a>
                                             <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/history">
                                                 <i class="fa fa-history"></i> Booking History
                                             </a>
@@ -671,14 +674,14 @@
             <a class="nav-link" href="${pageContext.request.contextPath}/jsp/About.jsp">ABOUT</a>
         </li>
         <li class="nav-item ${fn:endsWith(currentUrl,'/roomList.jsp') ? 'active' : ''}">
-            <a class="nav-link" href="${pageContext.request.contextPath}/SearchAvailableRoomsServlet">LIST ROOM</a>
+            <a class="nav-link" href="${pageContext.request.contextPath}/SearchAvailableRoomsServlet">ROOMS</a>
         </li>
                       <li class="nav-item ${fn:endsWith(currentUrl,'/contact.jsp') ? 'active' : ''}">
             <a class="nav-link" href="${pageContext.request.contextPath}/jsp/contact.jsp">CONTACT</a>
         </li>
         <li class="nav-item dropdown ${fn:endsWith(currentUrl,'/blog.jsp') || fn:endsWith(currentUrl,'/events.jsp') ? 'active' : ''}">
             <a class="nav-link dropdown-toggle" href="#" id="blogDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                BLOG 
+                THEE DISCOVER 
             </a>
             <div class="dropdown-menu" aria-labelledby="blogDropdown">
                 <a class="dropdown-item" href="${pageContext.request.contextPath}/BlogListServlet">BLOG</a>

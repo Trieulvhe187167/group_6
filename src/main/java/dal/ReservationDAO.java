@@ -66,10 +66,31 @@ public class ReservationDAO {
             JOIN Rooms room ON r.RoomId = room.Id
             JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
             JOIN Users u ON r.UserId = u.Id
-            WHERE r.UserId = ? 
-              AND r.Status IN ('PENDING', 'CONFIRMED', 'CHECKIN') 
-              AND r.CheckOut >= CAST(GETDATE() AS DATE)
+           WHERE r.UserId = ?
+                            AND r.Status IN ('PENDING', 'CONFIRMED', 'CHECKIN')
+                            AND r.CheckOut >= CAST(GETDATE() AS DATE)
+                      """;
+                      return executeBookingQuery(sql, userId);
+                  }
+              
+                  // Get reservations where the user is currently staying (today between check-in and check-out)
+       public List<Reservation> getActiveStays(int userId) {
+                      String sql = """
+                          SELECT r.*, room.RoomNumber,
+                                 rt.Name AS roomTypeName, rt.BasePrice,
+                                 u.Phone AS CustomerPhone,
+                                 u.Email AS CustomerEmail,
+                                 u.FullName AS CustomerName
+                          FROM Reservations r
+                          JOIN Rooms room ON r.RoomId = room.Id
+                          JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
+                          JOIN Users u ON r.UserId = u.Id
+                          WHERE r.UserId = ?
+                            AND r.Status = 'CONFIRMED'
+                                     
         """;
+//                         AND r.CheckIn <= CAST(GETDATE() AS DATE)
+//                                        AND r.CheckOut >= CAST(GETDATE() AS DATE)
         return executeBookingQuery(sql, userId);
     }
 

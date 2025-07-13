@@ -240,7 +240,7 @@
                                         </div>
                                         <h4><a href="#">Restaurant</a></h4>
                                         <p>Enjoy world-class cuisine from a 5-star chef with exquisite Asian - European dishes, served 24/7 at our luxurious restaurant.</p>
-                                        <a href="#" class="btn radius-xl">View More</a>
+<!--                                        <a href="#" class="btn radius-xl">View More</a>-->
                                     </div>
                                 </div>
                             </div>
@@ -255,7 +255,7 @@
                                         </div>
                                         <h4><a href="#">Spa & Wellness</a></h4>
                                         <p>Relax and rejuvenate with premium spa treatments, saunas, and professional massage services from leading brands.</p>
-                                        <a href="#" class="btn radius-xl">View More</a>
+                                      
                                     </div>
                                 </div>
                             </div>
@@ -270,7 +270,7 @@
                                         </div>
                                         <h4><a href="#">Infinity swimming pool</a></h4>
                                         <p>Immerse yourself in the infinity pool with stunning panoramic views, where you can relax and enjoy premium drinks.</p>
-                                        <a href="#" class="btn radius-xl">View More</a>
+                                       
                                     </div>
                                 </div>
                             </div>

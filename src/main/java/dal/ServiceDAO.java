@@ -238,6 +238,21 @@ public class ServiceDAO {
         }
         return false;
     }
+      // Update quantity for a reservation service line
+    public boolean updateReservationServiceQuantity(int id, int quantity) {
+        String sql = "UPDATE ReservationServices SET Quantity = ? WHERE Id = ?";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, quantity);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
     
     // Get all services for a specific category and reservation
     public List<ServiceOrder> getServicesByReservationAndCategory(int reservationId, String category) {
