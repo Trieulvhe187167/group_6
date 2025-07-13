@@ -24,6 +24,10 @@ public class RoomType {
     
     // Transient field to store available room count (not persisted in database)
     private transient int availableRoomCount;
+    
+    // Transient fields for feedback statistics
+    private transient double averageRating;
+    private transient int reviewCount;
 
     public RoomType() {
     }
@@ -136,7 +140,21 @@ public class RoomType {
     public void setAvailableRoomCount(int availableRoomCount) {
         this.availableRoomCount = availableRoomCount;
     }
+ public double getAverageRating() {
+        return averageRating;
+    }
 
+    public void setAverageRating(double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public int getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
+    }
     /**
      * Check if this room type has any available rooms
      * @return true if there are available rooms
