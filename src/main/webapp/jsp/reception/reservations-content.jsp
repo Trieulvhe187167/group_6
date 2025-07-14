@@ -216,12 +216,13 @@
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             </c:if>
-                                            <c:if test="${reservation.status eq 'PENDING'}">
+                                           <c:if test="${reservation.status eq 'PENDING' || reservation.status eq 'CONFIRMED'}">
                                                 <button class="btn btn-sm btn-warning" onclick="editReservation(${reservation.id})"
-                                                        title="Edit">
-                                                    <i class="fas fa-edit"></i>
+                                                title="Edit">
+                                                <i class="fas fa-edit"></i>
                                                 </button>
                                             </c:if>
+
                                             <button class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown"
                                                     title="More Actions">
                                                 <i class="fas fa-ellipsis-v"></i>
@@ -445,9 +446,7 @@
                             <div class="form-group">
                                 <label>Check-in Date <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control" id="editCheckIn" required>
-                                <label>Number of Customers</label>
-                                <input type="number" class="form-control" id="editNumberOfCustomers" readonly
-                                       min="1" max="10">
+                                
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -811,8 +810,32 @@
             $('#editNumberOfCustomers').val(data.numberOfCustomers || 1);
             $('#editStatus').val(data.status);
             $('#editSpecialRequests').val(data.specialRequests || '');
+            // Khoá input nếu đã CONFIRMED
+if (data.status === 'CONFIRMED') {
+    $('#editStatus').prop('disabled', true);
+    
+
+    // Hiển thị cảnh báo
+    if ($('#editStatusAlert').length === 0) {
+        $('#editReservationForm .modal-body').prepend(`
+            <div id="editStatusAlert" class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                This reservation is <strong>already confirmed</strong>. Only dates and special requests can be edited.
+            </div>
+        `);
+    }
+} else {
+    $('#editStatus').prop('disabled', false);
+    
+    $('#editStatusAlert').remove();
+}
+
             const pricePerNight = data.totalAmount / data.nights;
             $('#editReservationModal').data('price', pricePerNight || 0);
+               const originalNights = data.nights || 0;
+$('#editReservationModal')
+  .data('price', pricePerNight || 0)
+  .data('originalNights', originalNights);
 
 
 updateEditTotalAmountDisplay();
@@ -830,22 +853,31 @@ console.log('Full data:', data);
 
    
 function updateReservation() {
-    // Validate dữ liệu trước khi gửi
     const checkInDate = new Date($('#editCheckIn').val());
     const checkOutDate = new Date($('#editCheckOut').val());
-    
+    const today = new Date().setHours(0, 0, 0, 0);
+
     if (checkOutDate <= checkInDate) {
         alert('Check-out date must be after check-in date');
         return;
     }
-    
-    if (checkInDate < new Date().setHours(0,0,0,0)) {
+
+    if (checkInDate < today) {
         alert('Check-in date cannot be in the past');
         return;
     }
-    
+
+    // ✅ Thêm kiểm tra: không được giảm số đêm
+    const newNights = Math.floor((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+    const originalNights = $('#editReservationModal').data('originalNights');
+
+    if (originalNights && newNights < originalNights) {
+        alert(`⚠️ You cannot reduce the number of nights. Original: ${originalNights}, New: ${newNights}`);
+        return;
+    }
+
     const formData = {
-        action: 'updateReservation', // SỬA: Thêm action vào formData
+        action: 'updateReservation',
         id: $('#editReservationId').val(),
         checkIn: $('#editCheckIn').val(),
         checkOut: $('#editCheckOut').val(),
@@ -858,11 +890,9 @@ function updateReservation() {
         url: '${pageContext.request.contextPath}/receptionist/reservations',
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify(formData), // SỬA: Gửi trực tiếp formData
+        data: JSON.stringify(formData),
         success: function (response) {
-            console.log('Update response:', response); // SỬA: Thêm log để debug
-            
-            // SỬA: Kiểm tra response linh hoạt hơn
+            console.log('Update response:', response);
             if (response && (response.success === true || response.success === 'true')) {
                 alert('Reservation updated successfully!');
                 $('#editReservationModal').modal('hide');
@@ -872,21 +902,21 @@ function updateReservation() {
                 alert('⚠️ ' + errorMsg);
             }
         },
-        error: function(xhr, status, error) {
-    let errorMessage = 'Error updating reservation: ';
-    try {
-        const json = JSON.parse(xhr.responseText);
-        errorMessage += json.message || error;
-    } catch (e) {
-        errorMessage += error;
-    }
+        error: function (xhr, status, error) {
+            let errorMessage = 'Error updating reservation: ';
+            try {
+                const json = JSON.parse(xhr.responseText);
+                errorMessage += json.message || error;
+            } catch (e) {
+                errorMessage += error;
+            }
 
-    console.error('AJAX Error:', {xhr, status, error});
-    alert('⚠️ ' + errorMessage);
-}
-
+            console.error('AJAX Error:', { xhr, status, error });
+            alert('⚠️ ' + errorMessage);
+        }
     });
 }
+
 
     function filterReservations() {
         const params = new URLSearchParams();

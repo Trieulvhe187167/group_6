@@ -685,40 +685,44 @@ request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward
             return;
         }
 
-        // Only allow update if status is PENDING
-        if (!"PENDING".equalsIgnoreCase(reservation.getStatus())) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"success\":false,\"message\":\"Only PENDING reservations can be updated\"}");
-            return;
-        }
+        String status = reservation.getStatus();
 
-        // Parse and set new dates
+        // Parse new check-in/out
         Date newCheckIn = Date.valueOf((String) reservationData.get("checkIn"));
         Date newCheckOut = Date.valueOf((String) reservationData.get("checkOut"));
 
-        // Check room availability (excluding this reservation)
+        // Check room availability (exclude current reservation)
         boolean isAvailable = reservationDAO.isRoomAvailableForUpdate(
-                reservation.getRoomId(),
-                newCheckIn,
-                newCheckOut,
-                reservation.getId()
-        );
+                reservation.getRoomId(), newCheckIn, newCheckOut, reservation.getId());
 
-       if (!isAvailable) {
-    response.setStatus(HttpServletResponse.SC_CONFLICT);
-    response.setContentType("application/json");
-    response.getWriter().write("{\"success\":false," +
-            "\"message\":\"This room is already booked during the selected dates. " +
-            "Please choose another date or room.\"}");
-    return;
-}
+        if (!isAvailable) {
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"success\":false," +
+                    "\"message\":\"This room is already booked during the selected dates. " +
+                    "Please choose another date.\"}");
+            return;
+        }
 
+        // Nếu là CONFIRMED → chỉ cho phép đổi ngày + ghi chú
+        if ("CONFIRMED".equalsIgnoreCase(status)) {
+            reservation.setCheckIn(newCheckIn);
+            reservation.setCheckOut(newCheckOut);
+            reservation.setSpecialRequests((String) reservationData.get("specialRequests"));
+        }
+        // Nếu là PENDING → cho phép sửa nhiều hơn
+        else if ("PENDING".equalsIgnoreCase(status)) {
+            reservation.setCheckIn(newCheckIn);
+            reservation.setCheckOut(newCheckOut);
+            reservation.setSpecialRequests((String) reservationData.get("specialRequests"));
 
-        // Update allowed fields
-        reservation.setCheckIn(newCheckIn);
-        reservation.setCheckOut(newCheckOut);
-        reservation.setStatus((String) reservationData.get("status"));
-        reservation.setSpecialRequests((String) reservationData.get("specialRequests"));
+            // Cho phép sửa trạng thái nếu cần
+            reservation.setStatus((String) reservationData.get("status"));
+        } else {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"success\":false,\"message\":\"Only PENDING or CONFIRMED reservations can be updated\"}");
+            return;
+        }
 
         // Recalculate total amount
         Room room = roomDAO.getRoomById(reservation.getRoomId());
@@ -740,7 +744,6 @@ request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward
 
         response.setContentType("application/json");
         response.getWriter().write("{\"success\":" + success + "}");
-
     } catch (Exception e) {
         e.printStackTrace();
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -748,6 +751,7 @@ request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward
         response.getWriter().write("{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
     }
 }
+
 
     
     private void getReservationDetails(HttpServletRequest request, HttpServletResponse response) 
