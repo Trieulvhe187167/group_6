@@ -299,16 +299,16 @@
                                 <td>
                                     <c:choose>
                                         <c:when test="${payment.status == 'SUCCESS'}">
-                                            <span class="badge badge-success">Success</span>
+                                            <span class="badge badge-success" style="color: green">Success</span>
                                         </c:when>
                                         <c:when test="${payment.status == 'PENDING'}">
-                                            <span class="badge badge-warning">Pending</span>
+                                            <span class="badge badge-warning"style="color: orange">Pending</span>
                                         </c:when>
                                         <c:when test="${payment.status == 'FAILED'}">
-                                            <span class="badge badge-danger">Failed</span>
+                                            <span class="badge badge-danger"style="color: red">Failed</span>
                                         </c:when>
                                         <c:when test="${payment.status == 'REFUNDED'}">
-                                            <span class="badge badge-info">Refunded</span>
+                                            <span class="badge badge-info"style="color: black">Refunded</span>
                                         </c:when>
                                         <c:otherwise>
                                             <span class="badge badge-secondary">${payment.status}</span>

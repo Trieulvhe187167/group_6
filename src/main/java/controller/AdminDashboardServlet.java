@@ -64,7 +64,8 @@ public class AdminDashboardServlet extends HttpServlet {
             
             stats.setMonthlyRevenue(paymentDAO.getMonthlyRevenue(currentMonth, currentYear));
             stats.setYearlyRevenue(paymentDAO.getYearlyRevenue(currentYear));
-            
+            stats.setMonthlyRevenueSeries(paymentDAO.getMonthlyRevenueByYear(currentYear));
+
             // Get recent reservations (last 5)
             List<ReservationSummary> recentReservations = reservationDAO.getRecentReservations(5);
             stats.setRecentReservations(recentReservations);

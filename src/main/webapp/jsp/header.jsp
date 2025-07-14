@@ -542,10 +542,6 @@
                                         </c:when>
                                     </c:choose>
                                     
-                                    <!-- Common items for all users -->
-                                    <a class="dropdown-item" href="${pageContext.request.contextPath}/reset-password">
-                                        <i class="fa fa-key"></i> Change Password
-                                    </a>
                                     <a class="dropdown-item" href="${pageContext.request.contextPath}/LogoutServlet">
                                         <i class="fa fa-sign-out-alt"></i> Logout
                                     </a>
