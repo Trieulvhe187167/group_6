@@ -11,6 +11,7 @@ public class DashboardStats {
     private int todayCheckIns;
     private double monthlyRevenue;
     private double yearlyRevenue;
+    private double[] monthlyRevenueSeries;
     private List<ReservationSummary> recentReservations;
     
     // Constructors
@@ -80,7 +81,13 @@ public class DashboardStats {
     public void setYearlyRevenue(double yearlyRevenue) {
         this.yearlyRevenue = yearlyRevenue;
     }
-    
+      public double[] getMonthlyRevenueSeries() {
+        return monthlyRevenueSeries;
+    }
+
+    public void setMonthlyRevenueSeries(double[] monthlyRevenueSeries) {
+        this.monthlyRevenueSeries = monthlyRevenueSeries;
+    }
     public List<ReservationSummary> getRecentReservations() {
         return recentReservations;
     }

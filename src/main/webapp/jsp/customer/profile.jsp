@@ -717,7 +717,7 @@
                                         <tr>
                                           
                                             <td>${p.reservationId}</td>
-                                            <td><fmt:formatNumber value="${p.amount}" type="currency"/>đ</td>
+                                            <td><fmt:formatNumber value="${p.amount}" />₫</td>
                                             <td>${p.method}</td>
                                             <td>${p.status}</td>
                                             <td><fmt:formatDate value="${p.createdAt}" pattern="yyyy-MM-dd"/></td>
