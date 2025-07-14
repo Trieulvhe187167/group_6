@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+<<<<<<< HEAD
+      "name": "DBContext",
+      "request": "launch",
+      "mainClass": "dal.DBContext",
+=======
+      "name": "HotelManagementSystemApplication",
+      "request": "launch",
+      "mainClass": "hms.HotelManagementSystemApplication",
+>>>>>>> e630379 (edit image)
+      "projectName": "hotel-management-system"
+    },
+    {
+      "type": "java",
+      "name": "Launch HMS",
+      "request": "launch",
+      "mainClass": "hms.HotelManagementSystemApplication",
+      "projectName": "HotelManagementSystem"
+    }
+  ]
+}
