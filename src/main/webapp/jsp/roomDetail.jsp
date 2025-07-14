@@ -1326,7 +1326,7 @@
                                 </div>
                                       <!-- Reviews List -->
                                 <div class="reviews-list flex-grow-1">
-                                    <h4 class="mb-4" style="color: lightcoral">User Reviews</h4>
+                                    <h4 class="mb-4" style="color: lightcoral">User Reviews:</h4>
                                     <% if (feedbackList != null && !feedbackList.isEmpty()) {
                                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
                                            for (Feedback fb : feedbackList) {

@@ -219,13 +219,13 @@
                 color: #667eea;
             }
 
+
             .sidebar-menu a.active {
                 background: linear-gradient(90deg, rgba(102, 126, 234, 0.15), transparent);
                 border-left-color: #667eea;
                 color: #667eea;
                 font-weight: 600;
             }
-
             .sidebar-menu i {
                 width: 20px;
                 margin-right: 15px;
@@ -329,14 +329,9 @@
                             <span>User Profile</span>
                         </a>
                     </li>
+
                     <li>
-                        <a href="change-password.jsp">
-                            <i class="fas fa-key"></i>
-                            <span>Change Password</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" class="active">
+                        <a href="${pageContext.request.contextPath}/customer/services" class="active">
                             <i class="fa fa-concierge-bell"></i> Book Services
                         </a>
                     </li>
