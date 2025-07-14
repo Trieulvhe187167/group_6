@@ -31,6 +31,23 @@ public class BookingServlet extends HttpServlet {
     private final NotificationDAO notificationDAO = new NotificationDAO();
     private final CustomerDAO customerDAO = new CustomerDAO();
     private EmailNotificationService emailService = new EmailNotificationService();
+   
+        private void releaseExpiredHolds(HttpSession session) {
+        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
+        if (cart == null) return;
+        long now = System.currentTimeMillis();
+        Iterator<CartItem> iter = cart.iterator();
+        while (iter.hasNext()) {
+            CartItem ci = iter.next();
+            if (ci.getHoldUntil() > 0 && now > ci.getHoldUntil()) {
+                for (int roomId : ci.getRoomIds()) {
+                    roomDAO.updateRoomStatus(roomId, "AVAILABLE");
+                }
+                iter.remove();
+            }
+        }
+        session.setAttribute("cart", cart);
+    }
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -60,7 +77,7 @@ public class BookingServlet extends HttpServlet {
         }
         
         // Redirect to room list if accessed directly
-        response.sendRedirect("RoomListServlet");
+        response.sendRedirect("SearchAvailableRoomsServlet");
     }
     
     @Override
@@ -83,7 +100,7 @@ public class BookingServlet extends HttpServlet {
         
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
-        
+        releaseExpiredHolds(session);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         
@@ -109,10 +126,167 @@ public class BookingServlet extends HttpServlet {
             System.out.println("Email: " + request.getParameter("email"));
             System.out.println("Phone: " + request.getParameter("phone"));
             
-            // Get form data with better error handling
+           // Extract customer info only. Cart details will be read from the session
             BookingFormData formData;
+             List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
+            String paramRoomTypeId = request.getParameter("roomTypeId");
+            boolean single = paramRoomTypeId != null && !paramRoomTypeId.isEmpty();
+
+            if (single) {
+                try {
+                    formData = extractFormData(request);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Invalid form data: " + escapeJson(e.getMessage()) + "\"}");
+                    return;
+                }
+
+                RoomType roomType = roomTypeDAO.getRoomTypesById(formData.roomTypeId);
+                if (roomType == null) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Room type not found\"}");
+                    return;
+                }
+
+                int capacity = roomType.getCapacity();
+                if (formData.adults < 1 || formData.adults > capacity) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Invalid number of adults\"}");
+                    return;
+                }
+
+                int allowedChildren = (formData.adults >= capacity) ? 1 : (capacity - formData.adults) * 2;
+                if (formData.children > allowedChildren) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Number of children exceeds allowed limit\"}");
+                    return;
+                }
+
+                if (formData.checkoutDate.before(formData.checkinDate) || formData.checkoutDate.equals(formData.checkinDate)) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Check-out date must be after check-in date\"}");
+                    return;
+                }
+
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.DAY_OF_MONTH, -1);
+                Date yesterday = new Date(cal.getTimeInMillis());
+                if (formData.checkinDate.before(yesterday)) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Check-in date cannot be in the past\"}");
+                    return;
+                }
+
+                Room room = roomDAO.getRoomById(formData.selectedRoomId);
+                if (room == null) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Selected room not found\"}");
+                    return;
+                }
+
+                if (!"AVAILABLE".equals(room.getStatus())) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Selected room is no longer available\"}");
+                    return;
+                }
+
+                if (!reservationDAO.isRoomAvailable(formData.selectedRoomId, formData.checkinDate, formData.checkoutDate, null)) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Room is not available for selected dates\"}");
+                    return;
+                }
+
+                int userId;
+                boolean isGuest = false;
+
+                if (currentUser != null) {
+                    userId = currentUser.getId();
+                    if (!formData.fullName.equals(currentUser.getFullName()) ||
+                        !formData.email.equals(currentUser.getEmail()) ||
+                        !formData.phone.equals(currentUser.getPhone())) {
+                        currentUser.setFullName(formData.fullName);
+                        currentUser.setEmail(formData.email);
+                        currentUser.setPhone(formData.phone);
+                        userDAO.updateUser(currentUser);
+                    }
+                } else {
+                    String otpValidated = (String) session.getAttribute("otpValidated");
+                    if (!"true".equals(otpValidated)) {
+                        String otp = OTPUtil.generateOTP();
+                        session.setAttribute("pendingOTP", otp);
+                        session.setAttribute("pendingBookingData", formData);
+                        session.setAttribute("otpExpiry", System.currentTimeMillis() + 300000);
+                        try {
+                            sendOTPEmail(formData.email, formData.fullName, otp);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                            response.getWriter().write("{\"error\": \"Failed to send OTP email: " + e.getMessage() + "\"}");
+                            return;
+                        }
+                        response.getWriter().write("{\"requireOTP\": true, \"email\": \"" + maskEmail(formData.email) + "\"}");
+                        return;
+                    }
+
+                    isGuest = true;
+                    try {
+                        userId = createGuestAccount(formData);
+                        if (userId == 0) {
+                            throw new Exception("Failed to create user account");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        response.getWriter().write("{\"error\": \"Failed to create guest account: " + e.getMessage() + "\"}");
+                        return;
+                    }
+                    session.removeAttribute("otpValidated");
+                    session.removeAttribute("pendingOTP");
+                    session.removeAttribute("pendingBookingData");
+                }
+
+                double servicesTotal = calculateServicesTotal(formData.serviceIds);
+                formData.servicesTotal = servicesTotal;
+
+                Reservation reservation = createReservation(formData, userId, currentUser);
+                int reservationId = reservationDAO.createReservationAndGetId(reservation);
+
+                if (reservationId > 0) {
+                    reservation.setId(reservationId);
+                    if (formData.serviceIds != null && formData.serviceIds.length > 0) {
+                        addServicesToReservation(reservationId, formData.serviceIds, userId);
+                    }
+
+                    Payment payment = new Payment();
+                    payment.setReservationId(reservationId);
+                    payment.setAmount(reservation.getTotalAmount());
+                    payment.setMethod(formData.paymentMethod);
+                    payment.setStatus("PENDING");
+                    payment.setTransactionId(generateTransactionId());
+
+                    int paymentId = paymentDAO.createPaymentAndGetId(payment);
+
+                    logBookingActivity(reservation, room, request.getRemoteAddr());
+                    sendBookingNotification(reservation, userId);
+                    try {
+                        sendConfirmationEmail(reservation, room, roomType, isGuest, formData);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    session.setAttribute("lastReservationId", reservationId);
+                    session.setAttribute("lastPaymentId", paymentId);
+                    session.setAttribute("isGuestBooking", isGuest);
+                    response.getWriter().write("{\"success\": true, \"reservationId\": " + reservationId + ", \"paymentId\": " + paymentId + "}");
+                } else {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write("{\"error\": \"Failed to create reservation in database\"}");
+                }
+                return;
+            }
             try {
-                formData = extractFormData(request);
+                formData = extractContactInfo(request);
             } catch (Exception e) {
                 e.printStackTrace();
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -120,70 +294,35 @@ public class BookingServlet extends HttpServlet {
                 return;
             }
             
-               RoomType roomType = roomTypeDAO.getRoomTypesById(formData.roomTypeId);
+           
+
+   
+            if (cart == null || cart.isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+              response.getWriter().write("{\"error\": \"Cart is empty\"}");
                
-            if (roomType == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\": \"Room type not found\"}");
                 return;
             }
-
-            int capacity = roomType.getCapacity();
-            if (formData.adults < 1 || formData.adults > capacity) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\": \"Invalid number of adults\"}");
-                return;
+                for (int i = 0; i < cart.size(); i++) {
+                CartItem item = cart.get(i);
+                String aStr = request.getParameter("adults" + i);
+                String cStr = request.getParameter("children" + i);
+                int adults = 1;
+                int children = 0;
+                try { adults = Integer.parseInt(aStr); } catch (Exception ex) {}
+                try { children = Integer.parseInt(cStr); } catch (Exception ex) {}
+                RoomType rtTmp = roomTypeDAO.getRoomTypesById(item.getRoomTypeId());
+                int capacity = (rtTmp != null) ? rtTmp.getCapacity() : item.getCapacity();
+                if (capacity <= 0) capacity = 1;
+                if (adults < 1) adults = 1;
+                if (adults > capacity) adults = capacity;
+                int childLimit = (adults >= capacity) ? 1 : (capacity - adults) * 2;
+                if (children < 0) children = 0;
+                if (children > childLimit) children = childLimit;
+                item.setCapacity(capacity);
+                item.setAdults(adults);
+                item.setChildren(children);
             }
-
-            int allowedChildren = (formData.adults >= capacity)
-                    ? 1
-                    : (capacity - formData.adults) * 2;
-
-            if (formData.children > allowedChildren) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\": \"Number of children exceeds allowed limit\"}");
-                return;
-            }
-            // Validate dates
-            if (formData.checkoutDate.before(formData.checkinDate) || formData.checkoutDate.equals(formData.checkinDate)) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\": \"Check-out date must be after check-in date\"}");
-                return;
-            }
-            
-            // Allow booking from today
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -1); // Allow from yesterday to handle timezone issues
-            Date yesterday = new Date(cal.getTimeInMillis());
-            
-            if (formData.checkinDate.before(yesterday)) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\": \"Check-in date cannot be in the past\"}");
-                return;
-            }
-            
-            // Validate room availability
-            Room room = roomDAO.getRoomById(formData.selectedRoomId);
-            if (room == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\": \"Selected room not found\"}");
-                return;
-            }
-            
-            if (!"AVAILABLE".equals(room.getStatus())) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\": \"Selected room is no longer available\"}");
-                return;
-            }
-            
-            // Check if room is available for the date range
-            if (!reservationDAO.isRoomAvailable(formData.selectedRoomId, 
-                    formData.checkinDate, formData.checkoutDate, null)) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\": \"Room is not available for selected dates\"}");
-                return;
-            }
-            
             int userId;
             boolean isGuest = false;
             
@@ -192,9 +331,9 @@ public class BookingServlet extends HttpServlet {
                 userId = currentUser.getId();
                 
                 // Update user info if changed
-                if (!formData.fullName.equals(currentUser.getFullName()) || 
-                    !formData.email.equals(currentUser.getEmail()) || 
-                    !formData.phone.equals(currentUser.getPhone())) {
+                  if (!formData.fullName.equals(currentUser.getFullName()) ||
+                    !formData.email.equals(currentUser.getEmail()) ||
+                      !formData.phone.equals(currentUser.getPhone())) {
                     currentUser.setFullName(formData.fullName);
                     currentUser.setEmail(formData.email);
                     currentUser.setPhone(formData.phone);
@@ -202,20 +341,14 @@ public class BookingServlet extends HttpServlet {
                 }
                 
             } else {
-                // B. GUEST BOOKING FLOW
-                
-                // Check if this is after OTP validation
+              
                 String otpValidated = (String) session.getAttribute("otpValidated");
                 if (!"true".equals(otpValidated)) {
-                    // First time - need OTP validation
-                    
-                    // Generate and send OTP
+                   
                     String otp = OTPUtil.generateOTP();
                     session.setAttribute("pendingOTP", otp);
                     session.setAttribute("pendingBookingData", formData);
-                    session.setAttribute("otpExpiry", System.currentTimeMillis() + 300000); // 5 minutes
-                    
-                    // Send OTP via email
+                    session.setAttribute("otpExpiry", System.currentTimeMillis() + 300000);
                     try {
                         sendOTPEmail(formData.email, formData.fullName, otp);
                     } catch (Exception e) {
@@ -225,9 +358,8 @@ public class BookingServlet extends HttpServlet {
                         return;
                     }
                     
-                    // Return response for OTP modal
-                    response.getWriter().write("{\"requireOTP\": true, \"email\": \"" + 
-                        maskEmail(formData.email) + "\"}");
+                  
+                      response.getWriter().write("{\"requireOTP\": true, \"email\": \"" + maskEmail(formData.email) + "\"}");
                     return;
                 }
                 
@@ -255,54 +387,121 @@ public class BookingServlet extends HttpServlet {
             double servicesTotal = calculateServicesTotal(formData.serviceIds);
             formData.servicesTotal = servicesTotal;
             
-            // Create reservation (same for both flows)
-            Reservation reservation = createReservation(formData, userId, currentUser);
-            int reservationId = reservationDAO.createReservationAndGetId(reservation);
-            
-            if (reservationId > 0) {
-                reservation.setId(reservationId);
-                
-                // Add selected services
-                if (formData.serviceIds != null && formData.serviceIds.length > 0) {
-                    addServicesToReservation(reservationId, formData.serviceIds, userId);
+              
+           List<Integer> reservationIds = new ArrayList<>();
+            List<Integer> paymentIds = new ArrayList<>();
+            double grandTotal = 0;
+            List<Reservation> emailReservations = new ArrayList<>();
+
+            for (CartItem ci : cart) {
+                Date ciCheckIn = Date.valueOf(ci.getCheckIn());
+                Date ciCheckOut = Date.valueOf(ci.getCheckOut());
+                long diff = ciCheckOut.getTime() - ciCheckIn.getTime();
+                int nights = (int) TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
+                if (nights <= 0) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Invalid date range for cart item\"}");
+                    return;
                 }
                 
-                // Create initial payment record
-                Payment payment = new Payment();
-                payment.setReservationId(reservationId);
-                payment.setAmount(reservation.getTotalAmount());
-                payment.setMethod(formData.paymentMethod);
-                payment.setStatus("PENDING");
-                payment.setTransactionId(generateTransactionId());
-                
-                int paymentId = paymentDAO.createPaymentAndGetId(payment);
-                
-                // Log activity
-                logBookingActivity(reservation, room, request.getRemoteAddr());
-                
-                // Send notification
-                sendBookingNotification(reservation, userId);
-                
-                // Send confirmation email
-                try {             
-                    sendConfirmationEmail(reservation, room, roomType, isGuest, formData);
+   
+  RoomType rt = roomTypeDAO.getRoomTypesById(ci.getRoomTypeId());
+
+                for (int roomId : ci.getRoomIds()) {
+                    Room r = roomDAO.getRoomById(roomId);
+                    BookingFormData itemData = new BookingFormData();
+                    itemData.roomTypeId = ci.getRoomTypeId();
+                    itemData.basePrice = ci.getPrice().doubleValue();
+                    itemData.checkinDate = ciCheckIn;
+                    itemData.checkoutDate = ciCheckOut;
+                    itemData.selectedRoomId = r.getId();
+                    itemData.fullName = formData.fullName;
+                    itemData.email = formData.email;
+                    itemData.phone = formData.phone;
+                    itemData.nationality = formData.nationality;
+                    itemData.specialRequests = formData.specialRequests;
+                    itemData.paymentMethod = formData.paymentMethod;
+                    itemData.serviceIds = formData.serviceIds;
+                    itemData.adults = ci.getAdults();
+                    itemData.children = ci.getChildren();
+                    itemData.nights = nights;
+                    itemData.roomTotal = itemData.basePrice * nights;
+                    itemData.tax = itemData.roomTotal * 0.1;
+                    itemData.servicesTotal = servicesTotal;
+
+                    Reservation res = createReservation(itemData, userId, currentUser);
+                    int resId = reservationDAO.createReservationAndGetId(res);
+                    if (resId <= 0) {
+                        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        response.getWriter().write("{\"error\": \"Failed to create reservation in database\"}");
+                        return;
+                    }
+                    res.setId(resId);
+                    if (itemData.serviceIds != null && itemData.serviceIds.length > 0) {
+                        addServicesToReservation(resId, itemData.serviceIds, userId);
+                    }
+                    Payment payment = new Payment();
+                    payment.setReservationId(resId);
+                    payment.setAmount(res.getTotalAmount());
+                    payment.setMethod(itemData.paymentMethod);
+                    payment.setStatus("PENDING");
+                    payment.setTransactionId(generateTransactionId());
+                    int payId = paymentDAO.createPaymentAndGetId(payment);
+                    logBookingActivity(res, r, request.getRemoteAddr());
+                    sendBookingNotification(res, userId);
+                    // Prepare data for confirmation email
+                    res.setRoomNumber(r.getRoomNumber());
+                    res.setRoomTypeName(rt.getName());
+                    res.setCustomerName(formData.fullName);
+                    res.setCustomerEmail(formData.email);
+                    emailReservations.add(res);
+                    reservationIds.add(resId);
+                    paymentIds.add(payId);
+                    grandTotal += res.getTotalAmount();
+                }
+            }
+
+                    for (CartItem ci : cart) {
+                for (int roomId : ci.getRoomIds()) {
+                    roomDAO.updateRoomStatus(roomId, "AVAILABLE");
+                }
+            }
+            session.removeAttribute("cart");
+
+            if (!reservationIds.isEmpty()) {
+                session.setAttribute("lastReservationId", reservationIds.get(0));
+                session.setAttribute("lastPaymentId", paymentIds.get(0));
+                session.setAttribute("lastReservationIds", reservationIds);
+                session.setAttribute("lastPaymentIds", paymentIds);
+                session.setAttribute("isGuestBooking", isGuest);
+              
+              
+  
+                String resIdsStr = reservationIds.stream().map(Object::toString)
+                        .collect(java.util.stream.Collectors.joining(","));
+                String payIdsStr = paymentIds.stream().map(Object::toString)
+                        .collect(java.util.stream.Collectors.joining(","));
+                   // Send confirmation email(s)
+                try {
+                    if (emailReservations.size() > 1) {
+                        emailService.sendGroupBookingPendingEmail(emailReservations);
+                        if (isGuest) {
+                            sendAccountCompletionEmail(emailReservations.get(0), formData);
+                        }
+                    } else if (emailReservations.size() == 1) {
+                        Reservation er = emailReservations.get(0);
+                        Room roomObj = roomDAO.getRoomById(er.getRoomId());
+                        RoomType rtObj = roomTypeDAO.getRoomTypesById(er.getRoomTypeId());
+                        sendConfirmationEmail(er, roomObj, rtObj, isGuest, formData);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    // Don't fail the booking if email fails
                 }
-                
-                // Store in session for next steps
-                session.setAttribute("lastReservationId", reservationId);
-                session.setAttribute("lastPaymentId", paymentId);
-                session.setAttribute("isGuestBooking", isGuest);
-                
-                // Return success response
-                response.getWriter().write("{\"success\": true, \"reservationId\": " + 
-                    reservationId + ", \"paymentId\": " + paymentId + "}");
-                
+
+                response.getWriter().write("{\"success\": true, \"reservationIds\": \"" + resIdsStr + "\", \"paymentIds\": \"" + payIdsStr + "\"}");           
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.getWriter().write("{\"error\": \"Failed to create reservation in database\"}");
+                 response.getWriter().write("{\"error\": \"Failed to create reservation\"}");
             }
             
         } catch (Exception e) {
@@ -496,7 +695,7 @@ public class BookingServlet extends HttpServlet {
             String subject = "Luxury Hotel - Booking Pending #" + reservation.getId();
             String content = String.format(
                 "Dear %s,\n\n" +
-                "Your booking has been Pending can you payment 10% to confirmed!\n\n" +
+                "Your booking has been Pending can you payment 10%% to confirmed!\n\n" +
                 "Booking Details:\n" +
                 "- Booking ID: #%d\n" +
                 "- Room: %s (%s)\n" +
@@ -836,4 +1035,33 @@ public class BookingServlet extends HttpServlet {
     
     return data;
 }
+       private BookingFormData extractContactInfo(HttpServletRequest request) throws Exception {
+        BookingFormData data = new BookingFormData();
+        data.fullName = request.getParameter("fullName");
+        data.email = request.getParameter("email");
+        data.phone = request.getParameter("phone");
+
+        if (data.fullName == null || data.fullName.trim().isEmpty() ||
+            data.email == null || data.email.trim().isEmpty() ||
+            data.phone == null || data.phone.trim().isEmpty()) {
+            throw new Exception("All contact information fields are required");
+        }
+
+        data.fullName = data.fullName.trim();
+        data.email = data.email.trim();
+        data.phone = data.phone.trim();
+
+        if (!data.email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new Exception("Invalid email format: " + data.email);
+        }
+
+        data.nationality = request.getParameter("nationality");
+        data.specialRequests = request.getParameter("specialRequests");
+        data.paymentMethod = request.getParameter("paymentMethod");
+        if (data.paymentMethod == null || data.paymentMethod.trim().isEmpty()) {
+            data.paymentMethod = "CASH";
+        }
+        data.serviceIds = request.getParameterValues("services");
+        return data;
+    }
 }

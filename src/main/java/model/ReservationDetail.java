@@ -19,12 +19,17 @@ public class ReservationDetail {
     private Timestamp createdAt;
     private int nights;
     private int roomId;
-
+    private String paymentStatus;
     // Getters and Setters
     public int getId() {
         return id;
     }
-
+public String getpaymentStatus() {
+    return paymentStatus;
+}
+public void setpaymentStatus(String paymentStatus) {
+    this.paymentStatus = paymentStatus;
+}
     public void setId(int id) {
         this.id = id;
     }

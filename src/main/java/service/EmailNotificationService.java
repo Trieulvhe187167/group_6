@@ -6,9 +6,9 @@ import dal.*;
 import jakarta.mail.MessagingException;
 import java.text.SimpleDateFormat;
 import java.text.DecimalFormat;
-import java.sql.Date;
+//import java.sql.Date;
 import java.util.List;
-
+import java.util.Date;
 public class EmailNotificationService {
     
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
@@ -64,11 +64,42 @@ public class EmailNotificationService {
             e.printStackTrace();
         }
     }
-    
+       
+    public void sendGroupBookingPendingEmail(List<Reservation> reservations) {
+        if (reservations == null || reservations.isEmpty()) return;
+
+        Reservation first = reservations.get(0);
+        try {
+            String subject = "Luxury Hotel - Booking Pending";
+            String content = buildGroupBookingPendingContent(reservations);
+            MailUtil.sendEmail(first.getCustomerEmail(), subject, content);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+    public void sendGroupPaymentConfirmation(List<Reservation> reservations, double totalDeposit,
+                                              String method, String transactionId) {
+        if (reservations == null || reservations.isEmpty()) {
+            return;
+        }
+
+        Reservation first = reservations.get(0);
+        try {
+            String subject = "Payment Confirmation - Luxury Hotel";
+            String content = buildGroupPaymentConfirmationContent(reservations, totalDeposit, method, transactionId);
+            MailUtil.sendEmail(first.getCustomerEmail(), subject, content);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
     private String buildBookingConfirmationContent(Reservation reservation, Room room, RoomType roomType) {
         StringBuilder content = new StringBuilder();
         
-        content.append("Dear ").append(reservation.getCustomerName()).append(",\n\n");
+         String name = reservation.getCustomerName();
+        if (name == null || name.isEmpty()) {
+            name = "Valued Customer";
+        }
+        content.append("Dear ").append(name).append(",\n\n");
         content.append("Thank you for choosing Luxury Hotel! Your booking has been confirmed.\n\n");
         
         content.append("BOOKING DETAILS\n");
@@ -83,10 +114,10 @@ public class EmailNotificationService {
         content.append("HOTEL INFORMATION\n");
         content.append("================\n");
         content.append("Luxury Hotel\n");
-        content.append("88 Nguyen Hue Street, District 1\n");
-        content.append("Ho Chi Minh City, Vietnam\n");
-        content.append("Phone: +84 28 3823 xxxx\n");
-        content.append("Email: info@luxuryhotel.vn\n\n");
+        content.append("Hoa Lac, District 1\n");
+        content.append("Ha Noi City, Vietnam\n");
+        content.append("Phone: +84 33 3333 xxxx\n");
+        content.append("Email: luxuryhotel999@gmail.com\n\n");
         
         content.append("IMPORTANT NOTES\n");
         content.append("================\n");
@@ -105,7 +136,11 @@ public class EmailNotificationService {
     private String buildCheckInReminderContent(Reservation reservation) {
         StringBuilder content = new StringBuilder();
         
-        content.append("Dear ").append(reservation.getCustomerName()).append(",\n\n");
+          String name1 = reservation.getCustomerName();
+        if (name1 == null || name1.isEmpty()) {
+            name1 = "Valued Customer";
+        }
+        content.append("Dear ").append(name1).append(",\n\n");
         content.append("This is a friendly reminder that your check-in at Luxury Hotel is tomorrow!\n\n");
         
         content.append("CHECK-IN DETAILS\n");
@@ -123,8 +158,8 @@ public class EmailNotificationService {
         
         content.append("HOTEL LOCATION\n");
         content.append("================\n");
-        content.append("88 Nguyen Hue Street, District 1\n");
-        content.append("Ho Chi Minh City, Vietnam\n\n");
+        content.append("Hoa Lac, District 1\n");
+        content.append("Ha Noi City, Vietnam\n\n");
         
         content.append("If you need to modify your reservation or have any questions,\n");
         content.append("please contact us at +84 28 3823 xxxx.\n\n");
@@ -139,7 +174,11 @@ public class EmailNotificationService {
     private String buildCheckOutReminderContent(Reservation reservation) {
         StringBuilder content = new StringBuilder();
         
-        content.append("Dear ").append(reservation.getCustomerName()).append(",\n\n");
+        String name1 = reservation.getCustomerName();
+        if (name1 == null || name1.isEmpty()) {
+            name1 = "Valued Customer";
+        }
+        content.append("Dear ").append(name1).append(",\n\n");
         content.append("We hope you've enjoyed your stay at Luxury Hotel.\n");
         content.append("This is a reminder that your check-out is scheduled for today.\n\n");
         
@@ -167,7 +206,11 @@ public class EmailNotificationService {
     private String buildCancellationContent(Reservation reservation) {
         StringBuilder content = new StringBuilder();
         
-        content.append("Dear ").append(reservation.getCustomerName()).append(",\n\n");
+        String name1 = reservation.getCustomerName();
+        if (name1 == null || name1.isEmpty()) {
+            name1 = "Valued Customer";
+        }
+        content.append("Dear ").append(name1).append(",\n\n");
         content.append("Your booking at Luxury Hotel has been cancelled.\n\n");
         
         content.append("CANCELLATION DETAILS\n");
@@ -197,7 +240,11 @@ public class EmailNotificationService {
     private String buildPaymentConfirmationContent(Reservation reservation, Payment payment) {
         StringBuilder content = new StringBuilder();
         
-        content.append("Dear ").append(reservation.getCustomerName()).append(",\n\n");
+        String name1 = reservation.getCustomerName();
+        if (name1 == null || name1.isEmpty()) {
+            name1 = "Valued Customer";
+        }
+        content.append("Dear ").append(name1).append(",\n\n");
         content.append("We have successfully received your payment. Thank you!\n\n");
         
         content.append("PAYMENT DETAILS\n");
@@ -215,5 +262,90 @@ public class EmailNotificationService {
         content.append("Luxury Hotel Team");
         
         return content.toString();
+    }
+    
+      private String buildGroupPaymentConfirmationContent(List<Reservation> reservations,
+                                                        double totalDeposit,
+                                                        String method,
+                                                        String transactionId) {
+        StringBuilder content = new StringBuilder();
+        Reservation first = reservations.get(0);
+          String name2 = first.getCustomerName();
+        if (name2 == null || name2.isEmpty()) {
+            name2 = "Valued Customer";
+        }
+
+       content.append("Dear ").append(name2).append(",\n\n");
+        content.append("We have successfully received your deposit payment for your booking.\n\n");
+
+        content.append("BOOKING DETAILS\n");
+        content.append("===============\n");
+        for (Reservation r : reservations) {
+              String typeName = r.getRoomTypeName();
+            if (typeName == null) typeName = "";
+            content.append("- Reservation #").append(r.getId())
+                   .append(" - Room ").append(r.getRoomNumber())
+                   .append(" (").append(typeName).append(") ")
+                   .append(dateFormat.format(r.getCheckIn()))
+                   .append(" to ").append(dateFormat.format(r.getCheckOut()))
+                   .append(" - ")
+                   .append(priceFormat.format(r.getTotalAmount())).append("đ\n");
+        }
+
+        content.append("\nPAYMENT INFO\n");
+        content.append("============\n");
+        content.append("Transaction ID: ").append(transactionId).append("\n");
+        content.append("Amount Paid: ").append(priceFormat.format(totalDeposit)).append("đ\n");
+        content.append("Payment Method: ").append(getMethodDisplayName(method)).append("\n");
+        content.append("Payment Date: ").append(dateFormat.format(new Date(System.currentTimeMillis()))).append("\n\n");
+
+        content.append("Thank you for your trust. We look forward to welcoming you on ")
+               .append(dateFormat.format(first.getCheckIn())).append(".\n\n");
+
+        content.append("Best regards,\n");
+        content.append("Luxury Hotel Team");
+
+        return content.toString();
+    }
+ private String buildGroupBookingPendingContent(List<Reservation> reservations) {
+        StringBuilder content = new StringBuilder();
+        Reservation first = reservations.get(0);
+        String name = first.getCustomerName();
+        if (name == null || name.isEmpty()) {
+            name = "Valued Customer";
+        }
+
+        content.append("Dear ").append(name).append(",\n\n");
+        content.append("Your booking has been Pending can you payment 10% to confirmed!\n\n");
+
+        content.append("Booking Details:\n");
+        for (Reservation r : reservations) {
+            String typeName = r.getRoomTypeName();
+            if (typeName == null) typeName = "";
+            content.append("- Booking ID: #").append(r.getId()).append(" - Room ")
+                   .append(r.getRoomNumber()).append(" (")
+                   .append(typeName).append(")\n")
+                   .append("  Check-in: ").append(dateFormat.format(r.getCheckIn()))
+                   .append("\n  Check-out: ").append(dateFormat.format(r.getCheckOut()))
+                   .append("\n  Total Amount: ")
+                   .append(priceFormat.format(r.getTotalAmount())).append(" VND\n");
+        }
+
+        content.append("\nWe look forward to welcoming you!\n\n");
+        content.append("Best regards,\n");
+        content.append("Luxury Hotel Team");
+
+        return content.toString();
+    }
+    private String getMethodDisplayName(String method) {
+        if (method == null) return "";
+        switch (method) {
+            case "CREDIT_CARD": return "Credit Card";
+            case "BANK_TRANSFER": return "Bank Transfer";
+            case "CASH": return "Cash";
+            case "VNPay": return "VNPay";
+            case "MoMo": return "MoMo";
+            default: return method;
+        }
     }
 }

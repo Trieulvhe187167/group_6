@@ -359,7 +359,7 @@
                                 <c:when test="${!isEdit || (isEdit && staff.role != 'ADMIN')}">
                                     <select name="role" class="form-control" id="role" required>
                                         <option value="">Select Role</option>
-                                        <option value="ADMIN" ${isEdit && staff.role == 'ADMIN' ? 'selected' : ''}>Administrator</option>
+
                                         <option value="RECEPTIONIST" ${isEdit && staff.role == 'RECEPTIONIST' ? 'selected' : ''}>Receptionist</option>
                                         <option value="HOUSEKEEPER" ${isEdit && staff.role == 'HOUSEKEEPER' ? 'selected' : ''}>Housekeeper</option>
                                         <option value="ROOM_INSPECTOR" ${isEdit && staff.role == 'ROOM_INSPECTOR' ? 'selected' : ''}>Room Inspector</option>

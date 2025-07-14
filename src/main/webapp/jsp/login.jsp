@@ -29,33 +29,43 @@
                     <p>Don't have an account? <a href="Register.jsp">Register here</a></p>
                 </div>
 
-                <!-- Registration success message -->
+                <!-- Thông báo đăng ký thành công -->
                 <c:if test="${param.success == '1'}">
                     <div class="alert alert-success" style="color: green; font-weight: bold; margin-bottom: 15px;">
                         Registration successful! Please log in.
                     </div>
                 </c:if>
 
-                <!-- Login error message -->
+                <!-- Thông báo đăng nhập thành công -->
+                
+
+                <!-- Thông báo lỗi -->
                 <c:if test="${not empty errorMsg}">
                     <div class="alert alert-danger" style="color: red; font-weight: bold; margin-bottom: 15px;">
                         ${errorMsg}
                     </div>
                 </c:if>
 
-                <form class="contact-bx" action="../LoginServlet" method="post">
+                <form class="contact-bx" action="../LoginServlet" method="post" id="loginForm">
+                    <input type="hidden" name="hashedPassword" id="hashedPassword">
+
                     <div class="row placeani">
                         <div class="col-lg-12">
                             <div class="form-group">
+                                 <label for="usernameInput">Username or Email</label>
                                 <div class="input-group">
-                                    <input name="username" type="text" required class="form-control" placeholder="Username">
+                                    <input name="username" type="text" required class="form-control" placeholder="Username"
+                                           value="${param.username != null ? param.username : ''}">
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-12">
                             <div class="form-group">
+                                 <label for="passwordInput">Password</label>
                                 <div class="input-group">
-                                    <input name="password" type="password" required class="form-control" placeholder="Password">
+                                    <input id="passwordInput" name="password" type="password" required class="form-control" placeholder="Password"
+                                        value="${param.password != null ? param.password : ''}">
+
                                 </div>
                             </div>
                         </div>
@@ -64,7 +74,7 @@
                         </div>
                     </div>
                 </form>
-                        <p>Forget password? <a href="forgotPassword.jsp">click here</a></p>
+                <p>Forget password? <a href="forgotPassword.jsp">click here</a></p>
             </div>
         </div>
     </div>
@@ -85,7 +95,23 @@
 <script src="../assets/vendors/owl-carousel/owl.carousel.js"></script>
 <script src="../assets/js/functions.js"></script>
 <script src="../assets/js/contact.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
+<script>
+    document.querySelector("#loginForm").addEventListener("submit", function (e) {
+    const passwordInput = document.querySelector("#passwordInput");
+    const hashedInput = document.querySelector("#hashedPassword");
+
+    const rawPassword = passwordInput.value;
+    const hashedPassword = sha256(rawPassword);
+
+    // Gửi hash qua input hidden
+    hashedInput.value = hashedPassword;
+
+    // Không gửi password gốc
+    passwordInput.removeAttribute("name");
+});
+
+</script>
 
 </body>
 </html>
-

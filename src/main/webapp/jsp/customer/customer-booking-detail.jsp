@@ -86,7 +86,7 @@
     <div class="section">
         <h4>Customer Information</h4>
         <div class="info-row"><span class="info-label">Name:</span> ${booking.userFullName}</div>
-        <div class="info-row"><span class="info-label">Email:</span> ${booking.userEmail}</div>
+        <div class="info-row"><span class="info-label">Email:</span> ${booking.customerEmail}</div>
         <div class="info-row"><span class="info-label">Phone:</span> ${booking.customerPhone}</div>
     </div>
 

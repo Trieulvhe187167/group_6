@@ -3,6 +3,8 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!-- Bootstrap CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -174,25 +176,25 @@
                                         <fmt:parseNumber var="nights" value="${(reservation.checkOut.time - reservation.checkIn.time) / (1000 * 60 * 60 * 24)}" integerOnly="true"/>
                                         <span class="badge badge-secondary">${nights} nights</span>
                                     </td>
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${reservation.status eq 'PENDING'}">
-                                                <span class="badge badge-warning">Pending</span>
-                                            </c:when>
-                                            <c:when test="${reservation.status eq 'CONFIRMED'}">
-                                                <span class="badge badge-success">Confirmed</span>
-                                            </c:when>
-                                            <c:when test="${reservation.status eq 'CANCELLED'}">
-                                                <span class="badge badge-danger">Cancelled</span>
-                                            </c:when>
-                                            <c:when test="${reservation.status eq 'COMPLETED'}">
-                                                <span class="badge badge-info">Completed</span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="badge badge-secondary">${reservation.status}</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
+                                   <td>
+    <c:choose>
+        <c:when test="${reservation.status == 'CONFIRMED'}">
+            <span class="badge bg-success">Confirmed</span>
+        </c:when>
+        <c:when test="${reservation.status == 'PENDING'}">
+            <span class="badge bg-warning text-dark">Pending</span>
+        </c:when>
+        <c:when test="${reservation.status == 'CANCELLED'}">
+            <span class="badge bg-danger">Cancelled</span>
+        </c:when>
+        <c:when test="${reservation.status == 'COMPLETED'}">
+            <span class="badge bg-primary">Completed</span>
+        </c:when>
+        <c:otherwise>
+            <span class="badge bg-secondary">${reservation.status}</span>
+        </c:otherwise>
+    </c:choose>
+<!--</td>-->
                                     <td>
                                         <strong class="text-primary">
                                             <fmt:formatNumber value="${reservation.totalAmount}" pattern="#,##0"/>₫
@@ -349,16 +351,20 @@
                         </div>
                     </div>
 
-                    <div class="alert alert-info">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Nights:</strong> <span id="nightsDisplay">0</span>
-                            </div>
-                            <div class="col-md-6">
-                                <strong>Total Amount:</strong> <span id="totalAmountDisplay">0₫</span>
-                            </div>
-                        </div>
-                    </div>
+                   <div class="alert alert-info">
+    <div class="row">
+        <div class="col-md-12">
+            <strong>Nights:</strong> <span id="nightsDisplay">0</span>
+        </div>
+        <div class="col-md-12">
+            <strong>Total Amount:</strong> <span id="totalAmountDisplay">0₫</span>
+        </div>
+        <div class="col-md-12">
+            <strong>Deposit (10%):</strong> <span id="depositAmountDisplay">0₫</span>
+        </div>
+    </div>
+</div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -375,15 +381,11 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Reservation Details</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
             </div>
             <div class="modal-body" id="reservationDetails">
                 <!-- Details will be loaded here -->
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" onclick="printReservationDetails()">
                     <i class="fas fa-print"></i> Print
                 </button>
@@ -398,12 +400,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit Reservation</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
             </div>
             <form id="editReservationForm">
-                <div class="modal-body">
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                     <input type="hidden" id="editReservationId">
 
                     <div class="row">
@@ -411,30 +410,6 @@
                             <div class="form-group">
                                 <label>Customer Name</label>
                                 <input type="text" class="form-control" id="editCustomerName" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>Room</label>
-                                <input type="text" class="form-control" id="editRoomInfo" readonly>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Check-in Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="editCheckIn" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Check-out Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="editCheckOut" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Number of Customers</label>
-                                <input type="number" class="form-control" id="editNumberOfCustomers" 
-                                       min="1" max="10">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -449,24 +424,61 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Special Requests</label>
-                        <textarea class="form-control" id="editSpecialRequests" rows="3"></textarea>
-                    </div>
-
-                    <div class="alert alert-info">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Nights:</strong> <span id="editNightsDisplay">0</span>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Room</label>
+                                <input type="text" class="form-control" id="editRoomInfo" readonly>
                             </div>
-                            <div class="col-md-6">
-                                <strong>Total Amount:</strong> <span id="editTotalAmountDisplay">0₫</span>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Number of Customers</label>
+                                <input type="number" class="form-control" id="editNumberOfCustomers" readonly
+                                       min="1" max="10">
                             </div>
                         </div>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Check-in Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="editCheckIn" required>
+                                <label>Number of Customers</label>
+                                <input type="number" class="form-control" id="editNumberOfCustomers" readonly
+                                       min="1" max="10">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Check-out Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="editCheckOut" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Special Requests</label>
+                        <textarea class="form-control" id="editSpecialRequests" rows="2"></textarea>
+                    </div>
+
+                    <div class="alert alert-info mt-3">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <strong>Nights:</strong> <span id="editNightsDisplay">0</span>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Total Amount:</strong> <span id="editTotalAmountDisplay">0₫</span>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Deposit (10%):</strong> <span id="editDepositAmountDisplay">0₫</span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Update Reservation</button>
                 </div>
             </form>
@@ -478,7 +490,9 @@
     $(document).ready(function () {
     // SỬA: Thêm event listener riêng cho edit modal
     $('#editCheckIn, #editCheckOut').change(function () {
-        calculateTotal();
+    updateEditTotalAmountDisplay();
+
+
         
         // Validate ngày
         const checkIn = new Date($('#editCheckIn').val());
@@ -556,7 +570,7 @@
         });
     }
 
-    function calculateTotal() {
+   function calculateTotal() {
     // For new reservation
     const checkIn = new Date($('#newCheckIn').val());
     const checkOut = new Date($('#newCheckOut').val());
@@ -574,20 +588,26 @@
         $('#totalAmountDisplay').text('0₫');
     }
 
-    // SỬA: Cải thiện tính toán cho edit reservation
+    // ✅ SỬA: Tính cho edit reservation
     const editCheckIn = new Date($('#editCheckIn').val());
     const editCheckOut = new Date($('#editCheckOut').val());
+    const editPrice = parseFloat($('#editReservationModal').data('price')) || 0;
 
     if (editCheckIn && editCheckOut && editCheckOut > editCheckIn) {
         const editNights = Math.ceil((editCheckOut - editCheckIn) / (1000 * 60 * 60 * 24));
+        const editTotal = editNights * editPrice;
+        const editDeposit = editTotal * 0.1;
+
         $('#editNightsDisplay').text(editNights);
-        
-        // SỬA: Thêm tính toán tổng tiền cho edit modal nếu cần
-        // Bạn có thể thêm logic tính toán tổng tiền ở đây nếu có thông tin giá phòng
+        $('#editTotalAmountDisplay').text(formatCurrency(editTotal));
+        $('#editDepositAmountDisplay').text(formatCurrency(editDeposit));
     } else {
         $('#editNightsDisplay').text('0');
+        $('#editTotalAmountDisplay').text('0₫');
+        $('#editDepositAmountDisplay').text('0₫');
     }
 }
+
 
     function createReservation() {
         const formData = {
@@ -746,6 +766,9 @@
                 }
 
                 $('#reservationDetails').html(html);
+                $('#reservationDetails').html(html).css('color', '#000'); // Màu đen
+                $('#editReservationModal').modal('hide');
+
                 $('#viewDetailsModal').modal('show');
             },
             error: function () {
@@ -788,9 +811,15 @@
             $('#editNumberOfCustomers').val(data.numberOfCustomers || 1);
             $('#editStatus').val(data.status);
             $('#editSpecialRequests').val(data.specialRequests || '');
+            const pricePerNight = data.totalAmount / data.nights;
+            $('#editReservationModal').data('price', pricePerNight || 0);
 
-            calculateTotal();
-            $('#editReservationModal').modal('show');
+
+updateEditTotalAmountDisplay();
+$('#editReservationModal').modal('show');
+        console.log('Loaded data:', data); // Kiểm tra dữ liệu
+console.log('Full data:', data);
+
         },
         error: function(xhr, status, error) {
             console.error('Error loading reservation details:', error);
@@ -839,15 +868,23 @@ function updateReservation() {
                 $('#editReservationModal').modal('hide');
                 location.reload();
             } else {
-                const errorMsg = response && response.message ? response.message : 'Unknown error';
-                alert('Error updating reservation: ' + errorMsg);
+                const errorMsg = response.message || 'Could not update reservation due to an unknown error.';
+                alert('⚠️ ' + errorMsg);
             }
         },
         error: function(xhr, status, error) {
-            console.error('AJAX Error:', {xhr: xhr, status: status, error: error});
-            console.error('Response text:', xhr.responseText);
-            alert('Error updating reservation: ' + error + '\nPlease check the console for details.');
-        }
+    let errorMessage = 'Error updating reservation: ';
+    try {
+        const json = JSON.parse(xhr.responseText);
+        errorMessage += json.message || error;
+    } catch (e) {
+        errorMessage += error;
+    }
+
+    console.error('AJAX Error:', {xhr, status, error});
+    alert('⚠️ ' + errorMessage);
+}
+
     });
 }
 
@@ -955,5 +992,58 @@ function updateReservation() {
             return '0₫';
         return new Intl.NumberFormat('vi-VN').format(amount) + '₫';
     }
-    
+    function showEditModal() {
+    $('#editReservationModal').modal('show');
+}
+function updateTotalAmountDisplay() {
+    const checkIn = new Date($('#newCheckIn').val());
+    const checkOut = new Date($('#newCheckOut').val());
+    const roomPrice = parseFloat($('#roomTypeSelect option:selected').data('price'));
+
+    if (!isNaN(checkIn) && !isNaN(checkOut) && !isNaN(roomPrice)) {
+        const nights = Math.floor((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+        const totalAmount = nights * roomPrice;
+        const deposit = totalAmount * 0.1;
+
+        $('#nightsDisplay').text(nights);
+        $('#totalAmountDisplay').text(totalAmount.toLocaleString() + '₫');
+        $('#depositAmountDisplay').text(deposit.toLocaleString() + '₫');
+    }
+}
+function updateEditTotalAmountDisplay() {
+    const checkIn = new Date($('#editCheckIn').val());
+    const checkOut = new Date($('#editCheckOut').val());
+    const roomPrice = parseFloat($('#editReservationModal').data('price')) || 0;
+
+    if (!isNaN(checkIn) && !isNaN(checkOut) && !isNaN(roomPrice) && checkOut > checkIn) {
+        const nights = Math.floor((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+        const totalAmount = nights * roomPrice;
+        const deposit = totalAmount * 0.1;
+
+        $('#editNightsDisplay').text(nights);
+        $('#editTotalAmountDisplay').text(formatCurrency(totalAmount));
+        $('#editDepositAmountDisplay').text(formatCurrency(deposit));
+    } else {
+        $('#editNightsDisplay').text('0');
+        $('#editTotalAmountDisplay').text('0₫');
+        $('#editDepositAmountDisplay').text('0₫');
+    }
+}
+
+
+
 </script>
+<style>
+  #reservationDetails, #reservationDetails * {
+    color: #212529 !important;
+  }
+</style>
+
+<!-- Cuối file reservations-content.jsp -->
+<!-- View Details Modal -->
+<div class="modal fade" id="viewDetailsModal" tabindex="-1">...</div>
+
+<!-- Edit Reservation Modal -->
+<div class="modal fade" id="editReservationModal" tabindex="-1">...</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+

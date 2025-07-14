@@ -3,6 +3,12 @@
 
 <!-- L?y URI hi?n t?i -->
 <c:set var="currentUrl" value="${pageContext.request.requestURI}" />
+
+<c:set var="cartItems" value="${sessionScope.cart}" />
+<c:set var="roomCount" value="0" />
+<c:forEach var="ci" items="${cartItems}">
+    <c:set var="roomCount" value="${roomCount + ci.quantity}" />
+</c:forEach>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
 <%
@@ -56,7 +62,17 @@
         height: 38px; /* Reduced height */
         border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    
+        .hotel-search-form.hidden {
+        display: none;
+    }
+    .search-icon-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        margin-right: 10px;
+        cursor: pointer;
+    }
     .search-field {
         display: flex;
         align-items: center;
@@ -288,9 +304,10 @@
     
     /* Responsive - hide on smaller screens */
     @media (max-width: 1200px) {
-        .hotel-search-form {
-            display: none;
-        }
+         .hotel-search-form:not(.hidden) {
+    display: flex;
+  }
+       .hotel-search-form {display:none;}
     }
     
     /* Highlight class for selected dropdowns */
@@ -411,7 +428,39 @@
         }
     }
 
+
+
+
+.secondary-menu .cart-icon i {
+    font-size: 18px;
+    color: #fff;
+}
+
+
+.secondary-menu .cart-icon:hover i {
+    color: #FFD700;
+}
+.cart-icon {
+    position: relative;
+    margin-left: 8px; 
+}
+
+
+.cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background-color: #dc3545;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 10px;
+    padding: 2px 5px;
+    line-height: 1;
+    font-weight: bold;
+}
 </style>
+
+
 
 <header class="header rs-nav header-transparent">
 
@@ -537,7 +586,22 @@
 
             <!-- Compact Hotel Search Form -->
             <div class="secondary-menu">
-                <form action="${pageContext.request.contextPath}/SearchAvailableRoomsServlet" method="GET" class="hotel-search-form" id="headerSearchForm">
+                                 <button id="searchToggle" class="search-icon-btn" type="button">
+                    <i class="fa fa-search"></i>
+                    
+                </button>
+                    <!-- == Cart == -->
+
+    <a href="${pageContext.request.contextPath}/CartServlet"
+       class="search-icon-btn cart-icon"
+       title="View Cart">
+        <i class="fa fa-shopping-cart"></i>
+        <c:if test="${roomCount > 0}">
+            <span class="cart-badge">${roomCount}</span>
+        </c:if>
+    </a>
+                <form action="${pageContext.request.contextPath}/SearchAvailableRoomsServlet" method="GET" class="hotel-search-form hidden" id="headerSearchForm">
+                    </li>
                     <!-- Room Type -->
                     <div class="search-field roomtype-field">
                         <i class="fa fa-bed"></i>
@@ -585,13 +649,16 @@
                             <option value="1" <c:if test="${searchCapacity eq '1'or empty searchCapacity}">selected</c:if>>1 guest</option>
                             <option value="2" <c:if test="${searchCapacity eq '2' }">selected</c:if>>2 guests</option>
                             <option value="3" <c:if test="${searchCapacity eq '3'}">selected</c:if>>3 guests</option>
-                            <option value="4" <c:if test="${searchCapacity eq '4'}">selected</c:if>>4 guests</option>
+                            <option value="4" <c:if test="${searchCapacity eq '4'}">selected</c:if>>4+ guests</option>
                         </select>
                     </div>
                     
                     <!-- Search Button -->
                     <button type="submit" class="search-submit-btn">Search</button>
+                    
                 </form>
+     
+
             </div>
 
          <!-- Menu Links -->
@@ -604,9 +671,9 @@
             <a class="nav-link" href="${pageContext.request.contextPath}/jsp/About.jsp">ABOUT</a>
         </li>
         <li class="nav-item ${fn:endsWith(currentUrl,'/roomList.jsp') ? 'active' : ''}">
-            <a class="nav-link" href="${pageContext.request.contextPath}/RoomListServlet">LIST ROOM</a>
+            <a class="nav-link" href="${pageContext.request.contextPath}/SearchAvailableRoomsServlet">LIST ROOM</a>
         </li>
-        <li class="nav-item ${fn:endsWith(currentUrl,'/contact.jsp') ? 'active' : ''}">
+                      <li class="nav-item ${fn:endsWith(currentUrl,'/contact.jsp') ? 'active' : ''}">
             <a class="nav-link" href="${pageContext.request.contextPath}/jsp/contact.jsp">CONTACT</a>
         </li>
         <li class="nav-item dropdown ${fn:endsWith(currentUrl,'/blog.jsp') || fn:endsWith(currentUrl,'/events.jsp') ? 'active' : ''}">
@@ -623,6 +690,10 @@
         </div>
     </div>
 </header>
+            
+<!-- 1) jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 
 <!-- Add necessary JavaScript -->
 <script>
@@ -811,10 +882,7 @@
         // Initial setup
         updateCheckoutMin();
         
-        // Set default checkout to tomorrow if empty
-        if (!$('#checkOut').val()) {
-            $('#checkOut').val(getTomorrowString());
-        }
+       
         
         // Final setup similar to roomDetail.jsp
         setTimeout(function() {
@@ -930,7 +998,10 @@
                 console.log('Auto-corrected checkout to:', newCheckout);
             }
         }, 1000);
-        
+          // Toggle header search visibility
+        $("#searchToggle").on("click", function() {
+            $("#headerSearchForm").toggleClass("hidden");
+        });
         // Additional validation on window focus
         $(window).on('focus', function() {
             updateCheckoutMin();
