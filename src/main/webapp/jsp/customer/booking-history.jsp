@@ -558,7 +558,7 @@
                 </li>
                 <div class="menu-divider"></div>
                 <li>
-                    <a href="user-profile.jsp">
+                    <a href="${pageContext.request.contextPath}/customer/profile">
                         <i class="fas fa-user-edit"></i>
                         <span>User Profile</span>
                     </a>
@@ -568,6 +568,11 @@
                         <i class="fas fa-key"></i>
                         <span>Change Password</span>
                     </a>
+                </li>
+                    <li>
+                       <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" >
+                                                <i class="fa fa-concierge-bell"></i> Book Services
+                                            </a>
                 </li>
                 <div class="menu-divider"></div>
                 <li>

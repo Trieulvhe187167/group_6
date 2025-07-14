@@ -467,10 +467,25 @@
         .sidebar-overlay.active {
             display: block;
         }
-    </style>
+        .feedback-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feedback-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        </style>
 </head>
 <body>
-    <!-- Mobile Toggle Button -->
+     <!-- Mobile Toggle Button -->
     <button class="mobile-toggle" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
     </button>
@@ -500,7 +515,7 @@
                 </li>
                 <div class="menu-divider"></div>
                 <li>
-                    <a href="${pageContext.request.contextPath}/customer/profile">
+                    <a href="user-profile.jsp">
                         <i class="fas fa-user-edit"></i>
                         <span>User Profile</span>
                     </a>
@@ -510,11 +525,6 @@
                         <i class="fas fa-key"></i>
                         <span>Change Password</span>
                     </a>
-                </li>
-                    <li>
-                       <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" >
-                                                <i class="fa fa-concierge-bell"></i> Book Services
-                                            </a>
                 </li>
                 <div class="menu-divider"></div>
                 <li>
@@ -545,283 +555,297 @@
             </ul>
         </nav>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="content-header">
-                <h2><i class="fas fa-calendar-check"></i> My Bookings</h2>
-                <p>Manage and view your current hotel reservations</p>
-            </div>
+    <main class="main-content">
+        <div class="content-header">
+            <h2><i class="fas fa-comments"></i> Customer Feedback</h2>
+            <p>Share your experience and help us improve our service</p>
+        </div>
 
-            <!-- Alert Messages -->
-            <c:if test="${not empty successMessage}">
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i> ${successMessage}
+        <!-- Success Message -->
+        <div class="alert alert-success" id="successAlert" style="display: none;">
+            <i class="fas fa-check-circle"></i> Thank you for your feedback! We appreciate your input.
+        </div>
+
+        <div class="feedback-card">
+            <form id="feedbackForm">
+                <!-- Booking Selection -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-bed"></i>
+                        Select Booking
+                    </label>
+                    <select class="form-select" id="bookingSelect" required>
+                        <option value="">Choose a booking to review...</option>
+                        <option value="1">Room 101 - Deluxe Suite (Jan 15-18, 2025)</option>
+                        <option value="2">Room 205 - Standard Room (Jan 22-25, 2025)</option>
+                        <option value="3">Room 301 - Premium Suite (Feb 01-05, 2025)</option>
+                    </select>
                 </div>
-            </c:if>
 
-            <c:if test="${not empty errorMessage}">
-                <div class="alert alert-error">
-                    <i class="fas fa-exclamation-triangle"></i> ${errorMessage}
-                </div>
-            </c:if>
-            <c:if test="${param.cancel == 'success'}">
-            <div class="alert alert-success">
-             <i class="fas fa-check-circle"></i> Your booking was cancelled successfully.
-             </div>
-            </c:if>
-
-            <c:if test="${param.cancel == 'failed'}">
-    <div class="alert alert-error">
-        <i class="fas fa-exclamation-triangle"></i> Failed to cancel booking. Please try again later.
-    </div>
-            </c:if>
-
-            <c:if test="${empty bookings}">
-                <div class="empty-message">
-                    <div class="empty-icon">
-                        <i class="fas fa-calendar-times"></i>
+                <!-- Rating Section -->
+                <div class="rating-section">
+                    <div class="rating-title">
+                        <i class="fas fa-star"></i>
+                        Rate Your Experience
                     </div>
-                    <div class="empty-title">No Bookings Found</div>
-                    <div class="empty-text">You don't have any current bookings. Ready to plan your next stay?</div>
+                    
+                    <div class="rating-group">
+                        <div class="rating-label">Overall Experience</div>
+                        <div class="star-rating" data-rating="overall">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">Room Quality</div>
+                        <div class="star-rating" data-rating="room">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">Staff Service</div>
+                        <div class="star-rating" data-rating="service">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">Value for Money</div>
+                        <div class="star-rating" data-rating="value">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
                 </div>
-            </c:if>
 
-            <c:forEach var="booking" items="${bookings}">
-    <div class="booking-card">
-        <div class="booking-header">
-            <div class="booking-title">
-                <i class="fas fa-bed"></i> Room ${booking.roomName} - ${booking.roomTypeName}
-            </div>
-            <div class="booking-id">ID: #${booking.id}</div>
-        </div>
-        
-        <div class="booking-details">
-            <div class="detail-item">
-                <i class="fas fa-calendar-plus"></i>
-                <span class="detail-label">Check-in:</span>
-                <span class="detail-value">
-                    <fmt:formatDate value="${booking.checkIn}" pattern="MMM dd, yyyy" />
-                </span>
-            </div>
-            <div class="detail-item">
-                <i class="fas fa-calendar-minus"></i>
-                <span class="detail-label">Check-out:</span>
-                <span class="detail-value">
-                    <fmt:formatDate value="${booking.checkOut}" pattern="MMM dd, yyyy" />
-                </span>
-            </div>
-            <div class="detail-item">
-                <i class="fas fa-dollar-sign"></i>
-                <span class="detail-label">Total Amount:</span>
-                <span class="detail-value">
-                    <fmt:formatNumber value="${booking.totalAmount}" type="currency" />
-                </span>
-            </div>
-            <div class="detail-item">
-                <i class="fas fa-info-circle"></i>
-                <span class="detail-label">Status:</span>
-                <span class="badge ${booking.status.toLowerCase()}">${booking.status}</span>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="booking-actions">
-            <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}" class="btn btn-primary">
-                <i class="fas fa-eye"></i> View Details
-            </a>
-
-          <fmt:formatDate value="${booking.checkIn}" pattern="yyyy-MM-dd" var="checkInISO" />
-<c:set var="checkInISO" value="${empty checkInISO ? 'N/A' : checkInISO}" />
-<c:set var="safeRoomName" value="${empty booking.roomName ? 'Unknown' : booking.roomName}" />
-
-<c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
-    <button type="button" class="btn btn-danger"
-            data-id="${booking.id}"
-            data-room="${fn:escapeXml(safeRoomName)}"
-            data-status="${booking.status}"
-            data-checkin="${checkInISO}"
-            onclick="openCancelModal(this)">
-        <i class="fas fa-times"></i> Cancel Booking
-    </button>
-</c:if>
-
-        </div>
-    </div>
-</c:forEach>
-
-        </main>
-    </div>
-
-    <!-- Cancel Confirmation Modal -->
-    <!-- Cancel Confirmation Modal -->
-<div class="modal fade" id="confirmCancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-danger">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="cancelModalLabel">Cancel Booking Confirmation</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="cancelModalMessage">Are you sure you want to cancel this booking?</p>
-                
-                <!-- Check-in Date Section -->
-                <div id="checkInDateDiv" style="background-color: #e3f2fd; padding: 10px; border-radius: 5px; border-left: 4px solid #2196f3; margin: 15px 0;">
-                    <strong>📅 Check-in Date:</strong> 
-                    <span style="color: #1976d2; font-weight: bold; font-size: 1.2em;">Loading...</span>
+                <!-- Feedback Category -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-tags"></i>
+                        Feedback Category
+                    </label>
+                    <select class="form-select" id="feedbackCategory" required>
+                        <option value="">Select category...</option>
+                        <option value="general">General Feedback</option>
+                        <option value="complaint">Complaint</option>
+                        <option value="compliment">Compliment</option>
+                        <option value="suggestion">Suggestion</option>
+                    </select>
                 </div>
-                
-                <div id="cancelWarningText" class="alert alert-warning d-none mt-2"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <a id="confirmCancelBtn" href="#" class="btn btn-danger">Yes, Cancel Booking</a>
-            </div>
-        </div>
-    </div>
-</div>
 
+                <!-- Subject -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-heading"></i>
+                        Subject
+                    </label>
+                    <input type="text" class="form-control" id="feedbackSubject" placeholder="Brief summary of your feedback" required>
+                </div>
+
+                <!-- Detailed Feedback -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-comment-alt"></i>
+                        Detailed Feedback
+                    </label>
+                    <textarea class="form-control" id="feedbackMessage" rows="6" placeholder="Please share your detailed feedback, suggestions, or concerns..." maxlength="1000" required></textarea>
+                    <div class="character-count">
+                        <span id="charCount">0</span>/1000 characters
+                    </div>
+                </div>
+
+                <!-- Would Recommend -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-thumbs-up"></i>
+                        Would you recommend us to others?
+                    </label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="recommend" id="recommendYes" value="yes">
+                        <label class="form-check-label" for="recommendYes">
+                            Yes, definitely
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="recommend" id="recommendMaybe" value="maybe">
+                        <label class="form-check-label" for="recommendMaybe">
+                            Maybe
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="recommend" id="recommendNo" value="no">
+                        <label class="form-check-label" for="recommendNo">
+                            No, not likely
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-envelope"></i>
+                        Contact Email (Optional)
+                    </label>
+                    <input type="email" class="form-control" id="contactEmail" placeholder="Your email if you want a response">
+                </div>
+
+                <!-- Form Buttons -->
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Submit Feedback
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-redo"></i> Reset Form
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Get context path for JavaScript
-        const contextPath = '${pageContext.request.contextPath}';
-        
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
+        // Star Rating System
+        document.querySelectorAll('.star-rating').forEach(rating => {
+            const stars = rating.querySelectorAll('.star');
             
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-        }
-
-       
-
-        // Close sidebar when clicking on overlay
-        document.querySelector('.sidebar-overlay').addEventListener('click', function() {
-            toggleSidebar();
+            stars.forEach((star, index) => {
+                star.addEventListener('click', () => {
+                    const value = parseInt(star.getAttribute('data-value'));
+                    const ratingType = rating.getAttribute('data-rating');
+                    
+                    // Update visual stars
+                    stars.forEach((s, i) => {
+                        if (i < value) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                    
+                    // Store rating value
+                    rating.setAttribute('data-selected', value);
+                });
+                
+                star.addEventListener('mouseenter', () => {
+                    const value = parseInt(star.getAttribute('data-value'));
+                    stars.forEach((s, i) => {
+                        if (i < value) {
+                            s.style.color = '#ffc107';
+                        } else {
+                            s.style.color = '#ddd';
+                        }
+                    });
+                });
+            });
+            
+            rating.addEventListener('mouseleave', () => {
+                const selected = rating.getAttribute('data-selected');
+                stars.forEach((s, i) => {
+                    if (selected && i < parseInt(selected)) {
+                        s.style.color = '#ffc107';
+                    } else {
+                        s.style.color = '#ddd';
+                    }
+                });
+            });
         });
 
-        // Auto-hide alerts after 5 seconds
-        setTimeout(function () {
-            const alerts = document.querySelectorAll('.alert:not(#cancelWarningText)');
-            alerts.forEach(function (alert) {
-                alert.style.opacity = '0';
-                setTimeout(function () {
-                    alert.style.display = 'none';
-                }, 300);
-            });
-        }, 5000);
-  function openCancelModal(button) {
-    const id = button.getAttribute("data-id");
-    const roomName = button.getAttribute("data-room");
-    const status = button.getAttribute("data-status");
-    const checkInRaw = button.getAttribute("data-checkin");
+        // Character Counter
+        const messageTextarea = document.getElementById('feedbackMessage');
+        const charCount = document.getElementById('charCount');
 
-    // Debug: Log all values
-    console.log("=== MODAL DEBUG ===");
-    console.log("ID:", id);
-    console.log("Room:", roomName);
-    console.log("Status:", status);
-    console.log("Check-in raw:", checkInRaw);
-
-    let checkInDisplay = "Not available";
-
-    // Attempt to parse and format the check-in date
-    if (checkInRaw && checkInRaw !== 'N/A' && checkInRaw !== 'null' && checkInRaw !== 'undefined') {
-        try {
-            // Create a Date object from the yyyy-MM-dd string
-            // Using new Date(year, monthIndex, day) is more reliable for yyyy-MM-dd
-            const parts = checkInRaw.split('-');
-            if (parts.length === 3) {
-                const year = parseInt(parts[0], 10);
-                const month = parseInt(parts[1], 10) - 1; // Month is 0-based
-                const day = parseInt(parts[2], 10);
-                const dateObj = new Date(year, month, day);
-
-                // Check if the date is valid
-                if (dateObj && !isNaN(dateObj.getTime())) {
-                    checkInDisplay = dateObj.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: '2-digit'
-                    });
-                    console.log("Formatted date:", checkInDisplay);
-                } else {
-                    console.log("Invalid date object after parsing parts.");
-                }
+        messageTextarea.addEventListener('input', function() {
+            const count = this.value.length;
+            charCount.textContent = count;
+            
+            if (count > 900) {
+                charCount.style.color = '#dc3545';
+            } else if (count > 750) {
+                charCount.style.color = '#ffc107';
             } else {
-                console.log("checkInRaw is not in expected yyyy-MM-dd format parts.");
-                // Fallback for other potential date string formats if needed
-                const dateObj = new Date(checkInRaw);
-                if (dateObj && !isNaN(dateObj.getTime())) {
-                     checkInDisplay = dateObj.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: '2-digit'
-                    });
-                     console.log("Formatted date (fallback):", checkInDisplay);
-                }
+                charCount.style.color = '#6c757d';
             }
-        } catch (e) {
-            console.log("Date parsing failed:", e);
+        });
+
+        // Form Submission
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get all ratings
+            const ratings = {};
+            document.querySelectorAll('.star-rating').forEach(rating => {
+                const type = rating.getAttribute('data-rating');
+                const value = rating.getAttribute('data-selected');
+                ratings[type] = value || 0;
+            });
+
+            // Validate that at least overall rating is provided
+            if (!ratings.overall || ratings.overall === '0') {
+                alert('Please provide an overall rating before submitting.');
+                return;
+            }
+
+            // Collect form data
+            const formData = {
+                booking: document.getElementById('bookingSelect').value,
+                category: document.getElementById('feedbackCategory').value,
+                subject: document.getElementById('feedbackSubject').value,
+                message: document.getElementById('feedbackMessage').value,
+                recommend: document.querySelector('input[name="recommend"]:checked')?.value,
+                email: document.getElementById('contactEmail').value,
+                ratings: ratings
+            };
+
+            // Simulate form submission
+            console.log('Feedback submitted:', formData);
+            
+            // Show success message
+            document.getElementById('successAlert').style.display = 'block';
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Reset form after short delay
+            setTimeout(() => {
+                resetForm();
+            }, 2000);
+        });
+
+        function resetForm() {
+            document.getElementById('feedbackForm').reset();
+            
+            // Reset star ratings
+            document.querySelectorAll('.star-rating').forEach(rating => {
+                rating.removeAttribute('data-selected');
+                rating.querySelectorAll('.star').forEach(star => {
+                    star.classList.remove('active');
+                    star.style.color = '#ddd';
+                });
+            });
+            
+            // Reset character counter
+            document.getElementById('charCount').textContent = '0';
+            document.getElementById('charCount').style.color = '#6c757d';
+            
+            // Hide success message
+            document.getElementById('successAlert').style.display = 'none';
         }
-    } else {
-        console.log("checkInRaw is empty or 'N/A'/'null'/'undefined'.");
-    }
-
-    console.log("Final check-in display:", checkInDisplay);
-
-    const safeRoomName = roomName && roomName !== 'null' && roomName !== 'undefined'
-        ? `"${roomName}"`
-        : '(unknown room)';
-
-    // Update main message
-    document.getElementById("cancelModalMessage").innerHTML =
-        `Are you sure you want to cancel your booking for <strong>${safeRoomName}</strong>?`;
-
-    // Update check-in date in the separate div
-    const checkInDateSpan = document.querySelector("#checkInDateDiv span"); // Select the span inside the div
-    if (checkInDateSpan) {
-        checkInDateSpan.textContent = checkInDisplay;
-    }
-
-    // Handle warning text
-    const warningEl = document.getElementById("cancelWarningText");
-    if (warningEl) {
-        warningEl.classList.remove("d-none");
-
-        if (status === "CONFIRMED") {
-            warningEl.innerHTML = `
-                <strong>⚠️ Warning:</strong> Your booking is already confirmed.<br>
-                You may lose your deposit depending on how close it is to the check-in time.
-            `;
-            warningEl.className = "alert alert-warning mt-2";
-        } else if (status === "PENDING") {
-            warningEl.innerHTML = `
-                <strong>📅 Note:</strong> This booking is still pending confirmation.
-            `;
-            warningEl.className = "alert alert-info mt-2";
-        } else {
-            warningEl.innerHTML = `
-                <strong>ℹ️ Info:</strong> Booking status: ${status}
-            `;
-            warningEl.className = "alert alert-secondary mt-2";
-        }
-    }
-
-    // Set href for the confirm button
-    const confirmBtn = document.getElementById("confirmCancelBtn");
-    if (confirmBtn) {
-        confirmBtn.href = `${contextPath}/customer/cancel-booking?id=${id}`;
-    }
-
-    // Show the modal
-    const modal = new bootstrap.Modal(document.getElementById('confirmCancelModal'));
-    modal.show();
-
-    console.log("=== END DEBUG ===");
-}
-
     </script>
-    <!-- Debug info - bỏ sau khi test xong -->
-
 </body>
 </html>

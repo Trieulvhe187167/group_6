@@ -2,6 +2,7 @@ package controller;
 
 import dal.RoomTypeDAO;
 import dal.RoomDAO;
+import dal.FeedbackDAO;
 import jakarta.servlet.ServletContext;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -15,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import model.RoomType;
 import model.Room;
-
+import model.Feedback;
 /**
  * Servlet for handling user room detail view
  */
@@ -46,6 +47,7 @@ public class RoomDetailServlet extends HttpServlet {
 
             RoomTypeDAO roomTypeDAO = new RoomTypeDAO();
             RoomDAO roomDAO = new RoomDAO();
+            FeedbackDAO feedbackDAO = new FeedbackDAO();
 
             // Get room type details
             RoomType roomType = roomTypeDAO.getRoomTypesById(id);
@@ -158,6 +160,10 @@ public class RoomDetailServlet extends HttpServlet {
             request.setAttribute("availableCount", availableCount);
             request.setAttribute("occupiedCount", occupiedCount);
             request.setAttribute("maintenanceCount", maintenanceCount);
+            
+              // Retrieve feedbacks for this room type
+            List<Feedback> feedbackList = feedbackDAO.getFeedbacksByRoomType(id);
+            request.setAttribute("feedbackList", feedbackList);
 
             // Forward to JSP
             request.getRequestDispatcher("jsp/roomDetail.jsp").forward(request, response);

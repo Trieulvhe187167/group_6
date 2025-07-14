@@ -700,4 +700,21 @@ public boolean updateDepositStatus(int reservationId, String status) {
     }
     return false;
 }
+public List<Payment> getPaymentsByUserId(int userId) {
+    List<Payment> payments = new ArrayList<>();
+    String sql = "SELECT p.*, r.Status as ReservationStatus FROM Payments p JOIN Reservations r ON p.ReservationId = r.Id WHERE r.UserId = ? ORDER BY p.CreatedAt DESC";
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Payment payment = mapResultSetToPayment(rs);
+            payment.setReservationStatus(rs.getString("ReservationStatus"));
+            payments.add(payment);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return payments;
+}
 }

@@ -1,12 +1,9 @@
-<%-- 
-    Document   : roomDetail
-    Created on : 27 thg 5, 2025, 21:08:30
-    Author     : ASUS
---%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ page import="model.RoomType" %>
 <%@ page import="model.Room" %>
+<%@ page import="model.Feedback" %>
+<%@ page import="java.util.Map, java.util.stream.Collectors" %>
 <%@ page import="model.Service" %>
 <%@ page import="dal.RoomTypeDAO" %>
 <%@ page import="dal.RoomDAO" %>
@@ -1051,6 +1048,18 @@
                 // Format price
                 DecimalFormat df = new DecimalFormat("#,###");
                 String formattedPrice = df.format(roomTypes.getBasePrice());
+                
+                List<Feedback> feedbackList = (List<Feedback>) request.getAttribute("feedbackList");
+                 int totalReviews = feedbackList != null ? feedbackList.size() : 0;
+                double avgRating = 0;
+                Map<Integer, Long> ratingCounts = Map.of(1,0L,2,0L,3,0L,4,0L,5,0L);
+                if (totalReviews > 0) {
+                    avgRating = feedbackList.stream()
+                        .mapToInt(Feedback::getRating)
+                        .average().orElse(0);
+                    ratingCounts = feedbackList.stream()
+                        .collect(Collectors.groupingBy(Feedback::getRating, Collectors.counting()));
+                }
             %>
 
             <!-- Content -->
@@ -1059,7 +1068,8 @@
                 <div class="page-banner ovbl-dark" style="background-image:url(assets/images/banner/banner2.jpg);">
                     <div class="container">
                         <div class="page-banner-entry">
-                            <h1 class="text-white">Book Your Room</h1>
+                            <h1 class="text-white">Room Detail</h1>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1070,7 +1080,7 @@
                         <ul class="list-inline">
                             <li><a href="#">Home</a></li>
                             <li><a href="SearchAvailableRoomsServlet">Room List</a></li>
-                            <li>Room Booking</li>
+                            <li>Room Detail</li>
                         </ul>
                     </div>
                 </div>
@@ -1137,12 +1147,19 @@
                                             <div>
                                                 <h2 class="post-title mb-2"><%= roomTypes.getName() %></h2>
                                                 <div class="rating">
-                                                    <i class="fa fa-star text-warning"></i>
-                                                    <i class="fa fa-star text-warning"></i>
-                                                    <i class="fa fa-star text-warning"></i>
-                                                    <i class="fa fa-star text-warning"></i>
-                                                    <i class="fa fa-star-half-o text-warning"></i>
-                                                    <span class="text-muted ml-2">4.5 (128 reviews)</span>
+                                                    <% for(int i=1; i<=5; i++){
+                                                           String cls;
+                                                           if(avgRating >= i){
+                                                               cls = "fa-star";
+                                                           } else if(avgRating >= i - 0.5){
+                                                               cls = "fa-star-half-o";
+                                                           } else {
+                                                               cls = "fa-star-o";
+                                                           }
+                                                    %>
+                                                        <i class="fa <%= cls %> text-warning"></i>
+                                                    <% } %>
+                                                    <span class="text-muted ml-2"><%= String.format("%.1f", avgRating) %> (<%= totalReviews %> reviews)</span>
                                                 </div>
                                             </div>
                                             <div class="text-right">
@@ -1241,9 +1258,101 @@
          bookingUrl += "&checkIn=" + searchIn + "&checkOut=" + searchOut;
      }
                                         %>
-                                        <a href="<%= bookingUrl %>" class="btn btn-primary">Book this room</a>
+                                       
+                                                        
+                                         <a href="<%= bookingUrl %>" class="btn btn-primary me-2">Book this room</a>
+                                        <%
+                                            Integer avail = (Integer) request.getAttribute("availableCount");
+                                            String addUrl = null;
+                                            if(searchIn != null && searchOut != null && (avail == null || avail > 0)){
+                                                addUrl = "CartServlet?action=add&roomTypeId=" + id +
+                                                        "&roomTypeName=" + java.net.URLEncoder.encode(roomTypes.getName(), "UTF-8") +
+                                                        "&price=" + roomTypes.getBasePrice() +
+                                                        "&checkIn=" + searchIn + "&checkOut=" + searchOut;
+                                            }
+                                            if(addUrl != null){
+                                        %>
+                                            <a href="<%= addUrl %>" class="btn btn-success">Add to Cart</a>
+                                        <%
+                                            } else if(searchIn != null && searchOut != null){
+                                        %>
+                                            <span class="btn btn-secondary disabled">Sold Out</span>
+                                        <%
+                                            }
+                                        %>
                                     </div>
+                                    <a href="javascript:history.back()" class="btn btn-outline-secondary px-4">
+    <i class="fas fa-arrow-left"></i> Back
+  </a>
                                 </div>
+                                        <!-- Feedback Section -->
+                     
+
+                          <div class="feedback-container mt-5">
+                                <!-- Reviews Summary -->
+                                <div class="reviews-summary me-4">
+                                    <div class="d-flex align-items-center">
+                                       
+                                            <h1 class="display-4 mb-0"><%= String.format("%.1f", avgRating) %></h1>
+                                            <div class="star-rating">
+                                                <% for(int i=1; i<=5; i++){ %>
+                                                    <i class="fa fa-star text-warning"></i>
+                                                <% } %>
+                                            </div>
+                                            
+                                            <div class="text-muted"><%= totalReviews %> reviews</div>
+                                       
+                                 
+                                    </div>
+                                        <div class="mt-4">
+                                        <% for(int star=5; star>=1; star--){ 
+                                             long count = ratingCounts.getOrDefault(star, 0L);
+                                             int pct = totalReviews>0 ? (int)(count * 100 / totalReviews) : 0;
+                                        %>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="me-2"><%= star %> <i class="fa fa-star text-warning"></i></span>
+                                            <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                                <div class="progress-bar bg-warning" role="progressbar"
+                                                     style="width: <%= pct %>%;" aria-valuenow="<%= pct %>"
+                                                     aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <span>(<%= count %>)</span>
+
+                               
+                                        </div>
+                                 <% } %>
+                                    </div>
+                              
+                                </div>
+                                      <!-- Reviews List -->
+                                <div class="reviews-list flex-grow-1">
+                                    <h4 class="mb-4" style="color: lightcoral">User Reviews</h4>
+                                    <% if (feedbackList != null && !feedbackList.isEmpty()) {
+                                           java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                                           for (Feedback fb : feedbackList) {
+                                    %>
+                                    <div class="review-item">
+                                        <div class="review-header d-flex justify-content-between align-items-center">
+                                            <strong><%= fb.getUserFullName() %></strong>
+                                            <small class="text-muted"><%= sdf.format(fb.getCreatedAt()) %></small>
+                                        </div>
+                                        <div class="mt-1">
+                                            <% for(int i=1; i<=5; i++){
+                                                  String cls = i <= fb.getRating() ? "fa-star" : "fa-star-o text-muted";
+                                            %>
+                                                <i class="fa <%= cls %> text-warning"></i>
+                                            <% } %>
+                                        </div>
+                                        <p class="mt-2"><%= fb.getComment() %></p>
+                         
+                                    </div>
+                                    <%   }
+                                       } else { %>
+                                       <p class="text-muted">There are no reviews yet.</p>
+                                    <% } %>
+                                </div>
+                                
+                            </div>
          <!-- Room Policy -->
                             <div class="mt-5 booking-form">
                                 <h4>Room Policy</h4>
@@ -1257,6 +1366,7 @@
                                     <li>Near shopping centers and entertainment venues</li>
                                 </ul>
                             </div>
+       
                             </div>
    </div>
                    
