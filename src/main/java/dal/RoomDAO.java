@@ -11,6 +11,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.criteria.Predicate;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class RoomDAO {
 
@@ -749,19 +753,120 @@ public class RoomDAO {
 
         return rooms;
     }
-public int getAvailableRoomsCount() {
-    String sql = "SELECT COUNT(*) FROM Rooms WHERE Status = 'AVAILABLE'";
-    
-    try (Connection conn = getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql);
-         ResultSet rs = stmt.executeQuery()) {
-        
-        if (rs.next()) {
-            return rs.getInt(1);
+
+    public int getAvailableRoomsCount() {
+        String sql = "SELECT COUNT(*) FROM Rooms WHERE Status = 'AVAILABLE'";
+
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+        return 0;
     }
-    return 0;
-}
+
+    public int countRooms(String status) {
+        String sql = "SELECT COUNT(*) FROM Rooms r "
+                + "LEFT JOIN Reservations rs ON rs.RoomId = r.Id "
+                + "WHERE 1=1";
+        if (status != null && !status.isEmpty()) {
+            sql += " AND r.Status = ?";
+        }
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (status != null && !status.isEmpty()) {
+                ps.setString(1, status);
+            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public List<Integer> getAllFloors() {
+        List<Integer> floors = new ArrayList<>();
+        String sql = "SELECT RoomNumber FROM Rooms";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            Set<Integer> floorSet = new TreeSet<>();
+            while (rs.next()) {
+                String roomNumber = rs.getString("RoomNumber");
+                if (roomNumber != null && roomNumber.length() >= 3) {
+                    int floor = Integer.parseInt(roomNumber.substring(0, 1)); // Extract first digit
+                    floorSet.add(floor);
+                }
+            }
+            floors.addAll(floorSet);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return floors;
+    }
+
+    public List<Room> getRoomsByFloor(int floor, String status) {
+        List<Room> list = new ArrayList<>();
+        String sql = "SELECT r.*, rt.Name AS RoomTypeName, rt.BasePrice, rt.Capacity, rt.Description AS RoomTypeDescription, rt.ImageUrl, "
+                + "res.CheckIn, res.CheckOut, u.FullName AS GuestName "
+                + "FROM Rooms r "
+                + "JOIN RoomTypes rt ON r.RoomTypeId = rt.Id "
+                + "LEFT JOIN Reservations res ON r.Id = res.RoomId AND res.Status = 'CONFIRMED' "
+                + "AND GETDATE() BETWEEN res.CheckIn AND res.CheckOut "
+                + "LEFT JOIN Users u ON res.UserId = u.Id "
+                + "WHERE r.RoomNumber LIKE ?";
+
+        if (status != null && !status.isEmpty()) {
+            sql += " AND r.Status = ?";
+        }
+
+        sql += " ORDER BY r.RoomNumber";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, floor + "%");
+            if (status != null && !status.isEmpty()) {
+                ps.setString(2, status);
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Room r = new Room();
+                r.setId(rs.getInt("Id"));
+                r.setRoomNumber(rs.getString("RoomNumber"));
+                r.setRoomTypeId(rs.getInt("RoomTypeId"));
+                String dbStatus = rs.getString("Status");
+                r.setStatus(dbStatus);
+
+                r.setRoomTypeName(rs.getString("RoomTypeName"));
+                r.setBasePrice(rs.getDouble("BasePrice"));
+                r.setCapacity(rs.getInt("Capacity"));
+                r.setRoomTypeDescription(rs.getString("RoomTypeDescription"));
+                r.setImageUrl(rs.getString("ImageUrl"));
+                r.setGuestName(rs.getString("GuestName"));
+                r.setCheckIn(rs.getDate("CheckIn"));
+                r.setCheckOut(rs.getDate("CheckOut"));
+
+                // Override status to OCCUPIED if guest is staying
+                if (r.getGuestName() != null) {
+                    r.setStatus("OCCUPIED");
+                }
+
+                list.add(r);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
 }
