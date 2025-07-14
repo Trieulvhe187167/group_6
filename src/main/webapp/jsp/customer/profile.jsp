@@ -529,12 +529,7 @@
                         <span>User Profile</span>
                     </a>
                 </li>
-                <li>
-                    <a href="change-password.jsp">
-                        <i class="fas fa-key"></i>
-                        <span>Change Password</span>
-                    </a>
-                </li>
+
                     <li>
                        <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" >
                                                 <i class="fa fa-concierge-bell"></i> Book Services
@@ -735,7 +730,6 @@
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
                                         <th>Reservation</th>
                                         <th>Rating</th>
                                         <th>Comment</th>
@@ -745,7 +739,6 @@
                                 <tbody>
                                     <c:forEach var="f" items="${feedbacks}">
                                         <tr>
-                                            <td>${f.id}</td>
                                             <td>${f.reservationId}</td>
                                             <td>${f.rating}</td>
                                             <td>${f.comment}</td>
