@@ -38,7 +38,7 @@ public class CustomersServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
             return;
         }
-        
+         request.setAttribute("isReceptionist", true);
         String action = request.getParameter("action");
         
         // Handle view customer detail action
@@ -165,6 +165,7 @@ public class CustomersServlet extends HttpServlet {
             customer.setBookingHistory(customerDAO.getCustomerBookingHistory(customerId));
             
             request.setAttribute("customer", customer);
+            request.setAttribute("isReceptionist", true);
             request.setAttribute("pageTitle", "Customer Details");
             request.setAttribute("activePage", "customers");
             request.setAttribute("contentPage", "/jsp/reception/customer-detail.jsp");

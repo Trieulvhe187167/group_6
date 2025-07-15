@@ -472,7 +472,7 @@
         </div>
 
         <!-- JavaScript -->
-        <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/jquery-3.6.0.min.js"></script>
         <script>
                             // Initialize QR code
                             $(document).ready(function () {
@@ -540,9 +540,9 @@
                                         'reservationId': '<%= request.getAttribute("reservation") != null ? ((model.Reservation)request.getAttribute("reservation")).getId() : "" %>',
                                         'method': 'BANK_TRANSFER',
                                       'status': 'PENDING',
-                                    'transactionId': 'BANK-TRANSFER-' + Date.now(),
-                                    'reservationIds': '<%= reservationIdsStr != null ? reservationIdsStr : "" %>',
-                                    'paymentIds': '<%= paymentIdsStr != null ? paymentIdsStr : "" %>'
+                                        'transactionId': 'BANK-TRANSFER-' + Date.now(),
+                                        'reservationIds': '<%= reservationIdsStr != null ? reservationIdsStr : "" %>',
+                                        'paymentIds': '<%= paymentIdsStr != null ? paymentIdsStr : "" %>'
                                     };
 
                                     for (const [key, value] of Object.entries(fields)) {
@@ -555,6 +555,7 @@
 
                                     document.body.appendChild(form);
                                     form.submit();
+                                    alert('Thank you for your payment, we will check and send you a notification via email');
                                 }
                             }
 

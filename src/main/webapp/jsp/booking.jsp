@@ -156,31 +156,28 @@
                             </div>
                         </div>
                         <div class="col-md-3">
+                            <div class="payment-method-btn" onclick="selectPaymentMethod('BANK_TRANSFER')">
+                                <input type="radio" name="paymentMethod" value="BANK_TRANSFER" hidden>
+                                <i class="fas fa-qrcode fa-2x mb-2"></i>
+                                <div>Bank Transfer</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
                             <div class="payment-method-btn" onclick="selectPaymentMethod('CREDIT_CARD')">
                                 <input type="radio" name="paymentMethod" value="CREDIT_CARD" hidden>
                                 <i class="fas fa-credit-card fa-2x mb-2"></i>
                                 <div>Credit Card</div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="payment-method-btn" onclick="selectPaymentMethod('VNPay')">
-                                <input type="radio" name="paymentMethod" value="VNPay" hidden>
-                                <i class="fas fa-qrcode fa-2x mb-2"></i>
-                                <div>VNPay</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="payment-method-btn" onclick="selectPaymentMethod('MoMo')">
-                                <input type="radio" name="paymentMethod" value="MoMo" hidden>
-                                <i class="fas fa-mobile-alt fa-2x mb-2"></i>
-                                <div>MoMo</div>
-                            </div>
-                        </div>
                     </div>
-                    <div class="d-flex justify-content-between mt-3">
-                        <a href="${pageContext.request.contextPath}/SearchAvailableRoomsServlet" class="btn btn-secondary">Back</a>
-                        <button type="submit" class="btn btn-primary">Confirm Booking</button>
-                    </div>
+                   <div class="d-flex justify-content-between my-5 px-5">
+
+  <a href="javascript:history.back()" class="btn btn-outline-secondary px-4">
+    <i class="fas fa-arrow-left"></i> Back
+  </a>
+
+  <button type="submit" class="btn btn-primary px-4">Confirm Booking</button>
+</div>
                 </form>
                 <%
                     } else if(cart != null && !cart.isEmpty()) {

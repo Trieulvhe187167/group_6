@@ -519,7 +519,8 @@ public boolean updateReservationDeposit(int reservationId, double depositAmount,
 }
 
 public Reservation getReservationWithDeposit(int reservationId) {
-    String sql = "SELECT r.*, u.FullName as CustomerName, rm.RoomNumber, " +
+    String sql = "SELECT r.*, u.FullName as CustomerName, u.Email AS CustomerEmail, " +
+                "u.Phone AS CustomerPhone, rm.RoomNumber, " +
                 "rt.Name as RoomTypeName, r.DepositAmount, r.DepositPaidDate, " +
                 "r.DepositStatus FROM Reservations r " +
                 "INNER JOIN Users u ON r.UserId = u.Id " +
@@ -543,6 +544,8 @@ public Reservation getReservationWithDeposit(int reservationId) {
             reservation.setStatus(rs.getString("Status"));
             reservation.setTotalAmount(rs.getDouble("TotalAmount"));
             reservation.setCustomerName(rs.getString("CustomerName"));
+            reservation.setCustomerEmail(rs.getString("CustomerEmail"));
+            reservation.setCustomerPhone(rs.getString("CustomerPhone"));
             reservation.setRoomNumber(rs.getString("RoomNumber"));
             reservation.setRoomTypeName(rs.getString("RoomTypeName"));
             reservation.setDepositAmount(rs.getDouble("DepositAmount"));
