@@ -19,6 +19,8 @@ public class PaymentGatewayServlet extends HttpServlet {
     private final PaymentDAO paymentDAO = new PaymentDAO();
     private final ReservationDAO reservationDAO = new ReservationDAO();
     private final ActivityDAO activityDAO = new ActivityDAO();
+     private final RoomDAO roomDAO = new RoomDAO();
+    private final RoomTypeDAO roomTypeDAO = new RoomTypeDAO();
     private final EmailNotificationService emailService = new EmailNotificationService(); // Thêm EmailNotificationService
 
     @Override
@@ -222,13 +224,53 @@ public class PaymentGatewayServlet extends HttpServlet {
         }
         
 
-            // Simulate payment processing
-            boolean paymentSuccess = simulatePaymentProcessing(method);
-
-            if (paymentSuccess) {
-                // Generate transaction ID
+            if ("BANK_TRANSFER".equals(method)) {
                 String transactionId = generateTransactionId(method);
+                 for (int i = 0; i < reservations.size(); i++) {
+                    Reservation res = reservations.get(i);
+                    double perReservationDeposit = depositMap.get(res.getId());
+                    int payId = (i < paymentIds.size()) ? paymentIds.get(i) : paymentIds.get(0);
 
+                    Payment payment = paymentDAO.getPaymentById(payId);
+                    if (payment != null) {
+                        payment.setAmount(perReservationDeposit);
+                        payment.setStatus("PENDING");
+                        payment.setTransactionId(transactionId);
+                        payment.setPaymentType("DEPOSIT");
+                        paymentDAO.updatePayment(payment);
+                    }
+
+                    reservationDAO.updateDepositStatus(res.getId(), "PENDING");
+
+                    Activity activity = new Activity();
+                    activity.setType("DEPOSIT_PAYMENT");
+                    activity.setReservationId(res.getId());
+                    activity.setUserId(currentUser != null ? currentUser.getId() : res.getUserId());
+                    activity.setDescription("Deposit payment pending for reservation #" + res.getId() +
+                                          " - Amount: " + perReservationDeposit);
+                    activity.setAmount(perReservationDeposit);
+                    activity.setIpAddress(request.getRemoteAddr());
+                    activityDAO.logActivity(activity);
+                }
+
+                session.removeAttribute("pendingBookingData");
+                session.removeAttribute("pendingOTP");
+
+                session.setAttribute("successMessage",
+                        "Thank you for your payment, we will check and send you a notification via email");
+
+                if (reservations.size() > 1) {
+                    response.sendRedirect("BookingConfirmation?reservationIds=" + reservationIdsStr);
+                } else {
+                    response.sendRedirect("BookingConfirmation?reservationId=" + reservations.get(0).getId());
+                }
+            } else {
+                // Simulate payment processing
+                boolean paymentSuccess = simulatePaymentProcessing(method);
+
+                if (paymentSuccess) {
+                    // Generate transaction ID
+                    String transactionId = generateTransactionId(method);
               
             for (int i = 0; i < reservations.size(); i++) {
                 Reservation res = reservations.get(i);
@@ -267,10 +309,18 @@ public class PaymentGatewayServlet extends HttpServlet {
                   // Send payment confirmation email
                 try {
                    if (reservations.size() > 1) {
-                   emailService.sendGroupPaymentConfirmation(reservations, totalDeposit, method, transactionId);
-                } else {
-                    emailService.sendPaymentConfirmation(reservations.get(0), paymentDAO.getPaymentById(paymentIds.get(0)));
-                }
+                        emailService.sendGroupPaymentConfirmation(reservations, totalDeposit, method, transactionId);
+                        for (Reservation r : reservations) {
+                            Room room = roomDAO.getRoomById(r.getRoomId());
+                            RoomType roomType = roomTypeDAO.getRoomTypesById(room.getRoomTypeId());
+                            emailService.sendBookingConfirmation(r, room, roomType);
+                        }
+                    } else {
+                        emailService.sendPaymentConfirmation(reservations.get(0), paymentDAO.getPaymentById(paymentIds.get(0)));
+                        Room room = roomDAO.getRoomById(reservations.get(0).getRoomId());
+                        RoomType roomType = roomTypeDAO.getRoomTypesById(room.getRoomTypeId());
+                        emailService.sendBookingConfirmation(reservations.get(0), room, roomType);
+                    }
                     System.out.println("Payment confirmation email sent" );
                 } catch (Exception e) {
                      // Log but do not fail payment process
@@ -304,7 +354,8 @@ public class PaymentGatewayServlet extends HttpServlet {
                 request.getRequestDispatcher("/jsp/payment-failed.jsp").forward(request, response);
             }
 
-        } catch (Exception e) {
+        } 
+        }catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect("SearchAvailableRoomsServlet");
         }

@@ -94,11 +94,26 @@ public class BookingConfirmationServlet extends HttpServlet {
 
             Reservation first = reservations.get(0);
             List<ServiceOrder> services = serviceDAO.getServiceOrdersByReservation(first.getId());
+            
+            Room room = null;
+            RoomType roomType = null;
+            if (first.getRoomId() != null) {
+                room = roomDAO.getRoomById(first.getRoomId());
+                if (room != null) {
+                    roomType = roomTypeDAO.getRoomTypesById(room.getRoomTypeId());
+                }
+            }
 
             request.setAttribute("reservations", reservations);
               request.setAttribute("reservationList", reservations);
             request.setAttribute("reservation", first);
             request.setAttribute("payment", payment);
+              if (room != null) {
+                request.setAttribute("room", room);
+            }
+            if (roomType != null) {
+                request.setAttribute("roomType", roomType);
+            }
             request.setAttribute("services", services);
             request.setAttribute("totalAmount", totalAmount);
             request.setAttribute("depositAmount", totalDeposit);

@@ -52,16 +52,21 @@ public class CustomerDAO {
      * Get customer details by ID
      */
     public Customer getCustomerById(int id) {
-        String sql = "SELECT u.*, " +
-                    "COUNT(r.Id) as TotalBookings, " +
-                    "COUNT(CASE WHEN r.Status = 'COMPLETED' THEN 1 END) as CompletedBookings, " +
-                    "COALESCE(SUM(r.TotalAmount), 0) as TotalSpent, " +
-                    "MAX(r.CheckOut) as LastVisit, " +
-                    "AVG(CASE WHEN r.Status = 'COMPLETED' THEN DATEDIFF(day, r.CheckIn, r.CheckOut) END) as AvgNights " +
-                    "FROM Users u " +
-                    "LEFT JOIN Reservations r ON u.Id = r.UserId " +
-                    "WHERE u.Id = ? AND u.Role = 'CUSTOMER' " +
-                    "GROUP BY u.Id, u.Username, u.FullName, u.Email, u.Phone, u.Status, u.CreatedAt, u.UpdatedAt";
+      // Aggregate reservation statistics in a subquery to avoid GROUP BY issues
+        String sql = "SELECT u.Id, u.Username, u.FullName, u.Email, u.Phone, u.Status, " +
+                     "u.CreatedAt, u.UpdatedAt, stats.TotalBookings, stats.CompletedBookings, " +
+                     "stats.TotalSpent, stats.LastVisit, stats.AvgNights " +
+                     "FROM Users u " +
+                     "LEFT JOIN (" +
+                     "  SELECT UserId, COUNT(Id) AS TotalBookings, " +
+                     "         COUNT(CASE WHEN Status = 'COMPLETED' THEN 1 END) AS CompletedBookings, " +
+                     "         COALESCE(SUM(TotalAmount), 0) AS TotalSpent, " +
+                     "         MAX(CheckOut) AS LastVisit, " +
+                     "         AVG(CASE WHEN Status = 'COMPLETED' THEN DATEDIFF(day, CheckIn, CheckOut) END) AS AvgNights " +
+                     "  FROM Reservations " +
+                     "  GROUP BY UserId" +
+                     ") stats ON u.Id = stats.UserId " +
+                     "WHERE u.Id = ? AND u.Role = 'CUSTOMER'";
         
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
