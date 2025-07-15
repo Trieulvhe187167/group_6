@@ -126,6 +126,29 @@ public class PaymentDAO {
         return 0.0;
     }
     
+     // Get monthly revenue data for an entire year
+    public double[] getMonthlyRevenueByYear(int year) {
+        double[] revenues = new double[12];
+        String sql = "SELECT MONTH(CreatedAt) AS Month, SUM(Amount) AS Revenue " +
+                     "FROM Payments " +
+                     "WHERE Status = 'SUCCESS' AND YEAR(CreatedAt) = ? " +
+                     "GROUP BY MONTH(CreatedAt)";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, year);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int month = rs.getInt("Month");
+                revenues[month - 1] = rs.getDouble("Revenue");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return revenues;
+    }
     // Get payment count by status
     public int getPaymentCountByStatus(String status) {
         String sql = "SELECT COUNT(*) FROM Payments WHERE Status = ?";
@@ -496,7 +519,8 @@ public boolean updateReservationDeposit(int reservationId, double depositAmount,
 }
 
 public Reservation getReservationWithDeposit(int reservationId) {
-    String sql = "SELECT r.*, u.FullName as CustomerName, rm.RoomNumber, " +
+    String sql = "SELECT r.*, u.FullName as CustomerName, u.Email AS CustomerEmail, " +
+                "u.Phone AS CustomerPhone, rm.RoomNumber, " +
                 "rt.Name as RoomTypeName, r.DepositAmount, r.DepositPaidDate, " +
                 "r.DepositStatus FROM Reservations r " +
                 "INNER JOIN Users u ON r.UserId = u.Id " +
@@ -520,6 +544,8 @@ public Reservation getReservationWithDeposit(int reservationId) {
             reservation.setStatus(rs.getString("Status"));
             reservation.setTotalAmount(rs.getDouble("TotalAmount"));
             reservation.setCustomerName(rs.getString("CustomerName"));
+            reservation.setCustomerEmail(rs.getString("CustomerEmail"));
+            reservation.setCustomerPhone(rs.getString("CustomerPhone"));
             reservation.setRoomNumber(rs.getString("RoomNumber"));
             reservation.setRoomTypeName(rs.getString("RoomTypeName"));
             reservation.setDepositAmount(rs.getDouble("DepositAmount"));

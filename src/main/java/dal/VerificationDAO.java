@@ -106,8 +106,12 @@ public class VerificationDAO extends DBContext {
     public List<PendingChange> getPendingChangesPaginated(int page, int pageSize) {
         List<PendingChange> changes = new ArrayList<>();
         String sql = """
-            SELECT * FROM vw_PendingChangesSummary 
-            ORDER BY CreatedAt DESC
+             SELECT pc.*, u.FullName AS UserName, u.Role AS UserRole,
+                               admin.FullName AS InitiatedByName
+                        FROM PendingChanges pc
+                        INNER JOIN Users u ON pc.UserId = u.Id
+                        INNER JOIN Users admin ON pc.InitiatedBy = admin.Id
+                        ORDER BY pc.CreatedAt DESC
             OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
             """;
         
@@ -132,9 +136,13 @@ public class VerificationDAO extends DBContext {
     public List<PendingChange> getPendingChangesForUser(int userId) {
         List<PendingChange> changes = new ArrayList<>();
         String sql = """
-            SELECT * FROM vw_PendingChangesSummary 
-            WHERE UserId = ? AND Status IN ('PENDING', 'APPROVED', 'REJECTED')
-            ORDER BY CreatedAt DESC
+                SELECT pc.*, u.FullName AS UserName, u.Role AS UserRole,
+                               admin.FullName AS InitiatedByName
+                        FROM PendingChanges pc
+                        INNER JOIN Users u ON pc.UserId = u.Id
+                        INNER JOIN Users admin ON pc.InitiatedBy = admin.Id
+                        WHERE pc.UserId = ? AND pc.Status IN ('PENDING', 'APPROVED', 'REJECTED')
+                        ORDER BY pc.CreatedAt DESC
             """;
         
         try (Connection conn = getConnection();

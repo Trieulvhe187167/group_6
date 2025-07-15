@@ -81,7 +81,7 @@
                                             <div>
                                                 <strong>${customer.fullName}</strong>
                                                 <c:if test="${not empty customer.loyaltyStatus}">
-                                                    <span class="badge badge-warning ml-2">${customer.loyaltyStatus}</span>
+                                                    <span class="badge badge-warning ml-2" style="color: red">${customer.loyaltyStatus}</span>
                                                 </c:if>
                                             </div>
                                         </div>
@@ -91,7 +91,7 @@
                                         <small class="text-muted">${customer.phone}</small>
                                     </td>
                                     <td>
-                                        <span class="badge badge-primary">${customer.totalBookings}</span>
+                                        <span class="badge badge-primary"style="color: black">${customer.totalBookings}</span>
                                     </td>
                                     <td>
                                         <c:choose>
@@ -109,10 +109,10 @@
                                     <td>
                                         <c:choose>
                                             <c:when test="${customer.status}">
-                                                <span class="badge badge-success">Active</span>
+                                                <span class="badge badge-success" style="color: lightgreen">Active</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="badge badge-secondary">Inactive</span>
+                                                <span class="badge badge-secondary"style="color: lightcoral">Inactive</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>

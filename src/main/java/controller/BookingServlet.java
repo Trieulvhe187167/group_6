@@ -100,6 +100,14 @@ public class BookingServlet extends HttpServlet {
         
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
+                // Allow booking only for CUSTOMER role or guest (not logged in)
+        if (currentUser != null && !"CUSTOMER".equals(currentUser.getRole())) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"error\": \"You do not have permission to book\"}");
+            return;
+        }
         releaseExpiredHolds(session);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
