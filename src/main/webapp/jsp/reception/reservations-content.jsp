@@ -446,7 +446,7 @@
                             <div class="form-group">
                                 <label>Check-in Date <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control" id="editCheckIn" required>
-                                
+
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -810,6 +810,7 @@
             $('#editNumberOfCustomers').val(data.numberOfCustomers || 1);
             $('#editStatus').val(data.status);
             $('#editSpecialRequests').val(data.specialRequests || '');
+
             // Khoá input nếu đã CONFIRMED
 if (data.status === 'CONFIRMED') {
     $('#editStatus').prop('disabled', true);
@@ -836,6 +837,7 @@ if (data.status === 'CONFIRMED') {
 $('#editReservationModal')
   .data('price', pricePerNight || 0)
   .data('originalNights', originalNights);
+
 
 
 updateEditTotalAmountDisplay();
@@ -902,6 +904,9 @@ function updateReservation() {
                 alert('⚠️ ' + errorMsg);
             }
         },
+
+
+
         error: function (xhr, status, error) {
             let errorMessage = 'Error updating reservation: ';
             try {
@@ -914,6 +919,7 @@ function updateReservation() {
             console.error('AJAX Error:', { xhr, status, error });
             alert('⚠️ ' + errorMessage);
         }
+
     });
 }
 
