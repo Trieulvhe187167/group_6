@@ -435,7 +435,7 @@
 
                         <div class="form-group">
                             <label>Address</label>
-                            <input name="address" type="text" 
+                            <input name="address" type="text" maxlength="30" 
                                    class="form-control" id="address"
                                    placeholder="Enter street address"
                                    value="${isEdit ? staff.address : ''}">
@@ -444,14 +444,14 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>City</label>
-                                <input name="city" type="text" 
+                                <input name="city" type="text" maxlength="30" 
                                        class="form-control" id="city"
                                        placeholder="Enter city"
                                        value="${isEdit ? staff.city : ''}">
                             </div>
                             <div class="form-group">
                                 <label>Country</label>
-                                <input name="country" type="text" 
+                                <input name="country" type="text" maxlength="30"
                                        class="form-control" id="country"
                                        placeholder="Enter country"
                                        value="${isEdit ? staff.country : ''}">
