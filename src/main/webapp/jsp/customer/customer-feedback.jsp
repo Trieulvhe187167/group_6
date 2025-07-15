@@ -483,6 +483,12 @@
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
         }
         </style>
+        <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const reservationId = urlParams.get('id');
+    window.reservationId = reservationId;
+</script>
+
 </head>
 <body>
      <!-- Mobile Toggle Button -->
@@ -491,70 +497,7 @@
     </button>
 
     <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h3><i class="fas fa-user-circle"></i> Customer Panel</h3>
-                <p>Welcome back!</p>
-            </div>
-            <ul class="sidebar-menu">
-                <li>
-                    <a href="#" class="active">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>My Bookings</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="${pageContext.request.contextPath}/customer/history">
-                        <i class="fas fa-history"></i>
-                        <span>Booking History</span>
-                    </a>
-                </li>
-                <div class="menu-divider"></div>
-                <li>
-                    <a href="user-profile.jsp">
-                        <i class="fas fa-user-edit"></i>
-                        <span>User Profile</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="change-password.jsp">
-                        <i class="fas fa-key"></i>
-                        <span>Change Password</span>
-                    </a>
-                </li>
-                <div class="menu-divider"></div>
-                <li>
-                    <a href="/index.jsp">
-                        <i class="fas fa-home"></i>
-                        <span>Homepage</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="search-rooms.jsp">
-                        <i class="fas fa-search"></i>
-                        <span>Search Rooms</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="support.jsp">
-                        <i class="fas fa-headset"></i>
-                        <span>Support</span>
-                    </a>
-                </li>
-                <div class="menu-divider"></div>
-                <li>
-                    <a href="${pageContext.request.contextPath}/LogoutServlet" style="color: #dc3545;">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
+    
     <main class="main-content">
         <div class="content-header">
             <h2><i class="fas fa-comments"></i> Customer Feedback</h2>
@@ -574,12 +517,14 @@
                         <i class="fas fa-bed"></i>
                         Select Booking
                     </label>
-                    <select class="form-select" id="bookingSelect" required>
-                        <option value="">Choose a booking to review...</option>
-                        <option value="1">Room 101 - Deluxe Suite (Jan 15-18, 2025)</option>
-                        <option value="2">Room 205 - Standard Room (Jan 22-25, 2025)</option>
-                        <option value="3">Room 301 - Premium Suite (Feb 01-05, 2025)</option>
-                    </select>
+                    <c:forEach var="booking" items="${completedBookings}">
+    <option value="${booking.id}" ${booking.id == param.id ? 'selected' : ''}>
+        Room ${booking.roomName} - ${booking.roomTypeName}
+        (<fmt:formatDate value="${booking.checkIn}" pattern="MMM dd" /> -
+        <fmt:formatDate value="${booking.checkOut}" pattern="MMM dd, yyyy" />)
+    </option>
+</c:forEach>
+
                 </div>
 
                 <!-- Rating Section -->
