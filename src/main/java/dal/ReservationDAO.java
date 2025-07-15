@@ -1324,6 +1324,9 @@ for (int i = 1; i <= columnCount; i++) {
     reservation.setCustomerName(custName);
     reservation.setRoomNumber(rs.getString("RoomNumber"));
  
+      try {
+        reservation.setRoomTypeName(rs.getString("RoomTypeName"));
+    } catch (SQLException ignore) {}
     // Các thông tin thêm nếu có
     try {
         reservation.setNights(rs.getInt("Nights"));

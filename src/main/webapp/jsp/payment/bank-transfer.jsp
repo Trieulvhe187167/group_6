@@ -10,6 +10,7 @@
     String accountHolder = "LE VAN TRIEU";
     String bankName = "Vietcombank";
     String bankCode = "VCB"; // Vietcombank short code
+    String qrUrl = "";
         String reservationIdsStr = (String) request.getAttribute("reservationIdsStr");
     String paymentIdsStr = (String) request.getAttribute("paymentIdsStr");
     java.util.List<model.Reservation> reservationList =
@@ -47,10 +48,19 @@
             request.setAttribute("transferContent", transferContent);
             request.setAttribute("depositAmount", depositAmount);
             request.setAttribute("fullAmount", fullAmount);
+            
+            qrUrl = "https://img.vietqr.io/image/" + bankCode + "-" + accountNumber + "-compact2.png"
+                    + "?amount=" + Math.round(depositAmount)
+                    + "&addInfo=" + java.net.URLEncoder.encode(transferContent, "UTF-8")
+                    + "&accountName=" + java.net.URLEncoder.encode(accountHolder, "UTF-8");
+            request.setAttribute("qrUrl", qrUrl);
         }
     } catch (Exception e) {
         System.out.println("Setup error: " + e.getMessage());
         e.printStackTrace();
+    }
+        if (request.getAttribute("qrUrl") == null) {
+        request.setAttribute("qrUrl", qrUrl);
     }
 %>
 
@@ -406,7 +416,8 @@
 
                             <div id="qr-container" style="display: none;">
                                 <div class="qr">
-                                    <img id="qr-image" alt="QR Code for bank transfer" 
+                                  <img id="qr-image" alt="QR Code for bank transfer"
+                                         src="<c:out value='${qrUrl}'/>"
                                          onerror="handleQRError()" onload="handleQRLoad()">
                                 </div>
                             </div>
@@ -471,25 +482,20 @@
             </div>
         </div>
 
-        <!-- JavaScript -->
-        <script src="${pageContext.request.contextPath}/assets/js/jquery-3.6.0.min.js"></script>
+       
         <script>
-                            // Initialize QR code
-                            $(document).ready(function () {
-                                loadQRCode();
-                            });
-
-                            function loadQRCode() {
+                       const qrUrl = '<%= qrUrl %>';
+                            document.addEventListener('DOMContentLoaded', function () {
+                            
                                 const qrImage = document.getElementById('qr-image');
-                                const amount = <%= request.getAttribute("depositAmount") != null ? request.getAttribute("depositAmount") : "0" %>;
-                                const content = encodeURIComponent('<%= transferContent %>');
-
-                                // Generate VietQR URL for Vietcombank
-                                const bankCode = '<%= bankCode %>';
-                                const account = '<%= accountNumber %>';
-                                const accountName = encodeURIComponent('<%= accountHolder %>');
-                                const qrUrl = `${pageContext.request.contextPath}/assets/images/qr_code/qr.jpg`;
+                               
                                 qrImage.src = qrUrl;
+                                    });
+
+                            function retryQR() {
+                                document.getElementById('qr-error').style.display = 'none';
+                                document.getElementById('qr-loading').style.display = 'block';
+                                document.getElementById('qr-image').src = qrUrl + '&ts=' + Date.now();
                             }
 
                             function handleQRLoad() {
@@ -502,12 +508,7 @@
                                 document.getElementById('qr-error').style.display = 'block';
                             }
 
-                            function retryQR() {
-                                document.getElementById('qr-error').style.display = 'none';
-                                document.getElementById('qr-loading').style.display = 'block';
-                                loadQRCode();
-                            }
-
+                         
                             function copyText(text) {
                                 navigator.clipboard.writeText(text).then(function () {
                                     // Show success message
