@@ -126,6 +126,29 @@ public class PaymentDAO {
         return 0.0;
     }
     
+     // Get monthly revenue data for an entire year
+    public double[] getMonthlyRevenueByYear(int year) {
+        double[] revenues = new double[12];
+        String sql = "SELECT MONTH(CreatedAt) AS Month, SUM(Amount) AS Revenue " +
+                     "FROM Payments " +
+                     "WHERE Status = 'SUCCESS' AND YEAR(CreatedAt) = ? " +
+                     "GROUP BY MONTH(CreatedAt)";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, year);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int month = rs.getInt("Month");
+                revenues[month - 1] = rs.getDouble("Revenue");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return revenues;
+    }
     // Get payment count by status
     public int getPaymentCountByStatus(String status) {
         String sql = "SELECT COUNT(*) FROM Payments WHERE Status = ?";

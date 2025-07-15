@@ -329,14 +329,11 @@
                             <span>User Profile</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="change-password.jsp">
-                            <i class="fas fa-key"></i>
-                            <span>Change Password</span>
-                        </a>
-                    </li>
-                    <li>
+
                         <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" class="active">
+
+                    <li>
+                        <a href="${pageContext.request.contextPath}/customer/services" class="active">
                             <i class="fa fa-concierge-bell"></i> Book Services
                         </a>
                     </li>
