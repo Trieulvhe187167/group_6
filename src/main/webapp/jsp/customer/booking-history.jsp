@@ -563,11 +563,11 @@
                         <span>User Profile</span>
                     </a>
                 </li>
-
-                    <li>
-                       <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" >
-                                                <i class="fa fa-concierge-bell"></i> Book Services
-                                            </a>
+                <li>
+                    <a href="change-password.jsp">
+                        <i class="fas fa-key"></i>
+                        <span>Change Password</span>
+                    </a>
                 </li>
                     <li>
                        <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" >
@@ -588,7 +588,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="support.jsp">
+                    <a href="$">
                         <i class="fas fa-headset"></i>
                         <span>Support</span>
                     </a>
@@ -706,89 +706,85 @@
                 </form>
             </div>
 
-            <!-- Bookings List -->
-            <c:if test="${empty historyBookings}">
-                <div class="empty-message">
-                    <div class="empty-icon">
-                        <i class="fas fa-history"></i>
-                    </div>
-                    <div class="empty-title">No Booking History</div>
-                    <div class="empty-text">You don't have any past bookings yet. Start exploring our rooms!</div>
-                </div>
-            </c:if>
-
-            <c:forEach var="booking" items="${historyBookings}">
-                <div class="booking-card">
-                    <div class="booking-header">
-                        <div class="booking-title">
-                            <i class="fas fa-bed"></i> Room ${booking.roomName} - ${booking.roomTypeName}
-                        </div>
-                    </div>
-                    
-                    <div class="booking-details">
-                        <div class="detail-item">
-                            <i class="fas fa-calendar-plus"></i>
-                            <span class="detail-label">Check-in:</span>
-                            <span class="detail-value">
-                                <fmt:formatDate value="${booking.checkIn}" pattern="MMM dd, yyyy" />
-                            </span>
-                        </div>
-                        
-                        <div class="detail-item">
-                            <i class="fas fa-calendar-minus"></i>
-                            <span class="detail-label">Check-out:</span>
-                            <span class="detail-value">
-                                <fmt:formatDate value="${booking.checkOut}" pattern="MMM dd, yyyy" />
-                            </span>
-                        </div>
-                        
-                        <div class="detail-item">
-                            <i class="fas fa-dollar-sign"></i>
-                            <span class="detail-label">Total Paid:</span>
-                            <span class="detail-value">
-                                <fmt:formatNumber value="${booking.totalAmount}" type="currency" />
-                            </span>
-                        </div>
-                        
-                        <div class="detail-item">
-                            <i class="fas fa-info-circle"></i>
-                            <span class="detail-label">Status:</span>
-                            <span class="badge ${booking.status.toLowerCase()}">${booking.status}</span>
-                        </div>
-                    </div>
-
-                    <div class="booking-actions">
-                        <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}" 
-                           class="btn btn-primary">
-                            <i class="fas fa-eye"></i>
-                            View Details
-                        </a>
-                    </div>
-
-                    <!-- Rating Section (if booking was completed) -->
-                    <c:if test="${booking.status == 'COMPLETED'}">
-                        <div class="rating-section">
-                            <c:choose>
-                                <c:when test="${not empty booking.rating}">
-                                    <span class="rating-stars">
-                                        <c:forEach begin="1" end="5" var="star">
-                                            <i class="fas fa-star ${star <= booking.rating ? 'active' : ''}"></i>
-                                        </c:forEach>
-                                    </span>
-                                    <span class="rating-text">You rated this stay ${booking.rating}/5 stars</span>
-                                </c:when>
-                                <c:otherwise>
-                                    <a href="rate-booking.jsp?id=${booking.id}" class="rating-text">
-                                        <i class="fas fa-star"></i> Rate your stay
-                                    </a>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-                    </c:if>
-                </div>
-            </c:forEach>
-        </main>
+           <!-- Nếu không có đơn đặt phòng -->
+<c:if test="${empty historyBookings}">
+    <div class="empty-message">
+        <div class="empty-icon">
+            <i class="fas fa-history"></i>
+        </div>
+        <div class="empty-title">No Booking History</div>
+        <div class="empty-text">You don't have any past bookings yet. Start exploring our rooms!</div>
     </div>
+</c:if>
+
+<!-- Bọc tất cả booking cards trong một container -->
+<div class="booking-list">
+    <c:forEach var="booking" items="${historyBookings}">
+        <div class="booking-card">
+            <div class="booking-header">
+                <div class="booking-title">
+                     <i class="fas fa-bed"></i> Room ${booking.roomNumber} 
+                </div>
+                <div class="booking-id">ID: #${booking.id}</div>
+            </div>
+            
+            <div class="booking-details">
+                <div class="detail-item">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span class="detail-label">Check-in:</span>
+                    <span class="detail-value">
+                        <fmt:formatDate value="${booking.checkIn}" pattern="MMM dd, yyyy" />
+                    </span>
+                </div>
+                
+                <div class="detail-item">
+                    <i class="fas fa-calendar-minus"></i>
+                    <span class="detail-label">Check-out:</span>
+                    <span class="detail-value">
+                        <fmt:formatDate value="${booking.checkOut}" pattern="MMM dd, yyyy" />
+                    </span>
+                </div>
+                
+                <div class="detail-item">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span class="detail-label">Total Paid:</span>
+                    <span class="detail-value">
+                        <fmt:formatNumber value="${booking.totalAmount}" type="currency" />
+                    </span>
+                </div>
+                
+                <div class="detail-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="detail-label">Status:</span>
+                    <span class="badge ${booking.status.toLowerCase()}">${booking.status}</span>
+                </div>
+            </div>
+
+            <div class="booking-actions">
+                <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}" 
+                   class="btn btn-primary">
+                    <i class="fas fa-eye"></i> View Details
+                </a>
+
+                <c:choose>
+                    <c:when test="${booking.status == 'COMPLETED' && empty booking.rating}">
+                        <a href="${pageContext.request.contextPath}/customer/feedback?action=view&id=${booking.id}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-star"></i> Rate Stay
+                        </a>
+                    </c:when>
+                    <c:when test="${booking.status == 'COMPLETED' && not empty booking.rating}">
+                        <a href="${pageContext.request.contextPath}/customer/feedback?action=list&id=${booking.id}" 
+                           class="btn btn-outline-success">
+                            <i class="fas fa-comment-dots"></i> Your Feedback
+                        </a>
+                    </c:when>
+                </c:choose>
+            </div>
+        </div>
+    </c:forEach>
+</div>
+
 
      <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
