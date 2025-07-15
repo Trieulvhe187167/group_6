@@ -516,6 +516,13 @@ private void updateCustomer(HttpServletRequest request, HttpServletResponse resp
             throws ServletException, IOException {
         
         int id = Integer.parseInt(request.getParameter("id"));
+        // Check if the customer currently has active reservations/stays
+        if (userDAO.hasActiveReservations(id)) {
+            request.getSession().setAttribute("error",
+                    "Cannot delete customer while they have active reservations or are currently staying.");
+            response.sendRedirect(request.getContextPath() + "/admin/customers");
+            return;
+        }
         
         if (userDAO.deleteUser(id)) {
             request.getSession().setAttribute("success", "Customer deleted successfully!");

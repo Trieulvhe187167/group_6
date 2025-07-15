@@ -848,7 +848,8 @@ public List<User> getGuestsWithStats() {
 // Check if user has any active reservations
 public boolean hasActiveReservations(int userId) {
     String sql = "SELECT COUNT(*) FROM Reservations " +
-                "WHERE UserId = ? AND Status IN ('CONFIRMED', 'PENDING') " +
+                "WHERE UserId = ? " +
+                "AND Status IN ('CONFIRMED', 'PENDING', 'CHECKED_IN') " +
                 "AND CheckOut >= CAST(GETDATE() as DATE)";
     
     try (Connection conn = DBContext.getConnection();
