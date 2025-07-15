@@ -480,7 +480,7 @@
             </ul>
             <ul class="list-inline mb-0">
                 <c:choose>
-                    <c:when test="${not empty sessionScope.user}">
+                    <c:when test="${sessionScope.user.role eq 'CUSTOMER'}">
                         <!-- User is logged in -->
                         <li class="list-inline-item">
                             <div class="user-dropdown dropdown">
@@ -494,38 +494,8 @@
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-right">
                                     <!-- Show different options based on role -->
-                                    <c:choose>
-                                        <c:when test="${sessionScope.user.role eq 'ADMIN'}">
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/admin-dashboard">
-                                                <i class="fa fa-tachometer-alt"></i> Dashboard
-                                            </a>
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/admin/users">
-                                                <i class="fa fa-users"></i> Manage Users
-                                            </a>
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/HouseKeeping">
-                                                <i class="fa fa-users"></i> Manage Housekeeping
-                                            </a>
-                                            <div class="dropdown-divider"></div>
-                                        </c:when>
-                                        <c:when test="${sessionScope.user.role eq 'RECEPTIONIST'}">
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/receptionist/bookings">
-                                                <i class="fa fa-calendar-check"></i> Manage Bookings
-                                            </a>
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/receptionist/checkin">
-                                                <i class="fa fa-sign-in-alt"></i> Check-in/Check-out
-                                            </a>
-                                            <div class="dropdown-divider"></div>
-                                        </c:when>
-                                        <c:when test="${sessionScope.user.role eq 'HOUSEKEEPER'}">
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/housekeeper/tasks">
-                                                <i class="fa fa-tasks"></i> My Tasks
-                                            </a>
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/housekeeper/task-detail">
-                                                <i class="fa fa-bed"></i> Room Status
-                                            </a>
-                                            <div class="dropdown-divider"></div>
-                                        </c:when>
-                                        <c:when test="${sessionScope.user.role eq 'CUSTOMER'}">
+                                  
+                                 
                                             <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/profile">
                                                 <i class="fa fa-user"></i> My Profile
                                             </a>
@@ -539,8 +509,8 @@
                                                 <i class="fa fa-history"></i> Booking History
                                             </a>
                                             <div class="dropdown-divider"></div>
-                                        </c:when>
-                                    </c:choose>
+                                   
+                                  
                                     
                                     <a class="dropdown-item" href="${pageContext.request.contextPath}/LogoutServlet">
                                         <i class="fa fa-sign-out-alt"></i> Logout

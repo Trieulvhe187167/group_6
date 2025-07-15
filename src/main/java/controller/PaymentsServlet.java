@@ -2,6 +2,7 @@ package controller;
 
 import dal.*;
 import model.*;
+import service.EmailNotificationService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -21,6 +22,9 @@ public class PaymentsServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
     private final ActivityDAO activityDAO = new ActivityDAO();
     private final CheckInOutDAO checkInOutDAO = new CheckInOutDAO();
+    private final RoomDAO roomDAO = new RoomDAO();
+    private final RoomTypeDAO roomTypeDAO = new RoomTypeDAO();
+    private final EmailNotificationService emailService = new EmailNotificationService();
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -281,12 +285,12 @@ public class PaymentsServlet extends HttpServlet {
         }
     }
     
-    private void updatePaymentStatus(HttpServletRequest request, HttpServletResponse response) 
+    private void updatePaymentStatus(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         try {
             int paymentId = Integer.parseInt(request.getParameter("paymentId"));
             String status = request.getParameter("status");
-            
+                  response.setContentType("application/json");
             Payment payment = paymentDAO.getPaymentById(paymentId);
             if (payment == null) {
                 response.getWriter().write("{\"success\":false,\"message\":\"Payment not found\"}");
@@ -294,12 +298,26 @@ public class PaymentsServlet extends HttpServlet {
             }
             
             payment.setStatus(status);
-            boolean success = paymentDAO.updatePayment(payment);
+                        boolean success = paymentDAO.updatePaymentStatus(paymentId, status, payment.getTransactionId());
             
             if (success) {
-                // Log activity
                 HttpSession session = request.getSession();
                 User currentUser = (User) session.getAttribute("user");
+                 if ("SUCCESS".equals(status)) {
+                    paymentDAO.updateReservationDeposit(payment.getReservationId(), payment.getAmount(), "PAID");
+                    reservationDAO.updateReservationStatus(payment.getReservationId(), "CONFIRMED");
+
+                    try {
+                        Reservation reservation = paymentDAO.getReservationWithDeposit(payment.getReservationId());
+                        emailService.sendPaymentConfirmation(reservation, payment);
+                        
+                        Room room = roomDAO.getRoomById(reservation.getRoomId());
+                        RoomType roomType = roomTypeDAO.getRoomTypesById(room.getRoomTypeId());
+                        emailService.sendBookingConfirmation(reservation, room, roomType);
+                    } catch (Exception ex) {
+                        logger.error("Failed to send payment confirmation", ex);
+                    }
+                }
                 logPaymentActivity(currentUser, payment, "Payment status updated to " + status);
                 
                 response.getWriter().write("{\"success\":true,\"message\":\"Payment status updated\"}");
