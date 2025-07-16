@@ -459,7 +459,8 @@ public class StaffServlet extends HttpServlet {
         }
         
         // Validate input
-        String validationError = validateStaffInput(username, password, email, phone, role, null);
+        String validationError = validateStaffInput(username, password, email,
+                phone, role, department, address, city, country, null);
         if (validationError != null) {
             request.setAttribute("error", validationError);
             request.setAttribute("staff", staff);
@@ -749,7 +750,8 @@ public class StaffServlet extends HttpServlet {
         }
         
         // Validate input
-        String validationError = validateStaffInput(null, null, email, phone, role, id);
+        String validationError = validateStaffInput(null, null, email, phone,
+                role, department, address, city, country, id);
         if (validationError != null) {
             request.setAttribute("error", validationError);
             request.setAttribute("staff", staff);
@@ -1011,7 +1013,11 @@ public class StaffServlet extends HttpServlet {
         return page;
     }
     
-    private String validateStaffInput(String username, String password, String email, String phone, String role, Integer excludeId) {
+    private String validateStaffInput(String username, String password,
+                                      String email, String phone, String role,
+                                      String department, String address,
+                                      String city, String country,
+                                      Integer excludeId) {
         // Username validation (only for new staff)
         if (username != null && !username.matches("^[a-zA-Z0-9_]{3,20}$")) {
             return "Username must be 3-20 characters and contain only letters, numbers, and underscores.";
@@ -1035,6 +1041,21 @@ public class StaffServlet extends HttpServlet {
         // Role validation (but skip for admin role protection)
         if (!STAFF_ROLES.contains(role)) {
             return "Invalid role selected.";
+        }
+        if (department != null && department.length() > 30) {
+            return "Department cannot exceed 30 characters.";
+        }
+
+        if (address != null && address.length() > 30) {
+            return "Address cannot exceed 30 characters.";
+        }
+
+        if (city != null && city.length() > 30) {
+            return "City cannot exceed 30 characters.";
+        }
+
+        if (country != null && country.length() > 30) {
+            return "Country cannot exceed 30 characters.";
         }
         
         // Check duplicates

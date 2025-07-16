@@ -2,6 +2,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <div class="container-fluid">
+
+    <c:if test="${not empty error}">
+        <div class="alert alert-danger">${error}</div>
+    </c:if>
+
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -45,12 +50,26 @@
                 <!-- Status -->
                 <div class="form-group">
                     <label for="status">Status <span class="text-danger">*</span></label>
-                    <select class="form-control" name="status" id="status" required>
-                        <option value="available" ${room.status eq 'available' ? 'selected' : ''}>Available</option>
-                        <option value="occupied" ${room.status eq 'occupied' ? 'selected' : ''}>Occupied</option>
-                        <option value="maintenance" ${room.status eq 'maintenance' ? 'selected' : ''}>Maintenance</option>
-                        <option value="dirty" ${room.status eq 'dirty' ? 'selected' : ''}>Dirty</option>
-                    </select>
+
+                    <c:choose>
+                        <c:when test="${room.status eq 'OCCUPIED' || room.status eq 'DIRTY'}">
+                            <select class="form-control" name="status" id="status" disabled>
+                                <option value="AVAILABLE" ${room.status eq 'AVAILABLE' ? 'selected' : ''}>Available</option>
+                                <option value="OCCUPIED" ${room.status eq 'OCCUPIED' ? 'selected' : ''}>Occupied</option>
+                                <option value="MAINTENANCE" ${room.status eq 'MAINTENANCE' ? 'selected' : ''}>Maintenance</option>
+                                <option value="DIRTY" ${room.status eq 'DIRTY' ? 'selected' : ''}>Dirty</option>
+                            </select>
+                            <!-- Gửi status hiện tại qua form để giữ nguyên -->
+                            <input type="hidden" name="status" value="${room.status}" />
+                        </c:when>
+
+                        <c:otherwise>
+                            <select class="form-control" name="status" id="status" required>
+                                <option value="AVAILABLE" ${room.status eq 'AVAILABLE' ? 'selected' : ''}>Available</option>
+                                <option value="MAINTENANCE" ${room.status eq 'MAINTENANCE' ? 'selected' : ''}>Maintenance</option>
+                            </select>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
 
                 <!-- Buttons -->

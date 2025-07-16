@@ -76,6 +76,19 @@
         </div>
     </div>
     
+                  <!-- Revenue Chart -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Revenue This Year</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" style="max-height:300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Room Status & Recent Reservations -->
     <div class="row mt-4">
         <div class="col-md-6">
@@ -84,24 +97,7 @@
                     <h5 class="mb-0">Room Status Overview</h5>
                 </div>
                 <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-3">
-                            <h6>${stats.availableRooms}</h6>
-                            <small class="text-success">Available</small>
-                        </div>
-                        <div class="col-3">
-                            <h6>${stats.occupiedRooms}</h6>
-                            <small class="text-danger">Occupied</small>
-                        </div>
-                        <div class="col-3">
-                            <h6>${stats.maintenanceRooms}</h6>
-                            <small class="text-warning">Maintenance</small>
-                        </div>
-                        <div class="col-3">
-                            <h6>${stats.totalRooms}</h6>
-                            <small class="text-info">Total</small>
-                        </div>
-                    </div>
+                      <canvas id="roomStatusChart" style="max-height:300px;"></canvas>
                 </div>
             </div>
         </div>
@@ -140,3 +136,38 @@
         </div>
     </div>
 </div>
+                            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const revCtx = document.getElementById('revenueChart');
+if (revCtx) {
+    new Chart(revCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+            datasets: [{
+                label: 'Revenue',
+                data: [<c:forEach var="val" items="${stats.monthlyRevenueSeries}" varStatus="loop">${val}<c:if test="${!loop.last}">,</c:if></c:forEach>],
+                borderColor: '#5a2b81',
+                backgroundColor: 'rgba(90,43,129,0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+    });
+}
+const roomCtx = document.getElementById('roomStatusChart');
+if (roomCtx) {
+    new Chart(roomCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Available','Occupied','Maintenance'],
+            datasets: [{
+                data: [${stats.availableRooms}, ${stats.occupiedRooms}, ${stats.maintenanceRooms}],
+                backgroundColor: ['#28a745','#dc3545','#ffc107']
+            }]
+        },
+        options: {responsive:true,maintainAspectRatio:false}
+    });
+}
+</script>

@@ -123,7 +123,6 @@ public class RoomAmenityDAO {
 //        }
 //        return amenities;
 //    }
-
     // Record amenity inventory check during check-in
     public boolean recordAmenityInventory(int reservationId, int amenityId, int quantity, int checkedBy) {
         String sql = "INSERT INTO AmenityInventory (ReservationId, AmenityId, Quantity, CheckType, CheckedAt, CheckedBy) "
@@ -502,4 +501,31 @@ public class RoomAmenityDAO {
         }
     }
 
+    public List<RoomAmenityDTO> getAllWithRoomNumber() {
+        List<RoomAmenityDTO> list = new ArrayList<>();
+        String sql = "SELECT ra.*, r.RoomNumber FROM RoomAmenities ra "
+                + "JOIN Rooms r ON ra.RoomId = r.Id "
+                + "ORDER BY r.RoomNumber, ra.Name";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                RoomAmenityDTO a = new RoomAmenityDTO();
+                a.setId(rs.getInt("Id"));
+                a.setRoomId(rs.getInt("RoomId"));
+                a.setRoomNumber(rs.getString("RoomNumber"));
+                a.setName(rs.getString("Name"));
+                a.setDescription(rs.getString("Description"));
+                a.setIsChargeable(rs.getBoolean("IsChargeable"));
+                a.setUnitPrice(rs.getBigDecimal("UnitPrice"));
+                a.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
+                list.add(a);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
 }

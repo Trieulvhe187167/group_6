@@ -269,6 +269,7 @@
                 <a href="${pageContext.request.contextPath}/LogoutServlet" class="btn btn-outline-light btn-sm">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
+
             </div>
         </header>
 

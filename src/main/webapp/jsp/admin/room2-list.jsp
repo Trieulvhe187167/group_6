@@ -24,6 +24,10 @@
     <c:if test="${not empty error}">
         <div class="alert alert-danger">${error}</div>
     </c:if>
+    <c:if test="${not empty success}">
+        <div class="alert alert-success">${success}</div>
+    </c:if>
+
 
     <!-- Filter Form -->
     <div class="card mb-3">
@@ -70,7 +74,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
-                
+
                 <!-- Pagination summary -->
                 <div class="mb-3 text-muted">
                     <small>
@@ -80,7 +84,7 @@
                         of ${totalRecords} rooms
                     </small>
                 </div>
-                    
+
                 <table class="table table-hover align-middle">
                     <thead class="thead-light">
                         <tr>

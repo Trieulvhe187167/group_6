@@ -56,17 +56,6 @@
             <h2>Payment Management</h2>
             <p class="text-muted">Process payments and manage financial transactions</p>
         </div>
-        <div class="col-md-6 text-right">
-            <button class="btn btn-primary" data-toggle="modal" data-target="#newPaymentModal">
-                <i class="fas fa-credit-card"></i> New Payment
-            </button>
-            <button class="btn btn-success" onclick="exportPayments()">
-                <i class="fas fa-file-excel"></i> Export
-            </button>
-            <button class="btn btn-info" onclick="refreshPayments()">
-                <i class="fas fa-sync"></i> Refresh
-            </button>
-        </div>
     </div>
 
     <!-- Statistics Cards -->
@@ -103,61 +92,7 @@
         </div>
     </div>
 
-    <!-- Quick Payment Processing -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Quick Payment Processing</h5>
-        </div>
-        <div class="card-body">
-            <form id="quickPaymentForm">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Booking ID or Room Number <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="searchPayment" 
-                                   placeholder="Enter booking ID or room number" required>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label>Payment Method <span class="text-danger">*</span></label>
-                            <select class="form-control" id="quickPaymentMethod" required>
-                                <option value="">Select method</option>
-                                <option value="CASH">Cash</option>
-                                <option value="CREDIT_CARD">Credit Card</option>
-                                <option value="DEBIT_CARD">Debit Card</option>
-                                <option value="BANK_TRANSFER">Bank Transfer</option>
-                                <option value="VNPay">VNPay</option>
-                                <option value="MoMo">MoMo</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label>Amount <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="quickAmount" 
-                                   placeholder="Amount" min="0" step="1000" required>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Notes</label>
-                            <input type="text" class="form-control" id="quickNotes" 
-                                   placeholder="Payment notes (optional)">
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <button type="submit" class="btn btn-success btn-block">
-                                <i class="fas fa-check"></i> Process Payment
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+   
 
     <!-- Filter Section -->
     <div class="card mb-4">
@@ -299,16 +234,16 @@
                                 <td>
                                     <c:choose>
                                         <c:when test="${payment.status == 'SUCCESS'}">
-                                            <span class="badge badge-success">Success</span>
+                                            <span class="badge badge-success" style="color: green">Success</span>
                                         </c:when>
                                         <c:when test="${payment.status == 'PENDING'}">
-                                            <span class="badge badge-warning">Pending</span>
+                                            <span class="badge badge-warning"style="color: orange">Pending</span>
                                         </c:when>
                                         <c:when test="${payment.status == 'FAILED'}">
-                                            <span class="badge badge-danger">Failed</span>
+                                            <span class="badge badge-danger"style="color: red">Failed</span>
                                         </c:when>
                                         <c:when test="${payment.status == 'REFUNDED'}">
-                                            <span class="badge badge-info">Refunded</span>
+                                            <span class="badge badge-info"style="color: black">Refunded</span>
                                         </c:when>
                                         <c:otherwise>
                                             <span class="badge badge-secondary">${payment.status}</span>
@@ -535,16 +470,7 @@ $(document).ready(function() {
         pageLength: 25
     });
     
-    // Form submissions
-    $('#quickPaymentForm').submit(function(e) {
-        e.preventDefault();
-        processQuickPayment();
-    });
-    
-    $('#newPaymentForm').submit(function(e) {
-        e.preventDefault();
-        processNewPayment();
-    });
+
     
     $('#refundForm').submit(function(e) {
         e.preventDefault();
@@ -562,40 +488,7 @@ $(document).ready(function() {
     });
 });
 
-function processQuickPayment() {
-    const paymentData = {
-        searchTerm: $('#searchPayment').val(),
-        paymentMethod: $('#quickPaymentMethod').val(),
-        amount: $('#quickAmount').val(),
-        notes: $('#quickNotes').val()
-    };
-    
-    if (!paymentData.searchTerm || !paymentData.paymentMethod || !paymentData.amount) {
-        Swal.fire('Error', 'Please fill in all required fields', 'error');
-        return;
-    }
-    
-    $.ajax({
-        url: '${pageContext.request.contextPath}/receptionist/payments',
-        type: 'POST',
-        data: {
-            action: 'quickPayment',
-            ...paymentData
-        },
-        success: function(response) {
-            if (response.success) {
-                Swal.fire('Success', 'Payment processed successfully!', 'success');
-                $('#quickPaymentForm')[0].reset();
-                setTimeout(() => location.reload(), 1500);
-            } else {
-                Swal.fire('Error', response.message || 'Failed to process payment', 'error');
-            }
-        },
-        error: function() {
-            Swal.fire('Error', 'Error processing payment. Please try again.', 'error');
-        }
-    });
-}
+
 
 function searchReservationForPayment() {
     const query = $('#reservationSearch').val();
@@ -855,6 +748,7 @@ function updatePaymentStatus(paymentId, status) {
     $.ajax({
         url: '${pageContext.request.contextPath}/receptionist/payments',
         type: 'POST',
+                dataType: 'json',
         data: {
             action: 'updatePaymentStatus',
             paymentId: paymentId,

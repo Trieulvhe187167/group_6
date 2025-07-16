@@ -199,6 +199,11 @@ public class AdminRoom2Servlet extends HttpServlet {
 
         List<Room> paginatedRooms = rooms.subList(startIndex, endIndex);
 
+        String success = request.getParameter("success");
+        if (success != null && !success.isEmpty()) {
+            request.setAttribute("success", success);
+        }
+
         // Set về JSP
         request.setAttribute("rooms", paginatedRooms);
         request.setAttribute("roomTypes", roomTypeDAO.getAllRoomTypes());
@@ -326,8 +331,13 @@ public class AdminRoom2Servlet extends HttpServlet {
         room.setRoomTypeId(roomTypeId);
         room.setStatus(status);
 
+        if (dao.isRoomNumberExists(roomNumber, null)) {
+            forwardToRoomForm(request, response, room, false, "Room number already exists.");
+            return;
+        }
+
         dao.createRoom(room);
-        response.sendRedirect("rooms2");
+        response.sendRedirect("rooms2?success=Room created successfully");
     }
 
     private void updateRoom(HttpServletRequest request, HttpServletResponse response, RoomDAO dao)
@@ -344,8 +354,13 @@ public class AdminRoom2Servlet extends HttpServlet {
         room.setRoomTypeId(roomTypeId);
         room.setStatus(status);
 
+        if (dao.isRoomNumberExists(roomNumber, id)) {
+            forwardToRoomForm(request, response, room, true, "Room number already exists.");
+            return;
+        }
+
         dao.updateRoom(room);
-        response.sendRedirect("rooms2");
+        response.sendRedirect("rooms2?success=Room updated successfully");
     }
 
     private void deleteRoom(HttpServletRequest request, HttpServletResponse response, RoomDAO dao)
@@ -360,6 +375,22 @@ public class AdminRoom2Servlet extends HttpServlet {
             request.getSession().setAttribute("error", "Error updating room type status: " + e.getMessage());
         }
         response.sendRedirect("rooms2");
+    }
+
+    private void forwardToRoomForm(HttpServletRequest request, HttpServletResponse response,
+            Room room, boolean isEdit, String errorMessage)
+            throws ServletException, IOException {
+        RoomTypeDAO roomTypeDAO = new RoomTypeDAO(); // phải có DAO riêng nếu RoomDAO không có getRoomTypes()
+
+        request.setAttribute("error", errorMessage);
+        request.setAttribute("room", room);
+        request.setAttribute("roomTypes", roomTypeDAO.getAllRoomTypes()); // dùng để đổ vào <select>
+        request.setAttribute("isEdit", isEdit);
+        request.setAttribute("pageTitle", isEdit ? "Edit Room" : "Create Room");
+        request.setAttribute("activePage", "room-manage");
+        request.setAttribute("contentPage", "/jsp/admin/room2-form.jsp");
+
+        request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
     }
 
     /**
