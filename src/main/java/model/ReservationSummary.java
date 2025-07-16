@@ -26,6 +26,8 @@ public class ReservationSummary {
     private int roomId;
     private String inspectionStatus;
     private double additionalCharges;
+    private Integer rating; // ✅ Cho phép null
+
     
     // Payment-related fields
     private double amountPaid;
@@ -33,7 +35,17 @@ public class ReservationSummary {
     private boolean depositPaid;
     
     // Constructors
-    public ReservationSummary() {}
+    
+
+    public ReservationSummary() {
+    }
+    public int getRating() {
+    return rating;
+}
+
+public void setRating(int rating) {
+    this.rating = rating;
+}
     
     // Getters and Setters
     public int getId() {
