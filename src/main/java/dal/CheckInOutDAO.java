@@ -57,7 +57,7 @@ public class CheckInOutDAO {
                     "INNER JOIN Users u ON r.UserId = u.Id " +
                     "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
                     "WHERE r.CheckIn = CAST(GETDATE() AS DATE) " +
-                    "AND r.Status = 'CONFIRMED' " +
+                    "AND r.Status IN ('CONFIRMED', 'PENDING') " +
                     "AND NOT EXISTS (SELECT 1 FROM CheckInDetails WHERE ReservationId = r.Id) " +
                     "ORDER BY r.CheckIn";
         
@@ -121,42 +121,16 @@ public class CheckInOutDAO {
         return checkOuts;
     }
     
-    /**
-     * Create a new check-in record
-     * @param checkIn The check-in details
-     * @return true if successful, false otherwise
-     */
+    // Create check-in record
     public boolean createCheckIn(CheckInDetail checkIn) {
-        Connection conn = null;
-        PreparedStatement ps = null;
+        String sql = "INSERT INTO CheckInDetails (ReservationId, IdType, IdNumber, " +
+                    "AdditionalGuests, SpecialRequests, SecurityDeposit, KeyCards, " +
+                    "KeyCardNumbers, CheckInNotes, CheckInTime, CheckInBy) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), ?)";
         
-        try {
-            System.out.println("Starting check-in process for reservation ID: " + checkIn.getReservationId());
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             
-            // Start transaction
-            conn = DBContext.getConnection();
-            conn.setAutoCommit(false);
-            
-            // Check if this reservation is already checked in
-            String checkSql = "SELECT COUNT(*) FROM CheckInDetails WHERE ReservationId = ?";
-            ps = conn.prepareStatement(checkSql);
-            ps.setInt(1, checkIn.getReservationId());
-            ResultSet rs = ps.executeQuery();
-            if (rs.next() && rs.getInt(1) > 0) {
-                System.out.println("Reservation " + checkIn.getReservationId() + " is already checked in");
-                return false;
-            }
-            rs.close();
-            ps.close();
-            
-            // Create check-in record - Using standard ANSI SQL timestamp function
-            String sql = "INSERT INTO CheckInDetails (ReservationId, IdType, IdNumber, AdditionalGuests, " +
-                         "SpecialRequests, SecurityDeposit, KeyCards, KeyCardNumbers, CheckInNotes, " +
-                         "CheckInTime, EstimatedCheckOutTime, CheckInBy) " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)";
-            
-            System.out.println("Executing SQL: " + sql);
-            ps = conn.prepareStatement(sql);
             ps.setInt(1, checkIn.getReservationId());
             ps.setString(2, checkIn.getIdType());
             ps.setString(3, checkIn.getIdNumber());
@@ -166,74 +140,13 @@ public class CheckInOutDAO {
             ps.setInt(7, checkIn.getKeyCards());
             ps.setString(8, checkIn.getKeyCardNumbers());
             ps.setString(9, checkIn.getCheckInNotes());
+            ps.setInt(10, checkIn.getCheckInBy());
             
-            // Use timestamp for estimated check-out time
-            if (checkIn.getEstimatedCheckOutTime() != null) {
-                ps.setTimestamp(10, new java.sql.Timestamp(checkIn.getEstimatedCheckOutTime().getTime()));
-                System.out.println("Setting estimated checkout time: " + new java.sql.Timestamp(checkIn.getEstimatedCheckOutTime().getTime()));
-            } else {
-                ps.setNull(10, java.sql.Types.TIMESTAMP);
-                System.out.println("No estimated checkout time provided");
-            }
-            
-            ps.setInt(11, checkIn.getCheckInBy());
-            
-            try {
-                int affectedRows = ps.executeUpdate();
-                System.out.println("Insert result: " + affectedRows + " rows affected");
-                
-                if (affectedRows == 0) {
-                    System.out.println("Check-in insert failed, rolling back");
-                    conn.rollback();
-                    return false;
-                }
-            } catch (SQLException insertEx) {
-                System.out.println("Error inserting check-in record: " + insertEx.getMessage());
-                insertEx.printStackTrace();
-                conn.rollback();
-                return false;
-            }
-            
-            ps.close();
-            
-            // Update reservation status to CHECKED_IN
-            sql = "UPDATE Reservations SET Status = 'CHECKED_IN' WHERE Id = ?";
-            ps = conn.prepareStatement(sql);
-            ps.setInt(1, checkIn.getReservationId());
-            int resUpdateResult = ps.executeUpdate();
-            System.out.println("Reservation update result: " + resUpdateResult + " rows affected");
-            
-            System.out.println("Check-in completed successfully, committing transaction");
-            conn.commit();
-            return true;
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.out.println("SQL Exception in createCheckIn: " + e.getMessage());
             e.printStackTrace();
-            try {
-                if (conn != null) {
-                    System.out.println("Rolling back transaction");
-                    conn.rollback();
-                }
-            } catch (SQLException ex) {
-                System.out.println("Error during rollback: " + ex.getMessage());
-                ex.printStackTrace();
-            }
-            return false;
-        } finally {
-            try {
-                if (ps != null) {
-                    ps.close();
-                }
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                    System.out.println("Connection closed");
-                }
-            } catch (SQLException e) {
-                System.out.println("Error closing resources: " + e.getMessage());
-                e.printStackTrace();
-            }
         }
+        return false;
     }
     
     // Create check-out record
@@ -242,7 +155,7 @@ public class CheckInOutDAO {
                     "DamageDescription, DamageCharges, AmenityCharges, ServiceCharges, " +
                     "FinalAmount, RefundAmount, PaymentMethod, CheckOutNotes, " +
                     "CheckOutTime, CheckOutBy) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), ?)";
         
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -266,53 +179,40 @@ public class CheckInOutDAO {
         return false;
     }
     
-    /**
-     * Get check-in details for a reservation
-     * @param reservationId The ID of the reservation
-     * @return CheckInDetail object if found, null otherwise
-     */
+    // Get check-in details
     public CheckInDetail getCheckInDetails(int reservationId) {
-        CheckInDetail checkInDetail = null;
-        try {
-            String sql = "SELECT * FROM CheckInDetails WHERE ReservationId = ?";
-            PreparedStatement ps = DBContext.getConnection().prepareStatement(sql);
+        String sql = "SELECT c.*, u.FullName as CheckInByName " +
+                    "FROM CheckInDetails c " +
+                    "INNER JOIN Users u ON c.CheckInBy = u.Id " +
+                    "WHERE c.ReservationId = ?";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
             ps.setInt(1, reservationId);
             ResultSet rs = ps.executeQuery();
             
             if (rs.next()) {
-                checkInDetail = new CheckInDetail();
-                checkInDetail.setId(rs.getInt("Id"));
-                checkInDetail.setReservationId(rs.getInt("ReservationId"));
-                checkInDetail.setIdType(rs.getString("IdType"));
-                checkInDetail.setIdNumber(rs.getString("IdNumber"));
-                checkInDetail.setAdditionalGuests(rs.getInt("AdditionalGuests"));
-                checkInDetail.setSecurityDeposit(rs.getDouble("SecurityDeposit"));
-                checkInDetail.setKeyCards(rs.getInt("KeyCards"));
-                checkInDetail.setKeyCardNumbers(rs.getString("KeyCardNumbers"));
-                checkInDetail.setCheckInNotes(rs.getString("CheckInNotes"));
-                checkInDetail.setCheckInTime(rs.getTimestamp("CheckInTime"));
-                
-                // Check if EstimatedCheckOutTime column exists and is not null
-                try {
-                    Timestamp estimatedCheckOut = rs.getTimestamp("EstimatedCheckOutTime");
-                    if (!rs.wasNull()) {
-                        checkInDetail.setEstimatedCheckOutTime(estimatedCheckOut);
-                    }
-                } catch (SQLException e) {
-                    // Column might not exist in older schema versions
-                    // Just continue without setting this field
-                }
-                
-                checkInDetail.setCheckInBy(rs.getInt("CheckInBy"));
+                CheckInDetail checkIn = new CheckInDetail();
+                checkIn.setId(rs.getInt("Id"));
+                checkIn.setReservationId(rs.getInt("ReservationId"));
+                checkIn.setIdType(rs.getString("IdType"));
+                checkIn.setIdNumber(rs.getString("IdNumber"));
+                checkIn.setAdditionalGuests(rs.getInt("AdditionalGuests"));
+                checkIn.setSpecialRequests(rs.getString("SpecialRequests"));
+                checkIn.setSecurityDeposit(rs.getDouble("SecurityDeposit"));
+                checkIn.setKeyCards(rs.getInt("KeyCards"));
+                checkIn.setKeyCardNumbers(rs.getString("KeyCardNumbers"));
+                checkIn.setCheckInNotes(rs.getString("CheckInNotes"));
+                checkIn.setCheckInTime(rs.getTimestamp("CheckInTime"));
+                checkIn.setCheckInBy(rs.getInt("CheckInBy"));
+                checkIn.setCheckInByName(rs.getString("CheckInByName"));
+                return checkIn;
             }
-            
-            rs.close();
-            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
-        return checkInDetail;
+        return null;
     }
     
     // Check if reservation is already checked in
@@ -351,52 +251,5 @@ public class CheckInOutDAO {
             e.printStackTrace();
         }
         return false;
-    }
-
-    /**
-     * Get active check-ins for calendar display
-     * @return List of check-in details for currently occupied rooms
-     */
-    public List<CheckInCalendarDTO> getActiveCheckIns(Date startDate, Date endDate) {
-        List<CheckInCalendarDTO> result = new ArrayList<>();
-        
-        try {
-            String sql = "SELECT c.Id, c.ReservationId, c.CheckInTime, c.EstimatedCheckOutTime, " +
-                         "c.IdType, c.IdNumber, r.RoomId, rm.RoomNumber, u.FullName AS CustomerName " +
-                         "FROM CheckInDetails c " +
-                         "INNER JOIN Reservations r ON c.ReservationId = r.Id " +
-                         "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
-                         "INNER JOIN Users u ON r.UserId = u.Id " +
-                         "WHERE (c.CheckInTime <= ? AND (c.EstimatedCheckOutTime >= ? OR c.EstimatedCheckOutTime IS NULL)) " +
-                         "AND rm.Status = 'OCCUPIED'";
-            
-            PreparedStatement ps = DBContext.getConnection().prepareStatement(sql);
-            ps.setDate(1, new java.sql.Date(endDate.getTime()));
-            ps.setDate(2, new java.sql.Date(startDate.getTime()));
-            
-            ResultSet rs = ps.executeQuery();
-            
-            while (rs.next()) {
-                CheckInCalendarDTO dto = new CheckInCalendarDTO();
-                dto.setId(rs.getInt("Id"));
-                dto.setReservationId(rs.getInt("ReservationId"));
-                dto.setRoomId(rs.getInt("RoomId"));
-                dto.setRoomNumber(rs.getString("RoomNumber"));
-                dto.setCustomerName(rs.getString("CustomerName"));
-                dto.setIdType(rs.getString("IdType"));
-                dto.setIdNumber(rs.getString("IdNumber"));
-                dto.setCheckInTime(rs.getTimestamp("CheckInTime"));
-                dto.setEstimatedCheckOutTime(rs.getTimestamp("EstimatedCheckOutTime"));
-                
-                result.add(dto);
-            }
-            
-            rs.close();
-            ps.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        
-        return result;
     }
 }
