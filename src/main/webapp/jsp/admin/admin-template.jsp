@@ -272,6 +272,11 @@
                    class="nav-item ${activePage == 'events' ? 'active' : ''}">
                     <i class="fas fa-calendar-alt"></i> Events
                 </a>
+                    <a href="${pageContext.request.contextPath}/admin/services"
+                   class="nav-item ${activePage == 'services' ? 'active' : ''}">
+                    <i class="fas fa-concierge-bell"></i> Services
+                </a>
+                
                 <a href="${pageContext.request.contextPath}/admin/settings" 
                    class="nav-item ${activePage == 'settings' ? 'active' : ''}">
                     <i class="fas fa-cog"></i> Settings
