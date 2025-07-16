@@ -26,42 +26,42 @@ public class FeedbackController extends HttpServlet {
         reservationDAO = new ReservationDAO();
     }
     
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
-        
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
-            return;
-        }
-        
-        String action = request.getParameter("action");
-        
-        if (action == null) {
-            action = "view";
-        }
-        
-        switch (action) {
-            case "view":
-                showFeedbackForm(request, response, user);
-                break;
-            case "list":
-                listUserFeedback(request, response, user);
-                break;
-            case "edit":
-                showEditForm(request, response, user);
-                break;
-            case "delete":
-                deleteFeedback(request, response, user);
-                break;
-            default:
-                showFeedbackForm(request, response, user);
-                break;
-        }
+   @Override
+protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+        throws ServletException, IOException {
+
+    HttpSession session = request.getSession();
+    User user = (User) session.getAttribute("user");
+
+    if (user == null) {
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
+        return;
     }
+
+    String action = request.getParameter("action");
+    if (action == null) {
+        action = "view";
+    }
+
+    switch (action) {
+        case "view":
+            showFeedbackForm(request, response, user);
+            break;
+        case "list":
+            listUserFeedback(request, response, user);
+            break;
+        case "edit":
+            showEditForm(request, response, user);
+            break;
+        case "delete":
+            deleteFeedback(request, response, user);
+            break;
+        default:
+            showFeedbackForm(request, response, user);
+            break;
+    }
+}
+
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -109,7 +109,9 @@ public class FeedbackController extends HttpServlet {
                 .filter(r -> "completed".equalsIgnoreCase(r.getStatus()) && 
                            !feedbackDAO.hasUserFeedbackForReservation(user.getId(), r.getId()))
                 .collect(java.util.stream.Collectors.toList());
-            
+            String selectedId = request.getParameter("id");
+            request.setAttribute("selectedId", selectedId);
+
             request.setAttribute("reservations", completedReservations);
             request.getRequestDispatcher("/jsp/customer/customer-feedback.jsp").forward(request, response);
             
