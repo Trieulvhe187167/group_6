@@ -5,6 +5,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -717,17 +718,16 @@
     </div>
 </c:if>
 
-<!-- Bọc tất cả booking cards trong một container -->
 <div class="booking-list">
     <c:forEach var="booking" items="${historyBookings}">
         <div class="booking-card">
             <div class="booking-header">
                 <div class="booking-title">
-                     <i class="fas fa-bed"></i> Room ${booking.roomNumber} 
+                    <i class="fas fa-bed"></i> Room ${booking.roomNumber} - ${booking.roomTypeName}
                 </div>
                 <div class="booking-id">ID: #${booking.id}</div>
             </div>
-            
+
             <div class="booking-details">
                 <div class="detail-item">
                     <i class="fas fa-calendar-plus"></i>
@@ -736,7 +736,7 @@
                         <fmt:formatDate value="${booking.checkIn}" pattern="MMM dd, yyyy" />
                     </span>
                 </div>
-                
+
                 <div class="detail-item">
                     <i class="fas fa-calendar-minus"></i>
                     <span class="detail-label">Check-out:</span>
@@ -744,7 +744,7 @@
                         <fmt:formatDate value="${booking.checkOut}" pattern="MMM dd, yyyy" />
                     </span>
                 </div>
-                
+
                 <div class="detail-item">
                     <i class="fas fa-dollar-sign"></i>
                     <span class="detail-label">Total Paid:</span>
@@ -752,7 +752,7 @@
                         <fmt:formatNumber value="${booking.totalAmount}" type="currency" />
                     </span>
                 </div>
-                
+
                 <div class="detail-item">
                     <i class="fas fa-info-circle"></i>
                     <span class="detail-label">Status:</span>
@@ -761,20 +761,22 @@
             </div>
 
             <div class="booking-actions">
-                <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}" 
+                <a href="${pageContext.request.contextPath}/customer/booking-detail?id=${booking.id}"
                    class="btn btn-primary">
                     <i class="fas fa-eye"></i> View Details
                 </a>
 
+                <%-- Display Rate Stay or Your Feedback button based on status and rating --%>
                 <c:choose>
-                    <c:when test="${booking.status == 'COMPLETED' && empty booking.rating}">
-                        <a href="${pageContext.request.contextPath}/customer/feedback?action=view&id=${booking.id}" 
-                           class="btn btn-warning">
-                            <i class="fas fa-star"></i> Rate Stay
-                        </a>
+                    <c:when test="${fn:toUpperCase(fn:trim(booking.status)) == 'COMPLETED' && (booking.rating == null || booking.rating == 0)}">
+                        <a href="${pageContext.request.contextPath}/customer/feedback?action=view&id=${booking.id}"
+   class="btn btn-warning">
+    <i class="fas fa-star"></i> Rate Stay
+</a>
+
                     </c:when>
-                    <c:when test="${booking.status == 'COMPLETED' && not empty booking.rating}">
-                        <a href="${pageContext.request.contextPath}/customer/feedback?action=list&id=${booking.id}" 
+                    <c:when test="${fn:toUpperCase(fn:trim(booking.status)) == 'COMPLETED' && booking.rating != null && booking.rating > 0}">
+                        <a href="${pageContext.request.contextPath}/customer/feedback?action=list&id=${booking.id}"
                            class="btn btn-outline-success">
                             <i class="fas fa-comment-dots"></i> Your Feedback
                         </a>
@@ -784,7 +786,6 @@
         </div>
     </c:forEach>
 </div>
-
 
      <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
