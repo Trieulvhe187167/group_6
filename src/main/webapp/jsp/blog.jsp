@@ -53,6 +53,9 @@
                 -webkit-line-clamp: 3;
                 -webkit-box-orient: vertical;
             }
+           .pagination-bx .pagination {
+    margin: 15px;
+}
         </style>
     </head>
     <body id="bg">
@@ -121,10 +124,22 @@
                             
                             <!-- Blog Grid -->
                             <div class="row">
-                                <c:forEach var="blog" items="${blogs}">
-                                    <div class="col-md-4 col-sm-6 m-b30">
+                                <c:forEach var="blog" items="${blogs}">                      
+                                    <div class="col-md-4 col-sm-6 m-b30">         
                                         <div class="blog-card recent-news">
-                                           
+                                            <c:choose>
+                                                <c:when test="${not empty blog.imageUrl}">
+                                                    <img src="${pageContext.request.contextPath}/assets/images/blog/${blog.imageUrl}"
+                                                         alt="${blog.title}"
+                                                         class="blog-image" />
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <img src="${pageContext.request.contextPath}/assets/images/blog/default-blog.jpg"
+                                                         alt="${blog.title}"
+                                                         class="blog-image" />
+                                                </c:otherwise>
+                                            </c:choose>
+
                                             <div class="info-bx p-3">
                                                 <ul class="media-post">
                                                     <li>
@@ -173,7 +188,7 @@
                             <!-- Pagination -->
                             <c:if test="${totalPages > 1}">
                                 <div class="pagination-bx rounded-sm gray clearfix">
-                                    <ul class="pagination">
+                                     <ul class="pagination justify-content-center">
                                         <c:if test="${currentPage > 1}">
                                             <li class="previous">
                                                 <a href="?page=${currentPage - 1}<c:if test="${not empty param.q}">&q=${param.q}</c:if>">

@@ -236,9 +236,10 @@ public class PaymentsServlet extends HttpServlet {
         }
     }
     
-    private void processRefund(HttpServletRequest request, HttpServletResponse response) 
+     private void processRefund(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         try {
+             response.setContentType("application/json");
             int paymentId = Integer.parseInt(request.getParameter("paymentId"));
             double refundAmount = Double.parseDouble(request.getParameter("refundAmount"));
             String refundMethod = request.getParameter("refundMethod");
@@ -250,7 +251,16 @@ public class PaymentsServlet extends HttpServlet {
                 response.getWriter().write("{\"success\":false,\"message\":\"Payment not found\"}");
                 return;
             }
-            
+            // Validate refund amount
+            if (refundAmount <= 0 || refundAmount > originalPayment.getAmount()) {
+                response.getWriter().write("{\"success\":false,\"message\":\"Invalid refund amount\"}");
+                return;
+            }
+
+            // Use original payment method if requested
+            if ("ORIGINAL_METHOD".equals(refundMethod)) {
+                refundMethod = originalPayment.getMethod();
+            }
             // Create refund payment
             Payment refund = new Payment();
             refund.setReservationId(originalPayment.getReservationId());
