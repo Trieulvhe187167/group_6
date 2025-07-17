@@ -53,7 +53,7 @@
                                         <c:if test="${not empty s.description}">
                                             <br><small class="text-muted">${s.description}</small>
                                         </c:if>
-                                    </td><td><fmt:formatNumber value="${s.price}" type="currency" /></td>
+                                    </td><td><fmt:formatNumber value="${s.price}"  />đ</td>
                                     <td>
                                         <span class="badge ${s.status == 'ACTIVE' ? 'badge-success' : 'badge-secondary'}">${s.status}</span>
                                     </td>
