@@ -255,7 +255,7 @@ public class CustomerManagerServlet extends HttpServlet {
         
         // Validate input
        String validationError = validateCustomerInput(username, password, email,
-                phone, address, city, country, null);
+                phone, address, city, country, null);   
         if (validationError != null) {
             request.setAttribute("error", validationError);
             request.setAttribute("customer", customer);

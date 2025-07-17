@@ -9,9 +9,9 @@ public class DBContext {
 
 
 
-private static final String URL = "jdbc:sqlserver://localhost:1433;"
-            + "databaseName=HotelManagement;"
-            + "encrypt=true;trustServerCertificate=true;";
+    private static final String URL = "jdbc:sqlserver://ZIG:1433;"
+             + "databaseName=HotelManagement;encrypt=false;";
+
 
 
 
