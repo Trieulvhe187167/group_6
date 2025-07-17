@@ -586,7 +586,7 @@
         </li>
         <li class="nav-item dropdown ${fn:endsWith(currentUrl,'/blog.jsp') || fn:endsWith(currentUrl,'/events.jsp') ? 'active' : ''}">
             <a class="nav-link dropdown-toggle" href="#" id="blogDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                THEE DISCOVER 
+                THE DISCOVER 
             </a>
             <div class="dropdown-menu" aria-labelledby="blogDropdown">
                 <a class="dropdown-item" href="${pageContext.request.contextPath}/BlogListServlet">BLOG</a>

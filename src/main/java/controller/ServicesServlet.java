@@ -31,7 +31,7 @@ public class ServicesServlet extends HttpServlet {
         User currentUser = (User) session.getAttribute("user");
         
         if (currentUser == null || !"RECEPTIONIST".equals(currentUser.getRole())) {
-            response.sendRedirect(request.getContextPath() + "/login");
+            response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
             return;
         }
         
@@ -42,9 +42,12 @@ public class ServicesServlet extends HttpServlet {
             // Get recent service orders
             List<ServiceOrder> recentOrders = serviceDAO.getRecentServiceOrders(20);
             
+                        // Get rooms with active reservations
+            List<ReservationSummary> checkedInRooms = reservationDAO.getActiveReservations();
             // Set attributes
             request.setAttribute("services", services);
             request.setAttribute("recentOrders", recentOrders);
+             request.setAttribute("checkedInRooms", checkedInRooms);
             request.setAttribute("currentUser", currentUser);
             
             // Set template attributes
@@ -68,13 +71,24 @@ public class ServicesServlet extends HttpServlet {
         
         String action = request.getParameter("action");
         
+          Map<String, Object> jsonRequest = null;
+
+        // When using fetch/AJAX with JSON payload, parameters won't be available
+        if ((action == null || action.isEmpty())
+                && request.getContentType() != null
+                && request.getContentType().contains("application/json")) {
+            jsonRequest = new Gson().fromJson(request.getReader(), Map.class);
+            if (jsonRequest != null) {
+                action = (String) jsonRequest.get("action");
+            }
+        }
         try {
             switch (action) {
                 case "findReservationByRoom":
                     findReservationByRoom(request, response);
                     break;
                 case "addService":
-                    addService(request, response);
+                   addService(request, response, jsonRequest);
                     break;
                 case "servicesByCategory":
                     getServicesByCategory(request, response);
@@ -133,12 +147,15 @@ public class ServicesServlet extends HttpServlet {
         }
     }
     
-    private void addService(HttpServletRequest request, HttpServletResponse response) 
+    private void addService(HttpServletRequest request, HttpServletResponse response,
+                            Map<String, Object> serviceRequest)
             throws IOException {
         try {
-            // Parse JSON request
-            Gson gson = new Gson();
-            Map<String, Object> serviceRequest = gson.fromJson(request.getReader(), Map.class);
+            // Parse JSON request if not already provided
+            if (serviceRequest == null) {
+                Gson gson = new Gson();
+                serviceRequest = gson.fromJson(request.getReader(), Map.class);
+            }
             
             // Validate required fields
             if (!validateServiceRequest(serviceRequest)) {
@@ -152,9 +169,9 @@ public class ServicesServlet extends HttpServlet {
             
             // Create reservation service
             ReservationService resService = new ReservationService();
-            resService.setReservationId(((Double) serviceRequest.get("reservationId")).intValue());
-            resService.setServiceId(((Double) serviceRequest.get("serviceId")).intValue());
-            resService.setQuantity(((Double) serviceRequest.get("quantity")).intValue());
+           resService.setReservationId(parseInt(serviceRequest.get("reservationId")));
+            resService.setServiceId(parseInt(serviceRequest.get("serviceId")));
+            resService.setQuantity(parseInt(serviceRequest.get("quantity")));
             resService.setCreatedBy(currentUser.getId());
             resService.setNotes((String) serviceRequest.get("notes"));
             
@@ -280,9 +297,19 @@ public class ServicesServlet extends HttpServlet {
     }
     
     private boolean validateCreateServiceRequest(Map<String, Object> request) {
-        return request.containsKey("name") 
-            && request.containsKey("category") 
+         return request.containsKey("name")
+            && request.containsKey("category")
             && request.containsKey("price");
+    }
+        /**
+     * Parse an object to int regardless of whether it is a Number or String.
+     */
+    private int parseInt(Object value) {
+        if (value == null) return 0;
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return Integer.parseInt(value.toString());
     }
 }
 
