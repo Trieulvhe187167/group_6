@@ -826,46 +826,52 @@ public class ReservationDAO {
     }
     
     // Get customer booking history
-    public List<ReservationSummary> getCustomerBookingHistory(int customerId) {
-        List<ReservationSummary> bookings = new ArrayList<>();
-        String sql = "SELECT r.Id, u.FullName as CustomerName, u.Phone as CustomerPhone, u.Email as CustomerEmail, " +
-                    "rm.RoomNumber, rt.Name as RoomTypeName, r.CheckIn, r.CheckOut, r.Status, " +
-                    "r.TotalAmount, r.CreatedAt, r.SpecialRequests, r.NumberOfCustomers " +
-                    "FROM Reservations r " +
-                    "INNER JOIN Users u ON r.UserId = u.Id " +
-                    "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
-                    "INNER JOIN RoomTypes rt ON rm.RoomTypeId = rt.Id " +
-                    "WHERE r.UserId = ? " +
-                    "ORDER BY r.CheckIn DESC";
-        
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setInt(1, customerId);
-            ResultSet rs = ps.executeQuery();
-            
-            while (rs.next()) {
-                ReservationSummary booking = new ReservationSummary();
-                booking.setId(rs.getInt("Id"));
-                booking.setCustomerName(rs.getString("CustomerName"));
-                booking.setCustomerPhone(rs.getString("CustomerPhone"));
-                booking.setCustomerEmail(rs.getString("CustomerEmail"));
-                booking.setRoomNumber(rs.getString("RoomNumber"));
-                booking.setRoomTypeName(rs.getString("RoomTypeName"));
-                booking.setCheckIn(rs.getDate("CheckIn"));
-                booking.setCheckOut(rs.getDate("CheckOut"));
-                booking.setStatus(rs.getString("Status"));
-                booking.setTotalAmount(rs.getDouble("TotalAmount"));
-                booking.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                booking.setSpecialRequests(rs.getString("SpecialRequests"));
-                booking.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
-                bookings.add(booking);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+   public List<ReservationSummary> getCustomerBookingHistory(int customerId) {
+    List<ReservationSummary> bookings = new ArrayList<>();
+    String sql = """
+    SELECT r.Id, r.UserId, r.RoomId, r.CheckIn, r.CheckOut, r.Status, r.TotalAmount,
+           rt.Name AS RoomTypeName, room.RoomNumber,
+           (SELECT TOP 1 f.Rating FROM Feedback f WHERE f.ReservationId = r.Id) AS Rating
+    FROM Reservations r
+    JOIN Rooms room ON r.RoomId = room.Id
+    JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
+    WHERE r.UserId = ?
+    ORDER BY r.CheckIn DESC
+""";
+
+
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, customerId);
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+            ReservationSummary booking = new ReservationSummary();
+            booking.setId(rs.getInt("Id"));
+            booking.setCustomerName(rs.getString("CustomerName"));
+            booking.setCustomerPhone(rs.getString("CustomerPhone"));
+            booking.setCustomerEmail(rs.getString("CustomerEmail"));
+            booking.setRoomNumber(rs.getString("RoomNumber"));
+            booking.setRoomTypeName(rs.getString("RoomTypeName"));
+            booking.setCheckIn(rs.getDate("CheckIn"));
+            booking.setCheckOut(rs.getDate("CheckOut"));
+            booking.setStatus(rs.getString("Status"));
+            booking.setTotalAmount(rs.getDouble("TotalAmount"));
+            booking.setCreatedAt(rs.getTimestamp("CreatedAt"));
+            booking.setSpecialRequests(rs.getString("SpecialRequests"));
+            booking.setNumberOfCustomers(rs.getInt("NumberOfCustomers"));
+            // Check null rating
+           booking.setRating(rs.getInt("Rating")); // không cần rs.wasNull()
+
+            bookings.add(booking);
         }
-        return bookings;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return bookings;
+}
+
     
     /**
      * Get reservation count for a customer

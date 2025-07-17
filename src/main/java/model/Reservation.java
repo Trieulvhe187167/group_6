@@ -38,6 +38,7 @@ public class Reservation {
     private boolean isLate;
     private String paymentStatus;
     private double amountPaid;
+    private int rating;
     
     // Deposit-related fields
 private Double depositAmount;
@@ -49,7 +50,13 @@ private double basePrice;
 
     // Constructors
     public Reservation() {}
-    
+    public int getRating() {
+    return rating;
+}
+
+public void setRating(int rating) {
+    this.rating = rating;
+}
     public Reservation(int userId, Integer roomId, Date checkIn, Date checkOut, String status, Double totalAmount) {
         this.userId = userId;
         this.roomId = roomId;

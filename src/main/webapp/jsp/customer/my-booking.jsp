@@ -498,6 +498,12 @@
                         <span>Booking History</span>
                     </a>
                 </li>
+                <li>
+                    <a href="${pageContext.request.contextPath}/customer/your-feedback">
+                        <i class="fas fa-comments"></i>
+                        <span>My Feedback</span>
+                    </a>
+                </li>
                 <div class="menu-divider"></div>
                 <li>
                     <a href="${pageContext.request.contextPath}/customer/profile">
@@ -505,11 +511,11 @@
                         <span>User Profile</span>
                     </a>
                 </li>
-
-                    <li>
-                       <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" >
-                                                <i class="fa fa-concierge-bell"></i> Book Services
-                                            </a>
+                <li>
+                    <a href="change-password.jsp">
+                        <i class="fas fa-key"></i>
+                        <span>Change Password</span>
+                    </a>
                 </li>
                     <li>
                        <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" >

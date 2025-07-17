@@ -37,11 +37,11 @@ public class MailUtil {
         session.setDebug(true); // Enable debug mode
 
         try {
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(USERNAME, "Luxury Hotel"));
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(USERNAME, "Luxury Hotel", "UTF-8"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
-            message.setSubject(subject);
-            message.setText(content);
+            message.setSubject(subject, "UTF-8");
+            message.setText(content, "UTF-8");
 
             Transport.send(message);
             System.out.println("Email sent successfully to: " + to);

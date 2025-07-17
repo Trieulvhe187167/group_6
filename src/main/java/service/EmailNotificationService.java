@@ -109,7 +109,7 @@ public class EmailNotificationService {
         content.append("Room Number: ").append(room.getRoomNumber()).append("\n");
         content.append("Check-in: ").append(dateFormat.format(reservation.getCheckIn())).append(" (14:00)\n");
         content.append("Check-out: ").append(dateFormat.format(reservation.getCheckOut())).append(" (12:00)\n");
-        content.append("Total Amount: ").append(priceFormat.format(reservation.getTotalAmount())).append("₫\n\n");
+        content.append("Total Amount: ").append(priceFormat.format(reservation.getTotalAmount())).append("đ\n\n");
         
         content.append("HOTEL INFORMATION\n");
         content.append("================\n");
@@ -289,7 +289,7 @@ public class EmailNotificationService {
                    .append(dateFormat.format(r.getCheckIn()))
                    .append(" to ").append(dateFormat.format(r.getCheckOut()))
                    .append(" - ")
-                   .append(priceFormat.format(r.getTotalAmount())).append("đ\n");
+                    .append(priceFormat.format(r.getTotalAmount())).append("đ\n");
         }
 
         content.append("\nPAYMENT INFO\n");
