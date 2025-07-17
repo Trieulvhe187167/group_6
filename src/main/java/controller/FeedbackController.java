@@ -13,8 +13,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
-@WebServlet("/customer/feedback")
+@WebServlet(urlPatterns = {"/customer/feedback", "/customer/feedback/*", "/customer/your-feedback"})
+
 public class FeedbackController extends HttpServlet {
     
     private FeedbackDAO feedbackDAO;
@@ -35,6 +39,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
 
     if (user == null) {
         response.sendRedirect(request.getContextPath() + "/login.jsp");
+        return;
+    }
+
+    String servletPath = request.getServletPath();
+    if ("/customer/your-feedback".equals(servletPath)) {
+        // Show the feedback list page (your-feedback.jsp)
+        listUserFeedback(request, response, user); // or a custom method for your-feedback.jsp
         return;
     }
 
@@ -130,14 +141,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         try {
             // Lấy thông tin từ form
+        
+
             String reservationIdStr = request.getParameter("reservationId");
-            String ratingStr = request.getParameter("rating");
+            String ratingStr = request.getParameter("rating"); // May be decimal (e.g., 4.2) from average
             String comment = request.getParameter("comment");
-            String category = request.getParameter("category");
-            String subject = request.getParameter("subject");
-            String recommend = request.getParameter("recommend");
-            String contactEmail = request.getParameter("contactEmail");
             
+            // NOTE: In the JSP, ensure only one <input name="rating"> is present (the average)
             // Validate dữ liệu
             if (reservationIdStr == null || reservationIdStr.trim().isEmpty()) {
                 request.setAttribute("error", "Please select a booking to review.");
@@ -151,14 +161,22 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 return;
             }
             
-            if (comment == null || comment.trim().isEmpty()) {
-                request.setAttribute("error", "Please provide your feedback comment.");
+            if (comment == null || comment.trim().isEmpty() || comment.trim().length() < 5) {
+                request.setAttribute("error", "Please provide a more detailed feedback comment (at least 5 characters).");
                 showFeedbackForm(request, response, user);
                 return;
             }
             
             int reservationId = Integer.parseInt(reservationIdStr);
-            int rating = Integer.parseInt(ratingStr);
+            int rating;
+            try {
+                double ratingDouble = Double.parseDouble(ratingStr);
+                rating = (int) Math.round(ratingDouble); // Round to nearest int (1-5)
+            } catch (NumberFormatException e) {
+                request.setAttribute("error", "Invalid rating format.");
+                showFeedbackForm(request, response, user);
+                return;
+            }
             
             // Kiểm tra rating hợp lệ
             if (rating < 1 || rating > 5) {
@@ -190,18 +208,6 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
             // Tạo comment chi tiết bao gồm tất cả thông tin
             StringBuilder fullComment = new StringBuilder();
-            if (subject != null && !subject.trim().isEmpty()) {
-                fullComment.append("Subject: ").append(subject.trim()).append("\n\n");
-            }
-            if (category != null && !category.trim().isEmpty()) {
-                fullComment.append("Category: ").append(category).append("\n");
-            }
-            if (recommend != null && !recommend.trim().isEmpty()) {
-                fullComment.append("Would recommend: ").append(recommend).append("\n");
-            }
-            if (contactEmail != null && !contactEmail.trim().isEmpty()) {
-                fullComment.append("Contact email: ").append(contactEmail.trim()).append("\n");
-            }
             fullComment.append("\nFeedback:\n").append(comment.trim());
             
             feedback.setComment(fullComment.toString());
@@ -209,9 +215,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             // Lưu feedback
             boolean success = feedbackDAO.addFeedback(feedback);
             
+            // Update reservation rating if feedback was added
             if (success) {
+                reservation.setRating(rating); // set in-memory object if needed
+                reservationDAO.updateReservationRating(reservationId, rating); // new method to implement
                 request.setAttribute("success", "Thank you for your feedback! We appreciate your input.");
-                
                 // Redirect để tránh resubmit
                 response.sendRedirect(request.getContextPath() + "/customer/feedback?success=true");
                 return;
@@ -236,14 +244,34 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
         try {
-            List<Feedback> feedbacks = feedbackDAO.getFeedbackByUserId(user.getId());
-            request.setAttribute("feedbacks", feedbacks);
-            request.getRequestDispatcher("/jsp/customer/feedback-list.jsp").forward(request, response);
+            List<Reservation> reservations = reservationDAO.getReservationsByUserId(user.getId());
+            List<Map<String, Object>> feedbackBookings = new ArrayList<>();
+
+            for (Reservation r : reservations) {
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("id", r.getId());
+                entry.put("roomNumber", r.getRoomNumber());
+                entry.put("checkIn", r.getCheckIn());
+                entry.put("checkOut", r.getCheckOut());
+                entry.put("status", r.getStatus());
+
+                Feedback feedback = feedbackDAO.getFeedbackByReservationId(r.getId());
+                if (feedback != null) {
+                    entry.put("rating", feedback.getRating());
+                    entry.put("comment", feedback.getComment());
+                } else {
+                    entry.put("rating", 0);
+                    entry.put("comment", "");
+                }
+                feedbackBookings.add(entry);
+            }
+            request.setAttribute("feedbackBookings", feedbackBookings);
+            request.getRequestDispatcher("/jsp/customer/your-feedback.jsp").forward(request, response);
             
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error loading feedback list: " + e.getMessage());
-            request.getRequestDispatcher("/jsp/customer/feedback-list.jsp").forward(request, response);
+            request.getRequestDispatcher("/jsp/customer/your-feedback.jsp").forward(request, response);
         }
     }
     

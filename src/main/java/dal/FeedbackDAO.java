@@ -109,28 +109,27 @@ public class FeedbackDAO {
         }
         return map;
     }
-    public boolean addFeedback(Feedback feedback) {
+   public boolean addFeedback(Feedback feedback) {
         String sql = "INSERT INTO feedback (ReservationId, UserId, Rating, Comment, CreatedAt) VALUES (?, ?, ?, ?, ?)";
-        
+
         try (Connection conn = DBContext.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setInt(1, feedback.getReservationId());
             stmt.setInt(2, feedback.getUserId());
             stmt.setInt(3, feedback.getRating());
             stmt.setString(4, feedback.getComment());
             stmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
-            
+
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error adding feedback: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
-    
     /**
      * Lấy tất cả feedback của một user
      */

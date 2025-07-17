@@ -401,21 +401,21 @@
                         <div class="form-group">
                             <label>Address</label>
                             <textarea name="address" class="form-control" id="address"
-                                      placeholder="Enter street address"
+                                      placeholder="Enter street address" maxlength="30"
                                       rows="2">${isEdit ? customer.address : ''}</textarea>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label>City</label>
-                                <input name="city" type="text" 
+                                <input name="city" type="text" maxlength="30"
                                        class="form-control" id="city"
                                        placeholder="Enter city"
                                        value="${isEdit ? customer.city : ''}">
                             </div>
                             <div class="form-group">
                                 <label>Country</label>
-                                <input name="country" type="text" 
+                                <input name="country" type="text" maxlength="30"
                                        class="form-control" id="country"
                                        placeholder="Enter country"
                                        value="${isEdit ? customer.country : ''}">

@@ -59,6 +59,43 @@ public class ServiceDAO {
         }
         return null;
     }
+   // Get all services with optional search and status filters
+public List<Service> getAllServices(String search, String status) {
+    List<Service> services = new ArrayList<>();
+    StringBuilder sql = new StringBuilder("SELECT * FROM Services WHERE 1=1");
+
+    if (search != null && !search.trim().isEmpty()) {
+        sql.append(" AND (Name LIKE ? OR Description LIKE ?)");
+    }
+    if (status != null && !status.trim().isEmpty()) {
+        sql.append(" AND Status = ?");
+    }
+
+    sql.append(" ORDER BY CreatedAt DESC");
+
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+        int idx = 1;
+        if (search != null && !search.trim().isEmpty()) {
+            ps.setString(idx++, "%" + search + "%");
+            ps.setString(idx++, "%" + search + "%");
+        }
+        if (status != null && !status.trim().isEmpty()) {
+            ps.setString(idx++, status);
+        }
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                services.add(mapResultSetToService(rs));
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return services;
+}
     
     // Add service to reservation
     public boolean addServiceToReservation(ReservationService reservationService) {

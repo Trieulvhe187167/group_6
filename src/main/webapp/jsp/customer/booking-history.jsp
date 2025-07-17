@@ -557,6 +557,10 @@
                         <span>Booking History</span>
                     </a>
                 </li>
+                  <a href="${pageContext.request.contextPath}/customer/feedback?action=list">
+      <i class="fas fa-comments"></i>
+      <span>My Feedback</span>
+  </a>
                 <div class="menu-divider"></div>
                 <li>
                     <a href="${pageContext.request.contextPath}/customer/profile">
@@ -717,7 +721,7 @@
         <div class="booking-card">
             <div class="booking-header">
                 <div class="booking-title">
-                    <i class="fas fa-bed"></i> Room ${booking.roomNumber} - ${booking.roomTypeName}
+                    <i class="fas fa-bed"></i> Room ${booking.roomNumber} 
                 </div>
                 <div class="booking-id">ID: #${booking.id}</div>
             </div>
