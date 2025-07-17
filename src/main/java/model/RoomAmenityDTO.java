@@ -5,13 +5,14 @@
 package model;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  *
  * @author ASUS
  */
 public class RoomAmenityDTO {
+
     private int id;
     private int roomId;
     private String roomNumber;
@@ -19,12 +20,12 @@ public class RoomAmenityDTO {
     private String description;
     private boolean isChargeable;
     private BigDecimal unitPrice;
-    private LocalDateTime createdAt;
+    private Date createdAt;
 
     public RoomAmenityDTO() {
     }
 
-    public RoomAmenityDTO(int id, int roomId, String roomNumber, String name, String description, boolean isChargeable, BigDecimal unitPrice, LocalDateTime createdAt) {
+    public RoomAmenityDTO(int id, int roomId, String roomNumber, String name, String description, boolean isChargeable, BigDecimal unitPrice, Date createdAt) {
         this.id = id;
         this.roomId = roomId;
         this.roomNumber = roomNumber;
@@ -79,6 +80,10 @@ public class RoomAmenityDTO {
         return isChargeable;
     }
 
+    public boolean getIsChargeable() {
+        return isChargeable;
+    }
+
     public void setIsChargeable(boolean isChargeable) {
         this.isChargeable = isChargeable;
     }
@@ -91,13 +96,12 @@ public class RoomAmenityDTO {
         this.unitPrice = unitPrice;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
-    
-    
+
 }
