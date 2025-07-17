@@ -517,11 +517,7 @@
                         <span>Change Password</span>
                     </a>
                 </li>
-                    <li>
-                       <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" >
-                                                <i class="fa fa-concierge-bell"></i> Book Services
-                                            </a>
-                </li>
+                 
                 <div class="menu-divider"></div>
                 <li>
                     <a href="/index.jsp">

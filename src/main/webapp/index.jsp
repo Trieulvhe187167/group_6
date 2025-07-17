@@ -709,7 +709,7 @@
                             </div>
 
                             <div class="text-center mt-4">
-                                <a href="${pageContext.request.contextPath}/BlogListServlet" class="btn">View All News</a>
+                                <a href="${pageContext.request.contextPath}/BlogListServlet" class="btn">View All Blogs</a>
                             </div>
                         </div>
                     </div>
