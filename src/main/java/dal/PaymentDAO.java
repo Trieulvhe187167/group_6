@@ -198,8 +198,8 @@ public class PaymentDAO {
     
     // Create new payment
     public boolean createPayment(Payment payment) {
-        String sql = "INSERT INTO Payments (ReservationId, Amount, Method, Status, TransactionId, CreatedAt) " +
-                    "VALUES (?, ?, ?, ?, ?, GETDATE())";
+        String sql = "INSERT INTO Payments (ReservationId, Amount, Method, Status, TransactionId, PaymentType, CreatedAt) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, GETDATE())"; 
         
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -209,7 +209,7 @@ public class PaymentDAO {
             ps.setString(3, payment.getMethod());
             ps.setString(4, payment.getStatus());
             ps.setString(5, payment.getTransactionId());
-            
+            ps.setString(6, payment.getPaymentType());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -327,9 +327,8 @@ public class PaymentDAO {
     }
     
 public int createPaymentAndGetId(Payment payment) {
-    String sql = "INSERT INTO Payments (ReservationId, Amount, Method, Status, TransactionId, CreatedAt) " +
-                "VALUES (?, ?, ?, ?, ?, GETDATE())";
-    
+     String sql = "INSERT INTO Payments (ReservationId, Amount, Method, Status, TransactionId, PaymentType, CreatedAt) " +
+                "VALUES (?, ?, ?, ?, ?, ?, GETDATE())";
     try (Connection conn = DBContext.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
         
@@ -338,6 +337,7 @@ public int createPaymentAndGetId(Payment payment) {
         ps.setString(3, payment.getMethod());
         ps.setString(4, payment.getStatus());
         ps.setString(5, payment.getTransactionId());
+        ps.setString(6, payment.getPaymentType());
         
         int affectedRows = ps.executeUpdate();
         
@@ -381,6 +381,7 @@ private Payment mapResultSetToPayment(ResultSet rs) throws SQLException {
     payment.setMethod(rs.getString("Method"));
     payment.setStatus(rs.getString("Status"));
     payment.setTransactionId(rs.getString("TransactionId"));
+    payment.setPaymentType(rs.getString("PaymentType"));
     payment.setCreatedAt(rs.getTimestamp("CreatedAt"));
     return payment;
 }
