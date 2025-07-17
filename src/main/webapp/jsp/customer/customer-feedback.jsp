@@ -41,6 +41,7 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
+            width: 100%;
         }
 
         .content-header {
@@ -133,6 +134,48 @@
 
         .form-group {
             margin-bottom: 25px;
+            width: 100%;
+        }
+        /* Make select booking full width and readable */
+        #reservationId.form-control {
+            width: 100% !important;
+            min-width: 400px;
+            font-size: 1.1rem;
+            padding: 14px 18px;
+            box-sizing: border-box;
+            white-space: normal;
+            overflow: visible;
+            line-height: 1.5;
+        }
+        #reservationId.form-control option {
+            white-space: normal;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            overflow: visible;
+        }
+
+        /* Make rating groups inline and stars aligned horizontally */
+        .rating-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            flex-direction: row;
+        }
+        .rating-group label {
+            min-width: 120px;
+            margin-bottom: 0;
+        }
+        .star-rating {
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+        }
+        .selected-rating {
+            margin-left: 10px;
+            font-weight: 500;
+            color: #495057;
         }
 
         .form-label {
@@ -354,7 +397,7 @@
     <div class="content-header">
         <h2><i class="fas fa-comments"></i> Customer Feedback</h2>
         <p>Share your experience and help us improve our service</p>
-        <a href="${pageContext.request.contextPath}/customer/history" class="back-button">
+        <a href="${pageContext.request.contextPath}/customer/feedback?action=list" class="back-button">
             <i class="fas fa-arrow-left"></i> Back to Booking History
         </a>
     </div>
@@ -364,290 +407,240 @@
         <i class="fas fa-check-circle"></i> Thank you for your feedback! We appreciate your input.
     </div>
 
+    <c:if test="${not empty param.success}">
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> Thank you for your feedback! We appreciate your input.
+        </div>
+    </c:if>
+    <c:if test="${not empty error}">
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i> ${error}
+        </div>
+    </c:if>
+
     <div class="feedback-card">
         <form id="feedbackForm" method="post" action="${pageContext.request.contextPath}/customer/feedback">
-            <!-- Hidden input if needed -->
-            <input type="hidden" name="action" value="submit"/>
+            <input type="hidden" name="action" value="submit" />
+            <input type="hidden" id="averageRating" name="rating" value="0">
 
             <!-- Booking Selection -->
             <div class="form-group">
                 <label class="form-label" for="reservationId">
                     <i class="fas fa-bed"></i> Select Booking
                 </label>
-                <select id="reservationId" name="reservationId" class="form-control" required>
-                    <option value="">Select a booking...</option>
-                    <c:forEach var="r" items="${reservations}">
-                        <option value="${r.id}" <c:if test="${selectedId == r.id}">selected</c:if>>
-                            Room ${r.roomNumber} (${r.checkIn} - ${r.checkOut})
-                        </option>
-                    </c:forEach>
-                </select>
+                <c:choose>
+                    <c:when test="${not empty selectedId}">
+                        <c:forEach var="r" items="${reservations}">
+                            <c:if test="${r.id == selectedId}">
+                                <div class="form-control" style="background:#f8f9fa;pointer-events:none;">Room ${r.roomNumber} (${r.checkIn} - ${r.checkOut})</div>
+                                <input type="hidden" name="reservationId" value="${r.id}" />
+                            </c:if>
+                        </c:forEach>
+                    </c:when>
+                    <c:otherwise>
+                        <select id="reservationId" name="reservationId" class="form-control" required>
+                            <option value="">Select a booking...</option>
+                            <c:forEach var="r" items="${reservations}">
+                                <option value="${r.id}" <c:if test="${selectedId == r.id}">selected</c:if>>
+                                    Room ${r.roomNumber} (${r.checkIn} - ${r.checkOut})
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </c:otherwise>
+                </c:choose>
             </div>
 
-                <!-- Rating Section -->
-                <div class="rating-section">
-                    <div class="rating-title">
-                        <i class="fas fa-star"></i>
-                        Rate Your Experience
-                    </div>
-                    
-                    <div class="rating-group">
-                        <div class="rating-label">Overall Experience</div>
-                        <div class="star-rating" data-rating="overall">
-                            <span class="star" data-value="1">★</span>
-                            <span class="star" data-value="2">★</span>
-                            <span class="star" data-value="3">★</span>
-                            <span class="star" data-value="4">★</span>
-                            <span class="star" data-value="5">★</span>
-                        </div>
-                    </div>
+            <!-- Rating Section -->
+           <div class="rating-section">
+    <h3 class="rating-title"><i class="fas fa-star"></i> Rate Your Experience</h3>
 
-                    <div class="rating-group">
-                        <div class="rating-label">Room Quality</div>
-                        <div class="star-rating" data-rating="room">
-                            <span class="star" data-value="1">★</span>
-                            <span class="star" data-value="2">★</span>
-                            <span class="star" data-value="3">★</span>
-                            <span class="star" data-value="4">★</span>
-                            <span class="star" data-value="5">★</span>
-                        </div>
-                    </div>
-
-                    <div class="rating-group">
-                        <div class="rating-label">Staff Service</div>
-                        <div class="star-rating" data-rating="service">
-                            <span class="star" data-value="1">★</span>
-                            <span class="star" data-value="2">★</span>
-                            <span class="star" data-value="3">★</span>
-                            <span class="star" data-value="4">★</span>
-                            <span class="star" data-value="5">★</span>
-                        </div>
-                    </div>
-
-                    <div class="rating-group">
-                        <div class="rating-label">Value for Money</div>
-                        <div class="star-rating" data-rating="value">
-                            <span class="star" data-value="1">★</span>
-                            <span class="star" data-value="2">★</span>
-                            <span class="star" data-value="3">★</span>
-                            <span class="star" data-value="4">★</span>
-                            <span class="star" data-value="5">★</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Feedback Category -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-tags"></i>
-                        Feedback Category
-                    </label>
-                    <select class="form-select" id="feedbackCategory" required>
-                        <option value="">Select category...</option>
-                        <option value="general">General Feedback</option>
-                        <option value="complaint">Complaint</option>
-                        <option value="compliment">Compliment</option>
-                        <option value="suggestion">Suggestion</option>
-                    </select>
-                </div>
-
-                <!-- Subject -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-heading"></i>
-                        Subject
-                    </label>
-                    <input type="text" class="form-control" id="feedbackSubject" placeholder="Brief summary of your feedback" required>
-                </div>
-
-                <!-- Detailed Feedback -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-comment-alt"></i>
-                        Detailed Feedback
-                    </label>
-                    <textarea class="form-control" id="feedbackMessage" rows="6" placeholder="Please share your detailed feedback, suggestions, or concerns..." maxlength="1000" required></textarea>
-                    <div class="character-count">
-                        <span id="charCount">0</span>/1000 characters
-                    </div>
-                </div>
-
-                <!-- Would Recommend -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-thumbs-up"></i>
-                        Would you recommend us to others?
-                    </label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="recommend" id="recommendYes" value="yes">
-                        <label class="form-check-label" for="recommendYes">
-                            Yes, definitely
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="recommend" id="recommendMaybe" value="maybe">
-                        <label class="form-check-label" for="recommendMaybe">
-                            Maybe
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="recommend" id="recommendNo" value="no">
-                        <label class="form-check-label" for="recommendNo">
-                            No, not likely
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Contact Information -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-envelope"></i>
-                        Contact Email (Optional)
-                    </label>
-                    <input type="email" class="form-control" id="contactEmail" placeholder="Your email if you want a response">
-                </div>
-
-                <!-- Form Buttons -->
-                <div class="form-buttons">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Submit Feedback
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                        <i class="fas fa-redo"></i> Reset Form
-                    </button>
-                </div>
-            </form>
+    <div class="rating-group" data-category="cleanliness">
+        <label>Cleanliness:</label>
+        <div class="star-rating">
+            <span class="star" data-value="1" title="Very Poor">★</span>
+            <span class="star" data-value="2" title="Poor">★</span>
+            <span class="star" data-value="3" title="Average">★</span>
+            <span class="star" data-value="4" title="Good">★</span>
+            <span class="star" data-value="5" title="Excellent">★</span>
         </div>
+        <span class="selected-rating"></span>
     </div>
+
+    <div class="rating-group" data-category="service">
+        <label>Service:</label>
+        <div class="star-rating">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+        </div>
+        <span class="selected-rating"></span>
+    </div>
+
+    <div class="rating-group" data-category="comfort">
+        <label>Comfort:</label>
+        <div class="star-rating">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+        </div>
+        <span class="selected-rating"></span>
+    </div>
+
+    <div class="rating-group" data-category="location">
+        <label>Location:</label>
+        <div class="star-rating">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+        </div>
+        <span class="selected-rating"></span>
+    </div>
+
+    <div class="rating-group" data-category="value">
+        <label>Value for Money:</label>
+        <div class="star-rating">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+        </div>
+        <span class="selected-rating"></span>
+    </div>
+
+    <!-- Hidden input to store average rating -->
+    <input type="hidden" id="averageRating" name="rating" value="0">
+</div>
+
+            <!-- Comment -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-comment-alt"></i> Feedback
+                </label>
+                <textarea name="comment" id="feedbackMessage" class="form-control" rows="6" maxlength="1000" placeholder="Write your feedback..." required></textarea>
+                <div class="character-count">
+                    <span id="charCount">0</span>/1000 characters
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="form-buttons">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Submit Feedback
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-redo"></i> Reset Form
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Star Rating System
-        document.querySelectorAll('.star-rating').forEach(rating => {
-            const stars = rating.querySelectorAll('.star');
-            
-            stars.forEach((star, index) => {
+    // Star Rating Handler
+   document.querySelectorAll('.star-rating .star').forEach(star => {
+    star.addEventListener('click', function () {
+        const group = this.closest('.rating-group');
+        const stars = group.querySelectorAll('.star');
+        const value = parseInt(this.dataset.value);
+
+        // Highlight selected stars
+        stars.forEach((s, index) => {
+            s.classList.toggle('selected', index < value);
+        });
+
+        // Store rating value in group
+        group.setAttribute('data-selected', value);
+
+        // Show selected value
+        const selectedRating = group.querySelector('.selected-rating');
+        if (selectedRating) {
+            selectedRating.textContent = value + '/5';
+        }
+
+        // Update average rating
+        updateAverageRating();
+    });
+});
+
+function updateAverageRating() {
+    const groups = document.querySelectorAll('.rating-group');
+    let total = 0, count = 0;
+
+    groups.forEach(group => {
+        const rating = parseInt(group.getAttribute('data-selected') || 0);
+        if (rating > 0) {
+            total += rating;
+            count++;
+        }
+    });
+
+    const avg = count > 0 ? (total / count).toFixed(1) : 0;
+    document.getElementById('averageRating').value = avg;
+}
+
+    // Character Counter
+    const messageTextarea = document.getElementById('feedbackMessage');
+    const charCount = document.getElementById('charCount');
+    messageTextarea.addEventListener('input', function () {
+        const count = this.value.length;
+        charCount.textContent = count;
+        charCount.style.color = count > 900 ? '#dc3545' : count > 750 ? '#ffc107' : '#6c757d';
+    });
+
+    // Reset function
+    function resetForm() {
+        document.getElementById('feedbackForm').reset();
+        document.getElementById('averageRating').value = '0';
+        document.querySelectorAll('.star').forEach(star => {
+            star.classList.remove('active');
+            star.style.color = '#ddd';
+        });
+        document.getElementById('charCount').textContent = '0';
+        document.getElementById('charCount').style.color = '#6c757d';
+        document.getElementById('successAlert').style.display = 'none';
+    }
+</script>
+<script>
+    function setupRatingStars() {
+        const ratingSections = document.querySelectorAll('.star-rating');
+        ratingSections.forEach(section => {
+            const stars = section.querySelectorAll('.star');
+            stars.forEach(star => {
                 star.addEventListener('click', () => {
                     const value = parseInt(star.getAttribute('data-value'));
-                    const ratingType = rating.getAttribute('data-rating');
-                    
-                    // Update visual stars
-                    stars.forEach((s, i) => {
-                        if (i < value) {
-                            s.classList.add('active');
-                        } else {
-                            s.classList.remove('active');
-                        }
-                    });
-                    
-                    // Store rating value
-                    rating.setAttribute('data-selected', value);
-                });
-                
-                star.addEventListener('mouseenter', () => {
-                    const value = parseInt(star.getAttribute('data-value'));
-                    stars.forEach((s, i) => {
-                        if (i < value) {
-                            s.style.color = '#ffc107';
-                        } else {
-                            s.style.color = '#ddd';
-                        }
+                    section.setAttribute('data-rating', value);
+                    stars.forEach((s, index) => {
+                        s.classList.toggle('selected', index < value);
                     });
                 });
             });
-            
-            rating.addEventListener('mouseleave', () => {
-                const selected = rating.getAttribute('data-selected');
-                stars.forEach((s, i) => {
-                    if (selected && i < parseInt(selected)) {
-                        s.style.color = '#ffc107';
-                    } else {
-                        s.style.color = '#ddd';
-                    }
-                });
-            });
         });
+    }
 
-        // Character Counter
-        const messageTextarea = document.getElementById('feedbackMessage');
-        const charCount = document.getElementById('charCount');
+    document.addEventListener('DOMContentLoaded', () => {
+        setupRatingStars();
+    });
+</script>
 
-        messageTextarea.addEventListener('input', function() {
-            const count = this.value.length;
-            charCount.textContent = count;
-            
-            if (count > 900) {
-                charCount.style.color = '#dc3545';
-            } else if (count > 750) {
-                charCount.style.color = '#ffc107';
-            } else {
-                charCount.style.color = '#6c757d';
-            }
-        });
+<style>
+    .star {
+        font-size: 2rem;
+        color: #ccc;
+        cursor: pointer;
+    }
 
-        // Form Submission
-        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Get all ratings
-            const ratings = {};
-            document.querySelectorAll('.star-rating').forEach(rating => {
-                const type = rating.getAttribute('data-rating');
-                const value = rating.getAttribute('data-selected');
-                ratings[type] = value || 0;
-            });
-
-            // Validate that at least overall rating is provided
-            if (!ratings.overall || ratings.overall === '0') {
-                alert('Please provide an overall rating before submitting.');
-                return;
-            }
-
-            // Collect form data
-            const formData = {
-                booking: document.getElementById('bookingSelect').value,
-                category: document.getElementById('feedbackCategory').value,
-                subject: document.getElementById('feedbackSubject').value,
-                message: document.getElementById('feedbackMessage').value,
-                recommend: document.querySelector('input[name="recommend"]:checked')?.value,
-                email: document.getElementById('contactEmail').value,
-                ratings: ratings
-            };
-
-            // Simulate form submission
-            console.log('Feedback submitted:', formData);
-            
-            // Show success message
-            document.getElementById('successAlert').style.display = 'block';
-            
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // Reset form after short delay
-            setTimeout(() => {
-                resetForm();
-            }, 2000);
-        });
-
-        function resetForm() {
-            document.getElementById('feedbackForm').reset();
-            
-            // Reset star ratings
-            document.querySelectorAll('.star-rating').forEach(rating => {
-                rating.removeAttribute('data-selected');
-                rating.querySelectorAll('.star').forEach(star => {
-                    star.classList.remove('active');
-                    star.style.color = '#ddd';
-                });
-            });
-            
-            // Reset character counter
-            document.getElementById('charCount').textContent = '0';
-            document.getElementById('charCount').style.color = '#6c757d';
-            
-            // Hide success message
-            document.getElementById('successAlert').style.display = 'none';
-        }
-    </script>
+    .star.selected {
+        color: gold;
+    }
+</style>
 </body>
 </html>
