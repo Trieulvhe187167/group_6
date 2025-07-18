@@ -218,7 +218,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             // Update reservation rating if feedback was added
             if (success) {
                 reservation.setRating(rating); // set in-memory object if needed
-                //comment here reservationDAO.updateReservationRating(reservationId, rating); // new method to implement
+                reservationDAO.updateReservationRating(reservationId, rating); // new method to implement
                 request.setAttribute("success", "Thank you for your feedback! We appreciate your input.");
                 // Redirect để tránh resubmit
                 response.sendRedirect(request.getContextPath() + "/customer/feedback?success=true");
@@ -421,3 +421,4 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         listUserFeedback(request, response, user);
     }
 }
+
