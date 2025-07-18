@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="row mb-4">
@@ -26,9 +26,15 @@
             <div class="row">
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label>Room Number <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="roomNumber" 
-                               placeholder="e.g., 101" required>
+                           <label>Rooms</label>
+                         <select class="form-control" id="roomNumberSelect" required>
+                            <option value="">Select room</option>
+                            <c:forEach var="room" items="${checkedInRooms}">
+                                <option value="${room.roomNumber}" data-reservation="${room.id}" data-customer="${room.customerName}">
+                                    ${room.roomNumber} - ${room.customerName}
+                                </option>
+                            </c:forEach>
+                        </select>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -57,19 +63,17 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-2">
+                  <div class="col-md-3">
                     <div class="form-group">
                         <label>Quantity <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" id="quantity" 
-                               value="1" min="1" required>
-                    </div>
-                </div>
-                <div class="col-md-1">
-                    <div class="form-group">
-                        <label>&nbsp;</label>
-                        <button type="submit" class="btn btn-primary btn-block">
-                            <i class="fas fa-plus"></i>
-                        </button>
+                          <div class="input-group">
+                            <input type="number" class="form-control" id="quantity" value="1" min="1" required>
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -269,13 +273,25 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Add Service to Room</h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-bs-dismiss="modal" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
             <form id="addServiceForm">
                 <div class="modal-body">
-                    <div class="alert alert-info">
+                    <div class="form-group">
+                        <label>Room <span class="text-danger">*</span></label>
+                        <select class="form-control" id="modalRoomSelect" required>
+                            <option value="">Select room</option>
+                            <c:forEach var="room" items="${checkedInRooms}">
+                                <option value="${room.id}" data-room="${room.roomNumber}" data-customer="${room.customerName}">
+                                    ${room.roomNumber} - ${room.customerName}
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-info" id="modalRoomInfo" style="display:none;">
                         <i class="fas fa-info-circle"></i>
                         Adding service to Room <strong id="modalRoomNumber"></strong>
                         <br><small>Customer: <span id="modalCustomerName"></span></small>
@@ -325,7 +341,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Add Service</button>
                 </div>
             </form>
@@ -339,7 +355,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="categoryModalTitle">Service Category</h5>
-                <button type="button" class="close" data-dismiss="modal">
+             <button type="button" class="close" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -347,14 +363,14 @@
                 <!-- Services will be loaded here -->
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Service select change
     $('#serviceSelect, #quantity').on('change input', function() {
         calculateTotal();
@@ -371,6 +387,14 @@ $(document).ready(function() {
         calculateModalTotal();
     });
     
+    // Modal room change
+    $('#modalRoomSelect').on('change', function() {
+        const option = $(this).find('option:selected');
+        $('#modalReservationId').val(option.val());
+        $('#modalRoomNumber').text(option.data('room'));
+        $('#modalCustomerName').text(option.data('customer'));
+        $('#modalRoomInfo').toggle(!!option.val());
+    });
     // Quick service form submit
     $('#quickServiceForm').submit(function(e) {
         e.preventDefault();
@@ -383,7 +407,13 @@ $(document).ready(function() {
         addServiceToReservation();
     });
 });
-
+  // Hide room info when modal is shown/hidden
+    $('#addServiceModal').on('show.bs.modal', function() {
+        $('#modalRoomInfo').toggle(!!$('#modalRoomSelect').val());
+    }).on('hidden.bs.modal', function() {
+        $('#modalRoomInfo').hide();
+        $('#modalRoomSelect').val('');
+    });
 function calculateTotal() {
     const service = $('#serviceSelect option:selected');
     const price = parseFloat(service.data('price')) || 0;
@@ -420,7 +450,7 @@ function loadServicesByCategory() {
     calculateTotal();
 }
 
-function loadModalServices() {
+function loadModalServices(selectedService) {
     const category = $('#modalCategorySelect').val();
     
     $.ajax({
@@ -437,67 +467,64 @@ function loadModalServices() {
                       + service.name + ' - ' + formatCurrency(service.price) + '</option>';
             });
             $('#modalServiceSelect').html(html);
+               if (selectedService) {
+                $('#modalServiceSelect').val(selectedService);
+                updateModalServicePrice();
+                calculateModalTotal();
+            }
         }
     });
 }
 
 function quickAddService() {
-    const roomNumber = $('#roomNumber').val();
-    
-    if (!roomNumber) {
-        alert('Please enter room number');
+   const option = $('#roomNumberSelect option:selected');
+    const reservationId = option.data('reservation');
+    const roomNumber = option.val();
+    const customerName = option.data('customer');
+
+    if (!reservationId) {
+       Swal.fire('Error', 'Please select a room', 'error');
         return;
     }
     
-    // First, find the reservation by room number
-    $.ajax({
-        url: '${pageContext.request.contextPath}/receptionist/services',
-        type: 'POST',
-        data: {
-            action: 'findReservationByRoom',
-            roomNumber: roomNumber
-        },
-        success: function(reservation) {
-            if (reservation && reservation.id) {
-                // Set modal data
-                $('#modalReservationId').val(reservation.id);
-                $('#modalRoomNumber').text(roomNumber);
-                $('#modalCustomerName').text(reservation.customerName);
-                
-                // Pre-select service if chosen
-                const serviceId = $('#serviceSelect').val();
-                if (serviceId) {
-                    $('#modalServiceSelect').val(serviceId);
-                    updateModalServicePrice();
-                    $('#modalQuantity').val($('#quantity').val());
-                    calculateModalTotal();
-                }
-                
-                // Show modal
-                $('#addServiceModal').modal('show');
-            } else {
-                alert('No active reservation found for room ' + roomNumber);
-            }
-        },
-        error: function() {
-            alert('Error finding room reservation. Please check the room number.');
-        }
-    });
+    // Set modal data
+    $('#modalReservationId').val(reservationId);
+    $('#modalRoomSelect').val(reservationId);
+    $('#modalRoomNumber').text(roomNumber);
+    $('#modalCustomerName').text(customerName);
+    $('#modalRoomInfo').show();
+
+    // Pre-select service if chosen
+    const serviceId = $('#serviceSelect').val();
+    const category = $('#categorySelect').val();
+
+    // Sync category and load services for modal
+    $('#modalCategorySelect').val(category);
+    loadModalServices(serviceId);
+
+    // Quantity
+    $('#modalQuantity').val($('#quantity').val());
+    calculateModalTotal();
+
+    // Show modal
+    $('#addServiceModal').modal('show');
 }
 
 function addServiceToReservation() {
     const serviceData = {
-        reservationId: $('#modalReservationId').val(),
-        serviceId: $('#modalServiceSelect').val(),
-        quantity: $('#modalQuantity').val(),
-        notes: $('#modalNotes').val()
+        reservationId: parseInt($('#modalRoomSelect').val() || $('#modalReservationId').val()),
+        serviceId: parseInt($('#modalServiceSelect').val()),
+        quantity: parseInt($('#modalQuantity').val()),
     };
-    
+         if (!serviceData.reservationId) {
+          Swal.fire('Error', 'Please select a service', 'error');
+        return;
+    } 
     if (!serviceData.serviceId) {
-        alert('Please select a service');
+          Swal.fire('Error', 'Please select a service', 'error');
         return;
     }
-    
+
     $.ajax({
         url: '${pageContext.request.contextPath}/receptionist/services',
         type: 'POST',
@@ -508,7 +535,7 @@ function addServiceToReservation() {
         }),
         success: function(response) {
             if (response.success) {
-                alert('Service added successfully!');
+               Swal.fire('Success', 'Add service successful!', 'success');
                 $('#addServiceModal').modal('hide');
                 
                 // Reset forms
@@ -519,11 +546,11 @@ function addServiceToReservation() {
                 // Refresh orders list
                 refreshServiceList();
             } else {
-                alert('Error adding service. Please try again.');
+              Swal.fire('Error', 'Error adding service. Please try again.', 'error');
             }
         },
         error: function() {
-            alert('Error adding service. Please try again.');
+            Swal.fire('Error', 'Error adding service. Please try again.', 'error');
         }
     });
 }
@@ -583,8 +610,8 @@ function selectService(serviceId, serviceName, price) {
     $('#quantity').val(1);
     calculateTotal();
     
-    // Focus on room number
-    $('#roomNumber').focus();
+        // Focus on room selector
+    $('#roomNumberSelect').focus();
 }
 
 function completeService(orderId) {
@@ -610,21 +637,21 @@ function updateServiceStatus(orderId, status) {
         },
         success: function(response) {
             if (response.success) {
-                alert('Service status updated successfully!');
+                 Swal.fire('Success', 'Service status updated successfully!', 'success');
                 refreshServiceList();
             } else {
-                alert('Error updating service status.');
+                Swal.fire('Error', 'Error updating service status.', 'error');
             }
         },
         error: function() {
-            alert('Error updating service status.');
+              Swal.fire('Error', 'Error updating service status.', 'error');
         }
     });
 }
 
 function viewServiceDetails(orderId) {
     // Implement service details view
-    alert('Service details view - Order ID: ' + orderId);
+     Swal.fire('Info', 'Service details view - Order ID: ' + orderId, 'info');
 }
 
 function refreshServiceList() {

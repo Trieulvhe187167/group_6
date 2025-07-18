@@ -9,8 +9,14 @@ public class DBContext {
 
 
 
+<<<<<<< HEAD
     private static final String URL = "jdbc:sqlserver://LAPTOP-SVEKADBK\\HIEUHE187201:1433;"
+=======
+
+    private static final String URL = "jdbc:sqlserver://LAPTOP-Q4D6UCM6\\MSSQLSERVER01:1433;"
+>>>>>>> develop
              + "databaseName=HotelManagement_3;encrypt=false;";
+
 
 
 

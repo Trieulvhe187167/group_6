@@ -300,7 +300,10 @@
                             <% } %>
 
                             <div class="booking-id">
-                                Booking ID: #<%= reservation.getId() %>
+                                Booking ID:
+                                <% for (Reservation r : reservationList) { %>
+                                 #<%= reservation.getId() %>
+                            <% } %>
                             </div>
 
                             <!-- Deposit Information -->

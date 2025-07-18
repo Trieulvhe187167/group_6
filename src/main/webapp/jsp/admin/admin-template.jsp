@@ -264,10 +264,7 @@
                     <i class="fas fa-broom"></i> Housekeeping
                 </a>
               
-                <a href="${pageContext.request.contextPath}/admin/reports" 
-                   class="nav-item ${activePage == 'reports' ? 'active' : ''}">
-                    <i class="fas fa-chart-bar"></i> Reports
-                </a>
+                
                 <a href="${pageContext.request.contextPath}/admin/blogs" 
                    class="nav-item ${activePage == 'blogs' ? 'active' : ''}">
                     <i class="fas fa-blog"></i> Blog Posts
@@ -276,6 +273,18 @@
                    class="nav-item ${activePage == 'events' ? 'active' : ''}">
                     <i class="fas fa-calendar-alt"></i> Events
                 </a>
+
+                    <a href="${pageContext.request.contextPath}/admin/services"
+                   class="nav-item ${activePage == 'services' ? 'active' : ''}">
+                    <i class="fas fa-concierge-bell"></i> Services
+                </a>
+                
+
+                    <a href="${pageContext.request.contextPath}/admin/reports" 
+                   class="nav-item ${activePage == 'reports' ? 'active' : ''}">
+                    <i class="fas fa-chart-bar"></i> Reports
+                </a>
+
                 <a href="${pageContext.request.contextPath}/admin/settings" 
                    class="nav-item ${activePage == 'settings' ? 'active' : ''}">
                     <i class="fas fa-cog"></i> Settings

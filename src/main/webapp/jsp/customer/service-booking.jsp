@@ -330,7 +330,7 @@
                         </a>
                     </li>
 
-                        <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" class="active">
+                     
 
                     <li>
                         <a href="${pageContext.request.contextPath}/customer/services" class="active">
@@ -469,11 +469,11 @@
                                             <td><fmt:formatNumber value="${c.unitPrice}" pattern="#,#00"/>₫</td>
                                             <td><fmt:formatNumber value="${c.totalAmount}" pattern="#,#00"/>₫</td>
                                             <td>
-                                                <form method="post" action="${pageContext.request.contextPath}/customer/services" onsubmit="return confirm('Remove service?');">
+                                                <form method="post" action="${pageContext.request.contextPath}/customer/services" onsubmit="return confirm('Cancel service?');">
                                                     <input type="hidden" name="action" value="delete">
                                                     <input type="hidden" name="reservationId" value="${selectedId}">
                                                     <input type="hidden" name="lineId" value="${c.id}">
-                                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                                    <button class="btn btn-sm btn-danger">Cancel Service</button>
                                                 </form>
                                             </td>
                                         </tr>

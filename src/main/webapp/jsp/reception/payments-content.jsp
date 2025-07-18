@@ -608,6 +608,8 @@ function showRefundModal(paymentId) {
             $('#refundPaymentId').val(payment.id);
             $('#originalAmount').val(formatCurrency(payment.amount));
             $('#refundAmount').val(payment.amount);
+            $('#refundMethod').val('ORIGINAL_METHOD');
+            $('#refundReason').val('');
             $('#refundModal').modal('show');
         },
         error: function() {
@@ -617,9 +619,17 @@ function showRefundModal(paymentId) {
 }
 
 function processRefund() {
+  const originalAmount = parseFloat($('#originalAmount').val().replace(/[^0-9.-]+/g, ''));
+    const refundAmount = parseFloat($('#refundAmount').val());
+
+    if (isNaN(refundAmount) || refundAmount <= 0 || refundAmount > originalAmount) {
+        Swal.fire('Error', 'Invalid refund amount', 'error');
+        return;
+    }
+
     const refundData = {
         paymentId: $('#refundPaymentId').val(),
-        refundAmount: $('#refundAmount').val(),
+        refundAmount: refundAmount,
         refundMethod: $('#refundMethod').val(),
         refundReason: $('#refundReason').val()
     };
@@ -637,6 +647,7 @@ function processRefund() {
             $.ajax({
                 url: '${pageContext.request.contextPath}/receptionist/payments',
                 type: 'POST',
+                       dataType: 'json',
                 data: {
                     action: 'processRefund',
                     ...refundData

@@ -555,10 +555,6 @@
 
             <!-- Compact Hotel Search Form -->
             <div class="secondary-menu">
-                                 <button id="searchToggle" class="search-icon-btn" type="button">
-                    <i class="fa fa-search"></i>
-                    
-                </button>
                     <!-- == Cart == -->
 
     <a href="${pageContext.request.contextPath}/CartServlet"
@@ -569,64 +565,7 @@
             <span class="cart-badge">${roomCount}</span>
         </c:if>
     </a>
-                <form action="${pageContext.request.contextPath}/SearchAvailableRoomsServlet" method="GET" class="hotel-search-form hidden" id="headerSearchForm">
-                    </li>
-                    <!-- Room Type -->
-                    <div class="search-field roomtype-field">
-                        <i class="fa fa-bed"></i>
-                        <select name="roomTypeId" id="roomTypeId">
-                            <option value="">All Room Types</option>
-                            <c:forEach var="roomType" items="${searchRoomTypes}">
-                                <option value="${roomType.id}" 
-                                    <c:if test="${searchRoomTypeId eq roomType.id}">selected</c:if>>
-                                    ${roomType.name}
-                                </option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                    
-                    <!-- Check-in -->
-                    <div class="search-field date-field" id="checkinField">
-                        <div class="date-picker-wrapper">
-                            <span class="date-label">Check in</span>
-                            <i class="fa fa-calendar"></i>
-                            <input type="date" id="checkIn" name="checkIn" 
-                                   value="${searchCheckIn}" 
-                                   title="Select check-in date (today or future)"
-                                   min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>"
-                                   required>
-                        </div>
-                    </div>
-                    
-                    <!-- Check-out -->
-                    <div class="search-field date-field" id="checkoutField">
-                        <div class="date-picker-wrapper">
-                            <span class="date-label">Check out</span>
-                            <i class="fa fa-calendar"></i>
-                            <input type="date" id="checkOut" name="checkOut" 
-                                   value="${searchCheckOut}" 
-                                   title="Select check-out date (must be after check-in)"
-                                   min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 24*60*60*1000)) %>"
-                                   required>
-                        </div>
-                    </div>
-                    
-                    <!-- Occupancy -->
-                    <div class="search-field occupancy-field">
-                        <i class="fa fa-user"></i>
-                        <select name="capacity" id="capacity">
-                            <option value="1" <c:if test="${searchCapacity eq '1'or empty searchCapacity}">selected</c:if>>1 guest</option>
-                            <option value="2" <c:if test="${searchCapacity eq '2' }">selected</c:if>>2 guests</option>
-                            <option value="3" <c:if test="${searchCapacity eq '3'}">selected</c:if>>3 guests</option>
-                            <option value="4" <c:if test="${searchCapacity eq '4'}">selected</c:if>>4+ guests</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Search Button -->
-                    <button type="submit" class="search-submit-btn">Search</button>
-                    
-                </form>
-     
+              
 
             </div>
 
@@ -647,7 +586,7 @@
         </li>
         <li class="nav-item dropdown ${fn:endsWith(currentUrl,'/blog.jsp') || fn:endsWith(currentUrl,'/events.jsp') ? 'active' : ''}">
             <a class="nav-link dropdown-toggle" href="#" id="blogDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                THEE DISCOVER 
+                THE DISCOVER 
             </a>
             <div class="dropdown-menu" aria-labelledby="blogDropdown">
                 <a class="dropdown-item" href="${pageContext.request.contextPath}/BlogListServlet">BLOG</a>
