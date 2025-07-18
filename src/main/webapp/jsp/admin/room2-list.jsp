@@ -209,6 +209,7 @@
             </div>
         </div>
     </div>
+</div>
 
     <script>
         function confirmStatusChange(roomId, currentStatus, roomNumber) {

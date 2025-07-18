@@ -238,6 +238,10 @@
                    class="nav-item ${activePage == 'room-manage' ? 'active' : ''}">
                     <i class="fas fa-bed"></i> Rooms
                 </a>
+                <a href="${pageContext.request.contextPath}/admin/amenities" 
+                   class="nav-item ${activePage == 'room-amenity' ? 'active' : ''}">
+                    <i class="fas fa-sign-out-alt"></i> Amenities
+                </a>
                 <a href="${pageContext.request.contextPath}/admin/customers" 
                    class="nav-item ${activePage == 'customers' ? 'active' : ''}">
                     <i class="fas fa-users"></i> Customers
