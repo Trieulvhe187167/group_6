@@ -75,7 +75,7 @@ public class AdminRoomAmenityServlet extends HttpServlet {
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
 
-        // Phân quyền admin
+        // Admin role
         if (currentUser == null || !"ADMIN".equals(currentUser.getRole())) {
             response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
             return;
@@ -84,6 +84,16 @@ public class AdminRoomAmenityServlet extends HttpServlet {
         String action = request.getParameter("action");
         if (action == null || action.isEmpty()) {
             action = "list";
+        }
+
+        RoomAmenityDTO errorAmenity = (RoomAmenityDTO) session.getAttribute("errorAmenity");
+        String errorMessage = (String) session.getAttribute("errorMessage");
+
+        if (errorAmenity != null) {
+            session.removeAttribute("errorAmenity");
+        }
+        if (errorMessage != null) {
+            session.removeAttribute("errorMessage");
         }
 
         try {
@@ -95,12 +105,38 @@ public class AdminRoomAmenityServlet extends HttpServlet {
                     viewAmenityDetail(request, response);
                     break;
                 case "add":
-                    showAmenityForm(request, response, null);
+                    if (errorAmenity != null && "add".equals(errorAmenity.getFormAction())) {
+                        request.setAttribute("amenity", errorAmenity);
+                        request.setAttribute("error", errorMessage);
+                        request.setAttribute("formAction", "add");
+                        request.setAttribute("pageTitle", "Add Room Amenity");
+                    } else {
+                        request.setAttribute("amenity", new RoomAmenityDTO());
+                        request.setAttribute("formAction", "add");
+                        request.setAttribute("pageTitle", "Add Room Amenity");
+                    }
+                    showAmenityForm(request, response);
                     break;
+
                 case "edit":
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    RoomAmenityDTO amenity = amenityDAO.getRoomAmenityById(id);
-                    showAmenityForm(request, response, amenity);
+                    if (errorAmenity != null && "edit".equals(errorAmenity.getFormAction())) {
+                        request.setAttribute("amenity", errorAmenity);
+                        request.setAttribute("error", errorMessage);
+                        request.setAttribute("formAction", "edit");
+                        request.setAttribute("pageTitle", "Edit Room Amenity");
+                    } else {
+                        int id = Integer.parseInt(request.getParameter("id"));
+                        RoomAmenityDTO amenityFromDb = amenityDAO.getRoomAmenityById(id);
+                        if (amenityFromDb == null) {
+                            request.setAttribute("error", "Amenity not found with ID: " + id);
+                            listAmenities(request, response);
+                            return;
+                        }
+                        request.setAttribute("amenity", amenityFromDb);
+                        request.setAttribute("formAction", "edit");
+                        request.setAttribute("pageTitle", "Edit Room Amenity");
+                    }
+                    showAmenityForm(request, response);
                     break;
                 case "delete":
                     int idToDelete = Integer.parseInt(request.getParameter("id"));
@@ -137,115 +173,89 @@ public class AdminRoomAmenityServlet extends HttpServlet {
 
         String formAction = request.getParameter("action");
 
-        try {
-            // Get form values
-            int roomId = Integer.parseInt(request.getParameter("roomId"));
-            String name = request.getParameter("name").trim();
-            String description = request.getParameter("description").trim();
-            boolean isChargeable = Boolean.parseBoolean(request.getParameter("isChargeable"));
-            BigDecimal unitPrice = new BigDecimal(request.getParameter("unitPrice"));
+        RoomAmenityDTO amenity = new RoomAmenityDTO();
+        int id = 0;
 
-            // Check for duplicates based on action
+        try {
+            // Lấy các giá trị từ form
+            amenity.setRoomId(Integer.parseInt(request.getParameter("roomId")));
+            amenity.setName(request.getParameter("name").trim());
+            amenity.setDescription(request.getParameter("description").trim());
+            amenity.setIsChargeable(Boolean.parseBoolean(request.getParameter("isChargeable")));
+            amenity.setUnitPrice(new BigDecimal(request.getParameter("unitPrice")));
+
+            if ("edit".equals(formAction)) {
+                id = Integer.parseInt(request.getParameter("id"));
+                amenity.setId(id);
+            }
+            amenity.setFormAction(formAction);
+
+            // Check Duplicate
             boolean isDuplicate;
             if ("edit".equals(formAction)) {
-                int id = Integer.parseInt(request.getParameter("id"));
-                isDuplicate = amenityDAO.checkAmenityDuplicateExceptId(roomId, name, description, id);
+                isDuplicate = amenityDAO.checkAmenityDuplicateExceptId(amenity.getRoomId(), amenity.getName(), amenity.getDescription(), amenity.getId());
             } else {
-                isDuplicate = amenityDAO.checkAmenityDuplicate(roomId, name, description);
+                isDuplicate = amenityDAO.checkAmenityDuplicate(amenity.getRoomId(), amenity.getName(), amenity.getDescription());
             }
 
-            // If duplicate found, forward back to form with error
+            // If Duplicate
             if (isDuplicate) {
-                String errorMessage = "Amenity already exists.";
-
-                // Lưu lỗi vào request để có thể hiển thị lại
-                request.setAttribute("error", errorMessage);
+                String errorMessage = "Amenity with the same room, name, and description already exists.";
 
                 HttpSession session = request.getSession();
-                session.setAttribute("roomId", roomId);
-                session.setAttribute("name", name);
-                session.setAttribute("description", description);
-                session.setAttribute("unitPrice", unitPrice);
-                session.setAttribute("isChargeable", isChargeable);
+                session.setAttribute("errorAmenity", amenity);
+                session.setAttribute("errorMessage", errorMessage);
 
-                // Re-fetch room list for drop-down
-                List<Room> roomList = amenityDAO.getAllRooms();
-                request.setAttribute("roomList", roomList);
-
-                // Populate DTO with current form data (Lưu lại các giá trị đã nhập vào form)
-                RoomAmenityDTO amenity = new RoomAmenityDTO();
-                amenity.setRoomId(roomId);
-                amenity.setName(name);
-                amenity.setDescription(description);
-                amenity.setIsChargeable(isChargeable);
-                amenity.setUnitPrice(unitPrice);
-
-                request.setAttribute("amenity", amenity);
-                request.setAttribute("formAction", formAction);
-                request.setAttribute("pageTitle", ("edit".equals(formAction) ? "Edit" : "Add") + " Room Amenity");
-                request.setAttribute("activePage", "room-amenity");
-                request.setAttribute("contentPage", "/jsp/admin/room-amenity-form.jsp");
-
-                // Chuyển hướng về trang Add hoặc Edit với thông báo lỗi
+                // Redirect back to the corresponding GET request to display the form with the error
                 if ("edit".equals(formAction)) {
-                    // Dành cho chỉnh sửa
-                    response.sendRedirect(request.getContextPath() + "/admin/amenities?action=edit&id=" + request.getParameter("id") + "&error=" + URLEncoder.encode(errorMessage, "UTF-8"));
+                    response.sendRedirect(request.getContextPath() + "/admin/amenities?action=edit&id=" + amenity.getId());
                 } else {
-                    // Dành cho thêm mới
-                    response.sendRedirect(request.getContextPath() + "/admin/amenities?action=add&error=" + URLEncoder.encode(errorMessage, "UTF-8"));
+                    response.sendRedirect(request.getContextPath() + "/admin/amenities?action=add");
                 }
                 return;
             }
 
-            // Proceed with add or update logic
-            RoomAmenityDTO amenity = new RoomAmenityDTO();
-            amenity.setRoomId(roomId);
-            amenity.setName(name);
-            amenity.setDescription(description);
-            amenity.setIsChargeable(isChargeable);
-            amenity.setUnitPrice(unitPrice);
-
+            // If no error
             if ("edit".equals(formAction)) {
-                amenity.setId(Integer.parseInt(request.getParameter("id")));
                 amenityDAO.updateAmenity(amenity);
-                response.sendRedirect(request.getContextPath() + "/admin/amenities?action=list&success=Update success!");
+                response.sendRedirect(request.getContextPath() + "/admin/amenities?action=list&success=" + URLEncoder.encode("Update success!", "UTF-8"));
             } else {
                 amenity.setCreatedAt(new Date());
                 amenityDAO.insertAmenity(amenity);
-                response.sendRedirect(request.getContextPath() + "/admin/amenities?action=list&success=Add success!");
+                response.sendRedirect(request.getContextPath() + "/admin/amenities?action=list&success=" + URLEncoder.encode("Add success!", "UTF-8"));
             }
 
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
+            String errorMessage = "Invalid number format for Room ID, Amenity ID, or Unit Price. Please enter valid numbers.";
             e.printStackTrace();
-            request.setAttribute("error", "Error: " + e.getMessage());
 
-            request.setAttribute("formAction", formAction);
-            request.setAttribute("pageTitle", ("edit".equals(formAction) ? "Edit" : "Add") + " Room Amenity");
+            HttpSession session = request.getSession();
+            session.setAttribute("errorAmenity", amenity);
+            session.setAttribute("errorMessage", errorMessage);
 
-            List<Room> roomList = amenityDAO.getAllRooms();
-            request.setAttribute("roomList", roomList);
-
-            // Rebuild the DTO with previous values
-            RoomAmenityDTO amenity = new RoomAmenityDTO();
-            try {
-                amenity.setRoomId(Integer.parseInt(request.getParameter("roomId")));
-                amenity.setName(request.getParameter("name"));
-                amenity.setDescription(request.getParameter("description"));
-                amenity.setIsChargeable(Boolean.parseBoolean(request.getParameter("isChargeable")));
-                amenity.setUnitPrice(new BigDecimal(request.getParameter("unitPrice")));
-                if ("edit".equals(formAction)) {
-                    amenity.setId(Integer.parseInt(request.getParameter("id")));
-                }
-            } catch (Exception ex) {
-                // Ignore parsing errors
+            if ("edit".equals(formAction)) {
+                String requestedId = request.getParameter("id");
+                response.sendRedirect(request.getContextPath() + "/admin/amenities?action=edit&id=" + (requestedId != null ? requestedId : "0"));
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/amenities?action=add");
             }
+            return;
+        } catch (Exception e) {
+            // Xử lý các lỗi khác
+            String errorMessage = "An unexpected error occurred: " + e.getMessage();
+            e.printStackTrace();
 
-            request.setAttribute("amenity", amenity);
-            request.setAttribute("activePage", "room-amenity");
-            request.setAttribute("contentPage", "/jsp/admin/room-amenity-form.jsp");
+            HttpSession session = request.getSession();
+            session.setAttribute("errorAmenity", amenity);
+            session.setAttribute("errorMessage", errorMessage);
 
-            // Forward back to form if error occurs
-            request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
+            if ("edit".equals(formAction)) {
+                String requestedId = request.getParameter("id");
+                response.sendRedirect(request.getContextPath() + "/admin/amenities?action=edit&id=" + (requestedId != null ? requestedId : "0"));
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/amenities?action=add");
+            }
+            return;
         }
     }
 
@@ -362,18 +372,13 @@ public class AdminRoomAmenityServlet extends HttpServlet {
         }
     }
 
-    private void showAmenityForm(HttpServletRequest request, HttpServletResponse response, RoomAmenityDTO amenity)
+    private void showAmenityForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // Luôn cần danh sách phòng cho dropdown
         List<Room> roomList = amenityDAO.getAllRooms();
-
         request.setAttribute("roomList", roomList);
-        request.setAttribute("amenity", amenity);
 
-        // Gán action để biết đang add hay edit
-        request.setAttribute("formAction", (amenity != null ? "edit" : "add"));
-
-        request.setAttribute("pageTitle", (amenity != null ? "Edit" : "Add") + " Room Amenity");
         request.setAttribute("activePage", "room-amenity");
         request.setAttribute("contentPage", "/jsp/admin/room-amenity-form.jsp");
 

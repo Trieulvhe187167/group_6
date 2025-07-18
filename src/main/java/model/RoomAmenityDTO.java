@@ -21,6 +21,7 @@ public class RoomAmenityDTO {
     private boolean isChargeable;
     private BigDecimal unitPrice;
     private Date createdAt;
+    private String formAction;
 
     public RoomAmenityDTO() {
     }
@@ -104,4 +105,13 @@ public class RoomAmenityDTO {
         this.createdAt = createdAt;
     }
 
+    public String getFormAction() {
+        return formAction;
+    }
+
+    public void setFormAction(String formAction) {
+        this.formAction = formAction;
+    }
+
+    
 }
