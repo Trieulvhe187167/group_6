@@ -568,6 +568,12 @@
                         <span>User Profile</span>
                     </a>
                 </li>
+                <li>
+                    <a href="change-password.jsp">
+                        <i class="fas fa-key"></i>
+                        <span>Change Password</span>
+                    </a>
+                </li>
                     <li>
                        <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" >
                                                 <i class="fa fa-concierge-bell"></i> Book Services
@@ -763,21 +769,20 @@
                    class="btn btn-primary">
                     <i class="fas fa-eye"></i> View Details
                 </a>
-
-                <%-- Display Rate Stay or Your Feedback button based on status and rating --%>
                 <c:choose>
                     <c:when test="${fn:toUpperCase(fn:trim(booking.status)) == 'COMPLETED' && (booking.rating == null || booking.rating == 0)}">
                         <a href="${pageContext.request.contextPath}/customer/feedback?action=view&id=${booking.id}"
-   class="btn btn-warning">
-    <i class="fas fa-star"></i> Rate Stay
-</a>
-
+                           class="btn btn-warning">
+                            <i class="fas fa-star"></i> Rate Stay
+                        </a>
                     </c:when>
                     <c:when test="${fn:toUpperCase(fn:trim(booking.status)) == 'COMPLETED' && booking.rating != null && booking.rating > 0}">
-                        <a href="${pageContext.request.contextPath}/customer/feedback?action=list&id=${booking.id}"
-                           class="btn btn-outline-success">
-                            <i class="fas fa-comment-dots"></i> Your Feedback
-                        </a>
+                        <button type="button" class="btn btn-outline-success"
+                            data-rating="${booking.rating}"
+                            data-comment="${fn:escapeXml(booking.comment)}"
+                            onclick="showFeedbackModal(this)">
+                            <i class="fas fa-comment-dots"></i> View Feedback
+                        </button>
                     </c:when>
                 </c:choose>
             </div>
@@ -809,3 +814,61 @@
     </script>
 </body>
 </html>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                <h5 class="modal-title" id="feedbackModalLabel">
+                    <i class="fas fa-star"></i> Feedback Details
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <div style="margin-bottom: 25px;">
+                    <h6 style="color: #495057; font-weight: 600; margin-bottom: 15px;">
+                        <i class="fas fa-star" style="color: #ffc107;"></i> Rating:
+                    </h6>
+                    <div style="display: flex; align-items: center;">
+                        <div id="modalRatingStars" class="rating-stars" style="margin-right: 15px; font-size: 1.5rem;"></div>
+                        <span id="modalRating" style="font-size: 1.2rem; font-weight: 600; color: #495057;"></span>
+                        <span style="color: #6c757d; margin-left: 5px;">/ 5</span>
+                    </div>
+                </div>
+                <div>
+                    <h6 style="color: #495057; font-weight: 600; margin-bottom: 15px;">
+                        <i class="fas fa-comment-dots" style="color: #667eea;"></i> Comment:
+                    </h6>
+                    <div id="modalComment" style="background: rgba(102, 126, 234, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #667eea; white-space: pre-line; color: #495057; font-style: italic; line-height: 1.6;"></div>
+                </div>
+            </div>
+            <div class="modal-footer" style="background: #f8f9fa;">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function showFeedbackModal(button) {
+    var rating = button.getAttribute('data-rating');
+    var comment = button.getAttribute('data-comment');
+    document.getElementById('modalRating').textContent = rating;
+    document.getElementById('modalComment').textContent = comment || 'No comment provided.';
+    // Generate stars for modal
+    const starsContainer = document.getElementById('modalRatingStars');
+    starsContainer.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('i');
+        star.className = i <= rating ? 'fas fa-star' : 'far fa-star';
+        starsContainer.appendChild(star);
+    }
+    $('#feedbackModal').modal('show');
+}
+</script>
