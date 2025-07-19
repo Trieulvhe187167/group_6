@@ -1,459 +1,539 @@
-package dal;
+package controller;
 
-import java.sql.*;
-import java.util.*;
-import java.util.stream.Collectors;
+import dal.FeedbackDAO;
+import dal.ReservationDAO;
 import model.Feedback;
-import model.RatingStats;
-public class FeedbackDAO {
-    public List<Feedback> getFeedbacksByUser(int userId) {
-        List<Feedback> list = new ArrayList<>();
-        String sql = "SELECT * FROM Feedback WHERE UserId = ? ORDER BY CreatedAt DESC";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+import model.Reservation;
+import model.User;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
-            ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Feedback f = new Feedback();
-                f.setId(rs.getInt("Id"));
-                f.setReservationId(rs.getInt("ReservationId"));
-                f.setUserId(rs.getInt("UserId"));
-                f.setRating(rs.getInt("Rating"));
-                f.setComment(rs.getString("Comment"));
-                f.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                list.add(f);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
+@WebServlet(urlPatterns = {"/customer/feedback", "/customer/feedback/*", "/customer/your-feedback"})
+
+public class FeedbackController extends HttpServlet {
+    
+    private FeedbackDAO feedbackDAO;
+    private ReservationDAO reservationDAO;
+    
+    @Override
+    public void init() throws ServletException {
+        feedbackDAO = new FeedbackDAO();
+        reservationDAO = new ReservationDAO();
     }
-     /**
-     * Retrieve feedback for a specific room type ordered by latest date
-     */
-    public List<Feedback> getFeedbacksByRoomType(int roomTypeId) {
-        List<Feedback> list = new ArrayList<>();
-        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt, u.FullName " +
-                     "FROM Feedback f " +
-                     "JOIN Reservations r ON f.ReservationId = r.Id " +
-                     "LEFT JOIN Rooms rm ON r.RoomId = rm.Id " +
-                     "JOIN Users u ON f.UserId = u.Id " +
-                     "WHERE (r.RoomTypeId = ? OR rm.RoomTypeId = ?) " +
-                     "ORDER BY f.CreatedAt DESC";
+    
+   @Override
+protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+        throws ServletException, IOException {
 
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    System.out.println("=== FEEDBACK CONTROLLER CALLED ===");
+    System.out.println("=== REQUEST URI: " + request.getRequestURI());
+    System.out.println("=== SERVLET PATH: " + request.getServletPath());
+    System.out.println("=== QUERY STRING: " + request.getQueryString());
+    
+    HttpSession session = request.getSession();
+    User user = (User) session.getAttribute("user");
 
-            ps.setInt(1, roomTypeId);
-            ps.setInt(2, roomTypeId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Feedback f = new Feedback();
-                    f.setId(rs.getInt("Id"));
-                    f.setReservationId(rs.getInt("ReservationId"));
-                    f.setUserId(rs.getInt("UserId"));
-                    f.setRating(rs.getInt("Rating"));
-                    f.setComment(rs.getString("Comment"));
-                    f.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                    f.setUserFullName(rs.getString("FullName"));
-                    list.add(f);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
+    if (user == null) {
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
+        return;
     }
-     /**
-     * Get average rating and review count for multiple room types.
-     */
-    public Map<Integer, RatingStats> getRatingStatsForRoomTypes(List<Integer> roomTypeIds) {
-        Map<Integer, RatingStats> map = new HashMap<>();
-        if (roomTypeIds == null || roomTypeIds.isEmpty()) {
-            return map;
-        }
 
-        String placeholders = roomTypeIds.stream()
-                .map(id -> "?")
-                .collect(Collectors.joining(","));
-
-        String sql = "SELECT COALESCE(r.RoomTypeId, rm.RoomTypeId) AS RoomTypeId, " +
-                     "COUNT(f.Id) AS ReviewCount, AVG(CAST(f.Rating AS FLOAT)) AS AvgRating " +
-                     "FROM Feedback f " +
-                     "JOIN Reservations r ON f.ReservationId = r.Id " +
-                     "LEFT JOIN Rooms rm ON r.RoomId = rm.Id " +
-                     "WHERE COALESCE(r.RoomTypeId, rm.RoomTypeId) IN (" + placeholders + ") " +
-                     "GROUP BY COALESCE(r.RoomTypeId, rm.RoomTypeId)";
-
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            int index = 1;
-            for (Integer id : roomTypeIds) {
-                ps.setInt(index++, id);
-            }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    int rtId = rs.getInt("RoomTypeId");
-                    RatingStats stats = new RatingStats();
-                    stats.setReviewCount(rs.getInt("ReviewCount"));
-                    stats.setAverageRating(rs.getDouble("AvgRating"));
-                    map.put(rtId, stats);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return map;
+    String action = request.getParameter("action");
+    String filter = request.getParameter("filter");
+    String sort = request.getParameter("sort");
+    
+    System.out.println("DEBUG: Action: " + action);
+    System.out.println("DEBUG: Filter: " + filter);
+    System.out.println("DEBUG: Sort: " + sort);
+    
+    // Check if there are filter/sort parameters - if so, this is a list request
+    if (filter != null || sort != null) {
+        System.out.println("DEBUG: Filter/sort parameters detected - showing feedback list");
+        listUserFeedback(request, response, user);
+        return;
     }
-   public boolean addFeedback(Feedback feedback) {
-        String sql = "INSERT INTO feedback (ReservationId, UserId, Rating, Comment, CreatedAt) VALUES (?, ?, ?, ?, ?)";
-
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, feedback.getReservationId());
-            stmt.setInt(2, feedback.getUserId());
-            stmt.setInt(3, feedback.getRating());
-            stmt.setString(4, feedback.getComment());
-            stmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
-
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error adding feedback: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
+    
+    if (action == null) {
+        action = "view";
     }
-    /**
-     * Lấy tất cả feedback của một user
-     */
-    public List<Feedback> getFeedbackByUserId(int userId) {
-        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt " +
-                    "FROM feedback f WHERE f.UserId = ? ORDER BY f.CreatedAt DESC";
+
+    switch (action) {
+        case "view":
+            System.out.println("DEBUG: Showing feedback form");
+            showFeedbackForm(request, response, user);
+            break;
+        case "list":
+            System.out.println("DEBUG: Showing feedback list");
+            listUserFeedback(request, response, user);
+            break;
+        case "edit":
+            System.out.println("DEBUG: Showing edit form");
+            showEditForm(request, response, user);
+            break;
+        case "delete":
+            System.out.println("DEBUG: Deleting feedback");
+            deleteFeedback(request, response, user);
+            break;
+        default:
+            System.out.println("DEBUG: Default case - showing feedback form");
+            showFeedbackForm(request, response, user);
+            break;
+    }
+}
+
+    
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         
-        List<Feedback> feedbacks = new ArrayList<>();
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
         
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, userId);
-            ResultSet rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                Feedback feedback = new Feedback();
-                feedback.setId(rs.getInt("Id"));
-                feedback.setReservationId(rs.getInt("ReservationId"));
-                feedback.setUserId(rs.getInt("UserId"));
-                feedback.setRating(rs.getInt("Rating"));
-                feedback.setComment(rs.getString("Comment"));
-                feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                
-                feedbacks.add(feedback);
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("Error getting feedback by user ID: " + e.getMessage());
-            e.printStackTrace();
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
         }
         
-        return feedbacks;
+        String action = request.getParameter("action");
+        
+        if (action == null) {
+            action = "submit";
+        }
+        
+        switch (action) {
+            case "submit":
+                submitFeedback(request, response, user);
+                break;
+            case "update":
+                updateFeedback(request, response, user);
+                break;
+            default:
+                submitFeedback(request, response, user);
+                break;
+        }
     }
     
     /**
-     * Lấy feedback theo reservation ID
+     * Hiển thị form feedback
      */
-    public Feedback getFeedbackByReservationId(int reservationId) {
-        String sql = "SELECT Id, ReservationId, UserId, Rating, Comment, CreatedAt " +
-                    "FROM feedback WHERE ReservationId = ?";
+    private void showFeedbackForm(HttpServletRequest request, HttpServletResponse response, User user) 
+            throws ServletException, IOException {
         
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        System.out.println("=== SHOW FEEDBACK FORM METHOD CALLED ===");
+        
+        try {
+            // Lấy danh sách reservation của user để chọn
+            List<Reservation> reservations = reservationDAO.getReservationsByUserId(user.getId());
             
-            stmt.setInt(1, reservationId);
-            ResultSet rs = stmt.executeQuery();
+            // Lọc chỉ những reservation đã hoàn thành và chưa có feedback
+            List<Reservation> completedReservations = reservations.stream()
+                .filter(r -> "completed".equalsIgnoreCase(r.getStatus()) && 
+                           !feedbackDAO.hasUserFeedbackForReservation(user.getId(), r.getId()))
+                .collect(java.util.stream.Collectors.toList());
+            String selectedId = request.getParameter("id");
+            request.setAttribute("selectedId", selectedId);
+
+            request.setAttribute("reservations", completedReservations);
+            request.getRequestDispatcher("/jsp/customer/customer-feedback.jsp").forward(request, response);
             
-            if (rs.next()) {
-                Feedback feedback = new Feedback();
-                feedback.setId(rs.getInt("Id"));
-                feedback.setReservationId(rs.getInt("ReservationId"));
-                feedback.setUserId(rs.getInt("UserId"));
-                feedback.setRating(rs.getInt("Rating"));
-                feedback.setComment(rs.getString("Comment"));
-                feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                
-                return feedback;
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("Error getting feedback by reservation ID: " + e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
+            request.setAttribute("error", "Error loading feedback form: " + e.getMessage());
+            request.getRequestDispatcher("/jsp/customer/customer-feedback.jsp").forward(request, response);
         }
-        
-        return null;
     }
     
     /**
-     * Lấy feedback theo ID
+     * Xử lý submit feedback
      */
-    public Feedback getFeedbackById(int id) {
-        String sql = "SELECT Id, ReservationId, UserId, Rating, Comment, CreatedAt " +
-                    "FROM feedback WHERE Id = ?";
+    private void submitFeedback(HttpServletRequest request, HttpServletResponse response, User user) 
+            throws ServletException, IOException {
         
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            // Lấy thông tin từ form
+        
+
+            String reservationIdStr = request.getParameter("reservationId");
+            String ratingStr = request.getParameter("rating"); // May be decimal (e.g., 4.2) from average
+            String comment = request.getParameter("comment");
             
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                Feedback feedback = new Feedback();
-                feedback.setId(rs.getInt("Id"));
-                feedback.setReservationId(rs.getInt("ReservationId"));
-                feedback.setUserId(rs.getInt("UserId"));
-                feedback.setRating(rs.getInt("Rating"));
-                feedback.setComment(rs.getString("Comment"));
-                feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                
-                return feedback;
+            // NOTE: In the JSP, ensure only one <input name="rating"> is present (the average)
+            // Validate dữ liệu
+            if (reservationIdStr == null || reservationIdStr.trim().isEmpty()) {
+                request.setAttribute("error", "Please select a booking to review.");
+                showFeedbackForm(request, response, user);
+                return;
             }
             
-        } catch (SQLException e) {
-            System.err.println("Error getting feedback by ID: " + e.getMessage());
+            if (ratingStr == null || ratingStr.trim().isEmpty()) {
+                request.setAttribute("error", "Please provide a rating.");
+                showFeedbackForm(request, response, user);
+                return;
+            }
+            
+            if (comment == null || comment.trim().isEmpty() || comment.trim().length() < 5) {
+                request.setAttribute("error", "Please provide a more detailed feedback comment (at least 5 characters).");
+                showFeedbackForm(request, response, user);
+                return;
+            }
+            
+            int reservationId = Integer.parseInt(reservationIdStr);
+            int rating;
+            try {
+                double ratingDouble = Double.parseDouble(ratingStr);
+                rating = (int) Math.round(ratingDouble); // Round to nearest int (1-5)
+            } catch (NumberFormatException e) {
+                request.setAttribute("error", "Invalid rating format.");
+                showFeedbackForm(request, response, user);
+                return;
+            }
+            
+            // Kiểm tra rating hợp lệ
+            if (rating < 1 || rating > 5) {
+                request.setAttribute("error", "Rating must be between 1 and 5.");
+                showFeedbackForm(request, response, user);
+                return;
+            }
+            
+            // Kiểm tra reservation có tồn tại và thuộc về user không
+            Reservation reservation = reservationDAO.getReservationById(reservationId);
+            if (reservation == null || reservation.getUserId() != user.getId()) {
+                request.setAttribute("error", "Invalid reservation selected.");
+                showFeedbackForm(request, response, user);
+                return;
+            }
+            
+            // Kiểm tra đã feedback chưa
+            if (feedbackDAO.hasUserFeedbackForReservation(user.getId(), reservationId)) {
+                request.setAttribute("error", "You have already provided feedback for this booking.");
+                showFeedbackForm(request, response, user);
+                return;
+            }
+            
+            // Tạo feedback object
+            Feedback feedback = new Feedback();
+            feedback.setReservationId(reservationId);
+            feedback.setUserId(user.getId());
+            feedback.setRating(rating);
+            
+            // Tạo comment chi tiết bao gồm tất cả thông tin
+            StringBuilder fullComment = new StringBuilder();
+            fullComment.append("\nFeedback:\n").append(comment.trim());
+            
+            feedback.setComment(fullComment.toString());
+            
+            // Lưu feedback
+            boolean success = feedbackDAO.addFeedback(feedback);
+            
+            // Update reservation rating if feedback was added
+            if (success) {
+                request.setAttribute("success", "Thank you for your feedback! We appreciate your input.");
+                // Redirect để tránh resubmit
+                response.sendRedirect(request.getContextPath() + "/customer/feedback?success=true");
+                return;
+            } else {
+                request.setAttribute("error", "Failed to submit feedback. Please try again.");
+            }
+            
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "Invalid input format. Please check your data.");
+        } catch (Exception e) {
             e.printStackTrace();
+            request.setAttribute("error", "An error occurred while submitting feedback: " + e.getMessage());
         }
         
-        return null;
+        showFeedbackForm(request, response, user);
     }
     
     /**
-     * Lấy tất cả feedback (cho admin)
+     * Hiển thị danh sách feedback của user
      */
-    public List<Feedback> getAllFeedback() {
-        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt " +
-                    "FROM feedback f ORDER BY f.CreatedAt DESC";
-        
-        List<Feedback> feedbacks = new ArrayList<>();
-        
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            ResultSet rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                Feedback feedback = new Feedback();
-                feedback.setId(rs.getInt("Id"));
-                feedback.setReservationId(rs.getInt("ReservationId"));
-                feedback.setUserId(rs.getInt("UserId"));
-                feedback.setRating(rs.getInt("Rating"));
-                feedback.setComment(rs.getString("Comment"));
-                feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                
-                feedbacks.add(feedback);
+   private void listUserFeedback(HttpServletRequest request, HttpServletResponse response, User user) 
+        throws ServletException, IOException {
+
+    System.out.println("=== LIST USER FEEDBACK METHOD CALLED ===");
+    System.out.println("=== USER ID: " + user.getId() + " ===");
+    
+    int userId = user.getId();
+
+    String filter = request.getParameter("filter");
+    String sort = request.getParameter("sort");
+    
+    System.out.println("=== FILTER: " + filter + ", SORT: " + sort + " ===");
+    
+    // Set defaults if not provided
+    if (filter == null || filter.trim().isEmpty()) {
+        filter = "all";
+    }
+    if (sort == null || sort.trim().isEmpty()) {
+        sort = "date_desc"; // Changed default to be more specific
+    }
+    
+    System.out.println("=== FINAL FILTER: " + filter + ", FINAL SORT: " + sort + " ===");
+
+    try {
+        // Get data from DAO with filter and sort
+        List<Reservation> reservations = reservationDAO.getReservationsByUserIdWithFeedbackFiltered(userId, filter, sort);
+        List<Map<String, Object>> feedbackBookings = new ArrayList<>();
+
+        for (Reservation r : reservations) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("id", r.getId());
+            entry.put("roomNumber", r.getRoomNumber());
+            entry.put("checkIn", r.getCheckIn());
+            entry.put("checkOut", r.getCheckOut());
+            entry.put("status", r.getStatus());
+            entry.put("createdAt", r.getCreatedAt()); // Add this for sorting
+
+            // Use rating and comment from the reservation object
+            int reservationRating = r.getRating();
+            String reservationComment = r.getComment();
+            if (reservationRating > 0) {
+                entry.put("rating", reservationRating);
+                entry.put("comment", reservationComment);
+            } else {
+                entry.put("rating", 0);
+                entry.put("comment", "");
             }
-            
-        } catch (SQLException e) {
-            System.err.println("Error getting all feedback: " + e.getMessage());
-            e.printStackTrace();
+            feedbackBookings.add(entry);
         }
         
-        return feedbacks;
+        // Manual sorting if DAO doesn't handle it properly
+        switch (sort) {
+            case "date_desc":
+                feedbackBookings.sort((a, b) -> {
+                    java.sql.Timestamp dateA = (java.sql.Timestamp) a.get("createdDate");
+                    java.sql.Timestamp dateB = (java.sql.Timestamp) b.get("createdDate");
+                    if (dateA == null && dateB == null) return 0;
+                    if (dateA == null) return 1;
+                    if (dateB == null) return -1;
+                    return dateB.compareTo(dateA); // Descending
+                });
+                break;
+            case "date_asc":
+                feedbackBookings.sort((a, b) -> {
+                    java.sql.Timestamp dateA = (java.sql.Timestamp) a.get("createdDate");
+                    java.sql.Timestamp dateB = (java.sql.Timestamp) b.get("createdDate");
+                    if (dateA == null && dateB == null) return 0;
+                    if (dateA == null) return 1;
+                    if (dateB == null) return -1;
+                    return dateA.compareTo(dateB); // Ascending
+                });
+                break;
+            case "rating_desc":
+                feedbackBookings.sort((a, b) -> {
+                    Integer ratingA = (Integer) a.get("rating");
+                    Integer ratingB = (Integer) b.get("rating");
+                    return ratingB.compareTo(ratingA); // Descending
+                });
+                break;
+            case "rating_asc":
+                feedbackBookings.sort((a, b) -> {
+                    Integer ratingA = (Integer) a.get("rating");
+                    Integer ratingB = (Integer) b.get("rating");
+                    return ratingA.compareTo(ratingB); // Ascending
+                });
+                break;
+            case "room_asc":
+                feedbackBookings.sort((a, b) -> {
+                    String roomA = (String) a.get("roomNumber");
+                    String roomB = (String) b.get("roomNumber");
+                    if (roomA == null && roomB == null) return 0;
+                    if (roomA == null) return 1;
+                    if (roomB == null) return -1;
+                    return roomA.compareTo(roomB);
+                });
+                break;
+            case "room_desc":
+                feedbackBookings.sort((a, b) -> {
+                    String roomA = (String) a.get("roomNumber");
+                    String roomB = (String) b.get("roomNumber");
+                    if (roomA == null && roomB == null) return 0;
+                    if (roomA == null) return 1;
+                    if (roomB == null) return -1;
+                    return roomB.compareTo(roomA);
+                });
+                break;
+            default:
+                // Default to date descending
+                feedbackBookings.sort((a, b) -> {
+                    java.sql.Timestamp dateA = (java.sql.Timestamp) a.get("createdDate");
+                    java.sql.Timestamp dateB = (java.sql.Timestamp) b.get("createdDate");
+                    if (dateA == null && dateB == null) return 0;
+                    if (dateA == null) return 1;
+                    if (dateB == null) return -1;
+                    return dateB.compareTo(dateA);
+                });
+                break;
+        }
+        
+        // Set attributes for JSP
+        request.setAttribute("feedbackBookings", feedbackBookings);
+        request.setAttribute("currentFilter", filter);
+        request.setAttribute("currentSort", sort);
+        
+        request.getRequestDispatcher("/jsp/customer/your-feedback.jsp").forward(request, response);
+        
+    } catch (Exception e) {
+        e.printStackTrace();
+        request.setAttribute("error", "Error loading feedback: " + e.getMessage());
+        request.getRequestDispatcher("/jsp/customer/your-feedback.jsp").forward(request, response);
+    }
+}
+    
+    /**
+     * Hiển thị form edit feedback
+     */
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response, User user) 
+            throws ServletException, IOException {
+        
+        try {
+            String feedbackIdStr = request.getParameter("id");
+            
+            if (feedbackIdStr == null || feedbackIdStr.trim().isEmpty()) {
+                request.setAttribute("error", "Feedback ID is required.");
+                listUserFeedback(request, response, user);
+                return;
+            }
+            
+            int feedbackId = Integer.parseInt(feedbackIdStr);
+            Feedback feedback = feedbackDAO.getFeedbackById(feedbackId);
+            
+            if (feedback == null || feedback.getUserId() != user.getId()) {
+                request.setAttribute("error", "Feedback not found or you don't have permission to edit it.");
+                listUserFeedback(request, response, user);
+                return;
+            }
+            
+            request.setAttribute("feedback", feedback);
+            request.getRequestDispatcher("/jsp/customer/edit-feedback.jsp").forward(request, response);
+            
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "Invalid feedback ID format.");
+            listUserFeedback(request, response, user);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading feedback: " + e.getMessage());
+            listUserFeedback(request, response, user);
+        }
     }
     
     /**
      * Cập nhật feedback
      */
-    public boolean updateFeedback(Feedback feedback) {
-        String sql = "UPDATE feedback SET Rating = ?, Comment = ? WHERE Id = ?";
+    private void updateFeedback(HttpServletRequest request, HttpServletResponse response, User user) 
+            throws ServletException, IOException {
         
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            String feedbackIdStr = request.getParameter("id");
+            String ratingStr = request.getParameter("rating");
+            String comment = request.getParameter("comment");
             
-            stmt.setInt(1, feedback.getRating());
-            stmt.setString(2, feedback.getComment());
-            stmt.setInt(3, feedback.getId());
+            if (feedbackIdStr == null || feedbackIdStr.trim().isEmpty()) {
+                request.setAttribute("error", "Feedback ID is required.");
+                listUserFeedback(request, response, user);
+                return;
+            }
             
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
+            int feedbackId = Integer.parseInt(feedbackIdStr);
+            int rating = Integer.parseInt(ratingStr);
             
-        } catch (SQLException e) {
-            System.err.println("Error updating feedback: " + e.getMessage());
+            // Validate
+            if (rating < 1 || rating > 5) {
+                request.setAttribute("error", "Rating must be between 1 and 5.");
+                showEditForm(request, response, user);
+                return;
+            }
+            
+            if (comment == null || comment.trim().isEmpty()) {
+                request.setAttribute("error", "Comment is required.");
+                showEditForm(request, response, user);
+                return;
+            }
+            
+            // Kiểm tra feedback tồn tại và thuộc về user
+            Feedback existingFeedback = feedbackDAO.getFeedbackById(feedbackId);
+            if (existingFeedback == null || existingFeedback.getUserId() != user.getId()) {
+                request.setAttribute("error", "Feedback not found or you don't have permission to edit it.");
+                listUserFeedback(request, response, user);
+                return;
+            }
+            
+            // Cập nhật feedback
+            existingFeedback.setRating(rating);
+            existingFeedback.setComment(comment.trim());
+            
+            boolean success = feedbackDAO.updateFeedback(existingFeedback);
+            
+            if (success) {
+                request.setAttribute("success", "Feedback updated successfully.");
+                response.sendRedirect(request.getContextPath() + "/customer/feedback?action=list&success=updated");
+                return;
+            } else {
+                request.setAttribute("error", "Failed to update feedback. Please try again.");
+            }
+            
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "Invalid input format.");
+        } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            request.setAttribute("error", "An error occurred while updating feedback: " + e.getMessage());
         }
+        
+        showEditForm(request, response, user);
     }
     
     /**
      * Xóa feedback
      */
-    public boolean deleteFeedback(int id) {
-        String sql = "DELETE FROM feedback WHERE Id = ?";
+    private void deleteFeedback(HttpServletRequest request, HttpServletResponse response, User user) 
+            throws ServletException, IOException {
         
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            String feedbackIdStr = request.getParameter("id");
             
-            stmt.setInt(1, id);
-            
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-            
-        } catch (SQLException e) {
-            System.err.println("Error deleting feedback: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-    
-    /**
-     * Kiểm tra xem user đã feedback cho reservation này chưa
-     */
-    public boolean hasUserFeedbackForReservation(int userId, int reservationId) {
-        String sql = "SELECT COUNT(*) FROM feedback WHERE UserId = ? AND ReservationId = ?";
-        
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, userId);
-            stmt.setInt(2, reservationId);
-            
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
+            if (feedbackIdStr == null || feedbackIdStr.trim().isEmpty()) {
+                request.setAttribute("error", "Feedback ID is required.");
+                listUserFeedback(request, response, user);
+                return;
             }
             
-        } catch (SQLException e) {
-            System.err.println("Error checking existing feedback: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Lấy feedback với thông tin chi tiết (join với reservation và user)
-     */
-    public List<Feedback> getFeedbackWithDetails() {
-        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt, " +
-                    "u.Username, u.Email, r.CheckInDate, r.CheckOutDate " +
-                    "FROM feedback f " +
-                    "JOIN users u ON f.UserId = u.Id " +
-                    "JOIN reservations r ON f.ReservationId = r.Id " +
-                    "ORDER BY f.CreatedAt DESC";
-        
-        List<Feedback> feedbacks = new ArrayList<>();
-        
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            int feedbackId = Integer.parseInt(feedbackIdStr);
             
-            ResultSet rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                Feedback feedback = new Feedback();
-                feedback.setId(rs.getInt("Id"));
-                feedback.setReservationId(rs.getInt("ReservationId"));
-                feedback.setUserId(rs.getInt("UserId"));
-                feedback.setRating(rs.getInt("Rating"));
-                feedback.setComment(rs.getString("Comment"));
-                feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                
-                // Thêm thông tin user và reservation nếu cần
-                // feedback.setUsername(rs.getString("Username"));
-                // feedback.setEmail(rs.getString("Email"));
-                // feedback.setCheckInDate(rs.getDate("CheckInDate"));
-                // feedback.setCheckOutDate(rs.getDate("CheckOutDate"));
-                
-                feedbacks.add(feedback);
+            // Kiểm tra feedback tồn tại và thuộc về user
+            Feedback feedback = feedbackDAO.getFeedbackById(feedbackId);
+            if (feedback == null || feedback.getUserId() != user.getId()) {
+                request.setAttribute("error", "Feedback not found or you don't have permission to delete it.");
+                listUserFeedback(request, response, user);
+                return;
             }
             
-        } catch (SQLException e) {
-            System.err.println("Error getting feedback with details: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        return feedbacks;
-    }
-    
-    /**
-     * Lấy rating trung bình
-     */
-    public double getAverageRating() {
-        String sql = "SELECT AVG(CAST(Rating AS FLOAT)) FROM feedback";
-        
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            boolean success = feedbackDAO.deleteFeedback(feedbackId);
             
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getDouble(1);
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/customer/feedback?action=list&success=deleted");
+                return;
+            } else {
+                request.setAttribute("error", "Failed to delete feedback. Please try again.");
             }
             
-        } catch (SQLException e) {
-            System.err.println("Error getting average rating: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "Invalid feedback ID format.");
+        } catch (Exception e) {
             e.printStackTrace();
+            request.setAttribute("error", "An error occurred while deleting feedback: " + e.getMessage());
         }
         
-        return 0.0;
-    }
-    
-    /**
-     * Đếm tổng số feedback
-     */
-    public int getTotalFeedbackCount() {
-        String sql = "SELECT COUNT(*) FROM feedback";
-        
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("Error getting feedback count: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        return 0;
-    }
-    
-    /**
-     * Lấy feedback theo rating
-     */
-    public List<Feedback> getFeedbackByRating(int rating) {
-        String sql = "SELECT Id, ReservationId, UserId, Rating, Comment, CreatedAt " +
-                    "FROM feedback WHERE Rating = ? ORDER BY CreatedAt DESC";
-        
-        List<Feedback> feedbacks = new ArrayList<>();
-        
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, rating);
-            ResultSet rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                Feedback feedback = new Feedback();
-                feedback.setId(rs.getInt("Id"));
-                feedback.setReservationId(rs.getInt("ReservationId"));
-                feedback.setUserId(rs.getInt("UserId"));
-                feedback.setRating(rs.getInt("Rating"));
-                feedback.setComment(rs.getString("Comment"));
-                feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                
-                feedbacks.add(feedback);
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("Error getting feedback by rating: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        return feedbacks;
+        listUserFeedback(request, response, user);
     }
 }
+
