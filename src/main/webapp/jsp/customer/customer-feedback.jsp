@@ -6,7 +6,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Feedback</title>
+    <title>Submit Feedback</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
     <style>
@@ -158,233 +158,87 @@
             margin-bottom: 0;
         }
 
-        /* Filter Section */
-        .filter-section {
+        /* Feedback Form */
+        .feedback-form-container {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
+            border-radius: 20px;
+            padding: 40px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        .filter-row {
-            display: flex;
-            gap: 20px;
-            align-items: end;
-            flex-wrap: wrap;
+        .form-group {
+            margin-bottom: 30px;
         }
 
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .filter-group label {
+        .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-weight: 600;
             color: #495057;
+            font-size: 1.1rem;
         }
 
-        .filter-group select,
-        .filter-group input {
+        .form-control {
             width: 100%;
-            padding: 12px 15px;
+            padding: 15px;
             border: 2px solid #e9ecef;
             border-radius: 10px;
             font-size: 1rem;
             transition: border-color 0.3s ease;
         }
 
-        .filter-group select:focus,
-        .filter-group input:focus {
+        .form-control:focus {
             outline: none;
             border-color: #667eea;
-        }
-
-        .filter-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-left: 10px;
-        }
-
-        .filter-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        /* Feedback Cards */
-        .feedback-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            margin-bottom: 25px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feedback-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
-
-        .feedback-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f8f9fa;
-        }
-
-        .booking-id {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #495057;
-            margin-bottom: 0;
-        }
-
-        .card-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .detail-item {
-            display: flex;
-            align-items: center;
-        }
-
-        .detail-item i {
-            color: #667eea;
-            margin-right: 12px;
-            width: 20px;
-            font-size: 1.1rem;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: #495057;
-            margin-right: 8px;
-        }
-
-        .detail-value {
-            color: #6c757d;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 8px 16px;
-            border-radius: 25px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge.completed {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .rating-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .rating-display {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 30px;
         }
 
         .rating-stars {
-            color: #ffc107;
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
-
-        .rating-number {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #495057;
-        }
-
-        .rating-badge {
-            background: linear-gradient(135deg, #ffc107, #ffb300);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-
-        .unrated-badge {
-            background: linear-gradient(135deg, #6c757d, #495057);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .comment-section {
+            display: flex;
+            gap: 10px;
             margin-top: 15px;
-            padding: 15px;
-            background: rgba(102, 126, 234, 0.05);
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
         }
 
-        .comment-text {
+        .star {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #ffc107;
+        }
+
+        .star.filled {
+            color: #ffc107;
+        }
+
+        .rating-text {
+            margin-top: 10px;
+            font-weight: 600;
             color: #495057;
-            font-style: italic;
-            margin-bottom: 0;
-            line-height: 1.6;
-        }
-
-        .card-actions {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #e9ecef;
         }
 
         .btn {
             display: inline-flex;
             align-items: center;
-            padding: 10px 20px;
+            padding: 15px 30px;
             border-radius: 10px;
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
             border: none;
             cursor: pointer;
+            font-size: 1rem;
         }
 
         .btn-primary {
@@ -398,25 +252,14 @@
             color: white;
         }
 
-        .btn-warning {
-            background: linear-gradient(135deg, #ffc107, #ffb300);
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
             color: white;
         }
 
-        .btn-warning:hover {
+        .btn-secondary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 193, 7, 0.3);
-            color: white;
-        }
-
-        .btn-info {
-            background: linear-gradient(135deg, #17a2b8, #138496);
-            color: white;
-        }
-
-        .btn-info:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(23, 162, 184, 0.3);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
             color: white;
         }
 
@@ -424,78 +267,58 @@
             margin-right: 8px;
         }
 
-        .empty-message {
-            text-align: center;
-            padding: 60px 30px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        .empty-icon {
-            font-size: 4rem;
-            color: #667eea;
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
             margin-bottom: 20px;
+            border: none;
         }
 
-        .empty-title {
-            font-size: 1.5rem;
-            font-weight: 600;
+        .alert-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .reservation-info {
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .reservation-info h5 {
             color: #495057;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
             margin-bottom: 10px;
         }
 
-        .empty-text {
+        .info-item i {
+            color: #667eea;
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            margin-right: 8px;
+        }
+
+        .info-value {
             color: #6c757d;
-            font-size: 1.1rem;
-            margin-bottom: 0;
         }
-
-        /* Stats Section */
-        .stats-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #6c757d;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0;
-        }
-
-        .stat-card.total .stat-icon { color: #667eea; }
-        .stat-card.rated .stat-icon { color: #28a745; }
-        .stat-card.unrated .stat-icon { color: #ffc107; }
 
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -516,15 +339,8 @@
                 padding: 80px 20px 40px;
             }
 
-            .card-details {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .card-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
+            .feedback-form-container {
+                padding: 25px 20px;
             }
 
             .content-header {
@@ -535,22 +351,12 @@
                 font-size: 1.6rem;
             }
 
-            .feedback-card {
-                padding: 25px 20px;
+            .rating-stars {
+                justify-content: center;
             }
 
-            .filter-row {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .filter-group {
-                min-width: auto;
-            }
-
-            .stats-section {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
+            .star {
+                font-size: 1.8rem;
             }
         }
     </style>
@@ -577,7 +383,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="active">
+                    <a href="${pageContext.request.contextPath}/customer/your-feedback" class="active">
                         <i class="fas fa-comments"></i>
                         <span>My Feedback</span>
                     </a>
@@ -632,271 +438,97 @@
         <!-- Main Content -->
         <main class="main-content">
             <div class="content-header">
-                <h2><i class="fas fa-comments"></i> My Feedback</h2>
-                <p>View and manage your feedback for completed bookings</p>
+                <h2><i class="fas fa-star"></i> Submit Feedback</h2>
+                <p>Share your experience and help us improve our services</p>
             </div>
 
-            <!-- Statistics Section -->
-            <div class="stats-section">
-                <div class="stat-card total">
-                    <div class="stat-icon">
-                        <i class="fas fa-list-alt"></i>
-                    </div>
-                    <div class="stat-number">
-                        <c:set var="totalCount" value="0" />
-                        <c:forEach var="booking" items="${feedbackBookings}">
-                            <c:if test="${booking.status == 'COMPLETED'}">
-                                <c:set var="totalCount" value="${totalCount + 1}" />
-                            </c:if>
-                        </c:forEach>
-                        ${totalCount}
-                    </div>
-                    <div class="stat-label">Total Bookings</div>
+            <!-- Success/Error Messages -->
+            <c:if test="${not empty success}">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> ${success}
                 </div>
-                <div class="stat-card rated">
-                    <div class="stat-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="stat-number">
-                        <c:set var="ratedCount" value="0" />
-                        <c:forEach var="booking" items="${feedbackBookings}">
-                            <c:if test="${booking.status == 'COMPLETED' && booking.rating > 0}">
-                                <c:set var="ratedCount" value="${ratedCount + 1}" />
-                            </c:if>
-                        </c:forEach>
-                        ${ratedCount}
-                    </div>
-                    <div class="stat-label">Rated</div>
+            </c:if>
+            
+            <c:if test="${not empty error}">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> ${error}
                 </div>
-                <div class="stat-card unrated">
-                    <div class="stat-icon">
-                        <i class="fas fa-star-half-alt"></i>
-                    </div>
-                    <div class="stat-number">
-                        <c:set var="unratedCount" value="0" />
-                        <c:forEach var="booking" items="${feedbackBookings}">
-                            <c:if test="${booking.status == 'COMPLETED' && (booking.rating == null || booking.rating == 0)}">
-                                <c:set var="unratedCount" value="${unratedCount + 1}" />
-                            </c:if>
-                        </c:forEach>
-                        ${unratedCount}
-                    </div>
-                    <div class="stat-label">Unrated</div>
-                </div>
-            </div>
+            </c:if>
 
-            <!-- Filter Section -->
-            <div class="filter-section">
-                <form method="get" class="filter-row">
-                    <div class="filter-group">
-                        <label for="filterSelect">Filter by Status:</label>
-                        <select name="filter" id="filterSelect" onchange="this.form.submit()">
-                            <option value="all" ${param.filter == 'all' ? 'selected' : ''}>All Completed</option>
-                            <option value="rated" ${param.filter == 'rated' ? 'selected' : ''}>Rated Only</option>
-                            <option value="unrated" ${param.filter == 'unrated' ? 'selected' : ''}>Unrated Only</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="sortSelect">Sort by:</label>
-                        <select name="sort" id="sortSelect" onchange="this.form.submit()">
-                            <option value="date" ${param.sort == 'date' ? 'selected' : ''}>Date (Latest First)</option>
-                            <option value="rating" ${param.sort == 'rating' ? 'selected' : ''}>Rating (Highest First)</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
+            <div class="feedback-form-container">
+                <c:choose>
+                    <c:when test="${empty reservations}">
+                        <div style="text-align: center; padding: 40px;">
+                            <i class="fas fa-clipboard-list" style="font-size: 4rem; color: #667eea; margin-bottom: 20px;"></i>
+                            <h3 style="color: #495057; margin-bottom: 15px;">No Bookings Available for Feedback</h3>
+                            <p style="color: #6c757d; margin-bottom: 25px;">
+                                You don't have any completed bookings that need feedback yet. 
+                                Complete a booking and check back here to share your experience!
+                            </p>
+                            <a href="${pageContext.request.contextPath}/customer/your-feedback" class="btn btn-primary">
+                                <i class="fas fa-arrow-left"></i> Back to My Feedback
+                            </a>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <form method="post" action="${pageContext.request.contextPath}/customer/feedback">
+                            <input type="hidden" name="action" value="submit">
+                            
+                            <div class="form-group">
+                                <label for="reservationId">
+                                    <i class="fas fa-calendar-check"></i> Select Booking to Rate:
+                                </label>
+                                <select name="reservationId" id="reservationId" class="form-control" required>
+                                    <option value="">Choose a completed booking...</option>
+                                    <c:forEach var="reservation" items="${reservations}">
+                                        <option value="${reservation.id}" ${selectedId == reservation.id ? 'selected' : ''}>
+                                            Booking #${reservation.id} - Room ${reservation.roomNumber} 
+                                            (<fmt:formatDate value="${reservation.checkIn}" pattern="dd/MM/yyyy"/> - 
+                                            <fmt:formatDate value="${reservation.checkOut}" pattern="dd/MM/yyyy"/>)
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                            </div>
 
-            <!-- Feedback Cards -->
-            <div class="feedback-list">
-                <c:set var="hasVisibleBookings" value="false" />
-                <c:forEach var="booking" items="${feedbackBookings}">
-                    <!-- Only show COMPLETED bookings -->
-                    <c:if test="${booking.status == 'COMPLETED'}">
-                        <c:set var="showBooking" value="true" />
-                        <!-- Apply filter -->
-                        <c:if test="${param.filter == 'rated' && (booking.rating == null || booking.rating == 0)}">
-                            <c:set var="showBooking" value="false" />
-                        </c:if>
-                        <c:if test="${param.filter == 'unrated' && booking.rating > 0}">
-                            <c:set var="showBooking" value="false" />
-                        </c:if>
-                        <c:if test="${showBooking}">
-                            <c:set var="hasVisibleBookings" value="true" />
-                            <div class="feedback-card">
-                                <div class="card-header">
-                                    <h4 class="booking-id">Booking #${booking.id}</h4>
-                                    <span class="badge completed">
-                                        <i class="fas fa-check-circle"></i>
-                                        Completed
-                                    </span>
-                                </div>
-                                
-                                <div class="card-details">
-                                    <div class="detail-item">
-                                        <i class="fas fa-bed"></i>
-                                        <span class="detail-label">Room:</span>
-                                        <span class="detail-value">${booking.roomNumber}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="fas fa-calendar-alt"></i>
-                                        <span class="detail-label">Check-in:</span>
-                                        <span class="detail-value">
-                                            <fmt:formatDate value="${booking.checkIn}" pattern="dd/MM/yyyy"/>
-                                        </span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="fas fa-calendar-check"></i>
-                                        <span class="detail-label">Check-out:</span>
-                                        <span class="detail-value">
-                                            <fmt:formatDate value="${booking.checkOut}" pattern="dd/MM/yyyy"/>
-                                        </span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="fas fa-clock"></i>
-                                        <span class="detail-label">Duration:</span>
-                                        <span class="detail-value">
-                                            <c:set var="duration" value="${(booking.checkOut.time - booking.checkIn.time) / (1000 * 60 * 60 * 24)}" />
-                                            ${duration} night(s)
-                                        </span>
-                                    </div>
-                                </div>
-                                
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-star"></i> Your Rating:
+                                </label>
                                 <div class="rating-section">
-                                    <c:choose>
-                                        <c:when test="${booking.rating > 0}">
-                                            <div class="rating-display">
-                                                <div class="rating-stars">
-                                                    <c:forEach begin="1" end="5" var="i">
-                                                        <c:choose>
-                                                            <c:when test="${i <= booking.rating}">
-                                                                <i class="fas fa-star"></i>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <i class="far fa-star"></i>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </c:forEach>
-                                                </div>
-                                                <span class="rating-number">${booking.rating}</span>
-                                                <span class="rating-badge">${booking.rating}/5 Stars</span>
-                                            </div>
-                                            
-                                            <c:if test="${not empty booking.comment}">
-                                                <div class="comment-section">
-                                                    <h6 style="margin-bottom: 10px; color: #495057; font-weight: 600;">
-                                                        <i class="fas fa-comment-dots"></i> Your Comment:
-                                                    </h6>
-                                                    <p class="comment-text">"${booking.comment}"</p>
-                                                </div>
-                                            </c:if>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <div class="rating-display">
-                                                <div class="rating-stars" style="color: #ccc;">
-                                                    <i class="far fa-star"></i>
-                                                    <i class="far fa-star"></i>
-                                                    <i class="far fa-star"></i>
-                                                    <i class="far fa-star"></i>
-                                                    <i class="far fa-star"></i>
-                                                </div>
-                                                <span class="unrated-badge">
-                                                    <i class="fas fa-exclamation-triangle"></i>
-                                                    Not Yet Rated
-                                                </span>
-                                            </div>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                                
-                                <div class="card-actions">
-                                    <c:choose>
-                                        <c:when test="${booking.rating > 0}">
-                                            <button type="button" class="btn btn-info"
-                                                data-rating="${booking.rating}"
-                                                data-comment="${fn:escapeXml(booking.comment)}"
-                                                onclick="showFeedbackModal(this)">
-                                                <i class="fas fa-eye"></i>
-                                                View Full Feedback
-                                            </button>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <a href="${pageContext.request.contextPath}/customer/feedback?action=view&id=${booking.id}" 
-                                               class="btn btn-warning">
-                                                <i class="fas fa-star"></i>
-                                                Rate This Booking
-                                            </a>
-                                        </c:otherwise>
-                                    </c:choose>
+                                    <div class="rating-stars" id="ratingStars">
+                                        <i class="star fas fa-star" data-rating="1"></i>
+                                        <i class="star fas fa-star" data-rating="2"></i>
+                                        <i class="star fas fa-star" data-rating="3"></i>
+                                        <i class="star fas fa-star" data-rating="4"></i>
+                                        <i class="star fas fa-star" data-rating="5"></i>
+                                    </div>
+                                    <div class="rating-text" id="ratingText">Click on a star to rate</div>
+                                    <input type="hidden" name="rating" id="ratingInput" required>
                                 </div>
                             </div>
-                        </c:if>
-                    </c:if>
-                </c:forEach>
-                
-                <!-- Empty State -->
-                <c:if test="${not hasVisibleBookings}">
-                    <div class="empty-message">
-                        <div class="empty-icon">
-                            <i class="fas fa-clipboard-list"></i>
-                        </div>
-                        <h3 class="empty-title">No Feedback Available</h3>
-                        <p class="empty-text">
-                            <c:choose>
-                                <c:when test="${param.filter == 'rated'}">
-                                    You haven't rated any bookings yet. Complete a booking and share your experience!
-                                </c:when>
-                                <c:when test="${param.filter == 'unrated'}">
-                                    All your completed bookings have been rated. Thank you for your feedback!
-                                </c:when>
-                                <c:otherwise>
-                                    You don't have any completed bookings to rate yet. Book a room and share your experience!
-                                </c:otherwise>
-                            </c:choose>
-                        </p>
-                    </div>
-                </c:if>
+
+                            <div class="form-group">
+                                <label for="comment">
+                                    <i class="fas fa-comment-dots"></i> Your Feedback (minimum 5 characters):
+                                </label>
+                                <textarea name="comment" id="comment" class="form-control" rows="6" 
+                                          placeholder="Please share your experience with us. What did you like? What could we improve? (minimum 5 characters)" 
+                                          required minlength="5"></textarea>
+                            </div>
+
+                            <div style="display: flex; gap: 15px; justify-content: center;">
+                                <a href="${pageContext.request.contextPath}/customer/your-feedback" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i> Submit Feedback
+                                </button>
+                            </div>
+                        </form>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </main>
-    </div>
-
-    <!-- Feedback Modal -->
-    <div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
-                    <h5 class="modal-title" id="feedbackModalLabel">
-                        <i class="fas fa-star"></i> Feedback Details
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" style="padding: 30px;">
-                    <div style="margin-bottom: 25px;">
-                        <h6 style="color: #495057; font-weight: 600; margin-bottom: 15px;">
-                            <i class="fas fa-star" style="color: #ffc107;"></i> Rating:
-                        </h6>
-                        <div style="display: flex; align-items: center;">
-                            <div id="modalRatingStars" class="rating-stars" style="margin-right: 15px; font-size: 1.5rem;"></div>
-                            <span id="modalRating" style="font-size: 1.2rem; font-weight: 600; color: #495057;"></span>
-                            <span style="color: #6c757d; margin-left: 5px;">/ 5</span>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h6 style="color: #495057; font-weight: 600; margin-bottom: 15px;">
-                            <i class="fas fa-comment-dots" style="color: #667eea;"></i> Comment:
-                        </h6>
-                        <div id="modalComment" style="background: rgba(102, 126, 234, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #667eea; white-space: pre-line; color: #495057; font-style: italic; line-height: 1.6;"></div>
-                    </div>
-                </div>
-                <div class="modal-footer" style="background: #f8f9fa;">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times"></i> Close
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Mobile Toggle Button -->
@@ -910,22 +542,52 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function showFeedbackModal(button) {
-            var rating = button.getAttribute('data-rating');
-            var comment = button.getAttribute('data-comment');
-            document.getElementById('modalRating').textContent = rating;
-            document.getElementById('modalComment').textContent = comment || 'No comment provided.';
-            
-            // Generate stars for modal
-            const starsContainer = document.getElementById('modalRatingStars');
-            starsContainer.innerHTML = '';
-            for (let i = 1; i <= 5; i++) {
-                const star = document.createElement('i');
-                star.className = i <= rating ? 'fas fa-star' : 'far fa-star';
-                starsContainer.appendChild(star);
-            }
-            
-            $('#feedbackModal').modal('show');
+        // Rating functionality
+        const stars = document.querySelectorAll('.star');
+        const ratingText = document.getElementById('ratingText');
+        const ratingInput = document.getElementById('ratingInput');
+        const ratingMessages = [
+            'Click on a star to rate',
+            'Poor - 1 star',
+            'Fair - 2 stars',
+            'Good - 3 stars',
+            'Very Good - 4 stars',
+            'Excellent - 5 stars'
+        ];
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.getAttribute('data-rating');
+                setRating(rating);
+            });
+
+            star.addEventListener('mouseenter', function() {
+                const rating = this.getAttribute('data-rating');
+                highlightStars(rating);
+                ratingText.textContent = ratingMessages[rating];
+            });
+
+            star.addEventListener('mouseleave', function() {
+                const currentRating = ratingInput.value || 0;
+                highlightStars(currentRating);
+                ratingText.textContent = currentRating > 0 ? ratingMessages[currentRating] : ratingMessages[0];
+            });
+        });
+
+        function setRating(rating) {
+            ratingInput.value = rating;
+            highlightStars(rating);
+            ratingText.textContent = ratingMessages[rating];
+        }
+
+        function highlightStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('filled');
+                } else {
+                    star.classList.remove('filled');
+                }
+            });
         }
 
         // Mobile sidebar toggle
@@ -960,14 +622,22 @@
             }
         });
 
-        // Add smooth scrolling for better UX
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const rating = document.getElementById('ratingInput').value;
+            const comment = document.getElementById('comment').value.trim();
+            
+            if (!rating) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
+                alert('Please select a rating before submitting.');
+                return;
+            }
+            
+            if (comment.length < 5) {
+                e.preventDefault();
+                alert('Please provide a more detailed feedback comment (at least 5 characters).');
+                return;
+            }
         });
     </script>
 </body>
