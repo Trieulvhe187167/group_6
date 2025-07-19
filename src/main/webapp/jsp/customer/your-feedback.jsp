@@ -179,12 +179,49 @@
             flex: 1;
             min-width: 200px;
         }
+        
+        .filter-group:last-child {
+            flex: 0 0 auto;
+            min-width: auto;
+        }
 
         .filter-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
             color: #495057;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .filter-link:hover {
+            background: #e9ecef;
+            color: #495057;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        
+        .filter-link.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
         }
 
         .filter-group select,
@@ -577,7 +614,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="active">
+                                            <a href="${pageContext.request.contextPath}/customer/feedback" class="active">
                         <i class="fas fa-comments"></i>
                         <span>My Feedback</span>
                     </a>
@@ -687,23 +724,51 @@
 
             <!-- Filter Section -->
             <div class="filter-section">
-                <form method="get" class="filter-row">
-                    <div class="filter-group">
-                        <label for="filterSelect">Filter by Status:</label>
-                        <select name="filter" id="filterSelect" onchange="this.form.submit()">
-                            <option value="all" ${param.filter == 'all' ? 'selected' : ''}>All Completed</option>
-                            <option value="rated" ${param.filter == 'rated' ? 'selected' : ''}>Rated Only</option>
-                            <option value="unrated" ${param.filter == 'unrated' ? 'selected' : ''}>Unrated Only</option>
-                        </select>
+                <h4 style="margin-bottom: 20px; color: #495057;">Filter & Sort Options</h4>
+                
+                <!-- Filter Buttons -->
+                <div style="margin-bottom: 20px;">
+                    <h5 style="margin-bottom: 10px; color: #6c757d;">Filter by Status:</h5>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a href="/customer/feedback?filter=all&sort=${currentSort == 'rating' ? 'rating' : 'date'}" 
+                           style="padding: 10px 20px; background: ${currentFilter == 'all' || empty currentFilter ? '#667eea' : '#f8f9fa'}; 
+                                  color: ${currentFilter == 'all' || empty currentFilter ? 'white' : '#495057'}; 
+                                  text-decoration: none; border-radius: 8px; border: 2px solid #e9ecef; font-weight: 500;">
+                            All Completed
+                        </a>
+                        <a href="/customer/feedback?filter=rated&sort=${currentSort == 'rating' ? 'rating' : 'date'}" 
+                           style="padding: 10px 20px; background: ${currentFilter == 'rated' ? '#667eea' : '#f8f9fa'}; 
+                                  color: ${currentFilter == 'rated' ? 'white' : '#495057'}; 
+                                  text-decoration: none; border-radius: 8px; border: 2px solid #e9ecef; font-weight: 500;">
+                            Rated Only
+                        </a>
+                        <a href="/customer/feedback?filter=unrated&sort=${currentSort == 'rating' ? 'rating' : 'date'}" 
+                           style="padding: 10px 20px; background: ${currentFilter == 'unrated' ? '#667eea' : '#f8f9fa'}; 
+                                  color: ${currentFilter == 'unrated' ? 'white' : '#495057'}; 
+                                  text-decoration: none; border-radius: 8px; border: 2px solid #e9ecef; font-weight: 500;">
+                            Unrated Only
+                        </a>
                     </div>
-                    <div class="filter-group">
-                        <label for="sortSelect">Sort by:</label>
-                        <select name="sort" id="sortSelect" onchange="this.form.submit()">
-                            <option value="date" ${param.sort == 'date' ? 'selected' : ''}>Date (Latest First)</option>
-                            <option value="rating" ${param.sort == 'rating' ? 'selected' : ''}>Rating (Highest First)</option>
-                        </select>
+                </div>
+                
+                <!-- Sort Buttons -->
+                <div>
+                    <h5 style="margin-bottom: 10px; color: #6c757d;">Sort by:</h5>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a href="/customer/feedback?sort=date&filter=${currentFilter == 'rated' ? 'rated' : currentFilter == 'unrated' ? 'unrated' : 'all'}" 
+                           style="padding: 10px 20px; background: ${currentSort == 'date' || empty currentSort ? '#667eea' : '#f8f9fa'}; 
+                                  color: ${currentSort == 'date' || empty currentSort ? 'white' : '#495057'}; 
+                                  text-decoration: none; border-radius: 8px; border: 2px solid #e9ecef; font-weight: 500;">
+                            Date (Latest First)
+                        </a>
+                        <a href="/customer/feedback?sort=rating&filter=${currentFilter == 'rated' ? 'rated' : currentFilter == 'unrated' ? 'unrated' : 'all'}" 
+                           style="padding: 10px 20px; background: ${currentSort == 'rating' ? '#667eea' : '#f8f9fa'}; 
+                                  color: ${currentSort == 'rating' ? 'white' : '#495057'}; 
+                                  text-decoration: none; border-radius: 8px; border: 2px solid #e9ecef; font-weight: 500;">
+                            Rating (Highest First)
+                        </a>
                     </div>
-                </form>
+                </div>
             </div>
 
             <!-- Feedback Cards -->
@@ -712,16 +777,7 @@
                 <c:forEach var="booking" items="${feedbackBookings}">
                     <!-- Only show COMPLETED bookings -->
                     <c:if test="${booking.status == 'COMPLETED'}">
-                        <c:set var="showBooking" value="true" />
-                        <!-- Apply filter -->
-                        <c:if test="${param.filter == 'rated' && (booking.rating == null || booking.rating == 0)}">
-                            <c:set var="showBooking" value="false" />
-                        </c:if>
-                        <c:if test="${param.filter == 'unrated' && booking.rating > 0}">
-                            <c:set var="showBooking" value="false" />
-                        </c:if>
-                        <c:if test="${showBooking}">
-                            <c:set var="hasVisibleBookings" value="true" />
+                        <c:set var="hasVisibleBookings" value="true" />
                             <div class="feedback-card">
                                 <div class="card-header">
                                     <h4 class="booking-id">Booking #${booking.id}</h4>
@@ -908,6 +964,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        console.log('JavaScript loaded successfully');
+        
         function showFeedbackModal(rating, comment) {
             document.getElementById('modalRating').textContent = rating;
             document.getElementById('modalComment').textContent = comment || 'No comment provided.';
@@ -965,6 +1023,8 @@
                 });
             });
         });
+
+                // Filter functionality now uses direct links - no JavaScript needed
     </script>
 </body>
 </html>
