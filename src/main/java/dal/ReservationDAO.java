@@ -1548,18 +1548,148 @@ public boolean isRoomAvailableForUpdate(int roomId, Date checkIn, Date checkOut,
     }
 
     /**
-     * Update the rating for a reservation
+     * Get reservations by user ID with feedback information
      */
-    public boolean updateReservationRating(int reservationId, int rating) {
-        String sql = "UPDATE Reservations SET Rating = ?, UpdatedAt = GETDATE() WHERE Id = ?";
+    public List<Reservation> getReservationsByUserIdWithFeedback(int userId) {
+        List<Reservation> reservations = new ArrayList<>();
+        String sql = "SELECT r.*, u.FullName as CustomerName, u.Email as CustomerEmail, u.Phone as CustomerPhone, " +
+                    "rm.RoomNumber, rt.Name as RoomTypeName, cb.FullName as CreatedByName, " +
+                    "f.Rating, f.Comment " +
+                    "FROM Reservations r " +
+                    "INNER JOIN Users u ON r.UserId = u.Id " +
+                    "INNER JOIN Rooms rm ON r.RoomId = rm.Id " +
+                    "INNER JOIN RoomTypes rt ON rm.RoomTypeId = rt.Id " +
+                    "LEFT JOIN Users cb ON r.CreatedBy = cb.Id " +
+                    "LEFT JOIN Feedback f ON r.Id = f.ReservationId " +
+                    "WHERE r.UserId = ? " +
+                    "ORDER BY r.CheckIn DESC";
+        
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, rating);
-            ps.setInt(2, reservationId);
-            return ps.executeUpdate() > 0;
+            
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                Reservation reservation = mapResultSetToReservation(rs);
+                // Set rating and comment from feedback table
+                reservation.setRating(rs.getInt("Rating"));
+                reservation.setComment(rs.getString("Comment"));
+                reservations.add(reservation);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
+        return reservations;
     }
+
+    /**
+     * Get reservations by user ID with feedback information, with filter and sort
+     */
+    /**
+ * Get reservations by user ID with feedback information, with filter and sort - FIXED VERSION
+ */
+public List<Reservation> getReservationsByUserIdWithFeedbackFiltered(int userId, String filter, String sort) {
+    System.out.println("=== DAO: getReservationsByUserIdWithFeedbackFiltered called ===");
+    System.out.println("=== DAO: userId=" + userId + ", filter=" + filter + ", sort=" + sort);
+    
+    List<Reservation> reservations = new ArrayList<>();
+    StringBuilder sql = new StringBuilder("""
+        SELECT r.*, u.FullName as CustomerName, u.Email as CustomerEmail, u.Phone as CustomerPhone, 
+               rm.RoomNumber, rt.Name as RoomTypeName, cb.FullName as CreatedByName, 
+               f.Rating, f.Comment 
+        FROM Reservations r 
+        INNER JOIN Users u ON r.UserId = u.Id 
+        INNER JOIN Rooms rm ON r.RoomId = rm.Id 
+        INNER JOIN RoomTypes rt ON rm.RoomTypeId = rt.Id 
+        LEFT JOIN Users cb ON r.CreatedBy = cb.Id 
+        LEFT JOIN Feedback f ON r.Id = f.ReservationId 
+        WHERE r.UserId = ? AND r.Status = 'COMPLETED'
+    """);
+
+    // Apply filter
+    if ("rated".equals(filter)) {
+        sql.append(" AND f.Rating IS NOT NULL AND f.Rating > 0");
+    } else if ("unrated".equals(filter)) {
+        sql.append(" AND (f.Rating IS NULL OR f.Rating = 0)");
+    }
+    // "all" filter doesn't add any condition
+
+    // Apply sort - FIXED to handle all sort options
+    switch (sort) {
+        case "date_asc":
+            sql.append(" ORDER BY r.CheckOut ASC, r.CheckIn ASC");
+            break;
+        case "date_desc":
+        case "date": // backward compatibility
+            sql.append(" ORDER BY r.CheckOut DESC, r.CheckIn DESC");
+            break;
+        case "rating_asc":
+            sql.append(" ORDER BY COALESCE(f.Rating, 0) ASC, r.CheckOut DESC");
+            break;
+        case "rating_desc":
+        case "rating": // backward compatibility
+            sql.append(" ORDER BY COALESCE(f.Rating, 0) DESC, r.CheckOut DESC");
+            break;
+        case "room_asc":
+            sql.append(" ORDER BY rm.RoomNumber ASC");
+            break;
+        case "room_desc":
+            sql.append(" ORDER BY rm.RoomNumber DESC");
+            break;
+        case "checkin_asc":
+            sql.append(" ORDER BY r.CheckIn ASC");
+            break;
+        case "checkin_desc":
+            sql.append(" ORDER BY r.CheckIn DESC");
+            break;
+        case "checkout_asc":
+            sql.append(" ORDER BY r.CheckOut ASC");
+            break;
+        case "checkout_desc":
+            sql.append(" ORDER BY r.CheckOut DESC");
+            break;
+        default:
+            // Default to checkout date descending
+            sql.append(" ORDER BY r.CheckOut DESC, r.CheckIn DESC");
+            break;
+    }
+    
+    System.out.println("=== DAO: SQL Query: " + sql.toString());
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+        
+        while (rs.next()) {
+            Reservation reservation = mapResultSetToReservation(rs);
+            // Set rating and comment from feedback table - handle null values
+            int rating = rs.getInt("Rating");
+            String comment = rs.getString("Comment");
+            
+            // Handle null values properly
+            if (rs.wasNull()) {
+                reservation.setRating(0);
+                reservation.setComment("");
+            } else {
+                reservation.setRating(rating);
+                reservation.setComment(comment != null ? comment : "");
+            }
+            
+            reservations.add(reservation);
+            System.out.println("=== DAO: Added reservation " + reservation.getId() + " with rating " + reservation.getRating());
+        }
+        
+        System.out.println("=== DAO: Found " + reservations.size() + " reservations");
+        
+    } catch (SQLException e) {
+        System.out.println("=== DAO: SQL Error: " + e.getMessage());
+        e.printStackTrace();
+    }
+    return reservations;
+}
+
+    
 }
