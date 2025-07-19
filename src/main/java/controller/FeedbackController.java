@@ -34,6 +34,11 @@ public class FeedbackController extends HttpServlet {
 protected void doGet(HttpServletRequest request, HttpServletResponse response) 
         throws ServletException, IOException {
 
+    System.out.println("=== FEEDBACK CONTROLLER CALLED ===");
+    System.out.println("=== REQUEST URI: " + request.getRequestURI());
+    System.out.println("=== SERVLET PATH: " + request.getServletPath());
+    System.out.println("=== QUERY STRING: " + request.getQueryString());
+    
     HttpSession session = request.getSession();
     User user = (User) session.getAttribute("user");
 
@@ -42,32 +47,44 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         return;
     }
 
-    String servletPath = request.getServletPath();
-    if ("/customer/your-feedback".equals(servletPath)) {
-        // Show the feedback list page (your-feedback.jsp)
-        listUserFeedback(request, response, user); // or a custom method for your-feedback.jsp
+    String action = request.getParameter("action");
+    String filter = request.getParameter("filter");
+    String sort = request.getParameter("sort");
+    
+    System.out.println("DEBUG: Action: " + action);
+    System.out.println("DEBUG: Filter: " + filter);
+    System.out.println("DEBUG: Sort: " + sort);
+    
+    // Check if there are filter/sort parameters - if so, this is a list request
+    if (filter != null || sort != null) {
+        System.out.println("DEBUG: Filter/sort parameters detected - showing feedback list");
+        listUserFeedback(request, response, user);
         return;
     }
-
-    String action = request.getParameter("action");
+    
     if (action == null) {
         action = "view";
     }
 
     switch (action) {
         case "view":
+            System.out.println("DEBUG: Showing feedback form");
             showFeedbackForm(request, response, user);
             break;
         case "list":
+            System.out.println("DEBUG: Showing feedback list");
             listUserFeedback(request, response, user);
             break;
         case "edit":
+            System.out.println("DEBUG: Showing edit form");
             showEditForm(request, response, user);
             break;
         case "delete":
+            System.out.println("DEBUG: Deleting feedback");
             deleteFeedback(request, response, user);
             break;
         default:
+            System.out.println("DEBUG: Default case - showing feedback form");
             showFeedbackForm(request, response, user);
             break;
     }
@@ -110,6 +127,8 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
      */
     private void showFeedbackForm(HttpServletRequest request, HttpServletResponse response, User user) 
             throws ServletException, IOException {
+        
+        System.out.println("=== SHOW FEEDBACK FORM METHOD CALLED ===");
         
         try {
             // Lấy danh sách reservation của user để chọn
@@ -217,8 +236,6 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
             // Update reservation rating if feedback was added
             if (success) {
-                reservation.setRating(rating); // set in-memory object if needed
-                reservationDAO.updateReservationRating(reservationId, rating); // new method to implement
                 request.setAttribute("success", "Thank you for your feedback! We appreciate your input.");
                 // Redirect để tránh resubmit
                 response.sendRedirect(request.getContextPath() + "/customer/feedback?success=true");
@@ -240,40 +257,138 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     /**
      * Hiển thị danh sách feedback của user
      */
-    private void listUserFeedback(HttpServletRequest request, HttpServletResponse response, User user) 
-            throws ServletException, IOException {
-        
-        try {
-            List<Reservation> reservations = reservationDAO.getReservationsByUserId(user.getId());
-            List<Map<String, Object>> feedbackBookings = new ArrayList<>();
+   private void listUserFeedback(HttpServletRequest request, HttpServletResponse response, User user) 
+        throws ServletException, IOException {
 
-            for (Reservation r : reservations) {
-                Map<String, Object> entry = new HashMap<>();
-                entry.put("id", r.getId());
-                entry.put("roomNumber", r.getRoomNumber());
-                entry.put("checkIn", r.getCheckIn());
-                entry.put("checkOut", r.getCheckOut());
-                entry.put("status", r.getStatus());
+    System.out.println("=== LIST USER FEEDBACK METHOD CALLED ===");
+    System.out.println("=== USER ID: " + user.getId() + " ===");
+    
+    int userId = user.getId();
 
-                Feedback feedback = feedbackDAO.getFeedbackByReservationId(r.getId());
-                if (feedback != null) {
-                    entry.put("rating", feedback.getRating());
-                    entry.put("comment", feedback.getComment());
-                } else {
-                    entry.put("rating", 0);
-                    entry.put("comment", "");
-                }
-                feedbackBookings.add(entry);
-            }
-            request.setAttribute("feedbackBookings", feedbackBookings);
-            request.getRequestDispatcher("/jsp/customer/your-feedback.jsp").forward(request, response);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Error loading feedback list: " + e.getMessage());
-            request.getRequestDispatcher("/jsp/customer/your-feedback.jsp").forward(request, response);
-        }
+    String filter = request.getParameter("filter");
+    String sort = request.getParameter("sort");
+    
+    System.out.println("=== FILTER: " + filter + ", SORT: " + sort + " ===");
+    
+    // Set defaults if not provided
+    if (filter == null || filter.trim().isEmpty()) {
+        filter = "all";
     }
+    if (sort == null || sort.trim().isEmpty()) {
+        sort = "date_desc"; // Changed default to be more specific
+    }
+    
+    System.out.println("=== FINAL FILTER: " + filter + ", FINAL SORT: " + sort + " ===");
+
+    try {
+        // Get data from DAO with filter and sort
+        List<Reservation> reservations = reservationDAO.getReservationsByUserIdWithFeedbackFiltered(userId, filter, sort);
+        List<Map<String, Object>> feedbackBookings = new ArrayList<>();
+
+        for (Reservation r : reservations) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("id", r.getId());
+            entry.put("roomNumber", r.getRoomNumber());
+            entry.put("checkIn", r.getCheckIn());
+            entry.put("checkOut", r.getCheckOut());
+            entry.put("status", r.getStatus());
+            entry.put("createdAt", r.getCreatedAt()); // Add this for sorting
+
+            // Use rating and comment from the reservation object
+            int reservationRating = r.getRating();
+            String reservationComment = r.getComment();
+            if (reservationRating > 0) {
+                entry.put("rating", reservationRating);
+                entry.put("comment", reservationComment);
+            } else {
+                entry.put("rating", 0);
+                entry.put("comment", "");
+            }
+            feedbackBookings.add(entry);
+        }
+        
+        // Manual sorting if DAO doesn't handle it properly
+        switch (sort) {
+            case "date_desc":
+                feedbackBookings.sort((a, b) -> {
+                    java.sql.Timestamp dateA = (java.sql.Timestamp) a.get("createdDate");
+                    java.sql.Timestamp dateB = (java.sql.Timestamp) b.get("createdDate");
+                    if (dateA == null && dateB == null) return 0;
+                    if (dateA == null) return 1;
+                    if (dateB == null) return -1;
+                    return dateB.compareTo(dateA); // Descending
+                });
+                break;
+            case "date_asc":
+                feedbackBookings.sort((a, b) -> {
+                    java.sql.Timestamp dateA = (java.sql.Timestamp) a.get("createdDate");
+                    java.sql.Timestamp dateB = (java.sql.Timestamp) b.get("createdDate");
+                    if (dateA == null && dateB == null) return 0;
+                    if (dateA == null) return 1;
+                    if (dateB == null) return -1;
+                    return dateA.compareTo(dateB); // Ascending
+                });
+                break;
+            case "rating_desc":
+                feedbackBookings.sort((a, b) -> {
+                    Integer ratingA = (Integer) a.get("rating");
+                    Integer ratingB = (Integer) b.get("rating");
+                    return ratingB.compareTo(ratingA); // Descending
+                });
+                break;
+            case "rating_asc":
+                feedbackBookings.sort((a, b) -> {
+                    Integer ratingA = (Integer) a.get("rating");
+                    Integer ratingB = (Integer) b.get("rating");
+                    return ratingA.compareTo(ratingB); // Ascending
+                });
+                break;
+            case "room_asc":
+                feedbackBookings.sort((a, b) -> {
+                    String roomA = (String) a.get("roomNumber");
+                    String roomB = (String) b.get("roomNumber");
+                    if (roomA == null && roomB == null) return 0;
+                    if (roomA == null) return 1;
+                    if (roomB == null) return -1;
+                    return roomA.compareTo(roomB);
+                });
+                break;
+            case "room_desc":
+                feedbackBookings.sort((a, b) -> {
+                    String roomA = (String) a.get("roomNumber");
+                    String roomB = (String) b.get("roomNumber");
+                    if (roomA == null && roomB == null) return 0;
+                    if (roomA == null) return 1;
+                    if (roomB == null) return -1;
+                    return roomB.compareTo(roomA);
+                });
+                break;
+            default:
+                // Default to date descending
+                feedbackBookings.sort((a, b) -> {
+                    java.sql.Timestamp dateA = (java.sql.Timestamp) a.get("createdDate");
+                    java.sql.Timestamp dateB = (java.sql.Timestamp) b.get("createdDate");
+                    if (dateA == null && dateB == null) return 0;
+                    if (dateA == null) return 1;
+                    if (dateB == null) return -1;
+                    return dateB.compareTo(dateA);
+                });
+                break;
+        }
+        
+        // Set attributes for JSP
+        request.setAttribute("feedbackBookings", feedbackBookings);
+        request.setAttribute("currentFilter", filter);
+        request.setAttribute("currentSort", sort);
+        
+        request.getRequestDispatcher("/jsp/customer/your-feedback.jsp").forward(request, response);
+        
+    } catch (Exception e) {
+        e.printStackTrace();
+        request.setAttribute("error", "Error loading feedback: " + e.getMessage());
+        request.getRequestDispatcher("/jsp/customer/your-feedback.jsp").forward(request, response);
+    }
+}
     
     /**
      * Hiển thị form edit feedback
