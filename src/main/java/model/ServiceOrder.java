@@ -74,6 +74,7 @@ public class ServiceOrder {
         if (status == null) return "badge-secondary";
         switch (status) {
             case "PENDING": return "badge-warning";
+               case "CONFIRMED": return "badge-info";
             case "COMPLETED": return "badge-success";
             case "CANCELLED": return "badge-danger";
             default: return "badge-secondary";

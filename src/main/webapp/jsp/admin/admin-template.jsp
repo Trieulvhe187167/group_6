@@ -280,7 +280,7 @@
                 </a>
                 
 
-                    <a href="${pageContext.request.contextPath}/admin/reports" 
+                    <a href="${pageContext.request.contextPath}/admin/feedback" 
                    class="nav-item ${activePage == 'reports' ? 'active' : ''}">
                     <i class="fas fa-chart-bar"></i> Reports
                 </a>
