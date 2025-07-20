@@ -226,13 +226,13 @@
                                     <td>
                                         <c:choose>
                                             <c:when test="${order.status eq 'PENDING'}">
-                                                <span class="badge badge-warning">Pending</span>
+                                                <span class="badge badge-warning" style="color: orange">Pending</span>
                                             </c:when>
                                             <c:when test="${order.status eq 'COMPLETED'}">
-                                                <span class="badge badge-success">Completed</span>
+                                                <span class="badge badge-success" style="color: limegreen">Completed</span>
                                             </c:when>
                                             <c:when test="${order.status eq 'CANCELLED'}">
-                                                <span class="badge badge-danger">Cancelled</span>
+                                                <span class="badge badge-danger" style="color: red">Cancelled</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="badge badge-secondary">${order.status}</span>
@@ -241,8 +241,7 @@
                                     </td>
                                     <td>
                                         <c:if test="${order.status eq 'PENDING'}">
-                                            <button class="btn btn-sm btn-success" onclick="completeService(${order.id})" title="Complete">
-                                                <i class="fas fa-check"></i>
+                                         <button class="btn btn-sm btn-success" onclick="confirmService(${order.id})" title="Confirm">                                                <i class="fas fa-check"></i>
                                             </button>
                                             <button class="btn btn-sm btn-danger" onclick="cancelService(${order.id})" title="Cancel">
                                                 <i class="fas fa-times"></i>
@@ -620,6 +619,11 @@ function completeService(orderId) {
     }
 }
 
+function confirmService(orderId) {
+    if (confirm('Confirm this service request?')) {
+        updateServiceStatus(orderId, 'CONFIRMED');
+    }
+}
 function cancelService(orderId) {
     if (confirm('Cancel this service order?')) {
         updateServiceStatus(orderId, 'CANCELLED');

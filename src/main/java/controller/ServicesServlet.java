@@ -4,6 +4,8 @@ package controller;
 import dal.*;
 import model.*;
 import model.ReservationService;
+import jakarta.mail.MessagingException;
+import util.MailUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -169,10 +171,11 @@ public class ServicesServlet extends HttpServlet {
             
             // Create reservation service
             ReservationService resService = new ReservationService();
-           resService.setReservationId(parseInt(serviceRequest.get("reservationId")));
+            resService.setReservationId(parseInt(serviceRequest.get("reservationId")));
             resService.setServiceId(parseInt(serviceRequest.get("serviceId")));
             resService.setQuantity(parseInt(serviceRequest.get("quantity")));
             resService.setCreatedBy(currentUser.getId());
+            resService.setStatus("CONFIRMED");
             resService.setNotes((String) serviceRequest.get("notes"));
             
             // Save service
@@ -247,7 +250,43 @@ public class ServicesServlet extends HttpServlet {
             
             int orderId = Integer.parseInt(orderIdStr);
             boolean success = serviceDAO.updateServiceOrderStatus(orderId, status);
-            
+             if (success && ("CONFIRMED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status))) {
+                try {
+                    ServiceOrder order = serviceDAO.getServiceOrderById(orderId);
+                    if (order != null) {
+                        String email = null;
+                        String customerName = null;
+                        if (order.getCustomerEmail() != null) {
+                            email = order.getCustomerEmail();
+                            customerName = order.getCustomerName();
+                        } else {
+                            Reservation res = reservationDAO.getReservationById(order.getReservationId());
+                            if (res != null) {
+                                email = res.getCustomerEmail();
+                                customerName = res.getCustomerName();
+                            }
+                        }
+                        if (email != null && !email.isEmpty()) {
+                            String subject;
+                            String content;
+                            if ("CONFIRMED".equalsIgnoreCase(status)) {
+                                subject = "Service Request Confirmed";
+                                content = String.format("Dear %s,\n\nYour requested service '%s' has been confirmed.\n\nBest regards,\nLuxury Hotel Team",
+                                        customerName != null ? customerName : "Customer", order.getServiceName());
+                            } else {
+                                subject = "Service Request Cancelled";
+                                content = String.format("Dear %s,\n\nYour service request '%s' has been cancelled.\n\nBest regards,\nLuxury Hotel Team",
+                                        customerName != null ? customerName : "Customer", order.getServiceName());
+                            }
+                            MailUtil.sendEmail(email, subject, content);
+                        }
+                    }
+                } catch (MessagingException me) {
+                    LOGGER.log(Level.SEVERE, "Failed to send service status email", me);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to notify customer", e);
+                }
+            }
             response.setContentType("application/json");
             response.getWriter().write("{\"success\":" + success + "}");
             

@@ -7,6 +7,8 @@ package controller;
 import dal.ActivityDAO;
 import dal.ReservationDAO;
 import dal.ServiceDAO;
+import dal.NotificationDAO;
+import dal.UserDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -20,6 +22,7 @@ import model.Activity;
 import model.Reservation;
 import model.ReservationService;
 import model.User;
+import model.Notification;
 
 @WebServlet(name = "CustomerServiceBookingServlet", urlPatterns = {"/customer/services"})
 public class CustomerServiceBookingServlet extends HttpServlet {
@@ -27,6 +30,8 @@ public class CustomerServiceBookingServlet extends HttpServlet {
     private final ServiceDAO serviceDAO = new ServiceDAO();
     private final ReservationDAO reservationDAO = new ReservationDAO();
     private final ActivityDAO activityDAO = new ActivityDAO();
+    private final NotificationDAO notificationDAO = new NotificationDAO();
+    private final UserDAO userDAO = new UserDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -88,17 +93,31 @@ public class CustomerServiceBookingServlet extends HttpServlet {
                         for (String sid : ids) {
                         int sId = Integer.parseInt(sid);
                         ReservationService rs = new ReservationService(reservationId, sId, 1);
+                          rs.setCreatedBy(user.getId());
+                        rs.setStatus("PENDING");
                         serviceDAO.addServiceToReservation(rs);
+                        
                         Activity act = new Activity();
                         act.setType("SERVICE_ORDERED");
                         act.setReservationId(reservationId);
                         act.setUserId(user.getId());
-                        act.setDescription("Ordered service " + sId);
+                          act.setDescription("Requested service " + sId);
                         act.setTimestamp(new Timestamp(System.currentTimeMillis()));
                         activityDAO.logActivity(act);
+                        
+                          // Notify all receptionists
+                        List<User> recps = userDAO.getUsersByRole("RECEPTIONIST");
+                        for (User rcp : recps) {
+                            Notification notif = new Notification();
+                            notif.setUserId(rcp.getId());
+                            notif.setReservationId(reservationId);
+                            notif.setType("SERVICE_REQUEST");
+                            notif.setMessage(user.getFullName() + " requested service " + sId);
+                            notificationDAO.sendNotification(notif);
+                        }
                     }
                     success = true;
-                    message = "Services added successfully";
+                    message = "Service request submitted";
                     break;
                 }
                 case "update": {
