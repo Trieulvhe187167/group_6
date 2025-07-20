@@ -324,6 +324,10 @@
                    class="nav-item ${activePage == 'activitylog' ? 'active' : ''}">
                     <i class="fas fa-history"></i> Activity Log
                 </a>
+                <a href="${pageContext.request.contextPath}/receptionist/feedback" 
+                   class="nav-item ${activePage == 'feedback' ? 'active' : ''}">
+                    <i class="fas fa-comments"></i> Customer Feedback
+                </a>
             </nav>
         </aside>
 
@@ -363,6 +367,9 @@
                 <c:when test="${activePage == 'reservations'}">
                     <jsp:include page="reservations-content.jsp" />
                 </c:when>
+                <c:when test="${activePage == 'feedback'}">
+                    <jsp:include page="feedback-content.jsp" />
+                </c:when>
                 <c:when test="${not empty contentPage}">
                     <jsp:include page="${contentPage}" />
                 </c:when>
@@ -379,10 +386,14 @@
 
         <!-- Core JavaScript -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Ensure jQuery is available globally
+            window.$ = window.jQuery = jQuery;
+            console.log('jQuery loaded successfully:', jQuery.fn.jquery);
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
         <!-- DataTables JS -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
         <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
