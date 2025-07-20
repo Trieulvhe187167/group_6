@@ -87,7 +87,18 @@
                 background: #ff6b6b;
                 border-radius: 3px;
             }
+            .remove-btn {
+                margin-left: 6px;
+            }
+            .btn-close.remove-btn {
+                filter: invert(18%) sepia(92%) saturate(7481%) hue-rotate(345deg) brightness(95%) contrast(94%) !important;
+                opacity: 0.8;
+            }
 
+            .btn-close.remove-btn:hover {
+                --bs-close-color: #a71d2a;
+                opacity: 1;
+            }
             /* Mỗi item service */
             .service-item {
                 display: flex;
@@ -290,6 +301,27 @@
                 color: #6c757d;
                 font-size: 1.1rem;
             }
+            .selected-summary {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+            .selected-summary .list-group-item {
+                display: flex;
+                align-items: center;
+            }
+            .qty-controls {
+                display: flex;
+                align-items: center;
+                margin-left: auto;
+                margin-right: 10px;
+            }
+            .qty-controls input {
+                width: 60px;
+                text-align: center;
+            }
+            .item-total {
+                white-space: nowrap;
+            }
 
         </style>
     </head>
@@ -330,7 +362,7 @@
                         </a>
                     </li>
 
-                     
+
 
                     <li>
                         <a href="${pageContext.request.contextPath}/customer/services" class="active">
@@ -388,8 +420,7 @@
                         <div class="alert alert-info">You have no active reservations.</div>
                     </c:if>
                     <c:if test="${not empty reservations}">
-                        <form method="post" action="${pageContext.request.contextPath}/customer/services">
-                            <input type="hidden" name="action" value="add">
+                        <form id="serviceForm" method="post" action="${pageContext.request.contextPath}/customer/services">                            <input type="hidden" name="action" value="add">
                             <input type="hidden" name="reservationId" value="${selectedId}">
                             <div class="mb-3">
                                 <label class="form-label">Select Reservation</label>
@@ -407,41 +438,59 @@
                                     <span class="badge">Optional</span>
                                     <span class="selected-services-count" id="selectedServicesCount" style="display:none;">0 selected</span>
                                 </div>
-                                <div class="service-categories mb-2">
-                                    <div class="category-tab active" onclick="filterServices('all', event)">All Services</div>
-                                    <div class="category-tab" onclick="filterServices('TRANSPORT', event)">Transportation</div>
-                                    <div class="category-tab" onclick="filterServices('DINING', event)">Dining</div>
-                                    <div class="category-tab" onclick="filterServices('SPA', event)">Spa & Wellness</div>
-                                    <div class="category-tab" onclick="filterServices('SPECIAL', event)">Special Services</div>
-                                </div>
-                                <div id="servicesContainer">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <div class="service-categories mb-2">
+                                            <div class="category-tab active" onclick="filterServices('all', event)">All Services</div>
+                                            <div class="category-tab" onclick="filterServices('TRANSPORT', event)">Transportation</div>
+                                            <div class="category-tab" onclick="filterServices('DINING', event)">Dining</div>
+                                            <div class="category-tab" onclick="filterServices('SPA', event)">Spa & Wellness</div>
+                                            <div class="category-tab" onclick="filterServices('SPECIAL', event)">Special Services</div>
+                                        </div>
+                                        <div id="servicesContainer">
 
-                                    <% java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0"); %>
-                                    <% for(model.Service service : (java.util.List<model.Service>)request.getAttribute("services")) { %>
-                                    <% String category="OTHER"; String n=service.getName().toLowerCase(); String d=(service.getDescription()==null?"":service.getDescription().toLowerCase());
+
+                                            <% java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0"); %>
+                                            <% for(model.Service service : (java.util.List<model.Service>)request.getAttribute("services")) { %>
+                                            <% String category="OTHER"; String n=service.getName().toLowerCase(); String d=(service.getDescription()==null?"":service.getDescription().toLowerCase());
                         if(n.contains("airport")||n.contains("shuttle")||n.contains("tour")||n.contains("car")) category="TRANSPORT"; else if(n.contains("breakfast")||n.contains("dinner")||n.contains("room service")||n.contains("mini bar")) category="DINING"; else if(n.contains("spa")||n.contains("massage")||n.contains("yoga")) category="SPA"; else if(n.contains("flower")||n.contains("birthday")||n.contains("honeymoon")||n.contains("laundry")) category="SPECIAL"; %>
-                                    <div class="service-item" data-category="<%=category%>" tabindex="0">
-                                        <label style="display:flex;align-items:center;width:100%;cursor:pointer;margin:0;">
-                                            <input type="checkbox" name="serviceIds" value="<%=service.getId()%>" onchange="updateSelectedCount()">
-                                            <div class="service-info ms-2">
-                                                <strong><%=service.getName()%></strong>
-                                                <div class="category-badge"><%=category%></div>
-                                                <div class="text-muted small"><%=service.getDescription()%></div>
+                                            <div class="service-item" data-category="<%=category%>" tabindex="0">
+                                                <label style="display:flex;align-items:center;width:100%;cursor:pointer;margin:0;">
+                                                    <input type="checkbox" name="serviceIds" value="<%=service.getId()%>" data-name="<%=service.getName()%>" data-price="<%=service.getPrice()%>" onchange="updateSelectedCount()">
+                                                    <div class="service-info ms-2">
+                                                        <strong><%=service.getName()%></strong>
+                                                        <div class="category-badge"><%=category%></div>
+                                                        <div class="text-muted small"><%=service.getDescription()%></div>
+                                                    </div>
+                                                    <div class="ms-auto service-price"><%=df.format(service.getPrice())%>₫</div>
+                                                </label>
                                             </div>
-                                            <div class="ms-auto service-price"><%=df.format(service.getPrice())%>₫</div>
-                                        </label>
+                                            <% } %>
+                                        </div>
+                                        <div class="text-center mt-2">
+                                            <small class="text-muted"><i class="fa fa-mouse-pointer"></i> Click categories to filter</small>
+                                        </div>
                                     </div>
-                                    <% } %>
-                                </div>
-                                <div class="text-center mt-2">
-                                    <small class="text-muted"><i class="fa fa-mouse-pointer"></i> Click categories to filter</small>
+                                    <div class="col-md-5">
+                                        <div class="card h-100">
+                                            <div class="card-header">Selected Services</div>
+                                            <ul class="list-group list-group-flush selected-summary" id="summaryList"></ul>
+                                            <div class="card-footer">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <strong>Total:</strong>
+                                                    <span id="summaryTotal">0₫</span>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary w-100">Confirm Booking</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-primary">Add Selected Services</button>
+
                         </form>
-         
-                     
+
+
                         <c:if test="${not empty cart}">
                             <h4 class="mt-4">Current Services</h4>
                             <table class="table table-striped">
@@ -456,6 +505,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <c:set var="grand" value="0" />
                                     <c:forEach var="c" items="${cart}">
                                         <tr>
                                             <td>${c.serviceName}</td>
@@ -472,8 +522,16 @@
                                                 </form>
                                             </td>
                                         </tr>
+                                        <c:set var="grand" value="${grand + c.totalAmount}" />
                                     </c:forEach>
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3" class="text-end">Total Amount:</th>
+                                        <th><fmt:formatNumber value="${grand}" pattern="#,#00"/>₫</th>
+                                        <th colspan="2"></th>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </c:if>
                     </c:if>
@@ -500,6 +558,115 @@
                                                                 el.style.display = 'none';
                                                             }
                                                         }
+                                                        updateSummary();
+                                                    }
+
+                                                    function updateSummary() {
+                                                        const summary = document.getElementById('summaryList');
+                                                        const totalEl = document.getElementById('summaryTotal');
+                                                        const form = document.getElementById('serviceForm');
+                                                        if (!summary || !totalEl || !form)
+                                                            return;
+                                                        summary.innerHTML = '';
+                                                        form.querySelectorAll('.dynamic-input').forEach(e => e.remove());
+                                                        document.querySelectorAll('input[name="serviceIds"]:checked').forEach(cb => {
+
+                                                            const id = cb.value;
+                                                            const name = cb.dataset.name;
+                                                            const price = parseFloat(cb.dataset.price);
+
+                                                            const li = document.createElement('li');
+                                                            li.className = 'list-group-item';
+                                                            li.dataset.price = price;
+
+                                                            const remove = document.createElement('button');
+                                                            remove.type = 'button';
+                                                            remove.className = 'btn-close remove-btn';
+                                                            remove.addEventListener('click', () => {
+                                                                cb.checked = false;
+                                                                updateSelectedCount();
+                                                            });
+                                                            li.appendChild(remove);
+
+                                                            const nameSpan = document.createElement('span');
+                                                            nameSpan.textContent = name;
+                                                            li.appendChild(nameSpan);
+
+                                                            const qtyWrap = document.createElement('div');
+                                                            qtyWrap.className = 'qty-controls';
+                                                            const minus = document.createElement('button');
+                                                            minus.type = 'button';
+                                                            minus.className = 'btn btn-sm btn-outline-secondary';
+                                                            minus.textContent = '-';
+                                                            const qtyInput = document.createElement('input');
+                                                            qtyInput.type = 'number';
+                                                            qtyInput.min = '1';
+                                                            qtyInput.value = '1';
+                                                            qtyInput.className = 'form-control form-control-sm mx-1 qty-input';
+                                                            const plus = document.createElement('button');
+                                                            plus.type = 'button';
+                                                            plus.className = 'btn btn-sm btn-outline-secondary';
+                                                            plus.textContent = '+';
+                                                            qtyWrap.appendChild(minus);
+                                                            qtyWrap.appendChild(qtyInput);
+                                                            qtyWrap.appendChild(plus);
+                                                            li.appendChild(qtyWrap);
+
+                                                            const totalSpan = document.createElement('span');
+                                                            totalSpan.className = 'item-total';
+                                                            totalSpan.textContent = price.toLocaleString() + '₫';
+                                                            li.appendChild(totalSpan);
+
+                                                            summary.appendChild(li);
+
+                                                            const idInput = document.createElement('input');
+                                                            idInput.type = 'hidden';
+                                                            idInput.name = 'serviceIds';
+                                                            idInput.value = id;
+                                                            idInput.className = 'dynamic-input';
+                                                            const qtyHidden = document.createElement('input');
+                                                            qtyHidden.type = 'hidden';
+                                                            qtyHidden.name = 'quantities';
+                                                            qtyHidden.value = '1';
+                                                            qtyHidden.className = 'dynamic-input';
+                                                            form.appendChild(idInput);
+                                                            form.appendChild(qtyHidden);
+
+                                                            function updateItem() {
+                                                                let q = parseInt(qtyInput.value);
+                                                                if (isNaN(q) || q < 1) {
+                                                                    q = 1;
+                                                                    qtyInput.value = '1';
+                                                                }
+                                                                qtyHidden.value = q;
+                                                                totalSpan.textContent = (price * q).toLocaleString() + '₫';
+                                                                updateTotals();
+                                                            }
+                                                            minus.addEventListener('click', () => {
+                                                                if (parseInt(qtyInput.value) > 1) {
+                                                                    qtyInput.value--;
+                                                                    updateItem();
+                                                                }
+                                                            });
+                                                            plus.addEventListener('click', () => {
+                                                                qtyInput.value++;
+                                                                updateItem();
+                                                            });
+                                                            qtyInput.addEventListener('change', updateItem);
+                                                        });
+                                                        updateTotals();
+                                                    }
+
+                                                    function updateTotals() {
+                                                        let total = 0;
+                                                        document.querySelectorAll('#summaryList li').forEach(li => {
+                                                            const price = parseFloat(li.dataset.price);
+                                                            const qty = parseInt(li.querySelector('.qty-input').value);
+                                                            total += price * qty;
+                                                        });
+                                                        const totalEl = document.getElementById('summaryTotal');
+                                                        if (totalEl)
+                                                            totalEl.textContent = total.toLocaleString() + '₫';
                                                     }
             </script>
     </body>

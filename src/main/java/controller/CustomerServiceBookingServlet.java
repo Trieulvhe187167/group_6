@@ -84,19 +84,28 @@ public class CustomerServiceBookingServlet extends HttpServlet {
          try {
             switch (action) {
                 case "add": {
-                 String[] ids = request.getParameterValues("serviceIds");
-                       if (ids == null || ids.length == 0) {
+               String[] ids = request.getParameterValues("serviceIds");
+                    String[] qtys = request.getParameterValues("quantities");
+                    if (ids == null || ids.length == 0) {
                         session.setAttribute("error", "Please select at least one service to add");
                         response.sendRedirect(request.getContextPath() + "/customer/services?resId=" + reservationId);
                         return;
                     }
-                        for (String sid : ids) {
-                        int sId = Integer.parseInt(sid);
-                         ReservationService existing = serviceDAO.getReservationService(reservationId, sId);
+                        for (int i = 0; i < ids.length; i++) {
+                        int sId = Integer.parseInt(ids[i]);
+                        int qty = 1;
+                        if (qtys != null && qtys.length > i) {
+                            try {
+                                qty = Integer.parseInt(qtys[i]);
+                            } catch (NumberFormatException ex) {
+                                qty = 1;
+                            }
+                        }
+                        ReservationService existing = serviceDAO.getReservationService(reservationId, sId);
                         if (existing != null) {
-                            serviceDAO.updateReservationServiceQuantity(existing.getId(), existing.getQuantity() + 1);
+                           serviceDAO.updateReservationServiceQuantity(existing.getId(), existing.getQuantity() + qty);
                         } else {
-                            ReservationService rs = new ReservationService(reservationId, sId, 1);
+                            ReservationService rs = new ReservationService(reservationId, sId, qty);
                             rs.setCreatedBy(user.getId());
                             rs.setStatus("PENDING");
                             serviceDAO.addServiceToReservation(rs);
@@ -129,8 +138,27 @@ public class CustomerServiceBookingServlet extends HttpServlet {
         
                 case "delete": {
                     int lineId = Integer.parseInt(request.getParameter("lineId"));
-                    success = serviceDAO.deleteServiceFromReservation(lineId);
-                        message = success ? "Service removed" : "Failed to remove";
+                    success = serviceDAO.updateServiceOrderStatus(lineId, "CANCELLED");
+                    message = success ? "Service cancelled" : "Failed to cancel";
+                    if (success) {
+                        Activity act = new Activity();
+                        act.setType("SERVICE_CANCELLED");
+                        act.setReservationId(reservationId);
+                        act.setUserId(user.getId());
+                        act.setDescription("Cancelled service " + lineId);
+                        act.setTimestamp(new Timestamp(System.currentTimeMillis()));
+                        activityDAO.logActivity(act);
+
+                        List<User> recps = userDAO.getUsersByRole("RECEPTIONIST");
+                        for (User rcp : recps) {
+                            Notification notif = new Notification();
+                            notif.setUserId(rcp.getId());
+                            notif.setReservationId(reservationId);
+                            notif.setType("SERVICE_CANCELLED");
+                            notif.setMessage(user.getFullName() + " cancelled service " + lineId);
+                            notificationDAO.sendNotification(notif);
+                        }
+                    }
                     break;
                 }
                 default:
