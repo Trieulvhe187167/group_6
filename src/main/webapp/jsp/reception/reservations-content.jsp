@@ -19,17 +19,7 @@
             <h2>Reservations Management</h2>
             <p class="text-muted">Manage all hotel reservations</p>
         </div>
-        <div class="col-md-6 text-right">
-            <button class="btn btn-primary" data-toggle="modal" data-target="#newReservationModal">
-                <i class="fas fa-plus-circle"></i> New Reservation
-            </button>
-            <button class="btn btn-success" onclick="exportReservations()">
-                <i class="fas fa-file-excel"></i> Export
-            </button>
-            <button class="btn btn-info" onclick="refreshReservations()">
-                <i class="fas fa-sync"></i> Refresh
-            </button>
-        </div>
+       
     </div>
 
     <!-- Filter Section -->

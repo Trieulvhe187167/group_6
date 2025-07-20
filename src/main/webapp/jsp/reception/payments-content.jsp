@@ -4,7 +4,9 @@
 
 <!-- Add SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+<!-- jQuery & Bootstrap (needed before inline scripts) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <style>
 .stat-card {
     background: white;
@@ -469,7 +471,11 @@ $(document).ready(function() {
         order: [[8, 'desc']], // Sort by date column
         pageLength: 25
     });
-    
+     // Reset refund form when modal is hidden
+    $('#refundModal').on('hidden.bs.modal', function() {
+        $('#refundForm')[0].reset();
+        currentPaymentId = null;
+    });
 
     
     $('#refundForm').submit(function(e) {
@@ -606,6 +612,7 @@ function showRefundModal(paymentId) {
         },
         success: function(payment) {
             $('#refundPaymentId').val(payment.id);
+             $('#refundForm').data('original-amount', payment.amount);
             $('#originalAmount').val(formatCurrency(payment.amount));
             $('#refundAmount').val(payment.amount);
             $('#refundMethod').val('ORIGINAL_METHOD');
@@ -619,7 +626,8 @@ function showRefundModal(paymentId) {
 }
 
 function processRefund() {
-  const originalAmount = parseFloat($('#originalAmount').val().replace(/[^0-9.-]+/g, ''));
+    // Retrieve the raw original amount stored on the form
+    const originalAmount = parseFloat($('#refundForm').data('original-amount'));
     const refundAmount = parseFloat($('#refundAmount').val());
 
     if (isNaN(refundAmount) || refundAmount <= 0 || refundAmount > originalAmount) {
