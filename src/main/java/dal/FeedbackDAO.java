@@ -456,4 +456,43 @@ public class FeedbackDAO {
         
         return feedbacks;
     }
+    
+    /**
+     * Lấy tất cả feedback với thông tin chi tiết cho admin
+     */
+    public List<Feedback> getAllFeedbacksWithDetails() {
+        List<Feedback> list = new ArrayList<>();
+        // Get user email as well
+        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt, " +
+                     "u.FullName, u.Email " +
+                     "FROM Feedback f " +
+                     "JOIN Users u ON f.UserId = u.Id " +
+                     "ORDER BY f.CreatedAt DESC";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Feedback f = new Feedback();
+                f.setId(rs.getInt("Id"));
+                f.setReservationId(rs.getInt("ReservationId"));
+                f.setUserId(rs.getInt("UserId"));
+                f.setRating(rs.getInt("Rating"));
+                f.setComment(rs.getString("Comment"));
+                f.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                f.setUserFullName(rs.getString("FullName"));
+                f.setUserEmail(rs.getString("Email"));
+                // Set disabled to false by default since we don't have this column
+                f.setDisabled(false);
+                list.add(f);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in getAllFeedbacksWithDetails: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
+    
+  
 }
