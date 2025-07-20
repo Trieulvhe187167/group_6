@@ -87,10 +87,11 @@ public class ReservationDAO {
                           JOIN Users u ON r.UserId = u.Id
                           WHERE r.UserId = ?
                             AND r.Status = 'CONFIRMED'
+                                     AND r.CheckIn <= CAST(GETDATE() AS DATE)
+                                                                          AND r.CheckOut >= CAST(GETDATE() AS DATE)
                                      
         """;
-//                         AND r.CheckIn <= CAST(GETDATE() AS DATE)
-//                                        AND r.CheckOut >= CAST(GETDATE() AS DATE)
+                       
         return executeBookingQuery(sql, userId);
     }
 
@@ -1691,5 +1692,30 @@ public List<Reservation> getReservationsByUserIdWithFeedbackFiltered(int userId,
     return reservations;
 }
 
+    public List<ReservationSummary> getActiveReservations() {
+        List<ReservationSummary> list = new ArrayList<>();
+        String sql = "SELECT r.Id, rm.RoomNumber, u.FullName AS CustomerName "
+                + "FROM Reservations r "
+                + "INNER JOIN Rooms rm ON r.RoomId = rm.Id "
+                + "INNER JOIN Users u ON r.UserId = u.Id "
+                + "WHERE r.Status = 'CONFIRMED' "
+                + "AND r.CheckIn <= CAST(GETDATE() AS DATE) "
+                + "AND r.CheckOut > CAST(GETDATE() AS DATE) "
+                + "ORDER BY rm.RoomNumber";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                ReservationSummary res = new ReservationSummary();
+                res.setId(rs.getInt("Id"));
+                res.setRoomNumber(rs.getString("RoomNumber"));
+                res.setCustomerName(rs.getString("CustomerName"));
+                list.add(res);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
    
 }
