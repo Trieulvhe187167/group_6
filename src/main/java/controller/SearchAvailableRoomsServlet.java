@@ -38,7 +38,20 @@ public class SearchAvailableRoomsServlet extends HttpServlet {
             String capacityStr = request.getParameter("capacity");
             String keyword = request.getParameter("keyword");
             String priceRange = request.getParameter("price");
-            
+              // Featured room (highest priced)
+            RoomTypeDAO featuredDao = new RoomTypeDAO();
+            RoomType featuredRoom = featuredDao.getHighestPricedRoomType();
+            if (featuredRoom != null) {
+                FeedbackDAO fbDao = new FeedbackDAO();
+                Map<Integer, RatingStats> fStats = fbDao.getRatingStatsForRoomTypes(
+                        Collections.singletonList(featuredRoom.getId()));
+                RatingStats stat = fStats.get(featuredRoom.getId());
+                if (stat != null) {
+                    featuredRoom.setAverageRating(stat.getAverageRating());
+                    featuredRoom.setReviewCount(stat.getReviewCount());
+                }
+            }
+            request.setAttribute("featuredRoom", featuredRoom);
               // Persist search parameters in session for back navigation
             jakarta.servlet.http.HttpSession session = request.getSession();
             if (checkInStr != null) session.setAttribute("lastSearchCheckIn", checkInStr);

@@ -261,9 +261,9 @@
                class="nav-item ${activePage == 'reports' ? 'active' : ''}">
                 <i class="fas fa-chart-bar"></i> Reports
             </a>
-            <a href="${pageContext.request.contextPath}/inspector/guidelines" 
-               class="nav-item ${activePage == 'guidelines' ? 'active' : ''}">
-                <i class="fas fa-book"></i> Guidelines
+                  <a href="${pageContext.request.contextPath}/inspector/profile"
+               class="nav-item ${activePage == 'profile' ? 'active' : ''}">
+                <i class="fas fa-user"></i> My Profile
             </a>
         </nav>
     </aside>
