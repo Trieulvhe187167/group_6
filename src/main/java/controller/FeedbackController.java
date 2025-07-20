@@ -2,9 +2,11 @@ package controller;
 
 import dal.FeedbackDAO;
 import dal.ReservationDAO;
+import dal.ContactMessageDAO;
 import model.Feedback;
 import model.Reservation;
 import model.User;
+import model.ContactMessage;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -17,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
-@WebServlet(urlPatterns = {"/customer/feedback", "/customer/feedback/*", "/customer/your-feedback"})
+@WebServlet(urlPatterns = {"/customer/feedback", "/customer/feedback/*", "/customer/your-feedback", "/receptionist/feedback", "/receptionist/feedback/*", "/admin/feedback"})
 
 public class FeedbackController extends HttpServlet {
     
@@ -47,6 +49,32 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         return;
     }
 
+    // Check if this is a receptionist or admin request
+    String requestURI = request.getRequestURI();
+    if (requestURI.contains("/receptionist/feedback")) {
+        // Check if user is receptionist or admin
+        if ("RECEPTIONIST".equals(user.getRole()) || "ADMIN".equals(user.getRole())) {
+            handleReceptionistRequest(request, response, user);
+            return;
+        } else {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
+            return;
+        }
+    }
+    
+    // Check if this is an admin request
+    if (requestURI.contains("/admin/feedback")) {
+        // Check if user is admin
+        if ("ADMIN".equals(user.getRole())) {
+            handleAdminRequest(request, response, user);
+            return;
+        } else {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
+            return;
+        }
+    }
+
+    // Customer feedback logic
     String action = request.getParameter("action");
     String filter = request.getParameter("filter");
     String sort = request.getParameter("sort");
@@ -103,6 +131,32 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             return;
         }
         
+        // Check if this is a receptionist or admin request
+        String requestURI = request.getRequestURI();
+        if (requestURI.contains("/receptionist/feedback")) {
+            // Check if user is receptionist or admin
+            if ("RECEPTIONIST".equals(user.getRole()) || "ADMIN".equals(user.getRole())) {
+                handleReceptionistPostRequest(request, response, user);
+                return;
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
+                return;
+            }
+        }
+        
+        // Check if this is an admin request
+        if (requestURI.contains("/admin/feedback")) {
+            // Check if user is admin
+            if ("ADMIN".equals(user.getRole())) {
+                handleAdminPostRequest(request, response, user);
+                return;
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
+                return;
+            }
+        }
+        
+        // Customer feedback logic
         String action = request.getParameter("action");
         
         if (action == null) {
@@ -139,10 +193,25 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 .filter(r -> "completed".equalsIgnoreCase(r.getStatus()) && 
                            !feedbackDAO.hasUserFeedbackForReservation(user.getId(), r.getId()))
                 .collect(java.util.stream.Collectors.toList());
+            
             String selectedId = request.getParameter("id");
             request.setAttribute("selectedId", selectedId);
 
-            request.setAttribute("reservations", completedReservations);
+            // Nếu có selectedId, chỉ hiển thị booking đó
+            if (selectedId != null && !selectedId.trim().isEmpty()) {
+                try {
+                    int selectedIdInt = Integer.parseInt(selectedId);
+                    List<Reservation> filteredReservations = completedReservations.stream()
+                        .filter(r -> r.getId() == selectedIdInt)
+                        .collect(java.util.stream.Collectors.toList());
+                    request.setAttribute("reservations", filteredReservations);
+                } catch (NumberFormatException e) {
+                    // Nếu selectedId không phải số, hiển thị tất cả
+                    request.setAttribute("reservations", completedReservations);
+                }
+            } else {
+                request.setAttribute("reservations", completedReservations);
+            }
             request.getRequestDispatcher("/jsp/customer/customer-feedback.jsp").forward(request, response);
             
         } catch (Exception e) {
@@ -535,5 +604,285 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         listUserFeedback(request, response, user);
     }
+    
+    // ==================== RECEPTIONIST METHODS ====================
+    
+    /**
+     * Xử lý request từ receptionist
+     */
+    private void handleReceptionistRequest(HttpServletRequest request, HttpServletResponse response, User user) 
+            throws ServletException, IOException {
+        
+        String action = request.getParameter("action");
+        if (action == null) {
+            action = "list";
+        }
+
+        switch (action) {
+            case "list":
+                listAllFeedbacks(request, response);
+                break;
+            case "view":
+                viewFeedbackDetail(request, response);
+                break;
+            case "contact":
+                showContactForm(request, response);
+                break;
+            default:
+                listAllFeedbacks(request, response);
+                break;
+        }
+    }
+    
+    /**
+     * Hiển thị danh sách tất cả feedback cho receptionist
+     */
+    private void listAllFeedbacks(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        try {
+            List<Feedback> feedbacks = feedbackDAO.getAllFeedbacksWithDetails();
+            
+            // Calculate statistics
+            int totalFeedbacks = feedbacks.size();
+            double averageRating = 0;
+            int recentFeedbacks = 0;
+            int pendingReplies = 0;
+            
+            if (!feedbacks.isEmpty()) {
+                // Calculate average rating
+                double totalRating = feedbacks.stream()
+                    .mapToInt(f -> f.getRating())
+                    .sum();
+                averageRating = Math.round((totalRating / totalFeedbacks) * 10.0) / 10.0;
+                
+                // Calculate recent feedbacks (last 7 days)
+                long sevenDaysAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000L);
+                recentFeedbacks = (int) feedbacks.stream()
+                    .filter(f -> f.getCreatedAt() != null && f.getCreatedAt().getTime() > sevenDaysAgo)
+                    .count();
+                
+                // For now, assume all feedbacks need replies (you can modify this logic)
+                pendingReplies = totalFeedbacks;
+            }
+            
+            request.setAttribute("feedbacks", feedbacks);
+            request.setAttribute("totalFeedbacks", totalFeedbacks);
+            request.setAttribute("averageRating", averageRating);
+            request.setAttribute("recentFeedbacks", recentFeedbacks);
+            request.setAttribute("pendingReplies", pendingReplies);
+            request.setAttribute("activePage", "feedback");
+            request.setAttribute("contentPage", "feedback-content.jsp");
+            request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading feedbacks: " + e.getMessage());
+            request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
+        }
+    }
+    
+    /**
+     * Hiển thị chi tiết feedback (không cần thiết nữa vì dùng modal)
+     */
+    private void viewFeedbackDetail(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        // Redirect to main feedback page since we use modal now
+        response.sendRedirect(request.getContextPath() + "/receptionist/feedback");
+    }
+    
+    /**
+     * Hiển thị form contact (không cần thiết nữa vì dùng modal)
+     */
+    private void showContactForm(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        // Redirect to main feedback page since we use modal now
+        response.sendRedirect(request.getContextPath() + "/receptionist/feedback");
+    }
+    
+    /**
+     * Xử lý POST request từ receptionist
+     */
+    private void handleReceptionistPostRequest(HttpServletRequest request, HttpServletResponse response, User user) 
+            throws ServletException, IOException {
+        
+        String action = request.getParameter("action");
+        
+        switch (action) {
+            case "sendMessage":
+                sendContactMessage(request, response);
+                break;
+            default:
+                response.sendRedirect(request.getContextPath() + "/receptionist/feedback");
+                break;
+        }
+    }
+    
+    /**
+     * Gửi tin nhắn contact
+     */
+    private void sendContactMessage(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        try {
+            String customerEmail = request.getParameter("customerEmail");
+            String customerName = request.getParameter("customerName");
+            String subject = request.getParameter("subject");
+            String message = request.getParameter("message");
+            String feedbackId = request.getParameter("feedbackId");
+
+            if (customerEmail == null || customerEmail.trim().isEmpty() ||
+                subject == null || subject.trim().isEmpty() ||
+                message == null || message.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Missing required fields");
+                return;
+            }
+
+            ContactMessageDAO contactDAO = new ContactMessageDAO();
+            
+            ContactMessage contactMsg = new ContactMessage();
+            contactMsg.setName("Hotel Staff");
+            contactMsg.setEmail("staff@luxuryhotel.com");
+            contactMsg.setPhone("(+84) 3 1234 5678");
+            contactMsg.setMessage("Subject: " + subject + "\n\nMessage: " + message + "\n\nRelated to Feedback ID: " + feedbackId);
+
+            if (contactDAO.addMessage(contactMsg)) {
+                // TODO: Send email to customer
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("Message sent successfully");
+            } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("Failed to send message");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("An error occurred: " + e.getMessage());
+        }
+    }
+    
+    // ==================== ADMIN METHODS ====================
+    
+    /**
+     * Xử lý request từ admin
+     */
+    private void handleAdminRequest(HttpServletRequest request, HttpServletResponse response, User user) 
+            throws ServletException, IOException {
+        
+        String action = request.getParameter("action");
+        if (action == null) {
+            action = "list";
+        }
+
+        switch (action) {
+            case "list":
+                listAllFeedbacksForAdmin(request, response);
+                break;
+            case "view":
+                viewFeedbackDetailForAdmin(request, response);
+                break;
+            default:
+                listAllFeedbacksForAdmin(request, response);
+                break;
+        }
+    }
+    
+    /**
+     * Hiển thị danh sách tất cả feedback cho admin
+     */
+    private void listAllFeedbacksForAdmin(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        try {
+            // Get filter parameters
+            String statusFilter = request.getParameter("status");
+            String ratingFilter = request.getParameter("rating");
+            String dateFrom = request.getParameter("dateFrom");
+            
+            // Get all feedbacks with details
+            List<Feedback> feedbacks = feedbackDAO.getAllFeedbacksWithDetails();
+            
+            // Apply filters
+            if (statusFilter != null && !statusFilter.isEmpty()) {
+                if ("active".equals(statusFilter)) {
+                    feedbacks = feedbacks.stream()
+                        .filter(f -> !f.isDisabled())
+                        .collect(java.util.stream.Collectors.toList());
+                } else if ("disabled".equals(statusFilter)) {
+                    feedbacks = feedbacks.stream()
+                        .filter(f -> f.isDisabled())
+                        .collect(java.util.stream.Collectors.toList());
+                }
+            }
+            
+            if (ratingFilter != null && !ratingFilter.isEmpty()) {
+                int rating = Integer.parseInt(ratingFilter);
+                feedbacks = feedbacks.stream()
+                    .filter(f -> f.getRating() == rating)
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            if (dateFrom != null && !dateFrom.isEmpty()) {
+                java.sql.Date fromDate = java.sql.Date.valueOf(dateFrom);
+                feedbacks = feedbacks.stream()
+                    .filter(f -> f.getCreatedAt() != null && 
+                               f.getCreatedAt().toLocalDateTime().toLocalDate().isAfter(fromDate.toLocalDate()))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            // Calculate statistics
+            int totalFeedbacks = feedbacks.size();
+            double averageRating = 0;
+            int activeFeedbacks = totalFeedbacks; // All feedbacks are active
+            int disabledFeedbacks = 0; // No disabled feedbacks
+            
+            if (!feedbacks.isEmpty()) {
+                // Calculate average rating
+                double totalRating = feedbacks.stream()
+                    .mapToInt(f -> f.getRating())
+                    .sum();
+                averageRating = Math.round((totalRating / totalFeedbacks) * 10.0) / 10.0;
+            }
+            
+            // Set attributes
+            request.setAttribute("feedbacks", feedbacks);
+            request.setAttribute("totalFeedbacks", totalFeedbacks);
+            request.setAttribute("activeFeedbacks", activeFeedbacks);
+            request.setAttribute("disabledFeedbacks", disabledFeedbacks);
+            request.setAttribute("averageRating", averageRating);
+            request.setAttribute("activePage", "feedback");
+            request.setAttribute("contentPage", "admin-feedback-content.jsp");
+            
+            // Forward to admin layout
+            request.getRequestDispatcher("/jsp/admin/admin-layout.jsp").forward(request, response);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading feedbacks: " + e.getMessage());
+            request.getRequestDispatcher("/jsp/admin/admin-layout.jsp").forward(request, response);
+        }
+    }
+    
+    /**
+     * Hiển thị chi tiết feedback cho admin (không cần thiết nữa vì dùng modal)
+     */
+    private void viewFeedbackDetailForAdmin(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        // Redirect to main feedback page since we use modal now
+        response.sendRedirect(request.getContextPath() + "/admin/feedback");
+    }
+    
+    /**
+     * Xử lý POST request từ admin
+     */
+    private void handleAdminPostRequest(HttpServletRequest request, HttpServletResponse response, User user) 
+            throws ServletException, IOException {
+        
+        // No POST actions needed since enable/disable is not implemented
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write("No actions available");
+    }
 }
+
+
 
