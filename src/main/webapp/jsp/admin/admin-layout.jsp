@@ -218,6 +218,9 @@
             <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item">
                 <i class="fas fa-blog"></i> Blog Posts
             </a>
+            <a href="${pageContext.request.contextPath}/admin/feedback" class="nav-item">
+                <i class="fas fa-comments"></i> Feedback
+            </a>
             <a href="${pageContext.request.contextPath}/admin/events" class="nav-item">
                 <i class="fas fa-calendar-alt"></i> Events
             </a>
@@ -230,14 +233,19 @@
     <!-- Main Content -->
     <main class="main-content">
         <div class="container-fluid">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="#">Home</a></li>
-                    <li class="breadcrumb-item active">Dashboard</li>
-                </ol>
-            </nav>
-            
-            <h1 class="mb-4">Dashboard</h1>
+            <c:choose>
+                <c:when test="${not empty contentPage}">
+                    <jsp:include page="${contentPage}" />
+                </c:when>
+                <c:otherwise>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active">Dashboard</li>
+                        </ol>
+                    </nav>
+                    
+                    <h1 class="mb-4">Dashboard</h1>
             
             <!-- Stats Cards -->
             <div class="row">
@@ -367,7 +375,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                </c:otherwise>
+            </c:choose>
         </div>
     </main>
     
