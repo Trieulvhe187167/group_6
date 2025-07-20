@@ -557,10 +557,10 @@
                         <span>Booking History</span>
                     </a>
                 </li>
-                  <a href="${pageContext.request.contextPath}/customer/feedback?action=list">
-      <i class="fas fa-comments"></i>
-      <span>My Feedback</span>
-  </a>
+                                      <a href="${pageContext.request.contextPath}/customer/your-feedback">
+                        <i class="fas fa-comments"></i>
+                        <span>My Feedback</span>
+                    </a>
                 <div class="menu-divider"></div>
                 <li>
                     <a href="${pageContext.request.contextPath}/customer/profile">
