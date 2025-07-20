@@ -347,7 +347,32 @@ public List<Service> getAllServices(String search, String status) {
         }
         return false;
     }
-    
+     // Retrieve an existing reservation service (non-cancelled) for duplicate checks
+    public ReservationService getReservationService(int reservationId, int serviceId) {
+        String sql = "SELECT Id, Quantity, Status FROM ReservationServices WHERE ReservationId = ? AND ServiceId = ? AND Status <> 'CANCELLED'";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, reservationId);
+            ps.setInt(2, serviceId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    ReservationService rsrv = new ReservationService();
+                    rsrv.setId(rs.getInt("Id"));
+                    rsrv.setReservationId(reservationId);
+                    rsrv.setServiceId(serviceId);
+                    rsrv.setQuantity(rs.getInt("Quantity"));
+                    rsrv.setStatus(rs.getString("Status"));
+                    return rsrv;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     // Get all services for a specific category and reservation
     public List<ServiceOrder> getServicesByReservationAndCategory(int reservationId, String category) {
         List<ServiceOrder> allOrders = getServiceOrdersByReservation(reservationId);

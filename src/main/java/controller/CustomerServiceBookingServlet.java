@@ -92,10 +92,16 @@ public class CustomerServiceBookingServlet extends HttpServlet {
                     }
                         for (String sid : ids) {
                         int sId = Integer.parseInt(sid);
-                        ReservationService rs = new ReservationService(reservationId, sId, 1);
-                          rs.setCreatedBy(user.getId());
-                        rs.setStatus("PENDING");
-                        serviceDAO.addServiceToReservation(rs);
+                         ReservationService existing = serviceDAO.getReservationService(reservationId, sId);
+                        if (existing != null) {
+                            serviceDAO.updateReservationServiceQuantity(existing.getId(), existing.getQuantity() + 1);
+                        } else {
+                            ReservationService rs = new ReservationService(reservationId, sId, 1);
+                            rs.setCreatedBy(user.getId());
+                            rs.setStatus("PENDING");
+                            serviceDAO.addServiceToReservation(rs);
+                        }
+
                         
                         Activity act = new Activity();
                         act.setType("SERVICE_ORDERED");
@@ -120,13 +126,7 @@ public class CustomerServiceBookingServlet extends HttpServlet {
                     message = "Service request submitted";
                     break;
                 }
-                case "update": {
-                    int lineId = Integer.parseInt(request.getParameter("lineId"));
-                    int quantity = Integer.parseInt(request.getParameter("quantity"));
-                    success = serviceDAO.updateReservationServiceQuantity(lineId, quantity);
-                    message = success ? "Service updated" : "Failed to update";
-                    break;
-                }
+        
                 case "delete": {
                     int lineId = Integer.parseInt(request.getParameter("lineId"));
                     success = serviceDAO.deleteServiceFromReservation(lineId);

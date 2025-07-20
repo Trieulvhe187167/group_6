@@ -440,7 +440,8 @@
 
                             <button type="submit" class="btn btn-primary">Add Selected Services</button>
                         </form>
-
+         
+                     
                         <c:if test="${not empty cart}">
                             <h4 class="mt-4">Current Services</h4>
                             <table class="table table-striped">
@@ -450,6 +451,7 @@
                                         <th>Qty</th>
                                         <th>Unit Price</th>
                                         <th>Total</th>
+                                        <th>Status</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -457,17 +459,10 @@
                                     <c:forEach var="c" items="${cart}">
                                         <tr>
                                             <td>${c.serviceName}</td>
-                                            <td>
-                                                <form method="post" action="${pageContext.request.contextPath}/customer/services" class="d-flex">
-                                                    <input type="hidden" name="action" value="update">
-                                                    <input type="hidden" name="reservationId" value="${selectedId}">
-                                                    <input type="hidden" name="lineId" value="${c.id}">
-                                                    <input type="number" name="quantity" value="${c.quantity}" min="1" class="form-control form-control-sm me-2" style="width:80px;">
-                                                    <button class="btn btn-sm btn-secondary">Save</button>
-                                                </form>
-                                            </td>
+                                            <td>${c.quantity}</td>
                                             <td><fmt:formatNumber value="${c.unitPrice}" pattern="#,#00"/>₫</td>
                                             <td><fmt:formatNumber value="${c.totalAmount}" pattern="#,#00"/>₫</td>
+                                            <td>${c.status}</td>
                                             <td>
                                                 <form method="post" action="${pageContext.request.contextPath}/customer/services" onsubmit="return confirm('Cancel service?');">
                                                     <input type="hidden" name="action" value="delete">
