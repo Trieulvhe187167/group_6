@@ -7,10 +7,12 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @ServletComponentScan(basePackages = "controller")
-@ComponentScan(basePackages = {"controller"})
+@ComponentScan(basePackages = {"controller", "scheduler"})
 @SpringBootApplication
+@EnableScheduling
 public class HotelManagementSystemApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {

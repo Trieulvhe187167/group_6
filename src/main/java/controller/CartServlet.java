@@ -96,12 +96,13 @@ public class CartServlet extends HttpServlet {
                     RoomType rt = roomTypeDAO.getRoomTypesById(roomTypeId);
                     int capacity = (rt != null) ? rt.getCapacity() : 1;
                     List<Integer> reserved = new ArrayList<>();
+                    long holdUntil = System.currentTimeMillis() + 10 * 60 * 1000;
                     for (int i = 0; i < quantity; i++) {
                         Room rm = available.get(i);
-                        roomDAO.updateRoomStatus(rm.getId(), "HELD");
+                         roomDAO.updateRoomStatus(rm.getId(), "HELD", new java.sql.Timestamp(holdUntil));
                         reserved.add(rm.getId());
                     }
-                    long holdUntil = System.currentTimeMillis() + 10 * 60 * 1000;
+          
                     
                     if (existing != null) {
                         existing.getRoomIds().addAll(reserved);

@@ -310,7 +310,8 @@ public class RoomTypeDAO {
     // Lấy danh sách Rooms available theo RoomType (Note: SQL có vẻ sai column name)
     public List<Room> getAvailableRoomsByType(int roomTypeId) {
         List<Room> list = new ArrayList<>();
-        String sql = "SELECT * FROM Rooms WHERE RoomTypeId = ? AND Status = 'AVAILABLE'"; // Đã sửa từ room_type_id và is_available
+      String sql = "SELECT * FROM Rooms WHERE RoomTypeId = ? "
+                + "AND Status NOT IN ('MAINTENANCE', 'DISABLED', 'HELD')";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
