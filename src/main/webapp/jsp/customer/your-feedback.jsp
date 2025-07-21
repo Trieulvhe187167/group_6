@@ -614,7 +614,7 @@
                     </a>
                 </li>
                 <li>
-                                            <a href="${pageContext.request.contextPath}/customer/feedback" class="active">
+                    <a href="${pageContext.request.contextPath}/customer/feedback?action=list" class="active">
                         <i class="fas fa-comments"></i>
                         <span>My Feedback</span>
                     </a>
@@ -868,7 +868,7 @@
                                     <c:choose>
                                         <c:when test="${booking.rating > 0}">
                                             <button type="button" class="btn btn-info" 
-                                                onclick="showFeedbackModal('${booking.rating}', '${fn:escapeXml(booking.comment)}')">
+                                                onclick="showFeedbackModal('${booking.rating}', '${fn:escapeXml(booking.comment)}', '${booking.feedbackId}')">
                                                 <i class="fas fa-eye"></i>
                                                 View Full Feedback
                                             </button>
@@ -940,8 +940,17 @@
                         <h6 style="color: #495057; font-weight: 600; margin-bottom: 15px;">
                             <i class="fas fa-comment-dots" style="color: #667eea;"></i> Comment:
                         </h6>
-                        <div id="modalComment" style="background: rgba(102, 126, 234, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #667eea; white-space: pre-line; color: #495057; font-style: italic; line-height: 1.6;"></div>
+                        <c:if test="${feedback.disabled}">
+                            <div class="alert alert-warning">
+                                This feedback has been hidden by admin and cannot be viewed in detail.
+                            </div>
+                        </c:if>
+                        <c:if test="${!feedback.disabled}">
+                            <div id="modalComment" style="background: rgba(102, 126, 234, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #667eea; white-space: pre-line; color: #495057; font-style: italic; line-height: 1.6; max-height: 200px; overflow-y: auto; word-break: break-word;"></div>
+                        </c:if>
                     </div>
+                    <!-- Thêm div replies có scroll -->
+                    <div id="modalReplies" style="max-height: 200px; overflow-y: auto; word-break: break-word; margin-top: 20px;"></div>
                 </div>
                 <div class="modal-footer" style="background: #f8f9fa;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -960,12 +969,13 @@
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Thêm biến JS chứa replies từ backend -->
+    <script type="application/json" id="feedbackRepliesData">${feedbackRepliesJson}</script>
     <script>
+    var feedbackReplies = JSON.parse(document.getElementById('feedbackRepliesData').textContent);
         console.log('JavaScript loaded successfully');
         
-        function showFeedbackModal(rating, comment) {
+        function showFeedbackModal(rating, comment, bookingId) {
             document.getElementById('modalRating').textContent = rating;
             document.getElementById('modalComment').textContent = comment || 'No comment provided.';
             
@@ -978,6 +988,26 @@
                 starsContainer.appendChild(star);
             }
             
+            // Hiển thị replies
+            let repliesDiv = document.getElementById('modalReplies');
+            if (!repliesDiv) {
+                repliesDiv = document.createElement('div');
+                repliesDiv.id = 'modalReplies';
+                repliesDiv.style.maxHeight = '250px';
+                repliesDiv.style.overflowY = 'auto';
+                repliesDiv.style.wordBreak = 'break-word';
+                repliesDiv.style.marginTop = '20px';
+                document.querySelector('.modal-body').appendChild(repliesDiv);
+            }
+            repliesDiv.innerHTML = '<h6 style="color:#495057;font-weight:600;margin-bottom:10px;"><i class="fas fa-reply"></i> Staff Replies:</h6>';
+            var replies = feedbackReplies[String(bookingId)] || [];
+            if (replies.length === 0) {
+                repliesDiv.innerHTML += '<div class="alert alert-info">No replies from staff yet.</div>';
+            } else {
+                replies.forEach(function(reply) {
+                    repliesDiv.innerHTML += '<div class="card mb-2"><div class="card-body"><b>' + (reply.name || 'Staff') + '</b> (' + (reply.email || '') + ')<br><span>' + (reply.message || '') + '</span><br><small class="text-muted">' + (reply.createdAt ? new Date(reply.createdAt).toLocaleString() : '') + '</small></div></div>';
+                });
+            }
             $('#feedbackModal').modal('show');
         }
 
