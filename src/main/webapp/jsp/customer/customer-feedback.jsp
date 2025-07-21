@@ -437,23 +437,23 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="content-header">
+    <div class="content-header">
                 <h2><i class="fas fa-star"></i> Submit Feedback</h2>
                 <p>Share your experience and help us improve our services</p>
-            </div>
+    </div>
 
             <!-- Success/Error Messages -->
             <c:if test="${not empty success}">
-                <div class="alert alert-success">
+        <div class="alert alert-success">
                     <i class="fas fa-check-circle"></i> ${success}
-                </div>
-            </c:if>
+        </div>
+    </c:if>
             
-            <c:if test="${not empty error}">
-                <div class="alert alert-danger">
+    <c:if test="${not empty error}">
+        <div class="alert alert-danger">
                     <i class="fas fa-exclamation-triangle"></i> ${error}
-                </div>
-            </c:if>
+        </div>
+    </c:if>
 
             <div class="feedback-form-container">
                 <c:choose>
@@ -485,44 +485,44 @@
                                             Booking #${reservation.id} - Room ${reservation.roomNumber} 
                                             (<fmt:formatDate value="${reservation.checkIn}" pattern="dd/MM/yyyy"/> - 
                                             <fmt:formatDate value="${reservation.checkOut}" pattern="dd/MM/yyyy"/>)
-                                        </option>
-                                    </c:forEach>
-                                </select>
-                            </div>
+                                </option>
+                            </c:forEach>
+                        </select>
+            </div>
 
                             <div class="form-group">
                                 <label>
                                     <i class="fas fa-star"></i> Your Rating:
                                 </label>
-                                <div class="rating-section">
+           <div class="rating-section">
                                     <div class="rating-stars" id="ratingStars">
                                         <i class="star fas fa-star" data-rating="1"></i>
                                         <i class="star fas fa-star" data-rating="2"></i>
                                         <i class="star fas fa-star" data-rating="3"></i>
                                         <i class="star fas fa-star" data-rating="4"></i>
                                         <i class="star fas fa-star" data-rating="5"></i>
-                                    </div>
+        </div>
                                     <div class="rating-text" id="ratingText">Click on a star to rate</div>
                                     <input type="hidden" name="rating" id="ratingInput" required>
-                                </div>
-                            </div>
+    </div>
+</div>
 
-                            <div class="form-group">
+            <div class="form-group">
                                 <label for="comment">
                                     <i class="fas fa-comment-dots"></i> Your Feedback (minimum 5 characters):
-                                </label>
+                </label>
                                 <textarea name="comment" id="comment" class="form-control" rows="6" 
                                           placeholder="Please share your experience with us. What did you like? What could we improve? (minimum 5 characters)" 
                                           required minlength="5"></textarea>
-                            </div>
+            </div>
 
                             <div style="display: flex; gap: 15px; justify-content: center;">
                                 <a href="${pageContext.request.contextPath}/customer/your-feedback" class="btn btn-secondary">
                                     <i class="fas fa-arrow-left"></i> Cancel
                                 </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane"></i> Submit Feedback
-                                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Submit Feedback
+                </button>
                             </div>
                         </form>
                     </c:otherwise>
@@ -638,7 +638,7 @@
                 alert('Please provide a more detailed feedback comment (at least 5 characters).');
                 return;
             }
-        });
-    </script>
+    });
+</script>
 </body>
 </html>
