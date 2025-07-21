@@ -193,12 +193,14 @@ public class ReservationsServlet extends HttpServlet {
             request.setAttribute("fromDate", fromDate);
             request.setAttribute("toDate", toDate);
 
-            request.getRequestDispatcher("/jsp/admin/booking-list.jsp").forward(request, response);
+            request.setAttribute("contentPage", "/jsp/admin/booking-list.jsp");
+            request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("errorMessage", "Error loading bookings: " + e.getMessage());
-            request.getRequestDispatcher("/jsp/admin/booking-list.jsp").forward(request, response);
+            request.setAttribute("contentPage", "/jsp/admin/booking-list.jsp");
+            request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
         }
     }
 
@@ -259,6 +261,21 @@ public class ReservationsServlet extends HttpServlet {
         String toDate = request.getParameter("toDate");
 
         List<Reservation> historyBookings = reservationDAO.getPastBookings(userId, status, fromDate, toDate);
+
+        // Lấy replies cho từng booking (theo feedbackId = booking.id)
+        ContactMessageDAO contactMessageDAO = new ContactMessageDAO();
+        java.util.Map<String, java.util.List<ContactMessage>> feedbackReplies = new java.util.HashMap<>();
+        for (Reservation booking : historyBookings) {
+            System.out.println("DEBUG BookingId: " + booking.getId() + ", FeedbackId: " + booking.getFeedbackId());
+            Integer feedbackId = booking.getFeedbackId();
+            if (feedbackId != null) {
+                List<ContactMessage> replies = contactMessageDAO.getMessagesByFeedbackId(feedbackId);
+                feedbackReplies.put(String.valueOf(feedbackId), replies);
+            }
+        }
+        String feedbackRepliesJson = new com.google.gson.Gson().toJson(feedbackReplies);
+        System.out.println("DEBUG feedbackRepliesJson: " + feedbackRepliesJson);
+        request.setAttribute("feedbackRepliesJson", feedbackRepliesJson);
 
         request.setAttribute("historyBookings", historyBookings);
         request.setAttribute("selectedStatus", status);
