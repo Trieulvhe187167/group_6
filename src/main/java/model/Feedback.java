@@ -10,6 +10,8 @@ public class Feedback {
     private String comment;
     private Timestamp createdAt;
     private String userFullName;
+    private String userEmail;
+    private boolean disabled;
     public int getId() {
         return id;
     }
@@ -63,5 +65,21 @@ public class Feedback {
 
     public void setUserFullName(String userFullName) {
         this.userFullName = userFullName;
+    }
+    
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+    
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 }

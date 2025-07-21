@@ -310,7 +310,8 @@ public class RoomTypeDAO {
     // Lấy danh sách Rooms available theo RoomType (Note: SQL có vẻ sai column name)
     public List<Room> getAvailableRoomsByType(int roomTypeId) {
         List<Room> list = new ArrayList<>();
-        String sql = "SELECT * FROM Rooms WHERE RoomTypeId = ? AND Status = 'AVAILABLE'"; // Đã sửa từ room_type_id và is_available
+      String sql = "SELECT * FROM Rooms WHERE RoomTypeId = ? "
+                + "AND Status NOT IN ('MAINTENANCE', 'DISABLED', 'HELD')";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -557,5 +558,36 @@ public boolean insertRoomTypeImage(int roomTypeId, String fileName, String roomT
         }
         return 1;
     }
+  /**
+     * Retrieve the active room type with the highest base price.
+     *
+     * @return RoomType with the highest price or null if none found
+     */
+    public RoomType getHighestPricedRoomType() {
+        String sql = "SELECT TOP 1 * FROM RoomTypes WHERE Status = 'active' ORDER BY BasePrice DESC";
 
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                RoomType rtype = new RoomType();
+                rtype.setId(rs.getInt("Id"));
+                rtype.setName(rs.getString("Name"));
+                rtype.setDescription(rs.getString("Description"));
+                rtype.setBasePrice(rs.getBigDecimal("BasePrice"));
+                rtype.setImageUrl(rs.getString("imageUrl"));
+                rtype.setCapacity(rs.getInt("Capacity"));
+                rtype.setStatus(rs.getString("Status"));
+                rtype.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                rtype.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+                return rtype;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

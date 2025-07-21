@@ -234,32 +234,31 @@
                                     </div>
 
                                     <!-- Featured Room -->
-                                    <div class="widget mt-4">
-                                        <h5 class="widget-title">Featured Room</h5>
-                                        <div class="widget-post-bx">
-                                            <div class="widget-post clearfix">
-                                                <div class="ttr-post-media"> 
-                                                    <img src="${pageContext.request.contextPath}/assets/images/uploads/presidential_suite.jpg" 
-                                                         width="200" height="143" alt="Featured Room"> 
-                                                </div>
-                                                <div class="ttr-post-info">
-                                                    <div class="ttr-post-header">
-                                                        <h6 class="post-title"><a href="/RoomDetailServlet?id=1002">Presidential Suite</a></h6>
+                                    <c:if test="${not empty featuredRoom}">
+                                        <div class="widget mt-4">
+                                            <h5 class="widget-title">Featured Room</h5>
+                                            <div class="widget-post-bx">
+                                                <div class="widget-post clearfix">
+                                                    <div class="ttr-post-media">
+                                                        <img src="${pageContext.request.contextPath}/assets/images/uploads/${featuredRoom.imageUrl}" width="200" height="143" alt="Featured Room">
                                                     </div>
-                                                    <div class="ttr-post-meta">
-                                                        <ul>
-                                                            5/5<i class="fa fa-star" style="color: #ffc107"></i>
-                                                            <li class="price">                                       
-                                                                <h5 class="price-display" >3,000,000₫/night</h5>
-
-                                                            </li>
-
-                                                        </ul>
+                                                   <div class="ttr-post-info">
+                                                        <div class="ttr-post-header">
+                                                            <h6 class="post-title"><a href="/RoomDetailServlet?id=${featuredRoom.id}">${featuredRoom.name}</a></h6>
+                                                        </div>
+                                                        <div class="ttr-post-meta">
+                                                            <ul>
+                                                                <fmt:formatNumber value="${featuredRoom.averageRating}" minFractionDigits="1" maxFractionDigits="1"/>/5<i class="fa fa-star" style="color: #ffc107"></i>
+                                                                <li class="price">
+                                                                    <h5 class="price-display"><fmt:formatNumber value="${featuredRoom.basePrice}" pattern="#,##0" />₫/night</h5>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                   </c:if>
                                 </div>
 
                                 <!-- Room List -->

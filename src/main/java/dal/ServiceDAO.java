@@ -97,9 +97,10 @@ public List<Service> getAllServices(String search, String status) {
     return services;
 }
     
-    // Add service to reservation
+     // Add service to reservation (supports status & createdBy)
     public boolean addServiceToReservation(ReservationService reservationService) {
-        String sql = "INSERT INTO ReservationServices (ReservationId, ServiceId, Quantity) VALUES (?, ?, ?)";
+         String sql = "INSERT INTO ReservationServices (ReservationId, ServiceId, Quantity, Status, CreatedBy) " +
+                     "VALUES (?, ?, ?, ?, ?)";
         
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -107,6 +108,14 @@ public List<Service> getAllServices(String search, String status) {
             ps.setInt(1, reservationService.getReservationId());
             ps.setInt(2, reservationService.getServiceId());
             ps.setInt(3, reservationService.getQuantity());
+            ps.setString(4, reservationService.getStatus());
+            
+            if (reservationService.getCreatedBy() > 0) {
+                ps.setInt(5, reservationService.getCreatedBy());
+            } else {
+                ps.setNull(5, Types.INTEGER);
+            }
+
             
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -121,7 +130,7 @@ public List<Service> getAllServices(String search, String status) {
         List<ServiceOrder> orders = new ArrayList<>();
         
         // Query phức tạp hơn để lấy đầy đủ thông tin
-        String sql = "SELECT rs.Id, rs.ReservationId, rs.ServiceId, rs.Quantity, " +
+      String sql = "SELECT rs.Id, rs.ReservationId, rs.ServiceId, rs.Quantity, rs.Status, rs.CreatedAt, cb.FullName as CreatedByName, " +
                     "s.Name as ServiceName, s.Price, s.Description, " +
                     "CASE " +
                     "  WHEN s.Name LIKE '%Airport%' OR s.Name LIKE '%Shuttle%' OR s.Name LIKE '%Car%' THEN 'TRANSPORT' " +
@@ -131,12 +140,13 @@ public List<Service> getAllServices(String search, String status) {
                     "  ELSE 'OTHER' " +
                     "END as Category, " +
                     "r.RoomId, rm.RoomNumber, " +
-                    "u.FullName as CustomerName " +
+                   "u.FullName as CustomerName, u.Email as CustomerEmail " +
                     "FROM ReservationServices rs " +
                     "INNER JOIN Services s ON rs.ServiceId = s.Id " +
                     "INNER JOIN Reservations r ON rs.ReservationId = r.Id " +
                     "LEFT JOIN Rooms rm ON r.RoomId = rm.Id " +
                     "INNER JOIN Users u ON r.UserId = u.Id " +
+                "LEFT JOIN Users cb ON rs.CreatedBy = cb.Id " +
                     "WHERE rs.ReservationId = ? " +
                     "ORDER BY rs.Id DESC";
         
@@ -156,8 +166,11 @@ public List<Service> getAllServices(String search, String status) {
                 order.setUnitPrice(rs.getDouble("Price"));
                 order.setTotalAmount(rs.getDouble("Price") * rs.getInt("Quantity"));
                 order.setRoomNumber(rs.getString("RoomNumber"));
-                order.setCustomerName(rs.getString("CustomerName"));
-                order.setStatus("CONFIRMED"); // Default status
+                order.setCustomerName(rs.getString("CustomerName"));    
+                order.setCustomerEmail(rs.getString("CustomerEmail"));
+                 order.setStatus(rs.getString("Status"));
+                order.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                order.setCreatedByName(rs.getString("CreatedByName"));
                 
                 orders.add(order);
             }
@@ -167,12 +180,52 @@ public List<Service> getAllServices(String search, String status) {
         }
         return orders;
     }
-    
+       // Get a single service order by its ID
+    public ServiceOrder getServiceOrderById(int orderId) {
+        String sql = "SELECT rs.Id, rs.ReservationId, rs.ServiceId, rs.Quantity, rs.Status, rs.CreatedAt, " +
+                     "cb.FullName as CreatedByName, s.Name as ServiceName, s.Price, " +
+                     "u.FullName as CustomerName, u.Email as CustomerEmail, rm.RoomNumber " +
+                     "FROM ReservationServices rs " +
+                     "INNER JOIN Services s ON rs.ServiceId = s.Id " +
+                     "INNER JOIN Reservations r ON rs.ReservationId = r.Id " +
+                     "LEFT JOIN Rooms rm ON r.RoomId = rm.Id " +
+                     "INNER JOIN Users u ON r.UserId = u.Id " +
+                     "LEFT JOIN Users cb ON rs.CreatedBy = cb.Id " +
+                     "WHERE rs.Id = ?";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                ServiceOrder order = new ServiceOrder();
+                order.setId(rs.getInt("Id"));
+                order.setReservationId(rs.getInt("ReservationId"));
+                order.setServiceId(rs.getInt("ServiceId"));
+                order.setServiceName(rs.getString("ServiceName"));
+                order.setQuantity(rs.getInt("Quantity"));
+                order.setUnitPrice(rs.getDouble("Price"));
+                order.setTotalAmount(rs.getDouble("Price") * rs.getInt("Quantity"));
+                order.setRoomNumber(rs.getString("RoomNumber"));
+                order.setCustomerName(rs.getString("CustomerName"));
+                order.setCustomerEmail(rs.getString("CustomerEmail"));
+                order.setStatus(rs.getString("Status"));
+                order.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                order.setCreatedByName(rs.getString("CreatedByName"));
+                return order;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     // Get recent service orders
     public List<ServiceOrder> getRecentServiceOrders(int limit) {
         List<ServiceOrder> orders = new ArrayList<>();
         
-        String sql = "SELECT TOP (?) rs.Id, rs.ReservationId, rs.ServiceId, rs.Quantity, " +
+         String sql = "SELECT TOP (?) rs.Id, rs.ReservationId, rs.ServiceId, rs.Quantity, rs.Status, rs.CreatedAt, cb.FullName as CreatedByName, " +
                     "s.Name as ServiceName, s.Price, " +
                     "CASE " +
                     "  WHEN s.Name LIKE '%Airport%' OR s.Name LIKE '%Shuttle%' OR s.Name LIKE '%Car%' THEN 'TRANSPORT' " +
@@ -181,12 +234,13 @@ public List<Service> getAllServices(String search, String status) {
                     "  WHEN s.Name LIKE '%Laundry%' THEN 'LAUNDRY' " +
                     "  ELSE 'OTHER' " +
                     "END as Category, " +
-                    "r.Id as ReservationId, rm.RoomNumber, u.FullName as CustomerName " +
+                    "r.Id as ReservationId, rm.RoomNumber, u.FullName as CustomerName, u.Email as CustomerEmail " +
                     "FROM ReservationServices rs " +
                     "INNER JOIN Services s ON rs.ServiceId = s.Id " +
                     "INNER JOIN Reservations r ON rs.ReservationId = r.Id " +
                     "LEFT JOIN Rooms rm ON r.RoomId = rm.Id " +
                     "INNER JOIN Users u ON r.UserId = u.Id " +
+                 "LEFT JOIN Users cb ON rs.CreatedBy = cb.Id " +
                     "ORDER BY rs.Id DESC";
         
         try (Connection conn = DBContext.getConnection();
@@ -207,7 +261,10 @@ public List<Service> getAllServices(String search, String status) {
                 order.setTotalAmount(rs.getDouble("Price") * rs.getInt("Quantity"));
                 order.setRoomNumber(rs.getString("RoomNumber"));
                 order.setCustomerName(rs.getString("CustomerName"));
-                order.setStatus("CONFIRMED");
+                order.setCustomerEmail(rs.getString("CustomerEmail"));
+                order.setStatus(rs.getString("Status"));
+                order.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                order.setCreatedByName(rs.getString("CreatedByName"));
                 orders.add(order);
             }
         } catch (SQLException e) {
@@ -290,7 +347,32 @@ public List<Service> getAllServices(String search, String status) {
         }
         return false;
     }
-    
+     // Retrieve an existing reservation service (non-cancelled) for duplicate checks
+    public ReservationService getReservationService(int reservationId, int serviceId) {
+        String sql = "SELECT Id, Quantity, Status FROM ReservationServices WHERE ReservationId = ? AND ServiceId = ? AND Status <> 'CANCELLED'";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, reservationId);
+            ps.setInt(2, serviceId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    ReservationService rsrv = new ReservationService();
+                    rsrv.setId(rs.getInt("Id"));
+                    rsrv.setReservationId(reservationId);
+                    rsrv.setServiceId(serviceId);
+                    rsrv.setQuantity(rs.getInt("Quantity"));
+                    rsrv.setStatus(rs.getString("Status"));
+                    return rsrv;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     // Get all services for a specific category and reservation
     public List<ServiceOrder> getServicesByReservationAndCategory(int reservationId, String category) {
         List<ServiceOrder> allOrders = getServiceOrdersByReservation(reservationId);

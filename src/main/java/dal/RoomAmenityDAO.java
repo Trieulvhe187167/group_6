@@ -123,7 +123,6 @@ public class RoomAmenityDAO {
 //        }
 //        return amenities;
 //    }
-
     // Record amenity inventory check during check-in
     public boolean recordAmenityInventory(int reservationId, int amenityId, int quantity, int checkedBy) {
         String sql = "INSERT INTO AmenityInventory (ReservationId, AmenityId, Quantity, CheckType, CheckedAt, CheckedBy) "
@@ -500,6 +499,293 @@ public class RoomAmenityDAO {
             ps.setString(6, notes);
             return ps.executeUpdate() > 0;
         }
+    }
+
+    public List<RoomAmenityDTO> getAllPaginated(int offset, int pageSize) {
+        List<RoomAmenityDTO> list = new ArrayList<>();
+        String sql = "SELECT ra.*, r.RoomNumber "
+                + "FROM RoomAmenities ra "
+                + "JOIN Rooms r ON ra.RoomId = r.Id "
+                + "ORDER BY ra.CreatedAt DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, offset);
+            ps.setInt(2, pageSize);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                RoomAmenityDTO dto = new RoomAmenityDTO();
+                dto.setId(rs.getInt("Id"));
+                dto.setRoomId(rs.getInt("RoomId"));
+                dto.setRoomNumber(rs.getString("RoomNumber"));
+                dto.setName(rs.getString("Name"));
+                dto.setDescription(rs.getString("Description"));
+                dto.setIsChargeable(rs.getBoolean("IsChargeable"));
+                dto.setUnitPrice(rs.getBigDecimal("UnitPrice"));
+
+                Timestamp createdAt = rs.getTimestamp("CreatedAt");
+                if (createdAt != null) {
+                    dto.setCreatedAt(new Date(createdAt.getTime()));
+                }
+
+                list.add(dto);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Room> getAllRooms() {
+        List<Room> list = new ArrayList<>();
+        String sql = "SELECT Id, RoomNumber FROM Rooms ORDER BY RoomNumber";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Room room = new Room();
+                room.setId(rs.getInt("Id"));
+                room.setRoomNumber(rs.getString("RoomNumber"));
+                list.add(room);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<String> getAllAmenityNames() {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT Name FROM RoomAmenities ORDER BY Name";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(rs.getString("Name"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public List<RoomAmenityDTO> searchAndFilterAmenities(String keyword, String roomNumber, String amenityName, int offset, int limit) {
+        List<RoomAmenityDTO> list = new ArrayList<>();
+
+        String sql = "SELECT ra.*, r.RoomNumber FROM RoomAmenities ra "
+                + "JOIN Rooms r ON ra.RoomId = r.Id WHERE 1=1";
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql += " AND (ra.Name LIKE ? OR ra.Description LIKE ?)";
+        }
+
+        if (roomNumber != null && !roomNumber.trim().isEmpty()) {
+            sql += " AND r.RoomNumber = ?";
+        }
+
+        if (amenityName != null && !amenityName.trim().isEmpty()) {
+            sql += " AND ra.Name = ?";
+        }
+
+        sql += " ORDER BY r.RoomNumber, ra.Name OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int index = 1;
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(index++, "%" + keyword.trim() + "%");
+            }
+
+            if (roomNumber != null && !roomNumber.trim().isEmpty()) {
+                ps.setString(index++, roomNumber.trim());
+            }
+
+            if (amenityName != null && !amenityName.trim().isEmpty()) {
+                ps.setString(index++, amenityName.trim());
+            }
+
+            ps.setInt(index++, offset);
+            ps.setInt(index, limit);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                RoomAmenityDTO a = new RoomAmenityDTO();
+                a.setId(rs.getInt("Id"));
+                a.setRoomId(rs.getInt("RoomId"));
+                a.setRoomNumber(rs.getString("RoomNumber"));
+                a.setName(rs.getString("Name"));
+                a.setDescription(rs.getString("Description"));
+                a.setIsChargeable(rs.getBoolean("IsChargeable"));
+                a.setUnitPrice(rs.getBigDecimal("UnitPrice"));
+
+                Timestamp createdAt = rs.getTimestamp("CreatedAt");
+                if (createdAt != null) {
+                    a.setCreatedAt(new Date(createdAt.getTime()));
+                }
+
+                list.add(a);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public int countAmenities(String keyword, String roomNumber, String amenityName) {
+        String sql = "SELECT COUNT(*) FROM RoomAmenities ra JOIN Rooms r ON ra.RoomId = r.Id WHERE 1=1";
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql += " AND (ra.Name LIKE ? OR ra.Description LIKE ?)";
+        }
+        if (roomNumber != null && !roomNumber.trim().isEmpty()) {
+            sql += " AND r.RoomNumber = ?";
+        }
+
+        if (amenityName != null && !amenityName.trim().isEmpty()) {
+            sql += " AND ra.Name = ?";
+        }
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int index = 1;
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(index++, "%" + keyword + "%");
+            }
+            if (roomNumber != null && !roomNumber.trim().isEmpty()) {
+                ps.setString(index++, roomNumber);
+            }
+            if (amenityName != null && !amenityName.trim().isEmpty()) {
+                ps.setString(index++, amenityName);
+            }
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public RoomAmenityDTO getRoomAmenityById(int id) {
+        RoomAmenityDTO amenity = null;
+        String sql = "SELECT ra.Id, ra.RoomId, r.RoomNumber, ra.Name, ra.Description, ra.IsChargeable, ra.UnitPrice, ra.CreatedAt "
+                + "FROM RoomAmenities ra "
+                + "JOIN Rooms r ON ra.RoomId = r.Id "
+                + "WHERE ra.Id = ?";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    amenity = new RoomAmenityDTO();
+                    amenity.setId(rs.getInt("Id"));
+                    amenity.setRoomId(rs.getInt("RoomId"));
+                    amenity.setRoomNumber(rs.getString("RoomNumber"));
+                    amenity.setName(rs.getString("Name"));
+                    amenity.setDescription(rs.getString("Description"));
+                    amenity.setIsChargeable(rs.getBoolean("IsChargeable"));
+                    amenity.setUnitPrice(rs.getBigDecimal("UnitPrice"));
+                    amenity.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return amenity;
+    }
+
+    public void insertAmenity(RoomAmenityDTO amenity) {
+        String sql = "INSERT INTO RoomAmenities (RoomId, Name, Description, IsChargeable, UnitPrice, CreatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, amenity.getRoomId());
+            ps.setString(2, amenity.getName());
+            ps.setString(3, amenity.getDescription());
+            ps.setBoolean(4, amenity.isIsChargeable());
+            ps.setBigDecimal(5, amenity.getUnitPrice());
+            ps.setTimestamp(6, new java.sql.Timestamp(amenity.getCreatedAt().getTime()));
+
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateAmenity(RoomAmenityDTO amenity) {
+        String sql = "UPDATE RoomAmenities SET RoomId = ?, Name = ?, Description = ?, IsChargeable = ?, UnitPrice = ? "
+                + "WHERE Id = ?";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, amenity.getRoomId());
+            ps.setString(2, amenity.getName());
+            ps.setString(3, amenity.getDescription());
+            ps.setBoolean(4, amenity.isIsChargeable());
+            ps.setBigDecimal(5, amenity.getUnitPrice());
+            ps.setInt(6, amenity.getId());
+
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean deleteRoomAmenity(int id) {
+        String sql = "DELETE FROM RoomAmenities WHERE id = ?";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean checkAmenityDuplicate(int roomId, String name, String description) {
+        String sql = "SELECT COUNT(*) FROM RoomAmenities WHERE RoomId = ? AND Name = ? AND Description = ?";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setString(2, name);
+            ps.setString(3, description);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt(1);
+                    return count > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean checkAmenityDuplicateExceptId(int roomId, String name, String description, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM RoomAmenities WHERE RoomId = ? AND Name = ? AND Description = ? AND Id != ?";
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setString(2, name);
+            ps.setString(3, description);
+            ps.setInt(4, excludeId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt(1);
+                    return count > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 }

@@ -15,6 +15,7 @@ public class ServiceOrder {
     private String status;
     private String roomNumber;
     private String customerName;
+     private String customerEmail;
     private Timestamp createdAt;
     private String createdByName;
     private String notes;
@@ -56,6 +57,9 @@ public class ServiceOrder {
     public String getCustomerName() { return customerName; }
     public void setCustomerName(String customerName) { this.customerName = customerName; }
     
+    public String getCustomerEmail() { return customerEmail; }
+    public void setCustomerEmail(String customerEmail) { this.customerEmail = customerEmail; }
+    
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
     
@@ -70,6 +74,7 @@ public class ServiceOrder {
         if (status == null) return "badge-secondary";
         switch (status) {
             case "PENDING": return "badge-warning";
+               case "CONFIRMED": return "badge-info";
             case "COMPLETED": return "badge-success";
             case "CANCELLED": return "badge-danger";
             default: return "badge-secondary";

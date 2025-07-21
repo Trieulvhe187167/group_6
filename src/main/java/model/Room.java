@@ -8,6 +8,7 @@ public class Room {
     private String roomNumber;
     private int roomTypeId;
     private String status;
+    private java.sql.Timestamp holdUntil;
 
     // Additional fields for display
     private String roomTypeName;
@@ -61,6 +62,14 @@ public class Room {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+      public java.sql.Timestamp getHoldUntil() {
+        return holdUntil;
+    }
+
+    public void setHoldUntil(java.sql.Timestamp holdUntil) {
+        this.holdUntil = holdUntil;
     }
 
     public String getRoomTypeName() {
@@ -117,6 +126,8 @@ public class Room {
                 return "Maintenance";
             case "DIRTY":
                 return "Dirty";
+            case "HELD":
+                return "Held";
             default:
                 return status;
         }
@@ -135,6 +146,8 @@ public class Room {
                 return "badge-warning";
             case "DIRTY":
                 return "badge-warning";
+                case "HELD":
+                return "badge-info";
             default:
                 return "badge-secondary";
         }
@@ -154,6 +167,11 @@ public class Room {
 
     public boolean isUnderMaintenance() {
         return "MAINTENANCE".equals(status);
+    }
+
+    
+    public boolean isHeld() {
+        return "HELD".equals(status);
     }
 
     public String getGuestName() {
@@ -187,6 +205,7 @@ public class Room {
                 + ", roomNumber='" + roomNumber + '\''
                 + ", roomTypeId=" + roomTypeId
                 + ", status='" + status + '\''
+                + ", holdUntil=" + holdUntil
                 + ", roomTypeName='" + roomTypeName + '\''
                 + ", guestName='" + guestName + '\''
                 + ", checkIn=" + checkIn

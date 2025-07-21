@@ -557,15 +557,21 @@
                         <span>Booking History</span>
                     </a>
                 </li>
-                  <a href="${pageContext.request.contextPath}/customer/feedback?action=list">
-      <i class="fas fa-comments"></i>
-      <span>My Feedback</span>
-  </a>
+                                      <a href="${pageContext.request.contextPath}/customer/your-feedback">
+                        <i class="fas fa-comments"></i>
+                        <span>My Feedback</span>
+                    </a>
                 <div class="menu-divider"></div>
                 <li>
                     <a href="${pageContext.request.contextPath}/customer/profile">
                         <i class="fas fa-user-edit"></i>
                         <span>User Profile</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="change-password.jsp">
+                        <i class="fas fa-key"></i>
+                        <span>Change Password</span>
                     </a>
                 </li>
                     <li>
@@ -718,6 +724,9 @@
 
 <div class="booking-list">
     <c:forEach var="booking" items="${historyBookings}">
+        <script>
+            console.log('BookingId: ${booking.id}, Rating: ${booking.rating}, Comment: ' + JSON.stringify('${booking.comment}'));
+        </script>
         <div class="booking-card">
             <div class="booking-header">
                 <div class="booking-title">
@@ -763,21 +772,21 @@
                    class="btn btn-primary">
                     <i class="fas fa-eye"></i> View Details
                 </a>
-
-                <%-- Display Rate Stay or Your Feedback button based on status and rating --%>
                 <c:choose>
                     <c:when test="${fn:toUpperCase(fn:trim(booking.status)) == 'COMPLETED' && (booking.rating == null || booking.rating == 0)}">
                         <a href="${pageContext.request.contextPath}/customer/feedback?action=view&id=${booking.id}"
-   class="btn btn-warning">
-    <i class="fas fa-star"></i> Rate Stay
-</a>
-
+                           class="btn btn-warning">
+                            <i class="fas fa-star"></i> Rate Stay
+                        </a>
                     </c:when>
                     <c:when test="${fn:toUpperCase(fn:trim(booking.status)) == 'COMPLETED' && booking.rating != null && booking.rating > 0}">
-                        <a href="${pageContext.request.contextPath}/customer/feedback?action=list&id=${booking.id}"
-                           class="btn btn-outline-success">
-                            <i class="fas fa-comment-dots"></i> Your Feedback
-                        </a>
+                        <button type="button" class="btn btn-outline-success"
+                            data-rating="${booking.rating}"
+                            data-comment="${fn:escapeXml(booking.comment)}"
+                            data-feedbackid="${booking.feedbackId}"
+                            onclick="showFeedbackModal(this)">
+                            <i class="fas fa-comment-dots"></i> View Feedback
+                        </button>
                     </c:when>
                 </c:choose>
             </div>
@@ -785,10 +794,15 @@
     </c:forEach>
 </div>
 
-     <!-- JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+<!-- Đặt JSON replies ngay trước script chính -->
+<script type="application/json" id="feedbackRepliesData">
+${feedbackRepliesJson}
+</script>
+
+<!-- JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
@@ -809,3 +823,97 @@
     </script>
 </body>
 </html>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                <h5 class="modal-title" id="feedbackModalLabel">
+                    <i class="fas fa-star"></i> Feedback Details
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <div style="margin-bottom: 25px;">
+                    <h6 style="color: #495057; font-weight: 600; margin-bottom: 15px;">
+                        <i class="fas fa-star" style="color: #ffc107;"></i> Rating:
+                    </h6>
+                    <div style="display: flex; align-items: center;">
+                        <div id="modalRatingStars" class="rating-stars" style="margin-right: 15px; font-size: 1.5rem;"></div>
+                        <span id="modalRating" style="font-size: 1.2rem; font-weight: 600; color: #495057;"></span>
+                        <span style="color: #6c757d; margin-left: 5px;">/ 5</span>
+                    </div>
+                </div>
+                <div>
+                    <h6 style="color: #495057; font-weight: 600; margin-bottom: 15px;">
+                        <i class="fas fa-comment-dots" style="color: #667eea;"></i> Comment:
+                    </h6>
+                    <div id="modalComment" style="background: rgba(102, 126, 234, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #667eea; white-space: pre-line; color: #495057; font-style: italic; line-height: 1.6;"></div>
+                </div>
+                <div id="modalReplies" style="max-height: 250px; overflow-y: auto; word-break: break-word; margin-top: 20px;"></div>
+            </div>
+            <div class="modal-footer" style="background: #f8f9fa;">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+var feedbackReplies = {};
+try {
+  var repliesScript = document.getElementById('feedbackRepliesData');
+  if (repliesScript && repliesScript.textContent.trim().startsWith('{')) {
+    feedbackReplies = JSON.parse(repliesScript.textContent);
+    console.log('DEBUG feedbackReplies:', feedbackReplies);
+  } else {
+    console.warn('No valid feedbackRepliesJson found');
+  }
+} catch (e) {
+  console.error('Error parsing feedbackRepliesJson:', e);
+}
+function showFeedbackModal(button) {
+    var rating = button.getAttribute('data-rating');
+    var comment = button.getAttribute('data-comment');
+    var feedbackId = String(button.getAttribute('data-feedbackid')).trim();
+    console.log('DEBUG feedbackId:', feedbackId);
+    console.log('DEBUG replies:', feedbackReplies[feedbackId]);
+    document.getElementById('modalRating').textContent = rating;
+    document.getElementById('modalComment').textContent = comment || 'No comment provided.';
+    // Generate stars for modal
+    const starsContainer = document.getElementById('modalRatingStars');
+    starsContainer.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('i');
+        star.className = i <= rating ? 'fas fa-star' : 'far fa-star';
+        starsContainer.appendChild(star);
+    }
+    // Hiển thị replies
+    let repliesDiv = document.getElementById('modalReplies');
+    if (!repliesDiv) {
+        repliesDiv = document.createElement('div');
+        repliesDiv.id = 'modalReplies';
+        repliesDiv.style.maxHeight = '250px';
+        repliesDiv.style.overflowY = 'auto';
+        repliesDiv.style.wordBreak = 'break-word';
+        repliesDiv.style.marginTop = '20px';
+        document.querySelector('.modal-body').appendChild(repliesDiv);
+    }
+    repliesDiv.innerHTML = '<h6 style="color:#495057;font-weight:600;margin-bottom:10px;"><i class="fas fa-reply"></i> Staff Replies:</h6>';
+    var replies = feedbackReplies[feedbackId] || [];
+    if (replies.length === 0) {
+        repliesDiv.innerHTML += '<div class="alert alert-info">No replies from staff yet.</div>';
+    } else {
+        replies.forEach(function(reply) {
+            repliesDiv.innerHTML += '<div class="card mb-2"><div class="card-body"><b>' + (reply.name || 'Staff') + '</b> (' + (reply.email || '') + ')<br><span>' + (reply.message || '') + '</span><br><small class="text-muted">' + (reply.createdAt ? new Date(reply.createdAt).toLocaleString() : '') + '</small></div></div>';
+        });
+    }
+    $('#feedbackModal').modal('show');
+}
+</script>

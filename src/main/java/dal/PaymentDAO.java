@@ -293,7 +293,8 @@ public class PaymentDAO {
     }
     
     public String getReservationPaymentStatus(int reservationId) {
-        String sql = "SELECT Status FROM Payments WHERE ReservationId = ? ORDER BY CreatedAt DESC LIMIT 1";
+          // Use TOP 1 to retrieve the most recent payment status.
+        String sql = "SELECT TOP 1 Status FROM Payments WHERE ReservationId = ? ORDER BY CreatedAt DESC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             

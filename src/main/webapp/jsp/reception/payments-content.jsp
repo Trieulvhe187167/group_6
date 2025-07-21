@@ -250,7 +250,7 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td>
+                                <td data-order="${payment.createdAt.time}">
                                     <fmt:formatDate value="${payment.createdAt}" pattern="dd/MM/yyyy"/>
                                     <br><small class="text-muted">
                                         <fmt:formatDate value="${payment.createdAt}" pattern="HH:mm"/>
@@ -273,11 +273,11 @@
                                             </button>
                                         </c:if>
                                         <c:if test="${payment.status eq 'PENDING'}">
-                                            <button class="btn btn-success" onclick="confirmPayment(${payment.id})" 
+                                        <button type="button" class="btn btn-success" onclick="confirmPayment(${payment.id})"
                                                     title="Confirm Payment">
                                                 <i class="fas fa-check"></i>
                                             </button>
-                                            <button class="btn btn-danger" onclick="cancelPayment(${payment.id})" 
+                                            <button type="button" class="btn btn-danger" onclick="cancelPayment(${payment.id})"
                                                     title="Cancel Payment">
                                                 <i class="fas fa-times"></i>
                                             </button>
@@ -299,7 +299,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Record New Payment</h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -393,7 +393,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="btnSubmitPayment" disabled>
                         <i class="fas fa-check"></i> Record Payment
                     </button>
@@ -409,7 +409,7 @@
         <div class="modal-content">
             <div class="modal-header bg-warning">
                 <h5 class="modal-title">Process Refund</h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -449,8 +449,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btnProcessRefund" class="btn btn-warning">
                         <i class="fas fa-undo"></i> Process Refund
                     </button>
                 </div>
@@ -469,10 +469,14 @@ $(document).ready(function() {
         order: [[8, 'desc']], // Sort by date column
         pageLength: 25
     });
-    
+     // Reset refund form when modal is hidden
+    $('#refundModal').on('hidden.bs.modal', function() {
+        $('#refundForm')[0].reset();
+        currentPaymentId = null;
+    });
 
     
-    $('#refundForm').submit(function(e) {
+    $('#btnProcessRefund').click(function(e) {
         e.preventDefault();
         processRefund();
     });
@@ -606,6 +610,7 @@ function showRefundModal(paymentId) {
         },
         success: function(payment) {
             $('#refundPaymentId').val(payment.id);
+             $('#refundForm').data('original-amount', payment.amount);
             $('#originalAmount').val(formatCurrency(payment.amount));
             $('#refundAmount').val(payment.amount);
             $('#refundMethod').val('ORIGINAL_METHOD');
@@ -619,7 +624,8 @@ function showRefundModal(paymentId) {
 }
 
 function processRefund() {
-  const originalAmount = parseFloat($('#originalAmount').val().replace(/[^0-9.-]+/g, ''));
+    // Retrieve the raw original amount stored on the form
+    const originalAmount = parseFloat($('#refundForm').data('original-amount'));
     const refundAmount = parseFloat($('#refundAmount').val());
 
     if (isNaN(refundAmount) || refundAmount <= 0 || refundAmount > originalAmount) {
@@ -654,9 +660,9 @@ function processRefund() {
                 },
                 success: function(response) {
                     if (response.success) {
-                        Swal.fire('Success', 'Refund processed successfully!', 'success');
                         $('#refundModal').modal('hide');
-                        setTimeout(() => location.reload(), 1500);
+                       Swal.fire('Success', 'Refund processed successfully!', 'success')
+                            .then(() => location.reload());
                     } else {
                         Swal.fire('Error', response.message || 'Failed to process refund', 'error');
                     }

@@ -92,6 +92,12 @@
             padding-bottom: 10px;
             border-bottom: 2px solid #17a2b8;
         }
+        .feedback-item {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
     </style>
 
 <div class="container-fluid">
@@ -272,7 +278,43 @@
                                             </c:otherwise>
                                         </c:choose>
                                     </div>
-                                    
+                                    <!-- Customer Feedback -->
+                                    <h4 class="section-title">
+                                        <i class="fa fa-comments"></i> Customer Feedback
+                                    </h4>
+                                    <div class="customer-feedback">
+                                        <c:choose>
+                                            <c:when test="${not empty feedbacks}">
+                                                <c:forEach var="fb" items="${feedbacks}">
+                                                    <div class="feedback-item">
+                                                        <div class="row">
+                                                            <div class="col-md-2 text-center">
+                                                                <span class="badge bg-primary">#${fb.id}</span>
+                                                            </div>
+                                                            <div class="col-md-7">
+                                                                <div class="mb-1">
+                                                                    <c:forEach begin="1" end="5" var="i">
+                                                                        <i class="fas fa-star ${i <= fb.rating ? 'text-warning' : 'text-muted'}"></i>
+                                                                    </c:forEach>
+                                                                    <span class="ms-2 text-muted">${fb.rating}/5</span>
+                                                                </div>
+                                                                <div>${fb.comment}</div>
+                                                            </div>
+                                                            <div class="col-md-3 text-md-end text-muted">
+                                                                <fmt:formatDate value="${fb.createdAt}" pattern="dd/MM/yyyy"/>
+                                                                <br><small><fmt:formatDate value="${fb.createdAt}" pattern="HH:mm"/></small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </c:forEach>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div class="text-center text-muted py-3">
+                                                    <i class="fas fa-comment-slash fa-2x mb-2"></i><br>No feedback available
+                                                </div>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
                                     <hr class="my-4"/>
                                     
                                     <!-- Action Buttons -->

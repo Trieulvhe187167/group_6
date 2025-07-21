@@ -193,73 +193,9 @@
                                      style="z-index: 7; text-transform:capitalize; white-space: unset; color:#fff; font-family:rubik; font-size:18px; line-height:28px; font-weight:400;">
                                     A place that offers a classy accommodation experience with perfect service and sophisticated space.
                                 </div>
-
-
-                                <!--                             Buttons 
-                                                            <div class="tp-caption Newspaper-Button rev-btn" 
-                                                                 id="slide-100-layer-5" 
-                                                                 data-x="['center','center','center','center']" 
-                                                                 data-hoffset="['90','80','75','90']" 
-                                                                 data-y="['top','top','top','top']" 
-                                                                 data-voffset="['400','400','400','420']" 
-                                                                 data-width="none"
-                                                                 data-height="none"
-                                                                 data-whitespace="nowrap"
-                                                                 data-type="button" 
-                                                                 data-responsive_offset="on" 
-                                                                 data-responsive="off"
-                                                                 data-actions='[{"event":"click","action":"simplelink","url":"jsp/About.jsp","target":"_self"}]'
-                                                                 data-frames='[{"from":"y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;","mask":"x:0px;y:0px;","speed":1500,"to":"o:1;","delay":1000,"ease":"Power3.easeInOut"},{"delay":"wait","speed":1000,"to":"auto:auto;","mask":"x:0;y:0;","ease":"Power3.easeInOut"},{"frame":"hover","speed":"300","ease":"Power1.easeInOut","to":"o:1;rX:0;rY:0;rZ:0;z:0;","style":"c:rgba(0, 0, 0, 1.00);bg:rgba(255, 255, 255, 1.00);bc:rgba(255, 255, 255, 1.00);bw:1px 1px 1px 1px;"}]'
-                                                                 data-textAlign="['center','center','center','center']"
-                                                                 data-paddingtop="[12,12,12,12]"
-                                                                 data-paddingright="[30,35,35,15]"
-                                                                 data-paddingbottom="[    Buttons 
-                                                            <div class="tp-caption Newspaper-Button rev-btn" 
-                                                                 id="slide-100-layer-5" 
-                                                                 data-x="['center','center','center','center']" 
-                                                                 data-hoffset="['90','80','75','90']" 
-                                                                 data-y="['top','top','top','top']" 
-                                                                 data-voffset="['400','400','400','420']" 
-                                                                 data-width="none"
-                                                                 data-height="none"
-                                                                 data-whitespace="nowrap"
-                                                                 data-type="button" 
-                                                                 data-responsive_offset="on" 
-                                                                 data-responsive="off"
-                                                                 data-actions='[{"event":"click","action":"simplelink","url":"jsp/About.jsp","target":"_self"}]'
-                                                                 data-frames='[{"from":"y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;","mask":"x:0px;y:0px;","speed":1500,"to":"o:1;","delay":1000,"ease":"Power3.easeInOut"},{"delay":"wait","speed":1000,"to":"auto:auto;","mask":"x:0;y:0;","ease":"Power3.easeInOut"},{"frame":"hover","speed":"300","ease":"Power1.easeInOut","to":"o:1;rX:0;rY:0;rZ:0;z:0;","style":"c:rgba(0, 0, 0, 1.00);bg:rgba(255, 255, 255, 1.00);bc:rgba(255, 255, 255, 1.00);bw:1px 1px 1px 1px;"}]'
-                                                                 data-textAlign="['center','center','center','center']"
-                                                                 data-paddingtop="[1212,12,12,12]"
-                                                                 data-paddingleft="[30,35,35,15]"
-                                                                 style="z-index: 8; white-space: nowrap; outline:none;box-shadow:none;box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;cursor:pointer; background-color:var(--primary) !important; border:0; border-radius:30px; margin-right:5px;">
-                                                                READ MORE 
-                                                            </div>
-                                                            
-                                                            <div class="tp-caption Newspaper-Button rev-btn" 
-                                                                 id="slide-100-layer-6" 
-                                                                 data-x="['center','center','center','center']" 
-                                                                 data-hoffset="['-90','-80','-75','-90']" 
-                                                                 data-y="['top','top','top','top']" 
-                                                                 data-voffset="['400','400','400','420']" 
-                                                                 data-width="none"
-                                                                 data-height="none"
-                                                                 data-whitespace="nowrap"
-                                                                 data-type="button" 
-                                                                 data-responsive_offset="on" 
-                                                                 data-responsive="off"
-                                                                 data-actions='[{"event":"click","action":"simplelink","url":"SearchAvailableRoomsServlet","target":"_self"}]'
-                                                                 data-frames='[{"from":"y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;","mask":"x:0px;y:0px;","speed":1500,"to":"o:1;","delay":1000,"ease":"Power3.easeInOut"},{"delay":"wait","speed":1000,"to":"auto:auto;","mask":"x:0;y:0;","ease":"Power3.easeInOut"},{"frame":"hover","speed":"300","ease":"Power1.easeInOut","to":"o:1;rX:0;rY:0;rZ:0;z:0;","style":"c:rgba(0, 0, 0, 1.00);bg:rgba(255, 255, 255, 1.00);bc:rgba(255, 255, 255, 1.00);bw:1px 1px 1px 1px;"}]'
-                                                                 data-textAlign="['center','center','center','center']"
-                                                                 data-paddingtop="[12,12,12,12]"
-                                                                 data-paddingright="[30,35,35,15]"
-                                                                 data-paddingbottom="[12,12,12,12]"
-                                                                 data-paddingleft="[30,35,35,15]"
-                                                                 style="z-index: 8; white-space: nowrap; outline:none;box-shadow:none;box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;cursor:pointer; border-radius:30px;">
-                                                                BOOKING
-                                                            </div>-->
                             </li>
 
-                            SLIDE 2 (similar structure) 
+                          
                             <li data-index="rs-200" 
                                 data-transition="parallaxvertical" 
                                 data-slotamount="default" 
