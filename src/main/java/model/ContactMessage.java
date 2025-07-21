@@ -9,6 +9,7 @@ public class ContactMessage {
     private String phone;
     private String message;
     private Timestamp createdAt;
+    private Integer feedbackId;
 
     public ContactMessage() {}
 
@@ -58,5 +59,12 @@ public class ContactMessage {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Integer getFeedbackId() {
+        return feedbackId;
+    }
+    public void setFeedbackId(Integer feedbackId) {
+        this.feedbackId = feedbackId;
     }
 }
