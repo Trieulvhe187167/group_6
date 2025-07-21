@@ -2,21 +2,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<!-- Test Buttons -->
-<div class="row mb-3">
-    <div class="col-12">
-        <div class="alert alert-info">
-            <strong>Debug:</strong> 
-            <button class="btn btn-sm btn-primary test-view-btn" data-id="1" data-name="Test User" data-rating="5" data-comment="Test comment" data-created="2025-01-01" data-userid="1" data-reservationid="1">
-                Test View Button
-            </button>
-            <button class="btn btn-sm btn-success test-reply-btn" data-id="1" data-name="Test User" data-email="test@example.com">
-                Test Reply Button
-            </button>
-        </div>
-    </div>
-</div>
-
 <!-- Statistics Cards -->
 <div class="row mb-4">
     <div class="col-md-3">
@@ -111,7 +96,6 @@
                             <option value="">All Status</option>
                             <option value="new">New</option>
                             <option value="replied">Replied</option>
-                            <option value="resolved">Resolved</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -185,9 +169,14 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="feedback-comment">
-                                            <strong>Feedback:</strong> ${feedback.comment}
-                                        </div>
+                                        <c:choose>
+                                            <c:when test="${feedback.disabled}">
+                                                <span class="text-muted fst-italic">This feedback has been hidden by admin.</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                ${feedback.comment}
+                                            </c:otherwise>
+                                        </c:choose>
                                     </td>
                                     <td>
                                         <div class="text-muted">
@@ -205,7 +194,8 @@
                                                     data-comment="${feedback.comment}"
                                                     data-created="${feedback.createdAt}"
                                                     data-userid="${feedback.userId}"
-                                                    data-reservationid="${feedback.reservationId}">
+                                                    data-reservationid="${feedback.reservationId}"
+                                                    data-disabled="${feedback.disabled}">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                             <button class="btn btn-sm btn-success reply-btn"
@@ -237,6 +227,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <c:if test="${feedback.disabled}">
+                    <div class="alert alert-warning">
+                        This feedback has been hidden by admin and cannot be viewed in detail.
+                    </div>
+                </c:if>
                 <div class="row">
                     <div class="col-md-8">
                         <div class="mb-3">
@@ -352,6 +347,7 @@
                     <input type="hidden" id="contactFormFeedbackId" name="feedbackId">
                     <input type="hidden" id="contactFormCustomerEmail" name="customerEmail">
                     <input type="hidden" id="contactFormCustomerName" name="customerName">
+                    <input type="hidden" name="action" value="sendMessage">
                     
                     <div class="mb-3">
                         <label for="contactSubject" class="form-label">Subject *</label>
@@ -459,24 +455,6 @@ function initializeFeedbackSystem() {
     
     console.log('jQuery is available, using jQuery');
     
-    // Initialize DataTable
-    $('#feedbackTable').DataTable({
-        responsive: true,
-        order: [[0, 'desc']],
-        pageLength: 10,
-        language: {
-            search: "Search feedbacks:",
-            lengthMenu: "Show _MENU_ feedbacks per page",
-            info: "Showing _START_ to _END_ of _TOTAL_ feedbacks",
-            paginate: {
-                first: "First",
-                last: "Last",
-                next: "Next",
-                previous: "Previous"
-            }
-        }
-    });
-
     // Set filter values from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const ratingFilter = urlParams.get('rating');
@@ -518,10 +496,11 @@ function initializeFeedbackSystem() {
         const created = btn.data('created');
         const userid = btn.data('userid');
         const reservationid = btn.data('reservationid');
+        const disabled = btn.data('disabled');
         
-        console.log('Data:', {id, name, rating, comment, created, userid, reservationid});
+        console.log('Data:', {id, name, rating, comment, created, userid, reservationid, disabled});
         
-        viewFeedbackDetail(id, name, rating, comment, created, userid, reservationid);
+        viewFeedbackDetail(id, name, rating, comment, created, userid, reservationid, disabled);
     });
     
     $(document).on('click', '.reply-btn', function(e) {
@@ -588,10 +567,11 @@ function initializeWithVanillaJS() {
             const created = btn.dataset.created;
             const userid = btn.dataset.userid;
             const reservationid = btn.dataset.reservationid;
+            const disabled = btn.dataset.disabled;
             
-            console.log('Data:', {id, name, rating, comment, created, userid, reservationid});
+            console.log('Data:', {id, name, rating, comment, created, userid, reservationid, disabled});
             
-            viewFeedbackDetail(id, name, rating, comment, created, userid, reservationid);
+            viewFeedbackDetail(id, name, rating, comment, created, userid, reservationid, disabled);
         }
         
         if (e.target.classList.contains('reply-btn')) {
@@ -645,7 +625,7 @@ function initializeWithVanillaJS() {
 }
 
 // View feedback detail
-function viewFeedbackDetail(id, customerName, rating, comment, createdAt, userId, reservationId) {
+function viewFeedbackDetail(id, customerName, rating, comment, createdAt, userId, reservationId, disabled) {
     currentFeedbackId = id;
     currentCustomerName = customerName;
     
@@ -653,7 +633,11 @@ function viewFeedbackDetail(id, customerName, rating, comment, createdAt, userId
     document.getElementById('modalCustomerName').textContent = customerName;
     document.getElementById('modalUserId').textContent = userId;
     document.getElementById('modalReservationId').textContent = reservationId;
-    document.getElementById('modalComment').textContent = comment;
+    if (disabled === true || disabled === 'true') {
+        document.getElementById('modalComment').textContent = 'This feedback has been hidden by admin and cannot be viewed in detail.';
+    } else {
+        document.getElementById('modalComment').textContent = comment;
+    }
     document.getElementById('modalRatingBadge').textContent = rating + '/5 Stars';
     document.getElementById('modalRatingNumber').textContent = rating;
     
@@ -814,8 +798,13 @@ function previewContactMessage() {
 }
 
 function sendContactMessage() {
-    const formData = new FormData(document.getElementById('contactForm'));
-    
+    const form = document.getElementById('contactForm');
+    const formData = new FormData(form);
+    // Debug: Log toàn bộ dữ liệu form trước khi gửi
+    console.log('=== Dữ liệu gửi đi ===');
+    for (let [key, value] of formData.entries()) {
+        console.log(key + ':', value);
+    }
     fetch('${pageContext.request.contextPath}/receptionist/feedback', {
         method: 'POST',
         body: formData
@@ -823,8 +812,10 @@ function sendContactMessage() {
     .then(response => {
         if (response.ok) {
             alert('Message sent successfully!');
-            bootstrap.Modal.getInstance(document.getElementById('contactFormModal')).hide();
-            bootstrap.Modal.getInstance(document.getElementById('previewModal')).hide();
+            const contactModal = bootstrap.Modal.getInstance(document.getElementById('contactFormModal'));
+            if (contactModal) contactModal.hide();
+            const previewModal = bootstrap.Modal.getInstance(document.getElementById('previewModal'));
+            if (previewModal) previewModal.hide();
         } else {
             alert('Failed to send message. Please try again.');
         }
@@ -872,5 +863,39 @@ function exportFeedback() {
 
 function printFeedback() {
     window.print();
+}
+</script> 
+
+<!-- Đặt đoạn này ở cuối file, sau khi đã import xong DataTables JS -->
+<script>
+$(document).ready(function() {
+    initializeAdminFeedbackSystem();
+});
+
+function initializeAdminFeedbackSystem() {
+    if (typeof $ === 'undefined') {
+        console.error('jQuery is not loaded!');
+        return;
+    }
+    if (!$.fn.DataTable) {
+        console.error('DataTables plugin is not loaded!');
+        return;
+    }
+    $('#feedbackTable').DataTable({
+        responsive: true,
+        order: [[0, 'desc']],
+        pageLength: 10,
+        language: {
+            search: "Search feedbacks:",
+            lengthMenu: "Show _MENU_ feedbacks per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ feedbacks",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        }
+    });
 }
 </script> 
