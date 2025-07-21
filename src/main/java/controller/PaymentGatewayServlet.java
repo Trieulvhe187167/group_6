@@ -138,6 +138,9 @@ public class PaymentGatewayServlet extends HttpServlet {
             case "BANK_TRANSFER":
                 page = "/jsp/payment/bank-transfer.jsp";
                 break;
+            case "CASH":
+                page = "/jsp/public/payment-general.jsp";
+                break;
             case "VNPay":
                 page = "/jsp/payment/vnpay.jsp";
                 break;
@@ -146,7 +149,7 @@ public class PaymentGatewayServlet extends HttpServlet {
                 break;
             default:
                 System.out.println("Unknown method: " + method + ", using general payment page");
-                page = "/jsp/payment/payment-general.jsp";
+                page = "/jsp/public/payment-general.jsp";
         }
 
         System.out.println("Selected page: " + page);
@@ -226,7 +229,7 @@ public class PaymentGatewayServlet extends HttpServlet {
 
             if ("BANK_TRANSFER".equals(method)) {
                 String transactionId = generateTransactionId(method);
-                 for (int i = 0; i < reservations.size(); i++) {
+                   for (int i = 0; i < reservations.size(); i++) {
                     Reservation res = reservations.get(i);
                     double perReservationDeposit = depositMap.get(res.getId());
                     int payId = (i < paymentIds.size()) ? paymentIds.get(i) : paymentIds.get(0);
@@ -240,7 +243,8 @@ public class PaymentGatewayServlet extends HttpServlet {
                         paymentDAO.updatePayment(payment);
                     }
 
-                    reservationDAO.updateDepositStatus(res.getId(), "PENDING");
+                       paymentDAO.updateReservationDeposit(res.getId(), perReservationDeposit, "PENDING");
+
 
                     Activity activity = new Activity();
                     activity.setType("DEPOSIT_PAYMENT");
@@ -258,6 +262,42 @@ public class PaymentGatewayServlet extends HttpServlet {
 
                 session.setAttribute("successMessage",
                         "Thank you for your payment, we will check and send you a notification via email");
+                 if (reservations.size() > 1) {
+                    response.sendRedirect("BookingConfirmation?reservationIds=" + reservationIdsStr);
+                } else {
+                    response.sendRedirect("BookingConfirmation?reservationId=" + reservations.get(0).getId());
+                }
+            } else if ("CASH".equals(method)) {
+                for (int i = 0; i < reservations.size(); i++) {
+                    Reservation res = reservations.get(i);
+                    int payId = (i < paymentIds.size()) ? paymentIds.get(i) : paymentIds.get(0);
+
+                    // keep payment pending until guest pays at hotel
+                    Payment payment = paymentDAO.getPaymentById(payId);
+                    if (payment != null) {
+                        payment.setStatus("PENDING");
+                        payment.setPaymentType("DEPOSIT");
+                        paymentDAO.updatePayment(payment);
+                    }
+
+                    reservationDAO.updateDepositStatus(res.getId(), "PENDING");
+                    reservationDAO.updateReservationStatus(res.getId(), "CONFIRMED");
+
+                    Activity activity = new Activity();
+                    activity.setType("DEPOSIT_PAYMENT");
+                    activity.setReservationId(res.getId());
+                    activity.setUserId(currentUser != null ? currentUser.getId() : res.getUserId());
+                    activity.setDescription("Cash payment pending for reservation #" + res.getId());
+                    activity.setAmount(0.0);
+                    activity.setIpAddress(request.getRemoteAddr());
+                    activityDAO.logActivity(activity);
+                }
+
+                session.removeAttribute("pendingBookingData");
+                session.removeAttribute("pendingOTP");
+
+                session.setAttribute("successMessage",
+                        "Your booking has been confirmed. Please pay at the hotel reception.");
 
                 if (reservations.size() > 1) {
                     response.sendRedirect("BookingConfirmation?reservationIds=" + reservationIdsStr);
