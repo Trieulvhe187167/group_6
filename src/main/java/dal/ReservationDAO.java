@@ -87,11 +87,10 @@ public class ReservationDAO {
                           JOIN Users u ON r.UserId = u.Id
                           WHERE r.UserId = ?
                             AND r.Status = 'CONFIRMED'
-                                     AND r.CheckIn <= CAST(GETDATE() AS DATE)
-                                                                          AND r.CheckOut >= CAST(GETDATE() AS DATE)
                                      
         """;
-                       
+//                         AND r.CheckIn <= CAST(GETDATE() AS DATE)
+//                                        AND r.CheckOut >= CAST(GETDATE() AS DATE)
         return executeBookingQuery(sql, userId);
     }
 
@@ -103,11 +102,21 @@ public class ReservationDAO {
                        rt.Name AS roomTypeName, rt.BasePrice,
                        u.Phone AS CustomerPhone,
                        u.Email AS CustomerEmail,
-                       u.FullName AS CustomerName
+                       u.FullName AS CustomerName,
+                       f.Id AS FeedbackId, f.Rating AS FeedbackRating, f.Comment AS FeedbackComment
                 FROM Reservations r
                 JOIN Rooms room ON r.RoomId = room.Id
                 JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
                 JOIN Users u ON r.UserId = u.Id
+                LEFT JOIN (
+                    SELECT f1.*
+                    FROM Feedback f1
+                    INNER JOIN (
+                        SELECT ReservationId, MAX(Id) AS MaxId
+                        FROM Feedback
+                        GROUP BY ReservationId
+                    ) f2 ON f1.ReservationId = f2.ReservationId AND f1.Id = f2.MaxId
+                ) f ON r.Id = f.ReservationId
                 WHERE r.UserId = ?
                   AND (r.Status IN ('COMPLETED', 'CANCELLED') 
                        OR (r.Status = 'CHECKIN' AND r.CheckOut < CAST(GETDATE() AS DATE)))
@@ -140,7 +149,20 @@ public class ReservationDAO {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                list.add(mapResultSetToReservation(rs));
+                Reservation booking = mapResultSetToReservation(rs);
+                int rating = 0;
+                String comment = "";
+                try {
+                    rating = rs.getInt("FeedbackRating");
+                    if (rs.wasNull()) rating = 0;
+                } catch (Exception ignore) {}
+                try {
+                    comment = rs.getString("FeedbackComment");
+                    if (comment == null) comment = "";
+                } catch (Exception ignore) {}
+                booking.setRating(rating);
+                booking.setComment(comment);
+                list.add(booking);
             }
 
         } catch (Exception e) {
@@ -1127,7 +1149,7 @@ public class ReservationDAO {
     FROM Reservations r
     LEFT JOIN Users u ON r.UserId = u.Id
     LEFT JOIN Rooms room ON r.RoomId = room.Id
-    LEFT JOIN RoomTypes rt ON ISNULL(r.RoomTypeId, room.RoomTypeId) = rt.Id
+    LEFT JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
     OUTER APPLY (
         SELECT TOP 1 Status
         FROM Payments
@@ -1330,6 +1352,7 @@ for (int i = 1; i <= columnCount; i++) {
     reservation.setUserFullName(custName);
     reservation.setCustomerName(custName);
     reservation.setRoomNumber(rs.getString("RoomNumber"));
+    reservation.setRoomTypeName(rs.getString("RoomTypeName"));
  
     // Các thông tin thêm nếu có
     try {
@@ -1339,6 +1362,34 @@ for (int i = 1; i <= columnCount; i++) {
     try {
         reservation.setPaymentStatus(rs.getString("PaymentStatus"));
     } catch (SQLException ignore) {}
+
+    // Sau khi set các trường chính, thêm:
+    try {
+        int rating = 0;
+        String comment = "";
+        ResultSetMetaData meta = rs.getMetaData();
+        int colCount = meta.getColumnCount();
+        boolean hasRating = false, hasComment = false;
+        for (int i = 1; i <= colCount; i++) {
+            String col = meta.getColumnLabel(i);
+            if ("Rating".equalsIgnoreCase(col)) hasRating = true;
+            if ("Comment".equalsIgnoreCase(col)) hasComment = true;
+        }
+        if (hasRating) {
+            rating = rs.getInt("Rating");
+            if (rs.wasNull()) rating = 0;
+        }
+        if (hasComment) {
+            comment = rs.getString("Comment");
+            if (comment == null) comment = "";
+        }
+        reservation.setRating(rating);
+        reservation.setComment(comment);
+    } catch (Exception ignore) {}
+
+    try {
+        reservation.setFeedbackId(rs.getObject("FeedbackId") != null ? rs.getInt("FeedbackId") : null);
+    } catch (Exception ignore) {}
 
     return reservation;
 }
@@ -1398,7 +1449,7 @@ for (int i = 1; i <= columnCount; i++) {
         FROM Reservations r
         LEFT JOIN Users u ON r.UserId = u.Id
         LEFT JOIN Rooms room ON r.RoomId = room.Id
-        LEFT JOIN RoomTypes rt ON r.RoomTypeId = rt.Id
+        LEFT JOIN RoomTypes rt ON room.RoomTypeId = rt.Id
         LEFT JOIN Payments p ON r.Id = p.ReservationId
         WHERE 1=1
     """);
@@ -1598,13 +1649,21 @@ public List<Reservation> getReservationsByUserIdWithFeedbackFiltered(int userId,
     StringBuilder sql = new StringBuilder("""
         SELECT r.*, u.FullName as CustomerName, u.Email as CustomerEmail, u.Phone as CustomerPhone, 
                rm.RoomNumber, rt.Name as RoomTypeName, cb.FullName as CreatedByName, 
-               f.Rating, f.Comment 
+               f.Rating AS FeedbackRating, f.Comment AS FeedbackComment 
         FROM Reservations r 
         INNER JOIN Users u ON r.UserId = u.Id 
         INNER JOIN Rooms rm ON r.RoomId = rm.Id 
         INNER JOIN RoomTypes rt ON rm.RoomTypeId = rt.Id 
         LEFT JOIN Users cb ON r.CreatedBy = cb.Id 
-        LEFT JOIN Feedback f ON r.Id = f.ReservationId 
+        LEFT JOIN (
+            SELECT f1.*
+            FROM Feedback f1
+            INNER JOIN (
+                SELECT ReservationId, MAX(Id) AS MaxId
+                FROM Feedback
+                GROUP BY ReservationId
+            ) f2 ON f1.ReservationId = f2.ReservationId AND f1.Id = f2.MaxId
+        ) f ON r.Id = f.ReservationId
         WHERE r.UserId = ? AND r.Status = 'COMPLETED'
     """);
 
@@ -1666,21 +1725,20 @@ public List<Reservation> getReservationsByUserIdWithFeedbackFiltered(int userId,
         
         while (rs.next()) {
             Reservation reservation = mapResultSetToReservation(rs);
-            // Set rating and comment from feedback table - handle null values
-            int rating = rs.getInt("Rating");
-            String comment = rs.getString("Comment");
-            
-            // Handle null values properly
-            if (rs.wasNull()) {
-                reservation.setRating(0);
-                reservation.setComment("");
-            } else {
-                reservation.setRating(rating);
-                reservation.setComment(comment != null ? comment : "");
-            }
-            
+            int rating = 0;
+            String comment = "";
+            try {
+                rating = rs.getInt("FeedbackRating");
+                if (rs.wasNull()) rating = 0;
+            } catch (Exception ignore) {}
+            try {
+                comment = rs.getString("FeedbackComment");
+                if (comment == null) comment = "";
+            } catch (Exception ignore) {}
+            reservation.setRating(rating);
+            reservation.setComment(comment);
+            System.out.println("[DEBUG] ReservationId: " + reservation.getId() + ", Rating: " + reservation.getRating() + ", Comment: " + reservation.getComment());
             reservations.add(reservation);
-            System.out.println("=== DAO: Added reservation " + reservation.getId() + " with rating " + reservation.getRating());
         }
         
         System.out.println("=== DAO: Found " + reservations.size() + " reservations");
@@ -1692,30 +1750,7 @@ public List<Reservation> getReservationsByUserIdWithFeedbackFiltered(int userId,
     return reservations;
 }
 
-    public List<ReservationSummary> getActiveReservations() {
-        List<ReservationSummary> list = new ArrayList<>();
-        String sql = "SELECT r.Id, rm.RoomNumber, u.FullName AS CustomerName "
-                + "FROM Reservations r "
-                + "INNER JOIN Rooms rm ON r.RoomId = rm.Id "
-                + "INNER JOIN Users u ON r.UserId = u.Id "
-                + "WHERE r.Status = 'CONFIRMED' "
-                + "AND r.CheckIn <= CAST(GETDATE() AS DATE) "
-                + "AND r.CheckOut > CAST(GETDATE() AS DATE) "
-                + "ORDER BY rm.RoomNumber";
+  
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                ReservationSummary res = new ReservationSummary();
-                res.setId(rs.getInt("Id"));
-                res.setRoomNumber(rs.getString("RoomNumber"));
-                res.setCustomerName(rs.getString("CustomerName"));
-                list.add(res);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
    
 }
