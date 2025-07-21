@@ -22,6 +22,7 @@ public class FeedbackDAO {
                 f.setRating(rs.getInt("Rating"));
                 f.setComment(rs.getString("Comment"));
                 f.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                f.setDisabled(rs.getBoolean("Disabled"));
                 list.add(f);
             }
         } catch (SQLException e) {
@@ -34,7 +35,7 @@ public class FeedbackDAO {
      */
     public List<Feedback> getFeedbacksByRoomType(int roomTypeId) {
         List<Feedback> list = new ArrayList<>();
-        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt, u.FullName " +
+        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt, f.Disabled, u.FullName " +
                      "FROM Feedback f " +
                      "JOIN Reservations r ON f.ReservationId = r.Id " +
                      "LEFT JOIN Rooms rm ON r.RoomId = rm.Id " +
@@ -57,6 +58,7 @@ public class FeedbackDAO {
                     f.setRating(rs.getInt("Rating"));
                     f.setComment(rs.getString("Comment"));
                     f.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                    f.setDisabled(rs.getBoolean("Disabled"));
                     f.setUserFullName(rs.getString("FullName"));
                     list.add(f);
                 }
@@ -134,7 +136,7 @@ public class FeedbackDAO {
      * Lấy tất cả feedback của một user
      */
     public List<Feedback> getFeedbackByUserId(int userId) {
-        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt " +
+        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt, f.Disabled " +
                     "FROM feedback f WHERE f.UserId = ? ORDER BY f.CreatedAt DESC";
         
         List<Feedback> feedbacks = new ArrayList<>();
@@ -153,6 +155,7 @@ public class FeedbackDAO {
                 feedback.setRating(rs.getInt("Rating"));
                 feedback.setComment(rs.getString("Comment"));
                 feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                feedback.setDisabled(rs.getBoolean("Disabled"));
                 
                 feedbacks.add(feedback);
             }
@@ -169,7 +172,7 @@ public class FeedbackDAO {
      * Lấy feedback theo reservation ID
      */
     public Feedback getFeedbackByReservationId(int reservationId) {
-        String sql = "SELECT Id, ReservationId, UserId, Rating, Comment, CreatedAt " +
+        String sql = "SELECT Id, ReservationId, UserId, Rating, Comment, CreatedAt, Disabled " +
                     "FROM feedback WHERE ReservationId = ?";
         
         try (Connection conn = DBContext.getConnection();
@@ -186,6 +189,7 @@ public class FeedbackDAO {
                 feedback.setRating(rs.getInt("Rating"));
                 feedback.setComment(rs.getString("Comment"));
                 feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                feedback.setDisabled(rs.getBoolean("Disabled"));
                 
                 return feedback;
             }
@@ -202,7 +206,7 @@ public class FeedbackDAO {
      * Lấy feedback theo ID
      */
     public Feedback getFeedbackById(int id) {
-        String sql = "SELECT Id, ReservationId, UserId, Rating, Comment, CreatedAt " +
+        String sql = "SELECT Id, ReservationId, UserId, Rating, Comment, CreatedAt, Disabled " +
                     "FROM feedback WHERE Id = ?";
         
         try (Connection conn = DBContext.getConnection();
@@ -219,6 +223,7 @@ public class FeedbackDAO {
                 feedback.setRating(rs.getInt("Rating"));
                 feedback.setComment(rs.getString("Comment"));
                 feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                feedback.setDisabled(rs.getBoolean("Disabled"));
                 
                 return feedback;
             }
@@ -235,7 +240,7 @@ public class FeedbackDAO {
      * Lấy tất cả feedback (cho admin)
      */
     public List<Feedback> getAllFeedback() {
-        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt " +
+        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt, f.Disabled " +
                     "FROM feedback f ORDER BY f.CreatedAt DESC";
         
         List<Feedback> feedbacks = new ArrayList<>();
@@ -253,6 +258,7 @@ public class FeedbackDAO {
                 feedback.setRating(rs.getInt("Rating"));
                 feedback.setComment(rs.getString("Comment"));
                 feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                feedback.setDisabled(rs.getBoolean("Disabled"));
                 
                 feedbacks.add(feedback);
             }
@@ -338,7 +344,7 @@ public class FeedbackDAO {
      * Lấy feedback với thông tin chi tiết (join với reservation và user)
      */
     public List<Feedback> getFeedbackWithDetails() {
-        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt, " +
+        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt, f.Disabled, " +
                     "u.Username, u.Email, r.CheckInDate, r.CheckOutDate " +
                     "FROM feedback f " +
                     "JOIN users u ON f.UserId = u.Id " +
@@ -360,6 +366,7 @@ public class FeedbackDAO {
                 feedback.setRating(rs.getInt("Rating"));
                 feedback.setComment(rs.getString("Comment"));
                 feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                feedback.setDisabled(rs.getBoolean("Disabled"));
                 
                 // Thêm thông tin user và reservation nếu cần
                 // feedback.setUsername(rs.getString("Username"));
@@ -426,7 +433,7 @@ public class FeedbackDAO {
      * Lấy feedback theo rating
      */
     public List<Feedback> getFeedbackByRating(int rating) {
-        String sql = "SELECT Id, ReservationId, UserId, Rating, Comment, CreatedAt " +
+        String sql = "SELECT Id, ReservationId, UserId, Rating, Comment, CreatedAt, Disabled " +
                     "FROM feedback WHERE Rating = ? ORDER BY CreatedAt DESC";
         
         List<Feedback> feedbacks = new ArrayList<>();
@@ -445,6 +452,7 @@ public class FeedbackDAO {
                 feedback.setRating(rs.getInt("Rating"));
                 feedback.setComment(rs.getString("Comment"));
                 feedback.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                feedback.setDisabled(rs.getBoolean("Disabled"));
                 
                 feedbacks.add(feedback);
             }
@@ -463,7 +471,7 @@ public class FeedbackDAO {
     public List<Feedback> getAllFeedbacksWithDetails() {
         List<Feedback> list = new ArrayList<>();
         // Get user email as well
-        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt, " +
+        String sql = "SELECT f.Id, f.ReservationId, f.UserId, f.Rating, f.Comment, f.CreatedAt, f.Disabled, " +
                      "u.FullName, u.Email " +
                      "FROM Feedback f " +
                      "JOIN Users u ON f.UserId = u.Id " +
@@ -483,8 +491,9 @@ public class FeedbackDAO {
                 f.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 f.setUserFullName(rs.getString("FullName"));
                 f.setUserEmail(rs.getString("Email"));
+                f.setDisabled(rs.getBoolean("Disabled"));
                 // Set disabled to false by default since we don't have this column
-                f.setDisabled(false);
+                // f.setDisabled(false); // This line is now redundant as it's set in the SELECT
                 list.add(f);
             }
         } catch (SQLException e) {
@@ -494,5 +503,16 @@ public class FeedbackDAO {
         return list;
     }
     
+    public void setFeedbackDisabled(int feedbackId, boolean disabled) {
+        String sql = "UPDATE Feedback SET Disabled = ? WHERE Id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, disabled);
+            ps.setInt(2, feedbackId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
   
 }
