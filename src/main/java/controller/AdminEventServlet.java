@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.File;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.List;
@@ -117,24 +118,24 @@ public class AdminEventServlet extends HttpServlet {
             request.getSession().setAttribute("error", "An error occurred: " + e.getMessage());
             response.sendRedirect("events");
         }
-        String startDateStr = request.getParameter("startDate");
-        String endDateStr = request.getParameter("endDate");
+        String startAtStr = request.getParameter("startAt");
+        String endAtStr = request.getParameter("endAt");
 
-        LocalDate startDate = LocalDate.parse(startDateStr);
-        LocalDate endDate = LocalDate.parse(endDateStr);
+        if (startAtStr != null && endAtStr != null) {
+            LocalDateTime startAt = LocalDateTime.parse(startAtStr);
+            LocalDateTime endAt = LocalDateTime.parse(endAtStr);
+            LocalDateTime now = LocalDateTime.now();
 
-        LocalDate today = LocalDate.now();
-
-        if (startDate.isBefore(today) || endDate.isBefore(today)) {
-            request.setAttribute("error", "Ngày bắt đầu và kết thúc không được ở quá khứ.");
-            request.getRequestDispatcher("admin-event-form.jsp").forward(request, response);
-            return;
-        }
-
-        if (endDate.isBefore(startDate)) {
-            request.setAttribute("error", "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
-            request.getRequestDispatcher("admin-event-form.jsp").forward(request, response);
-            return;
+            if (startAt.isBefore(now) || endAt.isBefore(now)) {
+                request.setAttribute("error", "Ngày bắt đầu và kết thúc không được ở quá khứ.");
+                request.getRequestDispatcher("admin-event-form.jsp").forward(request, response);
+                return;
+            }
+            if (endAt.isBefore(startAt)) {
+                request.setAttribute("error", "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
+                request.getRequestDispatcher("admin-event-form.jsp").forward(request, response);
+                return;
+            }
         }
     }
 

@@ -208,6 +208,10 @@ public void setRating(int rating) {
         this.inspectionStatus = inspectionStatus;
     }
     
+      public String getInspectionStatus() {
+        return inspectionStatus;
+    }
+    
     public double getAdditionalCharges() {
         return additionalCharges;
     }

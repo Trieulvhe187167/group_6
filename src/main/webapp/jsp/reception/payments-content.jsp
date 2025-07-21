@@ -463,11 +463,11 @@
 let currentPaymentId = null;
 let selectedReservation = null;
 
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Initialize DataTable
     $('#paymentsTable').DataTable({
         order: [[8, 'desc']], // Sort by date column
-        pageLength: 25
+       pageLength: 10
     });
      // Reset refund form when modal is hidden
     $('#refundModal').on('hidden.bs.modal', function() {
@@ -486,6 +486,10 @@ $(document).ready(function() {
         filterPayments();
     });
     
+      // Auto-filter when any filter field changes
+    $('#statusFilter, #paymentTypeFilter, #methodFilter, #fromDate, #toDate').change(function() {
+        filterPayments();
+    });
     // Payment type change
     $('#paymentType').change(function() {
         calculatePaymentAmount();
