@@ -127,12 +127,12 @@ public class AdminEventServlet extends HttpServlet {
             LocalDateTime now = LocalDateTime.now();
 
             if (startAt.isBefore(now) || endAt.isBefore(now)) {
-                request.setAttribute("error", "Ngày bắt đầu và kết thúc không được ở quá khứ.");
+                request.setAttribute("error", "Start and end dates cannot be in the past.");
                 request.getRequestDispatcher("admin-event-form.jsp").forward(request, response);
                 return;
             }
             if (endAt.isBefore(startAt)) {
-                request.setAttribute("error", "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
+                request.setAttribute("error", "The end date must be after or equal to the start date.");
                 request.getRequestDispatcher("admin-event-form.jsp").forward(request, response);
                 return;
             }
