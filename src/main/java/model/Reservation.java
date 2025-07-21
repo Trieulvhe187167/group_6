@@ -49,6 +49,8 @@ private String depositStatus; // PENDING, PAID, REFUNDED
 // Thêm field basePrice
 private double basePrice;
 
+private Integer feedbackId;
+
     // Constructors
     public Reservation() {}
     public int getRating() {
@@ -488,6 +490,13 @@ public void setBasePrice(double basePrice) {
     }
     public void setComment(String comment) {
         this.comment = comment;
+    }
+    
+    public Integer getFeedbackId() {
+        return feedbackId;
+    }
+    public void setFeedbackId(Integer feedbackId) {
+        this.feedbackId = feedbackId;
     }
     
     @Override
