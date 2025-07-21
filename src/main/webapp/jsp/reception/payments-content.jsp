@@ -4,9 +4,7 @@
 
 <!-- Add SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- jQuery & Bootstrap (needed before inline scripts) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <style>
 .stat-card {
     background: white;
@@ -252,7 +250,7 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td>
+                                <td data-order="${payment.createdAt.time}">
                                     <fmt:formatDate value="${payment.createdAt}" pattern="dd/MM/yyyy"/>
                                     <br><small class="text-muted">
                                         <fmt:formatDate value="${payment.createdAt}" pattern="HH:mm"/>
@@ -275,11 +273,11 @@
                                             </button>
                                         </c:if>
                                         <c:if test="${payment.status eq 'PENDING'}">
-                                            <button class="btn btn-success" onclick="confirmPayment(${payment.id})" 
+                                        <button type="button" class="btn btn-success" onclick="confirmPayment(${payment.id})"
                                                     title="Confirm Payment">
                                                 <i class="fas fa-check"></i>
                                             </button>
-                                            <button class="btn btn-danger" onclick="cancelPayment(${payment.id})" 
+                                            <button type="button" class="btn btn-danger" onclick="cancelPayment(${payment.id})"
                                                     title="Cancel Payment">
                                                 <i class="fas fa-times"></i>
                                             </button>
@@ -301,7 +299,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Record New Payment</h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -395,7 +393,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="btnSubmitPayment" disabled>
                         <i class="fas fa-check"></i> Record Payment
                     </button>
@@ -411,7 +409,7 @@
         <div class="modal-content">
             <div class="modal-header bg-warning">
                 <h5 class="modal-title">Process Refund</h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -451,8 +449,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btnProcessRefund" class="btn btn-warning">
                         <i class="fas fa-undo"></i> Process Refund
                     </button>
                 </div>
@@ -478,7 +476,7 @@ $(document).ready(function() {
     });
 
     
-    $('#refundForm').submit(function(e) {
+    $('#btnProcessRefund').click(function(e) {
         e.preventDefault();
         processRefund();
     });
@@ -662,9 +660,9 @@ function processRefund() {
                 },
                 success: function(response) {
                     if (response.success) {
-                        Swal.fire('Success', 'Refund processed successfully!', 'success');
                         $('#refundModal').modal('hide');
-                        setTimeout(() => location.reload(), 1500);
+                       Swal.fire('Success', 'Refund processed successfully!', 'success')
+                            .then(() => location.reload());
                     } else {
                         Swal.fire('Error', response.message || 'Failed to process refund', 'error');
                     }

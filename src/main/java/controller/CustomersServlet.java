@@ -2,6 +2,7 @@ package controller;
 
 import dal.CustomerDAO;
 import model.*;
+import dal.FeedbackDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -13,15 +14,19 @@ import com.google.gson.Gson;
 public class CustomersServlet extends HttpServlet {
     
     private CustomerDAO customerDAO;
-    
+    private FeedbackDAO feedbackDAO;
+
     @Override
     public void init() throws ServletException {
         super.init();
         try {
             customerDAO = new CustomerDAO();
+            feedbackDAO = new FeedbackDAO();
+          
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ServletException("Failed to initialize CustomerDAO", e);
+            throw new ServletException("Failed to initialize DAOs", e);
+
         }
     }
     
@@ -163,6 +168,10 @@ public class CustomersServlet extends HttpServlet {
             
             // Get booking history
             customer.setBookingHistory(customerDAO.getCustomerBookingHistory(customerId));
+            
+               // Get feedbacks from this customer
+            List<Feedback> feedbacks = feedbackDAO.getFeedbacksByUser(customerId);
+            request.setAttribute("feedbacks", feedbacks);
             
             request.setAttribute("customer", customer);
             request.setAttribute("isReceptionist", true);

@@ -1103,7 +1103,7 @@ public class ReservationDAO {
     // Check if room type has availability for date range
     public boolean isRoomTypeAvailable(int roomTypeId, Date checkIn, Date checkOut) {
         String sql = "SELECT COUNT(*) as AvailableCount FROM Rooms r " +
-                    "WHERE r.RoomTypeId = ? AND r.Status = 'AVAILABLE' " +
+                  "WHERE r.RoomTypeId = ? AND r.Status NOT IN ('MAINTENANCE', 'DISABLED', 'HELD') " +
                     "AND r.Id NOT IN ( " +
                     "  SELECT DISTINCT res.RoomId FROM Reservations res " +
                     "  WHERE res.RoomId IS NOT NULL " +

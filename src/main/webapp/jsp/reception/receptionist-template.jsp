@@ -334,6 +334,9 @@
         <!-- Main Content -->
         <main class="main-content">
             <c:choose>
+                 <c:when test="${not empty contentPage}">
+                    <jsp:include page="${contentPage}" />
+                </c:when>
                 <c:when test="${activePage == 'checkin'}">
                     <jsp:include page="check-in-content.jsp" />
                 </c:when>
@@ -370,9 +373,7 @@
                 <c:when test="${activePage == 'feedback'}">
                     <jsp:include page="feedback-content.jsp" />
                 </c:when>
-                <c:when test="${not empty contentPage}">
-                    <jsp:include page="${contentPage}" />
-                </c:when>
+
                 <c:otherwise>
                     <div class="alert alert-warning">No content to display</div>
                 </c:otherwise>
