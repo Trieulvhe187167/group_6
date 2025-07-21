@@ -1,8 +1,26 @@
+<%--
+    File này chỉ chứa phần nội dung chính của feedback admin.
+    KHÔNG include template/layout ở đây, KHÔNG có <html>, <head>, <body>.
+    Để hiển thị, hãy include qua layout/template chuẩn:
+    <c:set var="contentPage" value="admin/admin-feedback-content.jsp" />
+    <jsp:include page="admin-template.jsp" />
+--%>
+
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<!-- Biến JS chứa replies từ backend -->
+<script type="application/json" id="feedbackRepliesData">
+${feedbackRepliesJson}
+</script>
+<script>
+  var feedbackReplies = JSON.parse(document.getElementById('feedbackRepliesData').textContent);
+  console.log('DEBUG feedbackReplies:', feedbackReplies);
+</script>
+
+<!-- BẮT ĐẦU NỘI DUNG CHÍNH (KHÔNG có <html>, <head>, <body>) -->
 <div class="container-fluid">
     <!-- Header -->
     <div class="row mb-4">
@@ -203,7 +221,22 @@
                                                         title="View Details">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                <!-- Enable/Disable buttons removed since no Disabled column in database -->
+                                                <c:choose>
+                                                    <c:when test="${!feedback.disabled}">
+                                                        <form method="post" action="${pageContext.request.contextPath}/admin/feedback?action=disable&id=${feedback.id}" style="display:inline;">
+                                                            <button type="submit" class="btn btn-sm btn-danger" title="Disable Feedback" onclick="return confirm('Are you sure you want to disable this feedback?');">
+                                                                <i class="fas fa-eye-slash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <form method="post" action="${pageContext.request.contextPath}/admin/feedback?action=enable&id=${feedback.id}" style="display:inline;">
+                                                            <button type="submit" class="btn btn-sm btn-success" title="Enable Feedback" onclick="return confirm('Enable this feedback?');">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </form>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </div>
                                         </td>
                                     </tr>
@@ -245,7 +278,10 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label"><strong>Comment:</strong></label>
-                            <p id="modalComment" class="mb-0"></p>
+                            <!-- Comment khách hàng -->
+                            <div id="modalCommentWrapper" style="max-height: 250px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px; padding: 8px; background: #fafbfc; word-break: break-word;">
+                                <p id="modalComment" class="mb-0"></p>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label"><strong>Date:</strong></label>
@@ -299,6 +335,11 @@
                             <span id="modalStatus"></span>
                         </div>
                     </div>
+                </div>
+                <!-- Staff Replies -->
+                <div class="mb-3">
+                    <label class="form-label"><strong>Staff Replies:</strong></label>
+                    <div id="modalReplies" style="max-height: 250px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px; padding: 8px; background: #f6f8fa; word-break: break-word;"></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -481,6 +522,22 @@ function viewFeedbackDetail(id, customerName, rating, comment, createdAt, userId
         '${pageContext.request.contextPath}/admin/customers?action=view&id=' + userId;
     document.getElementById('modalReservation').href = 
         '${pageContext.request.contextPath}/admin/bookings?action=view&id=' + reservationId;
+    
+    // Hiển thị replies
+    var repliesDiv = document.getElementById('modalReplies');
+    repliesDiv.innerHTML = '';
+    var replies = feedbackReplies[String(id)] || [];
+    if (replies.length === 0) {
+        repliesDiv.innerHTML = '<span class="text-muted">No staff reply yet.</span>';
+    } else {
+        replies.forEach(function(reply) {
+            var html = '<div class="reply-item mb-2">'
+                + '<div><strong>' + (reply.name || 'Staff') + '</strong> <span class="text-muted small">(' + (reply.createdAt ? new Date(reply.createdAt).toLocaleString() : '') + ')</span></div>'
+                + '<div>' + (reply.message || '') + '</div>'
+                + '</div>';
+            repliesDiv.innerHTML += html;
+        });
+    }
     
     // Show modal
     $('#feedbackDetailModal').modal('show');
