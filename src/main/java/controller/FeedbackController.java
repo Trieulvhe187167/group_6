@@ -18,9 +18,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import jakarta.servlet.annotation.MultipartConfig;
+import com.google.gson.Gson;
 
 @WebServlet(urlPatterns = {"/customer/feedback", "/customer/feedback/*", "/customer/your-feedback", "/receptionist/feedback", "/receptionist/feedback/*", "/admin/feedback"})
-
+@MultipartConfig
 public class FeedbackController extends HttpServlet {
     
     private FeedbackDAO feedbackDAO;
@@ -74,6 +76,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         }
     }
 
+    // Trong doGet, thêm điều kiện cho /customer/your-feedback
+    if (requestURI.contains("/customer/your-feedback")) {
+        listUserFeedback(request, response, user);
+        return;
+    }
+
     // Customer feedback logic
     String action = request.getParameter("action");
     String filter = request.getParameter("filter");
@@ -122,6 +130,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        System.out.println("=== [DEBUG] ĐÃ VÀO HÀM doPost FeedbackController ===");
+        System.out.println("action: " + request.getParameter("action"));
+        System.out.println("customerEmail: " + request.getParameter("customerEmail"));
+        System.out.println("customerName: " + request.getParameter("customerName"));
+        System.out.println("subject: " + request.getParameter("subject"));
+        System.out.println("message: " + request.getParameter("message"));
+        System.out.println("feedbackId: " + request.getParameter("feedbackId"));
         
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
@@ -131,10 +146,8 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             return;
         }
         
-        // Check if this is a receptionist or admin request
         String requestURI = request.getRequestURI();
         if (requestURI.contains("/receptionist/feedback")) {
-            // Check if user is receptionist or admin
             if ("RECEPTIONIST".equals(user.getRole()) || "ADMIN".equals(user.getRole())) {
                 handleReceptionistPostRequest(request, response, user);
                 return;
@@ -143,26 +156,28 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 return;
             }
         }
-        
-        // Check if this is an admin request
+
         if (requestURI.contains("/admin/feedback")) {
-            // Check if user is admin
             if ("ADMIN".equals(user.getRole())) {
-                handleAdminPostRequest(request, response, user);
+                String action = request.getParameter("action");
+                if ("disable".equals(action) || "enable".equals(action)) {
+                    handleAdminRequest(request, response, user);
+                    return;
+                }
+                // Nếu không có action hợp lệ, redirect về trang feedback
+                response.sendRedirect(request.getContextPath() + "/admin/feedback");
                 return;
             } else {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
                 return;
             }
         }
-        
-        // Customer feedback logic
+
+        // Customer feedback logic (nếu có)
         String action = request.getParameter("action");
-        
         if (action == null) {
             action = "submit";
         }
-        
         switch (action) {
             case "submit":
                 submitFeedback(request, response, user);
@@ -210,7 +225,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.setAttribute("reservations", completedReservations);
                 }
             } else {
-                request.setAttribute("reservations", completedReservations);
+            request.setAttribute("reservations", completedReservations);
             }
             request.getRequestDispatcher("/jsp/customer/customer-feedback.jsp").forward(request, response);
             
@@ -450,6 +465,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         request.setAttribute("currentFilter", filter);
         request.setAttribute("currentSort", sort);
         
+        // Lấy tất cả feedbackId của user, truy vấn replies cho từng feedbackId
+        ContactMessageDAO contactMessageDAO = new ContactMessageDAO();
+        Map<String, List<ContactMessage>> feedbackReplies = new HashMap<>();
+        for (Map<String, Object> entry : feedbackBookings) {
+            int feedbackId = (int) entry.get("id");
+            List<ContactMessage> replies = contactMessageDAO.getMessagesByFeedbackId(feedbackId);
+            feedbackReplies.put(String.valueOf(feedbackId), replies);
+        }
+        String feedbackRepliesJson = new Gson().toJson(feedbackReplies);
+        request.setAttribute("feedbackRepliesJson", feedbackRepliesJson);
+
         request.getRequestDispatcher("/jsp/customer/your-feedback.jsp").forward(request, response);
         
     } catch (Exception e) {
@@ -641,7 +667,50 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
         try {
+            String ratingFilter = request.getParameter("rating");
+            String dateFilter = request.getParameter("date");
+            String statusFilter = request.getParameter("status");
             List<Feedback> feedbacks = feedbackDAO.getAllFeedbacksWithDetails();
+            // Lọc theo rating
+            if (ratingFilter != null && !ratingFilter.isEmpty()) {
+                try {
+                    int rating = Integer.parseInt(ratingFilter);
+                    feedbacks = feedbacks.stream()
+                        .filter(f -> f.getRating() == rating)
+                        .collect(java.util.stream.Collectors.toList());
+                } catch (NumberFormatException e) {
+                    // Bỏ qua nếu rating không hợp lệ
+                }
+            }
+            // Lọc theo ngày
+            if (dateFilter != null && !dateFilter.isEmpty()) {
+                try {
+                    java.sql.Date filterDate = java.sql.Date.valueOf(dateFilter);
+                    feedbacks = feedbacks.stream()
+                        .filter(f -> f.getCreatedAt() != null && 
+                                     f.getCreatedAt().toLocalDateTime().toLocalDate().isEqual(filterDate.toLocalDate()))
+                        .collect(java.util.stream.Collectors.toList());
+                } catch (Exception e) {
+                    // Bỏ qua nếu date không hợp lệ
+                }
+            }
+            // Lọc theo status (new, replied)
+            if (statusFilter != null && !statusFilter.isEmpty()) {
+                List<ContactMessage> allReplies = new dal.ContactMessageDAO().getAllMessages();
+                java.util.Set<Integer> feedbacksWithReply = allReplies.stream()
+                    .filter(msg -> msg.getFeedbackId() != null)
+                    .map(model.ContactMessage::getFeedbackId)
+                    .collect(java.util.stream.Collectors.toSet());
+                if ("new".equals(statusFilter)) {
+                    feedbacks = feedbacks.stream()
+                        .filter(f -> !feedbacksWithReply.contains(f.getId()))
+                        .collect(java.util.stream.Collectors.toList());
+                } else if ("replied".equals(statusFilter)) {
+                    feedbacks = feedbacks.stream()
+                        .filter(f -> feedbacksWithReply.contains(f.getId()))
+                        .collect(java.util.stream.Collectors.toList());
+                }
+            }
             
             // Calculate statistics
             int totalFeedbacks = feedbacks.size();
@@ -673,6 +742,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             request.setAttribute("pendingReplies", pendingReplies);
             request.setAttribute("activePage", "feedback");
             request.setAttribute("contentPage", "feedback-content.jsp");
+            
+            // Lấy tất cả feedbackId của user, truy vấn replies cho từng feedbackId
+            ContactMessageDAO contactMessageDAO2 = new ContactMessageDAO();
+            Map<String, List<ContactMessage>> feedbackRepliesReception = new HashMap<>();
+            for (Feedback f : feedbacks) {
+                List<ContactMessage> replies = contactMessageDAO2.getMessagesByFeedbackId(f.getId());
+                feedbackRepliesReception.put(String.valueOf(f.getId()), replies);
+            }
+            String feedbackRepliesJsonReception = new Gson().toJson(feedbackRepliesReception);
+            request.setAttribute("feedbackRepliesJson", feedbackRepliesJsonReception);
+
             request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -686,8 +766,24 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
      */
     private void viewFeedbackDetail(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Redirect to main feedback page since we use modal now
-        response.sendRedirect(request.getContextPath() + "/receptionist/feedback");
+        String feedbackIdStr = request.getParameter("id");
+        if (feedbackIdStr == null || feedbackIdStr.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/receptionist/feedback");
+            return;
+        }
+        int feedbackId = Integer.parseInt(feedbackIdStr);
+
+        // Lấy chi tiết feedback
+        Feedback feedback = feedbackDAO.getFeedbackById(feedbackId);
+        // Lấy các reply liên quan
+        List<ContactMessage> replies = getRepliesForFeedback(feedbackId);
+
+        request.setAttribute("feedback", feedback);
+        request.setAttribute("replies", replies);
+        request.setAttribute("activePage", "feedback");
+        request.setAttribute("contentPage", "feedback-detail.jsp");
+
+        request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);
     }
     
     /**
@@ -704,9 +800,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
      */
     private void handleReceptionistPostRequest(HttpServletRequest request, HttpServletResponse response, User user) 
             throws ServletException, IOException {
-        
         String action = request.getParameter("action");
-        
+        if (action == null) {
+            response.sendRedirect(request.getContextPath() + "/receptionist/feedback");
+            return;
+        }
         switch (action) {
             case "sendMessage":
                 sendContactMessage(request, response);
@@ -722,13 +820,30 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
      */
     private void sendContactMessage(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
+        System.out.println("=== FEEDBACK CONTROLLER CALLED ===");
+        System.out.println("=== REQUEST URI: " + request.getRequestURI());
+        System.out.println("=== SERVLET PATH: " + request.getServletPath());
+        System.out.println("=== QUERY STRING: " + request.getQueryString());
+        System.out.println("=== POST PARAMS ===");
+        System.out.println("customerEmail: " + request.getParameter("customerEmail"));
+        System.out.println("customerName: " + request.getParameter("customerName"));
+        System.out.println("subject: " + request.getParameter("subject"));
+        System.out.println("message: " + request.getParameter("message"));
+        System.out.println("feedbackId: " + request.getParameter("feedbackId"));
         try {
             String customerEmail = request.getParameter("customerEmail");
             String customerName = request.getParameter("customerName");
             String subject = request.getParameter("subject");
             String message = request.getParameter("message");
-            String feedbackId = request.getParameter("feedbackId");
+            String feedbackIdStr = request.getParameter("feedbackId");
+            Integer feedbackId = null;
+            if (feedbackIdStr != null && !feedbackIdStr.trim().isEmpty()) {
+                try {
+                    feedbackId = Integer.parseInt(feedbackIdStr);
+                } catch (NumberFormatException ex) {
+                    feedbackId = null;
+                }
+            }
 
             if (customerEmail == null || customerEmail.trim().isEmpty() ||
                 subject == null || subject.trim().isEmpty() ||
@@ -739,15 +854,18 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             }
 
             ContactMessageDAO contactDAO = new ContactMessageDAO();
-            
             ContactMessage contactMsg = new ContactMessage();
             contactMsg.setName("Hotel Staff");
             contactMsg.setEmail("staff@luxuryhotel.com");
             contactMsg.setPhone("(+84) 3 1234 5678");
             contactMsg.setMessage("Subject: " + subject + "\n\nMessage: " + message + "\n\nRelated to Feedback ID: " + feedbackId);
+            contactMsg.setFeedbackId(feedbackId);
 
-            if (contactDAO.addMessage(contactMsg)) {
-                // TODO: Send email to customer
+            System.out.println("[DEBUG] Trước khi gọi contactDAO.addMessage");
+            boolean result = contactDAO.addMessage(contactMsg);
+            System.out.println("[DEBUG] Sau khi gọi contactDAO.addMessage, result = " + result);
+
+            if (result) {
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write("Message sent successfully");
             } else {
@@ -760,6 +878,18 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().write("An error occurred: " + e.getMessage());
         }
     }
+
+    // Thêm chức năng lấy reply cho feedback (cho admin)
+    private List<ContactMessage> getRepliesForFeedback(int feedbackId) {
+        ContactMessageDAO contactDAO = new ContactMessageDAO();
+        return contactDAO.getMessagesByFeedbackId(feedbackId);
+    }
+
+    // Thêm chức năng ẩn/hiện feedback (cho admin)
+    private void setFeedbackDisabled(int feedbackId, boolean disabled) {
+        FeedbackDAO feedbackDAO = new FeedbackDAO();
+        feedbackDAO.setFeedbackDisabled(feedbackId, disabled);
+    }
     
     // ==================== ADMIN METHODS ====================
     
@@ -770,11 +900,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
         String action = request.getParameter("action");
-        if (action == null) {
-            action = "list";
-        }
-
+        if (action == null) action = "list";
         switch (action) {
+            case "disable":
+                setFeedbackDisabled(request, response, true);
+                break;
+            case "enable":
+                setFeedbackDisabled(request, response, false);
+                break;
             case "list":
                 listAllFeedbacksForAdmin(request, response);
                 break;
@@ -785,6 +918,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 listAllFeedbacksForAdmin(request, response);
                 break;
         }
+    }
+
+    private void setFeedbackDisabled(HttpServletRequest request, HttpServletResponse response, boolean disabled)
+            throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        if (idStr != null) {
+            int id = Integer.parseInt(idStr);
+            feedbackDAO.setFeedbackDisabled(id, disabled);
+        }
+        response.sendRedirect(request.getContextPath() + "/admin/feedback");
     }
     
     /**
@@ -801,6 +944,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
             // Get all feedbacks with details
             List<Feedback> feedbacks = feedbackDAO.getAllFeedbacksWithDetails();
+            
+            // Map feedbackId -> replies
+            Map<String, List<ContactMessage>> feedbackReplies = new HashMap<>();
+            ContactMessageDAO contactMessageDAO = new ContactMessageDAO();
+            for (Feedback f : feedbacks) {
+                List<ContactMessage> replies = contactMessageDAO.getMessagesByFeedbackId(f.getId());
+                feedbackReplies.put(String.valueOf(f.getId()), replies);
+            }
+            String feedbackRepliesJson = new Gson().toJson(feedbackReplies);
+            request.setAttribute("feedbackRepliesJson", feedbackRepliesJson);
             
             // Apply filters
             if (statusFilter != null && !statusFilter.isEmpty()) {
@@ -852,9 +1005,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             request.setAttribute("averageRating", averageRating);
             request.setAttribute("activePage", "feedback");
             request.setAttribute("contentPage", "admin-feedback-content.jsp");
-            
-            // Forward to admin layout
-            request.getRequestDispatcher("/jsp/admin/admin-layout.jsp").forward(request, response);
+            request.getRequestDispatcher("/jsp/admin/admin-template.jsp").forward(request, response);
             
         } catch (Exception e) {
             e.printStackTrace();
