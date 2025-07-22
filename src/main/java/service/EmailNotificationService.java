@@ -108,7 +108,7 @@ public class EmailNotificationService {
         content.append("Room Type: ").append(roomType.getName()).append("\n");
         content.append("Room Number: ").append(room.getRoomNumber()).append("\n");
         content.append("Check-in: ").append(dateFormat.format(reservation.getCheckIn())).append(" (14:00)\n");
-        content.append("Check-out: ").append(dateFormat.format(reservation.getCheckOut())).append(" (12:00)\n");
+          content.append("Check-out: ").append(dateFormat.format(reservation.getCheckOut())).append(" (11:00 - 13:00)\n");
         content.append("Total Amount: ").append(priceFormat.format(reservation.getTotalAmount())).append("đ\n\n");
         
         content.append("HOTEL INFORMATION\n");
@@ -122,7 +122,7 @@ public class EmailNotificationService {
         content.append("IMPORTANT NOTES\n");
         content.append("================\n");
         content.append("- Please bring a valid ID and this confirmation\n");
-        content.append("- Check-in time: 14:00, Check-out time: 12:00\n");
+          content.append("- Check-in time: 14:00, Check-out time: 11:00 - 13:00\n");
         content.append("- Free cancellation up to 3 days before arrival\n");
         content.append("- For assistance, contact our 24/7 reception\n\n");
         
@@ -186,7 +186,7 @@ public class EmailNotificationService {
         content.append("================\n");
         content.append("Booking ID: #").append(reservation.getId()).append("\n");
         content.append("Check-out Date: ").append(dateFormat.format(reservation.getCheckOut())).append("\n");
-        content.append("Check-out Time: Before 12:00 (noon)\n");
+        content.append("Check-out Time: Between 11:00 and 13:00\n");
         content.append("Room Number: ").append(reservation.getRoomNumber()).append("\n\n");
         
         content.append("LATE CHECK-OUT\n");

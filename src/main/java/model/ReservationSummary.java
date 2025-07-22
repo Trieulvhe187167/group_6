@@ -281,7 +281,7 @@ public void setRating(int rating) {
     // Format check-in hour for display
     public int getCheckInHour() {
         if (checkInTime != null) {
-            return new java.util.Date(checkInTime.getTime()).getHours();
+            return checkInTime.toLocalDateTime().getHour();
         }
         return 12; // Default check-in time if not specified
     }
@@ -289,9 +289,9 @@ public void setRating(int rating) {
     // Format check-out hour for display
     public int getCheckOutHour() {
         if (checkOutTime != null) {
-            return new java.util.Date(checkOutTime.getTime()).getHours();
+            return checkOutTime.toLocalDateTime().getHour();
         }
-        return 12; // Default check-out time if not specified
+       return 13; // Default check-out time if not specified (end of 11:00-13:00 window)
 
     }
 }

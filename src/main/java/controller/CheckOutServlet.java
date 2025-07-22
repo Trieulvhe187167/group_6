@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.sql.Date;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.LocalDate;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -46,6 +48,11 @@ public class CheckOutServlet extends HttpServlet {
             Date today = Date.valueOf(LocalDate.now());
             List<ReservationSummary> todayCheckOuts = checkInOutDAO.getUpcomingCheckOuts(24);
             
+              LocalDateTime now = LocalDateTime.now();
+              
+            int lateCheckouts = 0;
+            int pendingInspections = 0;
+
             // Add payment status, inspection status and check if already checked out
             for (ReservationSummary res : todayCheckOuts) {
                 res.setCheckedOut(checkInOutDAO.isCheckedOut(res.getId()));
@@ -57,14 +64,31 @@ public class CheckOutServlet extends HttpServlet {
                     res.setInspectionStatus(inspection.getStatus());
                 }
                 
-                // Check if late checkout
-                if (res.getCheckOut().before(today)) {
+           
+                 // Determine late checkout
+                LocalDateTime dueTime;
+                if (res.getCheckOutTime() != null) {
+                    dueTime = res.getCheckOutTime().toLocalDateTime();
+                } else {
+                    LocalDate coDate = res.getCheckOut().toLocalDate();
+                    dueTime = LocalDateTime.of(coDate, LocalTime.of(13, 0));
+                }
+                if (now.isAfter(dueTime)) {
                     res.setLate(true);
+                        lateCheckouts++;
+                }
+
+                // Count pending inspections
+                String status = res.getInspectionStatus();
+                if (status == null || !("COMPLETED".equals(status) || "APPROVED".equals(status))) {
+                    pendingInspections++;
                 }
             }
             
             // Set attributes
             request.setAttribute("todayCheckOuts", todayCheckOuts);
+              request.setAttribute("lateCheckouts", lateCheckouts);
+            request.setAttribute("pendingInspections", pendingInspections);
             request.setAttribute("currentUser", currentUser);
             
             // Set template attributes

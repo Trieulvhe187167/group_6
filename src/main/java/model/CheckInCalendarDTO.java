@@ -91,11 +91,15 @@ public class CheckInCalendarDTO {
     // Helper methods for calculating hours for display
     public int getCheckInHour() {
         if (checkInTime == null) return 0;
-        return checkInTime.getHours();
+       return checkInTime.toInstant()
+                .atZone(java.time.ZoneId.systemDefault())
+                .getHour();
     }
     
     public int getCheckOutHour() {
-        if (estimatedCheckOutTime == null) return 12;
-        return estimatedCheckOutTime.getHours();
+            if (estimatedCheckOutTime == null) return 13; // default end of required check-out window
+        return estimatedCheckOutTime.toInstant()
+                .atZone(java.time.ZoneId.systemDefault())
+                .getHour();
     }
 } 

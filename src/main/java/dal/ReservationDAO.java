@@ -6,7 +6,9 @@ import model.ReservationDetail;
 import model.ReservationSummary;
 import java.sql.*;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -310,19 +312,17 @@ public class ReservationDAO {
                 res.setCheckIn(rs.getDate("CheckIn"));
                 res.setCheckOut(rs.getDate("CheckOut"));
                 
-                // Create timestamps from date for check-in and check-out times
-                // Default check-in time to 14:00 (2 PM)
-                Timestamp checkInTs = new Timestamp(rs.getDate("CheckIn").getTime());
-                checkInTs.setHours(14);
-                checkInTs.setMinutes(0);
-                checkInTs.setSeconds(0);
+                     // Use modern LocalDateTime API instead of deprecated setters
+                LocalDate checkInDate = rs.getDate("CheckIn").toLocalDate();
+                LocalDate checkOutDate = rs.getDate("CheckOut").toLocalDate();
+                  // Default check-in time to 14:00 (2 PM)
+                   Timestamp checkInTs = Timestamp.valueOf(
+                        LocalDateTime.of(checkInDate, LocalTime.of(14, 0)));
                 res.setCheckInTime(checkInTs);
                 
-                // Default check-out time to 12:00 (noon)
-                Timestamp checkOutTs = new Timestamp(rs.getDate("CheckOut").getTime());
-                checkOutTs.setHours(12);
-                checkOutTs.setMinutes(0);
-                checkOutTs.setSeconds(0);
+                // Default check-out time within 11:00-13:00 window (use 13:00)
+                Timestamp checkOutTs = Timestamp.valueOf(
+                        LocalDateTime.of(checkOutDate, LocalTime.of(13, 0)));
                 res.setCheckOutTime(checkOutTs);
                 
                 res.setStatus(rs.getString("Status"));
@@ -1572,17 +1572,15 @@ public boolean isRoomAvailableForUpdate(int roomId, Date checkIn, Date checkOut,
                 res.setCheckOut(rs.getDate("CheckOut"));
                 
                 // Create timestamps from date for check-in and check-out times
-                // For current occupancies, set check-in to 00:00 and check-out to 24:00
-                Timestamp checkInTs = new Timestamp(rs.getDate("CheckIn").getTime());
-                checkInTs.setHours(0);
-                checkInTs.setMinutes(0);
-                checkInTs.setSeconds(0);
+                // For current occupancies, set check-in to start of day and check-out to end of day
+                LocalDate checkInDate = rs.getDate("CheckIn").toLocalDate();
+                LocalDate checkOutDate = rs.getDate("CheckOut").toLocalDate();
+
+                Timestamp checkInTs = Timestamp.valueOf(checkInDate.atStartOfDay());
                 res.setCheckInTime(checkInTs);
                 
-                Timestamp checkOutTs = new Timestamp(rs.getDate("CheckOut").getTime());
-                checkOutTs.setHours(23);
-                checkOutTs.setMinutes(59);
-                checkOutTs.setSeconds(59);
+                    Timestamp checkOutTs = Timestamp.valueOf(
+                        LocalDateTime.of(checkOutDate, LocalTime.of(23, 59, 59)));
                 res.setCheckOutTime(checkOutTs);
                 
                 res.setStatus(rs.getString("Status"));

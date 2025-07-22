@@ -3,6 +3,9 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <style>
+      .late-highlight {
+        box-shadow: 0 0 0 0.25rem rgba(255,193,7,.5);
+    }
     .checkout-card {
         border-radius: 15px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -264,14 +267,23 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-warning btn-lg btn-block" onclick="showLateCheckouts()">
-                        <i class="fas fa-exclamation-triangle"></i> Late Check-outs
+                    <button class="btn btn-warning btn-lg btn-block d-flex align-items-center justify-content-center" onclick="showLateCheckouts()" title="Jump to late check-outs">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> Late Check-outs <span class="badge badge-light ml-2">${lateCheckouts}</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
-
+  <!-- Search Results -->
+    <div id="searchResults" class="mt-4" style="display: none;">
+        <h6>Search Results:</h6>
+        <div id="resultsContainer">
+            <!-- Results will be loaded here -->
+        </div>
+        <button class="btn btn-sm btn-secondary mt-2" onclick="clearSearch()">
+            <i class="fas fa-times fa-fw"></i> Clear Search
+        </button>
+    </div>
     <!-- Today's Expected Check-Outs -->
     <div class="card">
         <div class="card-body">
@@ -285,7 +297,7 @@
                     <div class="row">
                         <c:forEach var="reservation" items="${todayCheckOuts}">
                             <div class="col-lg-6 mb-4">
-                                <div class="checkout-card card ${reservation.isLate ? 'border-warning' : ''} ${reservation.checkedOut ? 'border-success' : 'border-0'}">
+                                  <div class="checkout-card card ${reservation.isLate ? 'border-warning late-checkout' : ''} ${reservation.checkedOut ? 'border-success' : 'border-0'}">
                                     <div class="card-header ${reservation.checkedOut ? 'bg-success text-white' : (reservation.isLate ? 'bg-warning' : 'bg-light')}">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <h6 class="mb-0">
@@ -405,7 +417,7 @@
                 <h5 class="modal-title">
                     <i class="fas fa-receipt"></i> Process Check-Out - Room <span id="modalRoomNumber"></span>
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal">
+                <button type="button" class="close" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -420,7 +432,7 @@
                             <!-- Guest Information -->
                             <div class="card mb-3">
                                 <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="fas fa-user"></i> Guest Information</h6>
+                                    <h6 class="mb-0"><i class="fas fa-user"></i> Customer Information</h6>
                                 </div>
                                 <div class="card-body">
                                     <p class="mb-2"><strong>Name:</strong> <span id="guestName"></span></p>
@@ -559,13 +571,7 @@
                                             <div>Credit Card</div>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="payment-method-btn" onclick="selectPaymentMethod('DEBIT_CARD')">
-                                            <input type="radio" name="paymentMethod" value="DEBIT_CARD" id="pmDebit" hidden>
-                                            <i class="fas fa-credit-card fa-2x mb-2"></i>
-                                            <div>Debit Card</div>
-                                        </div>
-                                    </div>
+                                
                                     <div class="col-md-3">
                                         <div class="payment-method-btn" onclick="selectPaymentMethod('BANK_TRANSFER')">
                                             <input type="radio" name="paymentMethod" value="BANK_TRANSFER" id="pmTransfer" hidden>
@@ -587,7 +593,8 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
                     <button type="button" class="btn btn-info" onclick="printInvoice()">
                         <i class="fas fa-print"></i> Print Invoice
                     </button>
@@ -640,7 +647,9 @@ function onJQueryReady(callback) {
             alert('Please enter a search term');
             return;
         }
-
+   $('#searchResults').show();
+        $('#resultsContainer').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
+        
         $.ajax({
             url: '${pageContext.request.contextPath}/receptionist/check-out',
             method: 'POST',
@@ -1237,7 +1246,11 @@ function onJQueryReady(callback) {
             });
         }
 
-        $('#searchResults').html(html);
+        $('#resultsContainer').html(html);
+    }
+      function clearSearch() {
+        $('#searchInput').val('');
+        $('#searchResults').hide();
     }
      // Payment method selection helper
     function selectPaymentMethod(method) {
