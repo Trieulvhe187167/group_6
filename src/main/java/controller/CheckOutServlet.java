@@ -164,7 +164,7 @@ public class CheckOutServlet extends HttpServlet {
                 Map<String, Object> inspectionData = new HashMap<>();
                 inspectionData.put("id", inspection.getId());
                 inspectionData.put("inspectorName", inspection.getInspector() != null ? 
-                    inspection.getInspector().getFullName() : "Unknown");
+                inspection.getInspector().getFullName() : "Unknown");
                 inspectionData.put("inspectionTime", inspection.getInspectionTime());
                 inspectionData.put("roomCondition", inspection.getRoomCondition());
                 inspectionData.put("cleanlinessScore", inspection.getCleanlinessScore());
@@ -198,9 +198,13 @@ public class CheckOutServlet extends HttpServlet {
                 responseData.put("charges", charges);
             }
             
+    
             // Add payment info
             double amountPaid = paymentDAO.getReservationPaidAmount(reservationId);
             responseData.put("amountPaid", amountPaid);
+             // Add reservation deposit amount if paid
+            double depositPaid = paymentDAO.getTotalDepositPaid(reservationId);
+            responseData.put("depositPaid", depositPaid);
             
             // Add security deposit if available
             if (checkIn != null) {
@@ -251,8 +255,12 @@ public class CheckOutServlet extends HttpServlet {
             }
             
             double totalAmount = roomCharges + serviceCharges + inspectionCharges + damageCharges;
-            double amountPaid = paymentDAO.getReservationPaidAmount(reservationId);
-            double finalAmount = totalAmount - amountPaid;
+
+             // Deduct any deposit paid separately so it reflects in the final balance
+            double depositPaid = paymentDAO.getTotalDepositPaid(reservationId);
+            
+            // Previous payments are only the guest deposit so deduct that from the total
+            double finalAmount = totalAmount - depositPaid;
             
             // Get security deposit and calculate refund
             CheckInDetail checkIn = checkInOutDAO.getCheckInDetails(reservationId);

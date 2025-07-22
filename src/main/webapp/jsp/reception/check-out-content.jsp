@@ -108,8 +108,7 @@
         color: white;
         border-radius: 15px;
         padding: 2rem;
-        position: sticky;
-        top: 20px;
+
     }
 
     .bill-total {
@@ -529,13 +528,14 @@
                                     <span>Subtotal:</span>
                                     <span id="subtotal">0₫</span>
                                 </div>
-                                <div class="charge-item">
-                                    <span>Amount Paid:</span>
-                                    <span id="amountPaid">0₫</span>
-                                </div>
+                           
                                 <div class="charge-item" id="refundRow" style="display: none;">
                                     <span>Deposit Refund:</span>
                                     <span class="text-success" id="refundAmount">0₫</span>
+                                </div>
+                                  <div class="charge-item" id="depositRow" style="display: none;">
+                                    <span>Deposit Paid:</span>
+                                    <span id="depositPaid">0₫</span>
                                 </div>
                                 <hr class="bg-white">
                                 <div class="text-center">
@@ -609,10 +609,23 @@
     let currentReservationData = null;
     let inspectionData = null;
 
-    $(document).ready(function () {
+function onJQueryReady(callback) {
+        if (window.jQuery) {
+            jQuery(callback);
+        } else {
+            const interval = setInterval(function () {
+                if (window.jQuery) {
+                    clearInterval(interval);
+                    jQuery(callback);
+                }
+            }, 50);
+        }
+    }
+
+    onJQueryReady(function () {
         // Auto-search on enter key
         $('#searchInput').keypress(function (e) {
-            if (e.which == 13) {
+                   if (e.which === 13) {
                 searchCheckOut();
             }
         });
@@ -650,7 +663,7 @@
     function requestInspection(reservationId) {
         if (confirm('Request room inspection for this reservation?')) {
             $.ajax({
-                url: '${pageContext.request.contextPath}/receptionist/inspection',
+                url: '${pageContext.request.contextPath}/inspector/inspection',
                 method: 'POST',
                 data: {
                     action: 'requestInspection',
@@ -708,6 +721,7 @@
         const reservation = data.reservation;
         const inspection = data.inspection;
         const checkIn = data.checkIn;
+            const serviceOrders = data.serviceOrders || [];
 
         // Guest information
         $('#modalReservationId').val(reservation.id);
@@ -750,7 +764,16 @@
 
         // Amount already paid
         const amountPaid = data.amountPaid || 0;
-        $('#amountPaid').text(formatCurrency(amountPaid));
+         const depositPaid = data.depositPaid || 0;
+        const otherPaid = Math.max(0, amountPaid - depositPaid);
+
+        if (otherPaid > 0) {
+            $('#amountPaidRow').show();
+            $('#amountPaid').text(formatCurrency(otherPaid));
+        } else {
+            $('#amountPaidRow').hide();
+            $('#amountPaid').text(formatCurrency(0));
+        }
     }
 
     function displayInspectionSummary(inspection) {
@@ -895,10 +918,11 @@
 
         const subtotal = roomCharges + additionalCharges;
         const securityDeposit = data.securityDeposit || 0;
-        const amountPaid = data.amountPaid || 0;
+      
+        const depositPaid = data.depositPaid || 0;
 
         // Calculate refund/final amount
-        let finalAmount = subtotal - amountPaid;
+        let finalAmount = subtotal - depositPaid;
         let refundAmount = 0;
 
         if (securityDeposit > 0 && damageCharges < securityDeposit) {
@@ -910,6 +934,13 @@
         $('#summaryRoom').text(formatCurrency(roomCharges));
         $('#summaryAdditional').text(formatCurrency(additionalCharges));
         $('#subtotal').text(formatCurrency(subtotal));
+        
+           if (depositPaid > 0) {
+            $('#depositRow').show();
+            $('#depositPaid').text(formatCurrency(depositPaid));
+        } else {
+            $('#depositRow').hide();
+        }
 
         if (refundAmount > 0) {
             $('#refundRow').show();
@@ -1005,7 +1036,7 @@
         const checkOutDate = $('#checkOutDate').text();
         const billNights = $('#billNights').text();
         const roomCharges = $('#roomCharges').text();
-        const amountPaid = $('#amountPaid').text();
+   
 
         let html = '<!DOCTYPE html><html><head>';
         html += '<title>Invoice - Booking #' + bookingId + '</title>';
@@ -1076,11 +1107,13 @@
         html += '<td style="text-align: right;">' + subtotal + '</td>';
         html += '</tr>';
 
-        // Amount paid
-        html += '<tr>';
-        html += '<td>Amount Paid</td>';
-        html += '<td style="text-align: right;">-' + amountPaid + '</td>';
-        html += '</tr>';
+ 
+   if ($('#depositRow').is(':visible')) {
+            html += '<tr>';
+            html += '<td>Deposit Paid</td>';
+            html += '<td style="text-align: right;">-' + $('#depositPaid').text() + '</td>';
+            html += '</tr>';
+        }
 
         // Refund if visible
         if ($('#refundRow').is(':visible')) {
@@ -1169,6 +1202,12 @@
         }
 
         $('#searchResults').html(html);
+    }
+     // Payment method selection helper
+    function selectPaymentMethod(method) {
+        $('.payment-method-btn').removeClass('selected');
+        $('input[name="paymentMethod"][value="' + method + '"]').prop('checked', true)
+                .closest('.payment-method-btn').addClass('selected');
     }
 </script>
 
