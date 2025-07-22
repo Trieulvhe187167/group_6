@@ -519,19 +519,16 @@
                                     <span>Additional Charges:</span>
                                     <span id="summaryAdditional">0₫</span>
                                 </div>
-                                <div class="charge-item">
-                                    <span>Security Deposit:</span>
-                                    <span id="securityDeposit">0₫</span>
-                                </div>
-                                <hr class="bg-white">
+                       
+                                     <hr class="bg-white">
                                 <div class="charge-item">
                                     <span>Subtotal:</span>
                                     <span id="subtotal">0₫</span>
                                 </div>
-                           
+                      
                                 <div class="charge-item" id="refundRow" style="display: none;">
-                                    <span>Deposit Refund:</span>
-                                    <span class="text-success" id="refundAmount">0₫</span>
+                                    <span>Security Deposit Refund:</span>
+                                    <span id="refundAmount">0₫</span>
                                 </div>
                                   <div class="charge-item" id="depositRow" style="display: none;">
                                     <span>Deposit Paid:</span>
@@ -540,7 +537,7 @@
                                 <hr class="bg-white">
                                 <div class="text-center">
                                     <p class="mb-1">Final Amount</p>
-                                    <div class="bill-total" id="finalAmount">0₫</div>
+                                    <div class="bill-total" id="finalAmount" style="color: #e67700">0₫</div>
                                 </div>
                             </div>
 
@@ -721,7 +718,7 @@ function onJQueryReady(callback) {
         const reservation = data.reservation;
         const inspection = data.inspection;
         const checkIn = data.checkIn;
-            const serviceOrders = data.serviceOrders || [];
+        const serviceOrders = data.serviceOrders || [];
 
         // Guest information
         $('#modalReservationId').val(reservation.id);
@@ -757,7 +754,8 @@ function onJQueryReady(callback) {
             $('#servicesSection').hide();
             $('#damagesSection').hide();
         }
-
+// Load confirmed service orders
+        loadServiceOrders(serviceOrders);
         // Security deposit
         const securityDeposit = data.securityDeposit || 0;
         $('#securityDeposit').text(formatCurrency(securityDeposit));
@@ -837,8 +835,24 @@ function onJQueryReady(callback) {
                 $('#minibarSection').show();
                 let minibarHtml = '';
                 let minibarTotal = 0;
-
+  // Group items with same name and price
+                const grouped = {};
                 minibarItems.forEach(function (item) {
+                      const key = item.itemName + '|' + item.unitPrice;
+                    if (grouped[key]) {
+                        grouped[key].quantity += item.quantity;
+                        grouped[key].totalPrice += item.totalPrice;
+                    } else {
+                        grouped[key] = {
+                            itemName: item.itemName,
+                            unitPrice: item.unitPrice,
+                            quantity: item.quantity,
+                            totalPrice: item.totalPrice
+                        };
+                    }
+                });
+
+                Object.values(grouped).forEach(function (item) {
                     minibarHtml += '<div class="minibar-item">';
                     minibarHtml += '<div>';
                     minibarHtml += '<strong>' + item.itemName + '</strong>';
@@ -904,6 +918,28 @@ function onJQueryReady(callback) {
 
             $('#damageItems').html(damageHtml);
             $('#damagesTotal').text(formatCurrency(damageTotal));
+        }
+    }
+   function loadServiceOrders(orders) {
+       $('#servicesSection').show();
+        if (orders && orders.length > 0) {
+           
+            let serviceHtml = '';
+            let serviceTotal = 0;
+
+            orders.forEach(function (order) {
+                serviceHtml += '<div class="charge-item">';
+                serviceHtml += '<span>' + order.serviceName + ' <span class="text-muted ml-2">x' + order.quantity + '</span></span>';
+                serviceHtml += '<span>' + formatCurrency(order.totalAmount) + '</span>';
+                serviceHtml += '</div>';
+                serviceTotal += order.totalAmount;
+            });
+
+            $('#serviceItems').html(serviceHtml);
+            $('#servicesTotal').text(formatCurrency(serviceTotal));
+        } else {
+           $('#serviceItems').html('<div class="text-muted">No additional services booked</div>');
+            $('#servicesTotal').text(formatCurrency(0));
         }
     }
 
