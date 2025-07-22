@@ -479,15 +479,15 @@
                                             <td class="text-right">
                                                 <input type="number" class="form-control form-control-sm text-right" 
                                                        name="securityDeposit" id="securityDeposit" 
-                                                       value="500000" min="0" step="10000">
+                                                       value="0" min="0" step="50000">
                                             </td>
                                         </tr>
-                                        <tr class="font-weight-bold">
+<!--                                        <tr class="font-weight-bold">
                                             <td>Total Due at Check-in:</td>
                                             <td class="text-right">
                                                 <span id="totalDueAtCheckin" class="text-primary"></span>
                                             </td>
-                                        </tr>
+                                        </tr>-->
                                     </table>
                                 </div>
                                 

@@ -1357,7 +1357,7 @@
                             <div class="mt-5 booking-form">
                                 <h4>Room Policy</h4>
                                 <ul class="list-arrow primary">
-                                    <li>Check-in from 14:00, check-out before 12:00</li>
+                                      <li>Check-in from 14:00, check-out between 11:00 and 13:00</li>
                                     <li>Free cancellation up to 3 days before arrival, then 50% charge</li>
                                     <li>Breakfast included for 2 guests</li>
                                     <li>Non-smoking room</li>

@@ -13,9 +13,6 @@ public class DBContext {
             + "databaseName=HotelManagement_3;encrypt=false;";
 
 
-
-
-  
     private static final String DEFAULT_USER = "sa";
     private static final String DEFAULT_PASSWORD = "123";
     private static final String DEFAULT_DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";

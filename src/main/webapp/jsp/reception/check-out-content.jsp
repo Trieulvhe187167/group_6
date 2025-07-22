@@ -3,6 +3,9 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <style>
+      .late-highlight {
+        box-shadow: 0 0 0 0.25rem rgba(255,193,7,.5);
+    }
     .checkout-card {
         border-radius: 15px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -108,8 +111,7 @@
         color: white;
         border-radius: 15px;
         padding: 2rem;
-        position: sticky;
-        top: 20px;
+
     }
 
     .bill-total {
@@ -265,14 +267,23 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-warning btn-lg btn-block" onclick="showLateCheckouts()">
-                        <i class="fas fa-exclamation-triangle"></i> Late Check-outs
+                    <button class="btn btn-warning btn-lg btn-block d-flex align-items-center justify-content-center" onclick="showLateCheckouts()" title="Jump to late check-outs">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> Late Check-outs <span class="badge badge-light ml-2">${lateCheckouts}</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
-
+  <!-- Search Results -->
+    <div id="searchResults" class="mt-4" style="display: none;">
+        <h6>Search Results:</h6>
+        <div id="resultsContainer">
+            <!-- Results will be loaded here -->
+        </div>
+        <button class="btn btn-sm btn-secondary mt-2" onclick="clearSearch()">
+            <i class="fas fa-times fa-fw"></i> Clear Search
+        </button>
+    </div>
     <!-- Today's Expected Check-Outs -->
     <div class="card">
         <div class="card-body">
@@ -286,7 +297,7 @@
                     <div class="row">
                         <c:forEach var="reservation" items="${todayCheckOuts}">
                             <div class="col-lg-6 mb-4">
-                                <div class="checkout-card card ${reservation.isLate ? 'border-warning' : ''} ${reservation.checkedOut ? 'border-success' : 'border-0'}">
+                                  <div class="checkout-card card ${reservation.isLate ? 'border-warning late-checkout' : ''} ${reservation.checkedOut ? 'border-success' : 'border-0'}">
                                     <div class="card-header ${reservation.checkedOut ? 'bg-success text-white' : (reservation.isLate ? 'bg-warning' : 'bg-light')}">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <h6 class="mb-0">
@@ -406,7 +417,7 @@
                 <h5 class="modal-title">
                     <i class="fas fa-receipt"></i> Process Check-Out - Room <span id="modalRoomNumber"></span>
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal">
+                <button type="button" class="close" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -421,7 +432,7 @@
                             <!-- Guest Information -->
                             <div class="card mb-3">
                                 <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="fas fa-user"></i> Guest Information</h6>
+                                    <h6 class="mb-0"><i class="fas fa-user"></i> Customer Information</h6>
                                 </div>
                                 <div class="card-body">
                                     <p class="mb-2"><strong>Name:</strong> <span id="guestName"></span></p>
@@ -520,27 +531,25 @@
                                     <span>Additional Charges:</span>
                                     <span id="summaryAdditional">0₫</span>
                                 </div>
-                                <div class="charge-item">
-                                    <span>Security Deposit:</span>
-                                    <span id="securityDeposit">0₫</span>
-                                </div>
-                                <hr class="bg-white">
+                       
+                                     <hr class="bg-white">
                                 <div class="charge-item">
                                     <span>Subtotal:</span>
                                     <span id="subtotal">0₫</span>
                                 </div>
-                                <div class="charge-item">
-                                    <span>Amount Paid:</span>
-                                    <span id="amountPaid">0₫</span>
-                                </div>
+                      
                                 <div class="charge-item" id="refundRow" style="display: none;">
-                                    <span>Deposit Refund:</span>
-                                    <span class="text-success" id="refundAmount">0₫</span>
+                                    <span>Security Deposit Refund:</span>
+                                    <span id="refundAmount">0₫</span>
+                                </div>
+                                  <div class="charge-item" id="depositRow" style="display: none;">
+                                    <span>Deposit Paid:</span>
+                                    <span id="depositPaid">0₫</span>
                                 </div>
                                 <hr class="bg-white">
                                 <div class="text-center">
                                     <p class="mb-1">Final Amount</p>
-                                    <div class="bill-total" id="finalAmount">0₫</div>
+                                    <div class="bill-total" id="finalAmount" style="color: #e67700">0₫</div>
                                 </div>
                             </div>
 
@@ -562,13 +571,7 @@
                                             <div>Credit Card</div>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="payment-method-btn" onclick="selectPaymentMethod('DEBIT_CARD')">
-                                            <input type="radio" name="paymentMethod" value="DEBIT_CARD" id="pmDebit" hidden>
-                                            <i class="fas fa-credit-card fa-2x mb-2"></i>
-                                            <div>Debit Card</div>
-                                        </div>
-                                    </div>
+                                
                                     <div class="col-md-3">
                                         <div class="payment-method-btn" onclick="selectPaymentMethod('BANK_TRANSFER')">
                                             <input type="radio" name="paymentMethod" value="BANK_TRANSFER" id="pmTransfer" hidden>
@@ -590,7 +593,8 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
                     <button type="button" class="btn btn-info" onclick="printInvoice()">
                         <i class="fas fa-print"></i> Print Invoice
                     </button>
@@ -609,10 +613,23 @@
     let currentReservationData = null;
     let inspectionData = null;
 
-    $(document).ready(function () {
+function onJQueryReady(callback) {
+        if (window.jQuery) {
+            jQuery(callback);
+        } else {
+            const interval = setInterval(function () {
+                if (window.jQuery) {
+                    clearInterval(interval);
+                    jQuery(callback);
+                }
+            }, 50);
+        }
+    }
+
+    onJQueryReady(function () {
         // Auto-search on enter key
         $('#searchInput').keypress(function (e) {
-            if (e.which == 13) {
+                   if (e.which === 13) {
                 searchCheckOut();
             }
         });
@@ -630,7 +647,9 @@
             alert('Please enter a search term');
             return;
         }
-
+   $('#searchResults').show();
+        $('#resultsContainer').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
+        
         $.ajax({
             url: '${pageContext.request.contextPath}/receptionist/check-out',
             method: 'POST',
@@ -650,7 +669,7 @@
     function requestInspection(reservationId) {
         if (confirm('Request room inspection for this reservation?')) {
             $.ajax({
-                url: '${pageContext.request.contextPath}/receptionist/inspection',
+                url: '${pageContext.request.contextPath}/inspector/inspection',
                 method: 'POST',
                 data: {
                     action: 'requestInspection',
@@ -708,6 +727,7 @@
         const reservation = data.reservation;
         const inspection = data.inspection;
         const checkIn = data.checkIn;
+        const serviceOrders = data.serviceOrders || [];
 
         // Guest information
         $('#modalReservationId').val(reservation.id);
@@ -743,14 +763,24 @@
             $('#servicesSection').hide();
             $('#damagesSection').hide();
         }
-
+// Load confirmed service orders
+        loadServiceOrders(serviceOrders);
         // Security deposit
         const securityDeposit = data.securityDeposit || 0;
         $('#securityDeposit').text(formatCurrency(securityDeposit));
 
         // Amount already paid
         const amountPaid = data.amountPaid || 0;
-        $('#amountPaid').text(formatCurrency(amountPaid));
+         const depositPaid = data.depositPaid || 0;
+        const otherPaid = Math.max(0, amountPaid - depositPaid);
+
+        if (otherPaid > 0) {
+            $('#amountPaidRow').show();
+            $('#amountPaid').text(formatCurrency(otherPaid));
+        } else {
+            $('#amountPaidRow').hide();
+            $('#amountPaid').text(formatCurrency(0));
+        }
     }
 
     function displayInspectionSummary(inspection) {
@@ -814,8 +844,24 @@
                 $('#minibarSection').show();
                 let minibarHtml = '';
                 let minibarTotal = 0;
-
+  // Group items with same name and price
+                const grouped = {};
                 minibarItems.forEach(function (item) {
+                      const key = item.itemName + '|' + item.unitPrice;
+                    if (grouped[key]) {
+                        grouped[key].quantity += item.quantity;
+                        grouped[key].totalPrice += item.totalPrice;
+                    } else {
+                        grouped[key] = {
+                            itemName: item.itemName,
+                            unitPrice: item.unitPrice,
+                            quantity: item.quantity,
+                            totalPrice: item.totalPrice
+                        };
+                    }
+                });
+
+                Object.values(grouped).forEach(function (item) {
                     minibarHtml += '<div class="minibar-item">';
                     minibarHtml += '<div>';
                     minibarHtml += '<strong>' + item.itemName + '</strong>';
@@ -883,6 +929,28 @@
             $('#damagesTotal').text(formatCurrency(damageTotal));
         }
     }
+   function loadServiceOrders(orders) {
+       $('#servicesSection').show();
+        if (orders && orders.length > 0) {
+           
+            let serviceHtml = '';
+            let serviceTotal = 0;
+
+            orders.forEach(function (order) {
+                serviceHtml += '<div class="charge-item">';
+                serviceHtml += '<span>' + order.serviceName + ' <span class="text-muted ml-2">x' + order.quantity + '</span></span>';
+                serviceHtml += '<span>' + formatCurrency(order.totalAmount) + '</span>';
+                serviceHtml += '</div>';
+                serviceTotal += order.totalAmount;
+            });
+
+            $('#serviceItems').html(serviceHtml);
+            $('#servicesTotal').text(formatCurrency(serviceTotal));
+        } else {
+           $('#serviceItems').html('<div class="text-muted">No additional services booked</div>');
+            $('#servicesTotal').text(formatCurrency(0));
+        }
+    }
 
     function calculateFinalBill(data) {
         const roomCharges = data.reservation.totalAmount || 0;
@@ -895,10 +963,11 @@
 
         const subtotal = roomCharges + additionalCharges;
         const securityDeposit = data.securityDeposit || 0;
-        const amountPaid = data.amountPaid || 0;
+      
+        const depositPaid = data.depositPaid || 0;
 
         // Calculate refund/final amount
-        let finalAmount = subtotal - amountPaid;
+        let finalAmount = subtotal - depositPaid;
         let refundAmount = 0;
 
         if (securityDeposit > 0 && damageCharges < securityDeposit) {
@@ -910,6 +979,13 @@
         $('#summaryRoom').text(formatCurrency(roomCharges));
         $('#summaryAdditional').text(formatCurrency(additionalCharges));
         $('#subtotal').text(formatCurrency(subtotal));
+        
+           if (depositPaid > 0) {
+            $('#depositRow').show();
+            $('#depositPaid').text(formatCurrency(depositPaid));
+        } else {
+            $('#depositRow').hide();
+        }
 
         if (refundAmount > 0) {
             $('#refundRow').show();
@@ -1005,7 +1081,7 @@
         const checkOutDate = $('#checkOutDate').text();
         const billNights = $('#billNights').text();
         const roomCharges = $('#roomCharges').text();
-        const amountPaid = $('#amountPaid').text();
+   
 
         let html = '<!DOCTYPE html><html><head>';
         html += '<title>Invoice - Booking #' + bookingId + '</title>';
@@ -1076,11 +1152,13 @@
         html += '<td style="text-align: right;">' + subtotal + '</td>';
         html += '</tr>';
 
-        // Amount paid
-        html += '<tr>';
-        html += '<td>Amount Paid</td>';
-        html += '<td style="text-align: right;">-' + amountPaid + '</td>';
-        html += '</tr>';
+ 
+   if ($('#depositRow').is(':visible')) {
+            html += '<tr>';
+            html += '<td>Deposit Paid</td>';
+            html += '<td style="text-align: right;">-' + $('#depositPaid').text() + '</td>';
+            html += '</tr>';
+        }
 
         // Refund if visible
         if ($('#refundRow').is(':visible')) {
@@ -1168,7 +1246,17 @@
             });
         }
 
-        $('#searchResults').html(html);
+        $('#resultsContainer').html(html);
+    }
+      function clearSearch() {
+        $('#searchInput').val('');
+        $('#searchResults').hide();
+    }
+     // Payment method selection helper
+    function selectPaymentMethod(method) {
+        $('.payment-method-btn').removeClass('selected');
+        $('input[name="paymentMethod"][value="' + method + '"]').prop('checked', true)
+                .closest('.payment-method-btn').addClass('selected');
     }
 </script>
 
