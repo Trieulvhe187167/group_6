@@ -15,7 +15,11 @@ public class Activity {
     // Additional fields for display
     private String userName;
     private String roomNumber;
-    
+      // Optional fields for extended views
+    private String userRole;
+    private String details;
+    private String status;
+    private String customerName;
     // Constructors
     public Activity() {
         this.timestamp = new Timestamp(System.currentTimeMillis());
@@ -109,6 +113,46 @@ public class Activity {
         this.roomNumber = roomNumber;
     }
     
+    public String getUserRole() {
+        return userRole;
+    }
+
+    public void setUserRole(String userRole) {
+        this.userRole = userRole;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    // Compatibility with legacy JSPs expecting activityType
+    public String getActivityType() {
+        return getType();
+    }
+
+    public void setActivityType(String activityType) {
+        setType(activityType);
+    }
     // Helper methods
     public String getTypeDisplayName() {
         if (type == null) return "";
