@@ -26,7 +26,20 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/shortcodes/shortcodes.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <link class="skin" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/color/color-1.css">
-    
+    <style>
+      .page-banner {
+                position: relative;
+            }
+            .search-bar-on-banner {
+                position: absolute;
+                left: 50%;
+                bottom: -30px;        /* đẩy xuống mép dưới banner */
+                transform: translateX(-50%);
+                width: 100%;
+                max-width: 1100px;
+                padding-bottom: 10px;
+            }
+      </style>      
 </head>
 <body id="bg">
     <div class="page-wraper">
@@ -43,7 +56,11 @@
                     <div class="page-banner-entry">
                         <h1 class="text-white">Contact Us</h1>
                     </div>
+                     <div class="search-bar-on-banner mt-4">
+                            <%@ include file="searchRoom.jsp" %>
+                        </div>
                 </div>
+         
             </div>
             <div class="breadcrumb-row">
                 <div class="container">

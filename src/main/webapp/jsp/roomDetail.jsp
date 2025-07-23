@@ -1019,6 +1019,18 @@
             .mfp-img {
                 border-radius: 8px;
             }
+             .page-banner {
+                position: relative;
+            }
+            .search-bar-on-banner {
+                position: absolute;
+                left: 50%;
+                bottom: -30px;        /* đẩy xuống mép dưới banner */
+                transform: translateX(-50%);
+                width: 100%;
+                max-width: 1100px;
+                padding-bottom: 10px;
+            }
         </style>
     </head>
     <body id="bg">
@@ -1070,6 +1082,9 @@
                         <div class="page-banner-entry">
                             <h1 class="text-white">Room Detail</h1>
                             </div>
+                         <div class="search-bar-on-banner mt-4">
+                            <%@ include file="searchRoom.jsp" %>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -1369,14 +1384,7 @@
        
                             </div>
    </div>
-                   
 
-
-                            <!-- Content END-->
-
-                            <!-- Footer ==== -->
-
-                            <!-- Footer END ==== -->
                            
                             <button class="back-to-top fa fa-chevron-up" ></button>
 
