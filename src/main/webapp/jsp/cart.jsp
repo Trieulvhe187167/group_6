@@ -26,6 +26,7 @@
                 $('#loading-icon-bx').fadeOut();
             });
         </script>
+     
     </head>
     <body id="bg">
         <div class="page-wraper">
@@ -37,12 +38,13 @@
                 <%@ include file="header.jsp" %>
             </header>
 
-            <!-- Banner giống Blog -->
+        
             <div class="page-banner ovbl-dark" style="background-image:url(${pageContext.request.contextPath}/assets/images/banner/banner2.jpg);">
                 <div class="container">
                     <div class="page-banner-entry">
                         <h1 class="text-white">Your Cart</h1>
                     </div>
+
                 </div>
             </div>
             <div class="breadcrumb-row">
