@@ -522,6 +522,12 @@
                         <span>Booking History</span>
                     </a>
                 </li>
+                <li>
+                    <a href="${pageContext.request.contextPath}/customer/your-feedback">
+                        <i class="fas fa-comments"></i>
+                        <span>My Feedback</span>
+                    </a>
+                </li>
                 <div class="menu-divider"></div>
                 <li>
                     <a href="${pageContext.request.contextPath}/customer/profile"  class="active">
@@ -544,18 +550,7 @@
                         <span>Homepage</span>
                     </a>
                 </li>
-                <li>
-                    <a href="search-rooms.jsp">
-                        <i class="fas fa-search"></i>
-                        <span>Search Rooms</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="support.jsp">
-                        <i class="fas fa-headset"></i>
-                        <span>Support</span>
-                    </a>
-                </li>
+     
                 <div class="menu-divider"></div>
                 <li>
                     <a href="${pageContext.request.contextPath}/LogoutServlet" style="color: #dc3545;">
