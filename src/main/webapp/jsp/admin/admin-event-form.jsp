@@ -68,8 +68,14 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <input type="date" name="startDate" id="startDate" value="${event.startDate}" required>
-                                    <input type="date" name="endDate" id="endDate" value="${event.endDate}" required>
+                                    
+                                 <fmt:formatDate value="${event.startAt}" pattern="yyyy-MM-dd'T'HH:mm" var="startAtFormatted"/>
+                                 <fmt:formatDate value="${event.endAt}" pattern="yyyy-MM-dd'T'HH:mm" var="endAtFormatted"/>
+                                      <label>Start At</label>
+                                    <input type="datetime-local" name="startAt" id="startAt" value="${startAtFormatted}" required>
+                                    <br/>
+                                    <label>End At</label>
+                                    <input type="datetime-local" name="endAt" id="endAt" value="${endAtFormatted}" required>
 
                                 </div>
                             </div>
@@ -232,11 +238,11 @@
 
         // Update end date minimum when start date changes
         $('#startAt').on('change', function () {
-            var startDate = $(this).val();
-            if (startDate) {
-                $('#endAt').attr('min', startDate);
+               var startAtVal = $(this).val();
+            if (startAtVal) {
+                $('#endAt').attr('min', startAtVal);
                 // If end date is before start date, clear it
-                if ($('#endAt').val() && $('#endAt').val() < startDate) {
+               if ($('#endAt').val() && $('#endAt').val() < startAtVal) {
                     $('#endAt').val('');
                 }
             }
@@ -244,10 +250,10 @@
     });
 
     window.addEventListener('DOMContentLoaded', function () {
-        const today = new Date().toISOString().split('T')[0];
+          const today = new Date().toISOString().slice(0, 16);
 
-        const startInput = document.getElementById('startDate');
-        const endInput = document.getElementById('endDate');
+        const startInput = document.getElementById('startAt');
+        const endInput = document.getElementById('endAt');
 
         if (startInput) {
             startInput.setAttribute('min', today);

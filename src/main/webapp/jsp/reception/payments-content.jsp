@@ -156,9 +156,7 @@
                     <div class="form-group">
                         <label>&nbsp;</label>
                         <div>
-                            <button type="submit" class="btn btn-primary btn-sm">
-                                <i class="fas fa-filter"></i> Filter
-                            </button>
+                        
                             <button type="button" class="btn btn-secondary btn-sm" onclick="clearFilters()">
                                 <i class="fas fa-times"></i> Clear
                             </button>
@@ -263,10 +261,7 @@
                                             <i class="fas fa-eye"></i>
                                         </button>
                                         <c:if test="${payment.status eq 'SUCCESS' && payment.paymentType ne 'REFUND'}">
-                                            <button class="btn btn-primary" onclick="printReceipt(${payment.id})" 
-                                                    title="Print Receipt">
-                                                <i class="fas fa-print"></i>
-                                            </button>
+                                          
                                             <button class="btn btn-warning" onclick="showRefundModal(${payment.id})" 
                                                     title="Process Refund">
                                                 <i class="fas fa-undo"></i>
@@ -463,11 +458,11 @@
 let currentPaymentId = null;
 let selectedReservation = null;
 
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Initialize DataTable
     $('#paymentsTable').DataTable({
         order: [[8, 'desc']], // Sort by date column
-        pageLength: 25
+       pageLength: 10
     });
      // Reset refund form when modal is hidden
     $('#refundModal').on('hidden.bs.modal', function() {
@@ -486,6 +481,10 @@ $(document).ready(function() {
         filterPayments();
     });
     
+      // Auto-filter when any filter field changes
+    $('#statusFilter, #paymentTypeFilter, #methodFilter, #fromDate, #toDate').change(function() {
+        filterPayments();
+    });
     // Payment type change
     $('#paymentType').change(function() {
         calculatePaymentAmount();

@@ -522,6 +522,12 @@
                         <span>Booking History</span>
                     </a>
                 </li>
+                <li>
+                    <a href="${pageContext.request.contextPath}/customer/your-feedback">
+                        <i class="fas fa-comments"></i>
+                        <span>My Feedback</span>
+                    </a>
+                </li>
                 <div class="menu-divider"></div>
                 <li>
                     <a href="${pageContext.request.contextPath}/customer/profile"  class="active">
@@ -544,18 +550,7 @@
                         <span>Homepage</span>
                     </a>
                 </li>
-                <li>
-                    <a href="search-rooms.jsp">
-                        <i class="fas fa-search"></i>
-                        <span>Search Rooms</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="support.jsp">
-                        <i class="fas fa-headset"></i>
-                        <span>Support</span>
-                    </a>
-                </li>
+     
                 <div class="menu-divider"></div>
                 <li>
                     <a href="${pageContext.request.contextPath}/LogoutServlet" style="color: #dc3545;">
@@ -589,15 +584,7 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Overview</button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="reservations-tab" data-bs-toggle="tab" data-bs-target="#reservations" type="button" role="tab">Reservations</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab">Payments</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="feedback-tab" data-bs-toggle="tab" data-bs-target="#feedback" type="button" role="tab">Feedback</button>
-                        </li>
+                      
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">Security</button>
                         </li>
@@ -702,55 +689,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="tab-pane fade" id="payments" role="tabpanel">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                   
-                                        <th>Reservation</th>
-                                        <th>Amount</th>
-                                        <th>Method</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:forEach var="p" items="${payments}">
-                                        <tr>
-                                          
-                                            <td>${p.reservationId}</td>
-                                            <td><fmt:formatNumber value="${p.amount}" />₫</td>
-                                            <td>${p.method}</td>
-                                            <td>${p.status}</td>
-                                            <td><fmt:formatDate value="${p.createdAt}" pattern="yyyy-MM-dd"/></td>
-                                        </tr>
-                                    </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="tab-pane fade" id="feedback" role="tabpanel">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Reservation</th>
-                                        <th>Rating</th>
-                                        <th>Comment</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:forEach var="f" items="${feedbacks}">
-                                        <tr>
-                                            <td>${f.reservationId}</td>
-                                            <td>${f.rating}</td>
-                                            <td>${f.comment}</td>
-                                            <td><fmt:formatDate value="${f.createdAt}" pattern="yyyy-MM-dd"/></td>
-                                        </tr>
-                                    </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="tab-pane fade" id="security" role="tabpanel">
+                                               <div class="tab-pane fade" id="security" role="tabpanel">
                             <form action="${pageContext.request.contextPath}/customer/change-password" method="post" class="row g-3" novalidate>
                                 <div class="col-md-6">
                                     <label class="form-label">Current Password</label>

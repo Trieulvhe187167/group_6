@@ -658,6 +658,7 @@ public class BookingServlet extends HttpServlet {
         Reservation reservation = new Reservation();
         reservation.setUserId(userId);
         reservation.setRoomId(formData.selectedRoomId);
+        reservation.setRoomTypeId(formData.roomTypeId);
         reservation.setCheckIn(formData.checkinDate);
         reservation.setCheckOut(formData.checkoutDate);
         reservation.setStatus("PENDING");

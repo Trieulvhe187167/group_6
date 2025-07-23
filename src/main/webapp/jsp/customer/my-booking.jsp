@@ -511,13 +511,12 @@
                         <span>User Profile</span>
                     </a>
                 </li>
-                <li>
-                    <a href="change-password.jsp">
-                        <i class="fas fa-key"></i>
-                        <span>Change Password</span>
-                    </a>
+       
+                    <li>
+                       <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services" >
+                                                <i class="fa fa-concierge-bell"></i> Book Services
+                                            </a>
                 </li>
-                 
                 <div class="menu-divider"></div>
                 <li>
                     <a href="/index.jsp">
@@ -525,18 +524,7 @@
                         <span>Homepage</span>
                     </a>
                 </li>
-                <li>
-                    <a href="search-rooms.jsp">
-                        <i class="fas fa-search"></i>
-                        <span>Search Rooms</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="support.jsp">
-                        <i class="fas fa-headset"></i>
-                        <span>Support</span>
-                    </a>
-                </li>
+ 
                 <div class="menu-divider"></div>
                 <li>
                     <a href="${pageContext.request.contextPath}/LogoutServlet" style="color: #dc3545;">

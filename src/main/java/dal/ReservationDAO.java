@@ -6,7 +6,9 @@ import model.ReservationDetail;
 import model.ReservationSummary;
 import java.sql.*;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -334,20 +336,18 @@ public class ReservationDAO {
                 res.setRoomNumber(rs.getString("RoomNumber"));
                 res.setCheckIn(rs.getDate("CheckIn"));
                 res.setCheckOut(rs.getDate("CheckOut"));
-
-                // Create timestamps from date for check-in and check-out times
-                // Default check-in time to 14:00 (2 PM)
-                Timestamp checkInTs = new Timestamp(rs.getDate("CheckIn").getTime());
-                checkInTs.setHours(14);
-                checkInTs.setMinutes(0);
-                checkInTs.setSeconds(0);
+                
+                     // Use modern LocalDateTime API instead of deprecated setters
+                LocalDate checkInDate = rs.getDate("CheckIn").toLocalDate();
+                LocalDate checkOutDate = rs.getDate("CheckOut").toLocalDate();
+                  // Default check-in time to 14:00 (2 PM)
+                   Timestamp checkInTs = Timestamp.valueOf(
+                        LocalDateTime.of(checkInDate, LocalTime.of(14, 0)));
                 res.setCheckInTime(checkInTs);
-
-                // Default check-out time to 12:00 (noon)
-                Timestamp checkOutTs = new Timestamp(rs.getDate("CheckOut").getTime());
-                checkOutTs.setHours(12);
-                checkOutTs.setMinutes(0);
-                checkOutTs.setSeconds(0);
+                
+                // Default check-out time within 11:00-13:00 window (use 13:00)
+                Timestamp checkOutTs = Timestamp.valueOf(
+                        LocalDateTime.of(checkOutDate, LocalTime.of(13, 0)));
                 res.setCheckOutTime(checkOutTs);
 
                 res.setStatus(rs.getString("Status"));
@@ -1566,17 +1566,15 @@ public class ReservationDAO {
                 res.setCheckOut(rs.getDate("CheckOut"));
 
                 // Create timestamps from date for check-in and check-out times
-                // For current occupancies, set check-in to 00:00 and check-out to 24:00
-                Timestamp checkInTs = new Timestamp(rs.getDate("CheckIn").getTime());
-                checkInTs.setHours(0);
-                checkInTs.setMinutes(0);
-                checkInTs.setSeconds(0);
-                res.setCheckInTime(checkInTs);
+                // For current occupancies, set check-in to start of day and check-out to end of day
+                LocalDate checkInDate = rs.getDate("CheckIn").toLocalDate();
+                LocalDate checkOutDate = rs.getDate("CheckOut").toLocalDate();
 
-                Timestamp checkOutTs = new Timestamp(rs.getDate("CheckOut").getTime());
-                checkOutTs.setHours(23);
-                checkOutTs.setMinutes(59);
-                checkOutTs.setSeconds(59);
+                Timestamp checkInTs = Timestamp.valueOf(checkInDate.atStartOfDay());
+                res.setCheckInTime(checkInTs);
+                
+                    Timestamp checkOutTs = Timestamp.valueOf(
+                        LocalDateTime.of(checkOutDate, LocalTime.of(23, 59, 59)));
                 res.setCheckOutTime(checkOutTs);
 
                 res.setStatus(rs.getString("Status"));
@@ -1670,84 +1668,106 @@ public class ReservationDAO {
         }
         // "all" filter doesn't add any condition
 
-        // Apply sort - FIXED to handle all sort options
-        switch (sort) {
-            case "date_asc":
-                sql.append(" ORDER BY r.CheckOut ASC, r.CheckIn ASC");
-                break;
-            case "date_desc":
-            case "date": // backward compatibility
-                sql.append(" ORDER BY r.CheckOut DESC, r.CheckIn DESC");
-                break;
-            case "rating_asc":
-                sql.append(" ORDER BY COALESCE(f.Rating, 0) ASC, r.CheckOut DESC");
-                break;
-            case "rating_desc":
-            case "rating": // backward compatibility
-                sql.append(" ORDER BY COALESCE(f.Rating, 0) DESC, r.CheckOut DESC");
-                break;
-            case "room_asc":
-                sql.append(" ORDER BY rm.RoomNumber ASC");
-                break;
-            case "room_desc":
-                sql.append(" ORDER BY rm.RoomNumber DESC");
-                break;
-            case "checkin_asc":
-                sql.append(" ORDER BY r.CheckIn ASC");
-                break;
-            case "checkin_desc":
-                sql.append(" ORDER BY r.CheckIn DESC");
-                break;
-            case "checkout_asc":
-                sql.append(" ORDER BY r.CheckOut ASC");
-                break;
-            case "checkout_desc":
-                sql.append(" ORDER BY r.CheckOut DESC");
-                break;
-            default:
-                // Default to checkout date descending
-                sql.append(" ORDER BY r.CheckOut DESC, r.CheckIn DESC");
-                break;
+    // Apply sort - FIXED to handle all sort options
+    switch (sort) {
+        case "date_asc":
+            sql.append(" ORDER BY r.CheckOut ASC, r.CheckIn ASC");
+            break;
+        case "date_desc":
+        case "date": // backward compatibility
+            sql.append(" ORDER BY r.CheckOut DESC, r.CheckIn DESC");
+            break;
+        case "rating_asc":
+            sql.append(" ORDER BY COALESCE(f.Rating, 0) ASC, r.CheckOut DESC");
+            break;
+        case "rating_desc":
+        case "rating": // backward compatibility
+            sql.append(" ORDER BY COALESCE(f.Rating, 0) DESC, r.CheckOut DESC");
+            break;
+        case "room_asc":
+            sql.append(" ORDER BY rm.RoomNumber ASC");
+            break;
+        case "room_desc":
+            sql.append(" ORDER BY rm.RoomNumber DESC");
+            break;
+        case "checkin_asc":
+            sql.append(" ORDER BY r.CheckIn ASC");
+            break;
+        case "checkin_desc":
+            sql.append(" ORDER BY r.CheckIn DESC");
+            break;
+        case "checkout_asc":
+            sql.append(" ORDER BY r.CheckOut ASC");
+            break;
+        case "checkout_desc":
+            sql.append(" ORDER BY r.CheckOut DESC");
+            break;
+        default:
+            // Default to checkout date descending
+            sql.append(" ORDER BY r.CheckOut DESC, r.CheckIn DESC");
+            break;
+    }
+    
+    System.out.println("=== DAO: SQL Query: " + sql.toString());
+    
+    try (Connection conn = DBContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+        
+        while (rs.next()) {
+            Reservation reservation = mapResultSetToReservation(rs);
+            int rating = 0;
+            String comment = "";
+            try {
+                rating = rs.getInt("FeedbackRating");
+                if (rs.wasNull()) rating = 0;
+            } catch (Exception ignore) {}
+            try {
+                comment = rs.getString("FeedbackComment");
+                if (comment == null) comment = "";
+            } catch (Exception ignore) {}
+            reservation.setRating(rating);
+            reservation.setComment(comment);
+            System.out.println("[DEBUG] ReservationId: " + reservation.getId() + ", Rating: " + reservation.getRating() + ", Comment: " + reservation.getComment());
+            reservations.add(reservation);
         }
+        
+        System.out.println("=== DAO: Found " + reservations.size() + " reservations");
+        
+    } catch (SQLException e) {
+        System.out.println("=== DAO: SQL Error: " + e.getMessage());
+        e.printStackTrace();
+    }
+    return reservations;
+}
 
-        System.out.println("=== DAO: SQL Query: " + sql.toString());
+  public List<ReservationSummary> getActiveReservations() {
+        List<ReservationSummary> list = new ArrayList<>();
+        String sql = "SELECT r.Id, rm.RoomNumber, u.FullName AS CustomerName "
+                + "FROM Reservations r "
+                + "INNER JOIN Rooms rm ON r.RoomId = rm.Id "
+                + "INNER JOIN Users u ON r.UserId = u.Id "
+                + "WHERE r.Status = 'CONFIRMED' "
+                + "AND r.CheckIn <= CAST(GETDATE() AS DATE) "
+                + "AND r.CheckOut > CAST(GETDATE() AS DATE) "
+                + "ORDER BY rm.RoomNumber";
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-
-            ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Reservation reservation = mapResultSetToReservation(rs);
-                int rating = 0;
-                String comment = "";
-                try {
-                    rating = rs.getInt("FeedbackRating");
-                    if (rs.wasNull()) {
-                        rating = 0;
-                    }
-                } catch (Exception ignore) {
-                }
-                try {
-                    comment = rs.getString("FeedbackComment");
-                    if (comment == null) {
-                        comment = "";
-                    }
-                } catch (Exception ignore) {
-                }
-                reservation.setRating(rating);
-                reservation.setComment(comment);
-                System.out.println("[DEBUG] ReservationId: " + reservation.getId() + ", Rating: " + reservation.getRating() + ", Comment: " + reservation.getComment());
-                reservations.add(reservation);
+                ReservationSummary res = new ReservationSummary();
+                res.setId(rs.getInt("Id"));
+                res.setRoomNumber(rs.getString("RoomNumber"));
+                res.setCustomerName(rs.getString("CustomerName"));
+                list.add(res);
             }
-
-            System.out.println("=== DAO: Found " + reservations.size() + " reservations");
-
         } catch (SQLException e) {
-            System.out.println("=== DAO: SQL Error: " + e.getMessage());
             e.printStackTrace();
         }
-        return reservations;
+        return list;
     }
 
+   
 }

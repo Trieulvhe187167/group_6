@@ -3,6 +3,9 @@ package dal;
 
 import model.*;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,6 +113,13 @@ public class CheckInOutDAO {
                 res.setRoomNumber(rs.getString("RoomNumber"));
                 res.setCheckIn(rs.getDate("CheckIn"));
                 res.setCheckOut(rs.getDate("CheckOut"));
+                
+                      // Default check-in/out times
+                LocalDate checkInDate = res.getCheckIn().toLocalDate();
+                LocalDate checkOutDate = res.getCheckOut().toLocalDate();
+                res.setCheckInTime(Timestamp.valueOf(LocalDateTime.of(checkInDate, LocalTime.of(14, 0))));
+                res.setCheckOutTime(Timestamp.valueOf(LocalDateTime.of(checkOutDate, LocalTime.of(13, 0))));
+                
                 res.setStatus(rs.getString("Status"));
                 res.setTotalAmount(rs.getDouble("TotalAmount"));
                 res.setCreatedAt(rs.getTimestamp("CreatedAt"));

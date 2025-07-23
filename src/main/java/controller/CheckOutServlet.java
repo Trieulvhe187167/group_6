@@ -7,7 +7,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.sql.Date;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.LocalDate;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -45,6 +48,11 @@ public class CheckOutServlet extends HttpServlet {
             Date today = Date.valueOf(LocalDate.now());
             List<ReservationSummary> todayCheckOuts = checkInOutDAO.getUpcomingCheckOuts(24);
             
+              LocalDateTime now = LocalDateTime.now();
+              
+            int lateCheckouts = 0;
+            int pendingInspections = 0;
+
             // Add payment status, inspection status and check if already checked out
             for (ReservationSummary res : todayCheckOuts) {
                 res.setCheckedOut(checkInOutDAO.isCheckedOut(res.getId()));
@@ -56,14 +64,31 @@ public class CheckOutServlet extends HttpServlet {
                     res.setInspectionStatus(inspection.getStatus());
                 }
                 
-                // Check if late checkout
-                if (res.getCheckOut().before(today)) {
+           
+                 // Determine late checkout
+                LocalDateTime dueTime;
+                if (res.getCheckOutTime() != null) {
+                    dueTime = res.getCheckOutTime().toLocalDateTime();
+                } else {
+                    LocalDate coDate = res.getCheckOut().toLocalDate();
+                    dueTime = LocalDateTime.of(coDate, LocalTime.of(13, 0));
+                }
+                if (now.isAfter(dueTime)) {
                     res.setLate(true);
+                        lateCheckouts++;
+                }
+
+                // Count pending inspections
+                String status = res.getInspectionStatus();
+                if (status == null || !("COMPLETED".equals(status) || "APPROVED".equals(status))) {
+                    pendingInspections++;
                 }
             }
             
             // Set attributes
             request.setAttribute("todayCheckOuts", todayCheckOuts);
+              request.setAttribute("lateCheckouts", lateCheckouts);
+            request.setAttribute("pendingInspections", pendingInspections);
             request.setAttribute("currentUser", currentUser);
             
             // Set template attributes
@@ -151,10 +176,16 @@ public class CheckOutServlet extends HttpServlet {
             // Get inspection data
             RoomInspection inspection = inspectionDAO.getInspectionByReservationId(reservationId);
             
+            // Get confirmed service orders for this reservation
+            List<ServiceOrder> serviceOrders = serviceDAO.getServiceOrdersByReservation(reservationId)
+                    .stream()
+                    .filter(o -> "CONFIRMED".equalsIgnoreCase(o.getStatus()))
+                    .collect(Collectors.toList());
             // Create response object
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("reservation", reservation);
             responseData.put("checkIn", checkIn);
+            responseData.put("serviceOrders", serviceOrders);
             
             // Add inspection data if available
             if (inspection != null) {
@@ -164,7 +195,7 @@ public class CheckOutServlet extends HttpServlet {
                 Map<String, Object> inspectionData = new HashMap<>();
                 inspectionData.put("id", inspection.getId());
                 inspectionData.put("inspectorName", inspection.getInspector() != null ? 
-                    inspection.getInspector().getFullName() : "Unknown");
+                inspection.getInspector().getFullName() : "Unknown");
                 inspectionData.put("inspectionTime", inspection.getInspectionTime());
                 inspectionData.put("roomCondition", inspection.getRoomCondition());
                 inspectionData.put("cleanlinessScore", inspection.getCleanlinessScore());
@@ -187,20 +218,26 @@ public class CheckOutServlet extends HttpServlet {
                 Map<String, Double> charges = new HashMap<>();
                 charges.put("minibar", inspection.getTotalItemCharges().doubleValue());
                 charges.put("damages", inspection.getTotalDamageCharges().doubleValue());
-                charges.put("services", serviceDAO.getReservationServiceTotal(reservationId));
+                double serviceTotal = serviceOrders.stream().mapToDouble(ServiceOrder::getTotalAmount).sum();
+                charges.put("services", serviceTotal);
                 responseData.put("charges", charges);
             } else {
                 // No inspection data - set default charges
                 Map<String, Double> charges = new HashMap<>();
                 charges.put("minibar", 0.0);
                 charges.put("damages", 0.0);
-                charges.put("services", serviceDAO.getReservationServiceTotal(reservationId));
+                 double serviceTotal = serviceOrders.stream().mapToDouble(ServiceOrder::getTotalAmount).sum();
+                charges.put("services", serviceTotal);
                 responseData.put("charges", charges);
             }
             
+    
             // Add payment info
             double amountPaid = paymentDAO.getReservationPaidAmount(reservationId);
             responseData.put("amountPaid", amountPaid);
+             // Add reservation deposit amount if paid
+            double depositPaid = paymentDAO.getTotalDepositPaid(reservationId);
+            responseData.put("depositPaid", depositPaid);
             
             // Add security deposit if available
             if (checkIn != null) {
@@ -221,6 +258,14 @@ public class CheckOutServlet extends HttpServlet {
         
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
+        
+          // Validate current user
+        if (currentUser == null || !"RECEPTIONIST".equals(currentUser.getRole())) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"success\":false, \"message\":\"Unauthorized\"}");
+            return;
+        }
         
         try {
             // Get form parameters
@@ -251,8 +296,12 @@ public class CheckOutServlet extends HttpServlet {
             }
             
             double totalAmount = roomCharges + serviceCharges + inspectionCharges + damageCharges;
-            double amountPaid = paymentDAO.getReservationPaidAmount(reservationId);
-            double finalAmount = totalAmount - amountPaid;
+
+             // Deduct any deposit paid separately so it reflects in the final balance
+            double depositPaid = paymentDAO.getTotalDepositPaid(reservationId);
+            
+            // Previous payments are only the guest deposit so deduct that from the total
+            double finalAmount = totalAmount - depositPaid;
             
             // Get security deposit and calculate refund
             CheckInDetail checkIn = checkInOutDAO.getCheckInDetails(reservationId);
@@ -338,7 +387,9 @@ public class CheckOutServlet extends HttpServlet {
             payment.setAmount(amount);
             payment.setMethod(paymentMethod);
             payment.setStatus("SUCCESS");
-            payment.setPaymentType("FINAL_PAYMENT");
+             // Use the enum value supported by the Payments table
+            // FINAL_PAYMENT is stored as REMAINING_BALANCE
+            payment.setPaymentType("REMAINING_BALANCE");
             paymentDAO.createPayment(payment);
         } catch (Exception e) {
             logger.error("Error creating final payment", e);
@@ -352,7 +403,7 @@ public class CheckOutServlet extends HttpServlet {
             refund.setAmount(-refundAmount); // Negative amount for refund
             refund.setMethod(refundMethod);
             refund.setStatus("SUCCESS");
-            refund.setPaymentType("SECURITY_DEPOSIT_REFUND");
+            refund.setPaymentType("REFUND");
             paymentDAO.createPayment(refund);
         } catch (Exception e) {
             logger.error("Error processing refund", e);

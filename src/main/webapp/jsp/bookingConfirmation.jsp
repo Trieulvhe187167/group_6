@@ -488,7 +488,7 @@
                             <div class="mt-4">
                                 <h5>Important Information:</h5>
                                 <ul class="list-arrow primary text-left">
-                                    <li>Check-in time: 14:00 - Check-out time: 12:00</li>
+                                     <li>Check-in time: 14:00 - Check-out time: 11:00 - 13:00</li>
                                     <li>Please bring a valid ID and this confirmation when checking in</li>
                                     <li>For any changes or cancellations, please contact us at least 3 days before check-in</li>
                                     <li>A confirmation email has been sent to <%= reservation.getCustomerEmail() %></li>
