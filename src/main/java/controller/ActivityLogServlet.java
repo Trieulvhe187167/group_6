@@ -23,15 +23,24 @@ public class ActivityLogServlet extends HttpServlet {
         User currentUser = (User) session.getAttribute("user");
         
         if (currentUser == null || !"RECEPTIONIST".equals(currentUser.getRole())) {
-            response.sendRedirect(request.getContextPath() + "/login");
+            response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
             return;
         }
         
         try {
             // Get filter parameters
             String dateFrom = request.getParameter("dateFrom");
+            if (dateFrom == null) {
+                dateFrom = request.getParameter("fromDate");
+            }
             String dateTo = request.getParameter("dateTo");
+            if (dateTo == null) {
+                dateTo = request.getParameter("toDate");
+            }
             String type = request.getParameter("type");
+            if (type == null) {
+                type = request.getParameter("activityType");
+            }
             String userId = request.getParameter("userId");
             
             // Get activities with filters
@@ -70,7 +79,13 @@ public class ActivityLogServlet extends HttpServlet {
         
         String action = request.getParameter("action");
         
-        if ("exportActivities".equals(action)) {
+       if ("exportActivities".equals(action) || "export".equals(action)) {
+            exportActivities(request, response);
+        } else if ("getLatestCount".equals(action)) {
+            int count = activityDAO.getTotalActivityCount();
+            response.setContentType("text/plain");
+            response.getWriter().write(String.valueOf(count));
+        } else if ("report".equals(action)) {
             exportActivities(request, response);
         } else {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -79,11 +94,20 @@ public class ActivityLogServlet extends HttpServlet {
     
     private void exportActivities(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
-        try {
-            // Get filter parameters
+       try {
+               // Get filter parameters
             String dateFrom = request.getParameter("dateFrom");
+            if (dateFrom == null) {
+                dateFrom = request.getParameter("fromDate");
+            }
             String dateTo = request.getParameter("dateTo");
+            if (dateTo == null) {
+                dateTo = request.getParameter("toDate");
+            }
             String type = request.getParameter("type");
+            if (type == null) {
+                type = request.getParameter("activityType");
+            }
             String userId = request.getParameter("userId");
             
             List<Activity> activities = activityDAO.getActivitiesWithFilters(dateFrom, dateTo, type, userId);
