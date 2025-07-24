@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -179,12 +179,49 @@
             flex: 1;
             min-width: 200px;
         }
+        
+        .filter-group:last-child {
+            flex: 0 0 auto;
+            min-width: auto;
+        }
 
         .filter-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
             color: #495057;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .filter-link:hover {
+            background: #e9ecef;
+            color: #495057;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        
+        .filter-link.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
         }
 
         .filter-group select,
@@ -577,7 +614,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="active">
+                    <a href="${pageContext.request.contextPath}/customer/feedback?action=list" class="active">
                         <i class="fas fa-comments"></i>
                         <span>My Feedback</span>
                     </a>
@@ -587,12 +624,6 @@
                     <a href="${pageContext.request.contextPath}/customer/profile">
                         <i class="fas fa-user-edit"></i>
                         <span>User Profile</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="change-password.jsp">
-                        <i class="fas fa-key"></i>
-                        <span>Change Password</span>
                     </a>
                 </li>
                 <li>
@@ -607,18 +638,7 @@
                         <span>Homepage</span>
                     </a>
                 </li>
-                <li>
-                    <a href="search-rooms.jsp">
-                        <i class="fas fa-search"></i>
-                        <span>Search Rooms</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="support.jsp">
-                        <i class="fas fa-headset"></i>
-                        <span>Support</span>
-                    </a>
-                </li>
+
                 <div class="menu-divider"></div>
                 <li>
                     <a href="${pageContext.request.contextPath}/LogoutServlet" style="color: #dc3545;">
@@ -687,23 +707,51 @@
 
             <!-- Filter Section -->
             <div class="filter-section">
-                <form method="get" class="filter-row">
-                    <div class="filter-group">
-                        <label for="filterSelect">Filter by Status:</label>
-                        <select name="filter" id="filterSelect" onchange="this.form.submit()">
-                            <option value="all" ${param.filter == 'all' ? 'selected' : ''}>All Completed</option>
-                            <option value="rated" ${param.filter == 'rated' ? 'selected' : ''}>Rated Only</option>
-                            <option value="unrated" ${param.filter == 'unrated' ? 'selected' : ''}>Unrated Only</option>
-                        </select>
+                <h4 style="margin-bottom: 20px; color: #495057;">Filter & Sort Options</h4>
+                
+                <!-- Filter Buttons -->
+                <div style="margin-bottom: 20px;">
+                    <h5 style="margin-bottom: 10px; color: #6c757d;">Filter by Status:</h5>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a href="/customer/feedback?filter=all&sort=${currentSort == 'rating' ? 'rating' : 'date'}" 
+                           style="padding: 10px 20px; background: ${currentFilter == 'all' || empty currentFilter ? '#667eea' : '#f8f9fa'}; 
+                                  color: ${currentFilter == 'all' || empty currentFilter ? 'white' : '#495057'}; 
+                                  text-decoration: none; border-radius: 8px; border: 2px solid #e9ecef; font-weight: 500;">
+                            All Completed
+                        </a>
+                        <a href="/customer/feedback?filter=rated&sort=${currentSort == 'rating' ? 'rating' : 'date'}" 
+                           style="padding: 10px 20px; background: ${currentFilter == 'rated' ? '#667eea' : '#f8f9fa'}; 
+                                  color: ${currentFilter == 'rated' ? 'white' : '#495057'}; 
+                                  text-decoration: none; border-radius: 8px; border: 2px solid #e9ecef; font-weight: 500;">
+                            Rated Only
+                        </a>
+                        <a href="/customer/feedback?filter=unrated&sort=${currentSort == 'rating' ? 'rating' : 'date'}" 
+                           style="padding: 10px 20px; background: ${currentFilter == 'unrated' ? '#667eea' : '#f8f9fa'}; 
+                                  color: ${currentFilter == 'unrated' ? 'white' : '#495057'}; 
+                                  text-decoration: none; border-radius: 8px; border: 2px solid #e9ecef; font-weight: 500;">
+                            Unrated Only
+                        </a>
                     </div>
-                    <div class="filter-group">
-                        <label for="sortSelect">Sort by:</label>
-                        <select name="sort" id="sortSelect" onchange="this.form.submit()">
-                            <option value="date" ${param.sort == 'date' ? 'selected' : ''}>Date (Latest First)</option>
-                            <option value="rating" ${param.sort == 'rating' ? 'selected' : ''}>Rating (Highest First)</option>
-                        </select>
+                </div>
+                
+                <!-- Sort Buttons -->
+                <div>
+                    <h5 style="margin-bottom: 10px; color: #6c757d;">Sort by:</h5>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a href="/customer/feedback?sort=date&filter=${currentFilter == 'rated' ? 'rated' : currentFilter == 'unrated' ? 'unrated' : 'all'}" 
+                           style="padding: 10px 20px; background: ${currentSort == 'date' || empty currentSort ? '#667eea' : '#f8f9fa'}; 
+                                  color: ${currentSort == 'date' || empty currentSort ? 'white' : '#495057'}; 
+                                  text-decoration: none; border-radius: 8px; border: 2px solid #e9ecef; font-weight: 500;">
+                            Date (Latest First)
+                        </a>
+                        <a href="/customer/feedback?sort=rating&filter=${currentFilter == 'rated' ? 'rated' : currentFilter == 'unrated' ? 'unrated' : 'all'}" 
+                           style="padding: 10px 20px; background: ${currentSort == 'rating' ? '#667eea' : '#f8f9fa'}; 
+                                  color: ${currentSort == 'rating' ? 'white' : '#495057'}; 
+                                  text-decoration: none; border-radius: 8px; border: 2px solid #e9ecef; font-weight: 500;">
+                            Rating (Highest First)
+                        </a>
                     </div>
-                </form>
+                </div>
             </div>
 
             <!-- Feedback Cards -->
@@ -712,16 +760,7 @@
                 <c:forEach var="booking" items="${feedbackBookings}">
                     <!-- Only show COMPLETED bookings -->
                     <c:if test="${booking.status == 'COMPLETED'}">
-                        <c:set var="showBooking" value="true" />
-                        <!-- Apply filter -->
-                        <c:if test="${param.filter == 'rated' && (booking.rating == null || booking.rating == 0)}">
-                            <c:set var="showBooking" value="false" />
-                        </c:if>
-                        <c:if test="${param.filter == 'unrated' && booking.rating > 0}">
-                            <c:set var="showBooking" value="false" />
-                        </c:if>
-                        <c:if test="${showBooking}">
-                            <c:set var="hasVisibleBookings" value="true" />
+                        <c:set var="hasVisibleBookings" value="true" />
                             <div class="feedback-card">
                                 <div class="card-header">
                                     <h4 class="booking-id">Booking #${booking.id}</h4>
@@ -812,7 +851,7 @@
                                     <c:choose>
                                         <c:when test="${booking.rating > 0}">
                                             <button type="button" class="btn btn-info" 
-                                                onclick="showFeedbackModal('${booking.rating}', '${fn:escapeXml(booking.comment)}')">
+                                                onclick="showFeedbackModal('${booking.rating}', '${fn:escapeXml(booking.comment)}', '${booking.feedbackId}')">
                                                 <i class="fas fa-eye"></i>
                                                 View Full Feedback
                                             </button>
@@ -828,7 +867,6 @@
                                 </div>
                             </div>
                         </c:if>
-                    </c:if>
                 </c:forEach>
                 
                 <!-- Empty State -->
@@ -885,8 +923,17 @@
                         <h6 style="color: #495057; font-weight: 600; margin-bottom: 15px;">
                             <i class="fas fa-comment-dots" style="color: #667eea;"></i> Comment:
                         </h6>
-                        <div id="modalComment" style="background: rgba(102, 126, 234, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #667eea; white-space: pre-line; color: #495057; font-style: italic; line-height: 1.6;"></div>
+                        <c:if test="${feedback.disabled}">
+                            <div class="alert alert-warning">
+                                This feedback has been hidden by admin and cannot be viewed in detail.
+                            </div>
+                        </c:if>
+                        <c:if test="${!feedback.disabled}">
+                            <div id="modalComment" style="background: rgba(102, 126, 234, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #667eea; white-space: pre-line; color: #495057; font-style: italic; line-height: 1.6; max-height: 200px; overflow-y: auto; word-break: break-word;"></div>
+                        </c:if>
                     </div>
+                    <!-- Thêm div replies có scroll -->
+                    <div id="modalReplies" style="max-height: 200px; overflow-y: auto; word-break: break-word; margin-top: 20px;"></div>
                 </div>
                 <div class="modal-footer" style="background: #f8f9fa;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -905,10 +952,13 @@
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Thêm biến JS chứa replies từ backend -->
+    <script type="application/json" id="feedbackRepliesData">${feedbackRepliesJson}</script>
     <script>
-        function showFeedbackModal(rating, comment) {
+    var feedbackReplies = JSON.parse(document.getElementById('feedbackRepliesData').textContent);
+        console.log('JavaScript loaded successfully');
+        
+        function showFeedbackModal(rating, comment, bookingId) {
             document.getElementById('modalRating').textContent = rating;
             document.getElementById('modalComment').textContent = comment || 'No comment provided.';
             
@@ -921,6 +971,26 @@
                 starsContainer.appendChild(star);
             }
             
+            // Hiển thị replies
+            let repliesDiv = document.getElementById('modalReplies');
+            if (!repliesDiv) {
+                repliesDiv = document.createElement('div');
+                repliesDiv.id = 'modalReplies';
+                repliesDiv.style.maxHeight = '250px';
+                repliesDiv.style.overflowY = 'auto';
+                repliesDiv.style.wordBreak = 'break-word';
+                repliesDiv.style.marginTop = '20px';
+                document.querySelector('.modal-body').appendChild(repliesDiv);
+            }
+            repliesDiv.innerHTML = '<h6 style="color:#495057;font-weight:600;margin-bottom:10px;"><i class="fas fa-reply"></i> Staff Replies:</h6>';
+            var replies = feedbackReplies[String(bookingId)] || [];
+            if (replies.length === 0) {
+                repliesDiv.innerHTML += '<div class="alert alert-info">No replies from staff yet.</div>';
+            } else {
+                replies.forEach(function(reply) {
+                    repliesDiv.innerHTML += '<div class="card mb-2"><div class="card-body"><b>' + (reply.name || 'Staff') + '</b> (' + (reply.email || '') + ')<br><span>' + (reply.message || '') + '</span><br><small class="text-muted">' + (reply.createdAt ? new Date(reply.createdAt).toLocaleString() : '') + '</small></div></div>';
+                });
+            }
             $('#feedbackModal').modal('show');
         }
 
@@ -965,6 +1035,8 @@
                 });
             });
         });
+
+                // Filter functionality now uses direct links - no JavaScript needed
     </script>
 </body>
 </html>

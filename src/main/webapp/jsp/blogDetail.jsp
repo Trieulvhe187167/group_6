@@ -105,6 +105,18 @@
             color: #007bff;
             font-weight: 600;
         }
+         .page-banner {
+                position: relative;
+            }
+            .search-bar-on-banner {
+                position: absolute;
+                left: 50%;
+                bottom: -30px;        /* đẩy xuống mép dưới banner */
+                transform: translateX(-50%);
+                width: 100%;
+                max-width: 1100px;
+                padding-bottom: 10px;
+            }
     </style>
 </head>
     
@@ -122,6 +134,9 @@
                     <div class="page-banner-entry">
                         <h1 class="text-white">Blog Detail</h1>
                     </div>
+                     <div class="search-bar-on-banner mt-4">
+                            <%@ include file="searchRoom.jsp" %>
+                        </div>
                 </div>
             </div>
             <div class="breadcrumb-row">

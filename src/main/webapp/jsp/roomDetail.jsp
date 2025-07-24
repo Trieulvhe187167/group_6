@@ -1019,6 +1019,18 @@
             .mfp-img {
                 border-radius: 8px;
             }
+             .page-banner {
+                position: relative;
+            }
+            .search-bar-on-banner {
+                position: absolute;
+                left: 50%;
+                bottom: -30px;        /* đẩy xuống mép dưới banner */
+                transform: translateX(-50%);
+                width: 100%;
+                max-width: 1100px;
+                padding-bottom: 10px;
+            }
         </style>
     </head>
     <body id="bg">
@@ -1070,6 +1082,9 @@
                         <div class="page-banner-entry">
                             <h1 class="text-white">Room Detail</h1>
                             </div>
+                         <div class="search-bar-on-banner mt-4">
+                            <%@ include file="searchRoom.jsp" %>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -1326,7 +1341,7 @@
                                 </div>
                                       <!-- Reviews List -->
                                 <div class="reviews-list flex-grow-1">
-                                    <h4 class="mb-4" style="color: lightcoral">User Reviews:</h4>
+                                    <h4 class="mb-4" style="color: lightcoral">Customer Reviews:</h4>
                                     <% if (feedbackList != null && !feedbackList.isEmpty()) {
                                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
                                            for (Feedback fb : feedbackList) {
@@ -1357,7 +1372,7 @@
                             <div class="mt-5 booking-form">
                                 <h4>Room Policy</h4>
                                 <ul class="list-arrow primary">
-                                    <li>Check-in from 14:00, check-out before 12:00</li>
+                                      <li>Check-in from 14:00, check-out between 11:00 and 13:00</li>
                                     <li>Free cancellation up to 3 days before arrival, then 50% charge</li>
                                     <li>Breakfast included for 2 guests</li>
                                     <li>Non-smoking room</li>
@@ -1369,14 +1384,7 @@
        
                             </div>
    </div>
-                   
 
-
-                            <!-- Content END-->
-
-                            <!-- Footer ==== -->
-
-                            <!-- Footer END ==== -->
                            
                             <button class="back-to-top fa fa-chevron-up" ></button>
 

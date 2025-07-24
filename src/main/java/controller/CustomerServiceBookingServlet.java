@@ -7,6 +7,8 @@ package controller;
 import dal.ActivityDAO;
 import dal.ReservationDAO;
 import dal.ServiceDAO;
+import dal.NotificationDAO;
+import dal.UserDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -20,6 +22,7 @@ import model.Activity;
 import model.Reservation;
 import model.ReservationService;
 import model.User;
+import model.Notification;
 
 @WebServlet(name = "CustomerServiceBookingServlet", urlPatterns = {"/customer/services"})
 public class CustomerServiceBookingServlet extends HttpServlet {
@@ -27,6 +30,8 @@ public class CustomerServiceBookingServlet extends HttpServlet {
     private final ServiceDAO serviceDAO = new ServiceDAO();
     private final ReservationDAO reservationDAO = new ReservationDAO();
     private final ActivityDAO activityDAO = new ActivityDAO();
+    private final NotificationDAO notificationDAO = new NotificationDAO();
+    private final UserDAO userDAO = new UserDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -79,39 +84,81 @@ public class CustomerServiceBookingServlet extends HttpServlet {
          try {
             switch (action) {
                 case "add": {
-                 String[] ids = request.getParameterValues("serviceIds");
-                       if (ids == null || ids.length == 0) {
+               String[] ids = request.getParameterValues("serviceIds");
+                    String[] qtys = request.getParameterValues("quantities");
+                    if (ids == null || ids.length == 0) {
                         session.setAttribute("error", "Please select at least one service to add");
                         response.sendRedirect(request.getContextPath() + "/customer/services?resId=" + reservationId);
                         return;
                     }
-                        for (String sid : ids) {
-                        int sId = Integer.parseInt(sid);
-                        ReservationService rs = new ReservationService(reservationId, sId, 1);
-                        serviceDAO.addServiceToReservation(rs);
+                        for (int i = 0; i < ids.length; i++) {
+                        int sId = Integer.parseInt(ids[i]);
+                        int qty = 1;
+                        if (qtys != null && qtys.length > i) {
+                            try {
+                                qty = Integer.parseInt(qtys[i]);
+                            } catch (NumberFormatException ex) {
+                                qty = 1;
+                            }
+                        }
+                        ReservationService existing = serviceDAO.getReservationService(reservationId, sId);
+                        if (existing != null) {
+                           serviceDAO.updateReservationServiceQuantity(existing.getId(), existing.getQuantity() + qty);
+                        } else {
+                            ReservationService rs = new ReservationService(reservationId, sId, qty);
+                            rs.setCreatedBy(user.getId());
+                            rs.setStatus("CONFIRMED");
+                            serviceDAO.addServiceToReservation(rs);
+                        }
+
+                        
                         Activity act = new Activity();
                         act.setType("SERVICE_ORDERED");
                         act.setReservationId(reservationId);
                         act.setUserId(user.getId());
-                        act.setDescription("Ordered service " + sId);
+                          act.setDescription("Requested service " + sId);
                         act.setTimestamp(new Timestamp(System.currentTimeMillis()));
                         activityDAO.logActivity(act);
+                        
+                          // Notify all receptionists
+                        List<User> recps = userDAO.getUsersByRole("RECEPTIONIST");
+                        for (User rcp : recps) {
+                            Notification notif = new Notification();
+                            notif.setUserId(rcp.getId());
+                            notif.setReservationId(reservationId);
+                            notif.setType("SERVICE_REQUEST");
+                            notif.setMessage(user.getFullName() + " requested service " + sId);
+                            notificationDAO.sendNotification(notif);
+                        }
                     }
                     success = true;
-                    message = "Services added successfully";
+                    message = "Service request submitted";
                     break;
                 }
-                case "update": {
-                    int lineId = Integer.parseInt(request.getParameter("lineId"));
-                    int quantity = Integer.parseInt(request.getParameter("quantity"));
-                    success = serviceDAO.updateReservationServiceQuantity(lineId, quantity);
-                    message = success ? "Service updated" : "Failed to update";
-                    break;
-                }
+        
                 case "delete": {
                     int lineId = Integer.parseInt(request.getParameter("lineId"));
-                    success = serviceDAO.deleteServiceFromReservation(lineId);
-                        message = success ? "Service removed" : "Failed to remove";
+                    success = serviceDAO.updateServiceOrderStatus(lineId, "CANCELLED");
+                    message = success ? "Service cancelled" : "Failed to cancel";
+                    if (success) {
+                        Activity act = new Activity();
+                        act.setType("SERVICE_CANCELLED");
+                        act.setReservationId(reservationId);
+                        act.setUserId(user.getId());
+                        act.setDescription("Cancelled service " + lineId);
+                        act.setTimestamp(new Timestamp(System.currentTimeMillis()));
+                        activityDAO.logActivity(act);
+
+                        List<User> recps = userDAO.getUsersByRole("RECEPTIONIST");
+                        for (User rcp : recps) {
+                            Notification notif = new Notification();
+                            notif.setUserId(rcp.getId());
+                            notif.setReservationId(reservationId);
+                            notif.setType("SERVICE_CANCELLED");
+                            notif.setMessage(user.getFullName() + " cancelled service " + lineId);
+                            notificationDAO.sendNotification(notif);
+                        }
+                    }
                     break;
                 }
                 default:

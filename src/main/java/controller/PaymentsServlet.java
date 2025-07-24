@@ -273,12 +273,7 @@ public class PaymentsServlet extends HttpServlet {
             boolean success = paymentDAO.createPayment(refund);
             
             if (success) {
-                // Update original payment status if full refund
-                if (refundAmount >= originalPayment.getAmount()) {
-                    originalPayment.setStatus("REFUNDED");
-                    paymentDAO.updatePayment(originalPayment);
-                }
-                
+             
                 // Log activity
                 HttpSession session = request.getSession();
                 User currentUser = (User) session.getAttribute("user");

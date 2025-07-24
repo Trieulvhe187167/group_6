@@ -10,7 +10,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet(name="ChangePasswordServlet", urlPatterns={"/customer/change-password"})
+@WebServlet(name="ChangePasswordServlet", urlPatterns={
+        "/customer/change-password",
+        "/housekeeper/change-password",
+        "/inspector/change-password"
+})
 public class ChangePasswordServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
 
@@ -19,9 +23,25 @@ public class ChangePasswordServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
-        if (user == null || !"CUSTOMER".equals(user.getRole())) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+       if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
             return;
+        }
+       String role = user.getRole();
+        String redirectBase;
+        switch (role) {
+            case "CUSTOMER":
+                redirectBase = "/customer/profile";
+                break;
+            case "HOUSEKEEPER":
+                redirectBase = "/housekeeper/profile";
+                break;
+            case "ROOM_INSPECTOR":
+                redirectBase = "/inspector/profile";
+                break;
+            default:
+                response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
+                return;
         }
 
         String currentPassword = request.getParameter("currentPassword");
@@ -31,19 +51,19 @@ public class ChangePasswordServlet extends HttpServlet {
         if (currentPassword == null || newPassword == null || confirmPassword == null ||
             currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
             session.setAttribute("error", "All password fields are required.");
-            response.sendRedirect(request.getContextPath() + "/customer/profile#security");
+            response.sendRedirect(request.getContextPath() + redirectBase + "#security");
             return;
         }
 
         if (!newPassword.equals(confirmPassword)) {
             session.setAttribute("error", "New password and confirmation do not match.");
-            response.sendRedirect(request.getContextPath() + "/customer/profile#security");
+           response.sendRedirect(request.getContextPath() + redirectBase + "#security");
             return;
         }
 
         if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$")) {
             session.setAttribute("error", "Password must be at least 8 characters with uppercase, lowercase, digit and special character.");
-            response.sendRedirect(request.getContextPath() + "/customer/profile#security");
+             response.sendRedirect(request.getContextPath() + redirectBase + "#security");
             return;
         }
 
@@ -53,6 +73,6 @@ public class ChangePasswordServlet extends HttpServlet {
         } else {
             session.setAttribute("error", "Current password is incorrect.");
         }
-        response.sendRedirect(request.getContextPath() + "/customer/profile#security");
+       response.sendRedirect(request.getContextPath() + redirectBase + "#security");
     }
 }

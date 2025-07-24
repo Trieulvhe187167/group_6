@@ -194,7 +194,7 @@ public class ActivityDAO {
         
         if (dateTo != null && !dateTo.isEmpty()) {
             sql.append("AND a.Timestamp <= ? ");
-            parameters.add(Date.valueOf(dateTo) + " 23:59:59");
+           parameters.add(Timestamp.valueOf(dateTo + " 23:59:59"));
         }
         
         if (type != null && !type.isEmpty()) {
@@ -311,5 +311,18 @@ public class ActivityDAO {
         return 0;
     }
     
-   
+     // Get total number of activities
+    public int getTotalActivityCount() {
+        String sql = "SELECT COUNT(*) FROM Activities";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }

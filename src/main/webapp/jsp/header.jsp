@@ -499,15 +499,11 @@
                                             <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/profile">
                                                 <i class="fa fa-user"></i> My Profile
                                             </a>
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/bookings">
-                                                <i class="fa fa-calendar"></i> My Bookings
-                                            </a>
+                                           
                                                  <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/services">
                                                 <i class="fa fa-concierge-bell"></i> Book Services
                                             </a>
-                                            <a class="dropdown-item" href="${pageContext.request.contextPath}/customer/history">
-                                                <i class="fa fa-history"></i> Booking History
-                                            </a>
+                                         
                                             <div class="dropdown-divider"></div>
                                    
                                   

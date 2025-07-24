@@ -173,13 +173,14 @@ public class RoomDAO {
 
     // Create new room
     public boolean createRoom(Room room) {
-        String sql = "INSERT INTO Rooms (RoomNumber, RoomTypeId, Status) VALUES (?, ?, ?)";
+    String sql = "INSERT INTO Rooms (RoomNumber, RoomTypeId, Status, HoldUntil) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, room.getRoomNumber());
             ps.setInt(2, room.getRoomTypeId());
             ps.setString(3, room.getStatus());
+              ps.setTimestamp(4, room.getHoldUntil());
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -190,14 +191,15 @@ public class RoomDAO {
 
     // Update room
     public boolean updateRoom(Room room) {
-        String sql = "UPDATE Rooms SET RoomNumber = ?, RoomTypeId = ?, Status = ? WHERE Id = ?";
+       String sql = "UPDATE Rooms SET RoomNumber = ?, RoomTypeId = ?, Status = ?, HoldUntil = ? WHERE Id = ?";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, room.getRoomNumber());
             ps.setInt(2, room.getRoomTypeId());
             ps.setString(3, room.getStatus());
-            ps.setInt(4, room.getId());
+              ps.setTimestamp(4, room.getHoldUntil());
+            ps.setInt(5, room.getId());
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -208,12 +210,17 @@ public class RoomDAO {
 
     // Update room status
     public boolean updateRoomStatus(int roomId, String status) {
-        String sql = "UPDATE Rooms SET Status = ? WHERE Id = ?";
+           return updateRoomStatus(roomId, status, null);
+    }
+
+    public boolean updateRoomStatus(int roomId, String status, java.sql.Timestamp holdUntil) {
+        String sql = "UPDATE Rooms SET Status = ?, HoldUntil = ? WHERE Id = ?";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, status);
-            ps.setInt(2, roomId);
+            ps.setTimestamp(2, holdUntil);
+            ps.setInt(3, roomId);
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -337,7 +344,7 @@ public class RoomDAO {
                 + "rt.Capacity, rt.Description, rt.imageUrl "
                 + "FROM Rooms r "
                 + "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id "
-                + "WHERE r.Status = 'AVAILABLE' "
+                  + "WHERE r.Status NOT IN ('MAINTENANCE', 'DISABLED', 'HELD') "
                 + "AND r.Id NOT IN ( "
                 + "  SELECT res.RoomId FROM Reservations res "
                 + "  WHERE res.Status IN ('CONFIRMED', 'PENDING') "
@@ -400,6 +407,7 @@ public class RoomDAO {
         room.setRoomNumber(rs.getString("RoomNumber"));
         room.setRoomTypeId(rs.getInt("RoomTypeId"));
         room.setStatus(rs.getString("Status"));
+         room.setHoldUntil(rs.getTimestamp("HoldUntil"));
 
         // Additional fields
         room.setRoomTypeName(rs.getString("RoomTypeName"));
@@ -423,7 +431,7 @@ public class RoomDAO {
                 + "rt.Capacity, rt.Description, rt.imageUrl "
                 + "FROM Rooms r "
                 + "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id "
-                + "WHERE r.RoomTypeId = ? AND r.Status = 'AVAILABLE' "
+                    + "WHERE r.RoomTypeId = ? AND r.Status NOT IN ('MAINTENANCE', 'DISABLED', 'HELD') "
                 + "ORDER BY r.RoomNumber";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -447,7 +455,7 @@ public class RoomDAO {
                 + "rt.Capacity, rt.Description as RoomTypeDescription, rt.imageUrl "
                 + "FROM Rooms r "
                 + "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id "
-                + "WHERE r.Status = 'AVAILABLE' "
+                  + "WHERE r.Status NOT IN ('MAINTENANCE', 'DISABLED', 'HELD') "
                 + "ORDER BY r.RoomNumber";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
@@ -551,7 +559,7 @@ public class RoomDAO {
                 + "rt.Capacity, rt.Description, rt.imageUrl "
                 + "FROM Rooms r "
                 + "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id "
-                + "WHERE r.Status = 'AVAILABLE' "
+                + "WHERE r.Status NOT IN ('MAINTENANCE', 'DISABLED', 'HELD') "
                 + "AND r.RoomTypeId = ? "
                 + "ORDER BY r.RoomNumber";
 
@@ -579,7 +587,7 @@ public class RoomDAO {
                 + "rt.Capacity, rt.Description, rt.imageUrl "
                 + "FROM Rooms r "
                 + "INNER JOIN RoomTypes rt ON r.RoomTypeId = rt.Id "
-                + "WHERE r.Status = 'AVAILABLE' "
+                + "WHERE r.Status NOT IN ('MAINTENANCE', 'DISABLED', 'HELD') "
                 + "AND r.RoomTypeId = ? "
                 + "AND r.Id NOT IN ( "
                 + "  SELECT DISTINCT res.RoomId FROM Reservations res "
@@ -756,7 +764,7 @@ public class RoomDAO {
     }
 
     public int getAvailableRoomsCount() {
-        String sql = "SELECT COUNT(*) FROM Rooms WHERE Status = 'AVAILABLE'";
+      String sql = "SELECT COUNT(*) FROM Rooms WHERE Status NOT IN ('MAINTENANCE', 'DISABLED', 'HELD')";
 
         try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 

@@ -39,6 +39,7 @@ public class Reservation {
     private String paymentStatus;
     private double amountPaid;
     private int rating;
+    private String comment;
     
     // Deposit-related fields
 private Double depositAmount;
@@ -47,6 +48,8 @@ private String depositStatus; // PENDING, PAID, REFUNDED
 
 // Thêm field basePrice
 private double basePrice;
+
+private Integer feedbackId;
 
     // Constructors
     public Reservation() {}
@@ -480,6 +483,20 @@ public void setBasePrice(double basePrice) {
     // Get formatted total amount
     public String getFormattedTotalAmount() {
         return String.format("%,.0f VND", totalAmount);
+    }
+    
+    public String getComment() {
+        return comment;
+    }
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+    
+    public Integer getFeedbackId() {
+        return feedbackId;
+    }
+    public void setFeedbackId(Integer feedbackId) {
+        this.feedbackId = feedbackId;
     }
     
     @Override

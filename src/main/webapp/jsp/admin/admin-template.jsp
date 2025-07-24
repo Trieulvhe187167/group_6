@@ -8,10 +8,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>${pageTitle} - Luxury Hotel Admin</title>
 
-        <!-- Bootstrap CSS -->
+        <!-- Bootstrap 4.6.2 CSS (khôi phục lại) -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
+        <!-- DataTables CSS (Bootstrap 4 theme, đồng bộ với Bootstrap 4.6.2) -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
         <style>
             * {
                 margin: 0;
@@ -24,6 +25,25 @@
                 background: #f4f6f9;
             }
 
+            /* Badge info màu xanh dương */
+            .badge-info {
+                background-color: #0dcaf0 !important;
+                color: #fff !important;
+            }
+            /* Badge active màu xanh lá */
+            .badge-success, .badge-active {
+                background-color: #198754 !important;
+                color: #fff !important;
+            }
+            /* Badge secondary màu xám */
+            .badge-secondary {
+                background-color: #6c757d !important;
+                color: #fff !important;
+            }
+            /* Tăng độ đậm cho text-muted nếu muốn */
+            .text-muted {
+                color: #6c757d !important;
+            }
             /* Header */
             .admin-header {
                 background: #5a2b81;
@@ -280,9 +300,9 @@
                 </a>
                 
 
-                    <a href="${pageContext.request.contextPath}/admin/reports" 
+                    <a href="${pageContext.request.contextPath}/admin/feedback" 
                    class="nav-item ${activePage == 'reports' ? 'active' : ''}">
-                    <i class="fas fa-chart-bar"></i> Reports
+                    <i class="fas fa-chart-bar"></i> Feedbacks
                 </a>
 
                 <a href="${pageContext.request.contextPath}/admin/settings" 
@@ -297,9 +317,16 @@
             <jsp:include page="${contentPage}" />
         </main>
 
-        <!-- Scripts -->
+        <!-- Core JavaScript & DataTables (import đúng thứ tự, không trùng lặp) -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            window.$ = window.jQuery = jQuery;
+            console.log('jQuery loaded successfully:', jQuery.fn.jquery);
+        </script>
 
         <script>
             function toggleSidebar() {

@@ -10,9 +10,7 @@
             <p class="text-muted">Add and manage additional services for customers</p>
         </div>
         <div class="col-md-6 text-right">
-            <button class="btn btn-success" data-toggle="modal" data-target="#addServiceModal">
-                <i class="fas fa-plus"></i> Add Service
-            </button>
+            
             <button class="btn btn-info" onclick="refreshServiceList()">
                 <i class="fas fa-sync"></i> Refresh
             </button>
@@ -205,7 +203,7 @@
                         <th>Amount</th>
                         <th>Time</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -226,32 +224,20 @@
                                     <td>
                                         <c:choose>
                                             <c:when test="${order.status eq 'PENDING'}">
-                                                <span class="badge badge-warning">Pending</span>
+                                                <span class="badge badge-warning" style="color: orange">Pending</span>
                                             </c:when>
                                             <c:when test="${order.status eq 'COMPLETED'}">
-                                                <span class="badge badge-success">Completed</span>
+                                                <span class="badge badge-success" style="color: limegreen">Completed</span>
                                             </c:when>
                                             <c:when test="${order.status eq 'CANCELLED'}">
-                                                <span class="badge badge-danger">Cancelled</span>
+                                                <span class="badge badge-danger" style="color: red">Cancelled</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="badge badge-secondary">${order.status}</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
-                                    <td>
-                                        <c:if test="${order.status eq 'PENDING'}">
-                                            <button class="btn btn-sm btn-success" onclick="completeService(${order.id})" title="Complete">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" onclick="cancelService(${order.id})" title="Cancel">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </c:if>
-                                        <button class="btn btn-sm btn-info" onclick="viewServiceDetails(${order.id})" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </td>
+                      
                                 </tr>
                             </c:forEach>
                         </c:when>
@@ -620,6 +606,11 @@ function completeService(orderId) {
     }
 }
 
+function confirmService(orderId) {
+    if (confirm('Confirm this service request?')) {
+        updateServiceStatus(orderId, 'CONFIRMED');
+    }
+}
 function cancelService(orderId) {
     if (confirm('Cancel this service order?')) {
         updateServiceStatus(orderId, 'CANCELLED');

@@ -40,6 +40,19 @@
                 background: #fff url('${pageContext.request.contextPath}/assets/images/loading.gif') no-repeat center;
                 z-index: 9999;
             }
+            .page-banner {
+                position: relative;
+            }
+            .search-bar-on-banner {
+                position: absolute;
+                left: 50%;
+                bottom: -30px;        /* đẩy xuống mép dưới banner */
+                transform: translateX(-50%);
+                width: 100%;
+                max-width: 1100px;
+                padding-bottom: 10px;
+            }
+
         </style>
     </head>
     <body id="bg">
@@ -49,16 +62,21 @@
         <div class="page-wraper">
             <!-- Include phần header (chỉ chứa nav/menu) -->
             <jsp:include page="header.jsp" />
+
             <!-- Nội dung chính -->
             <div class="page-content">
                 <!-- Banner -->
                 <div class="page-banner ovbl-dark"
                      style="background-image:url('${pageContext.request.contextPath}/assets/images/banner/banner2.jpg');">
                     <div class="container">
-                        <div class="page-banner-entry">
-                            <h1 class="text-white">About - Luxury Hotel</h1>
+                        <div class="page-banner-entry text-center">
+                            <h1 class="text-white">About - Luxury Hotel</h1>                           
                         </div>
-                    </div>
+                        <div class="search-bar-on-banner mt-4">
+                            <%@ include file="searchRoom.jsp" %>
+                        </div>
+                    </div>    
+
                 </div>
 
                 <!-- Breadcrumb -->
@@ -71,6 +89,7 @@
                         </ul>
                     </div>
                 </div>
+
                 <!-- Content Block -->
                 <div class="content-block">
                     <!-- Features -->
@@ -196,6 +215,6 @@
         <script src="${pageContext.request.contextPath}/assets/vendors/owl-carousel/owl.carousel.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/functions.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/contact.js"></script>
-      
+
     </body>
 </html>

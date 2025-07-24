@@ -70,34 +70,6 @@
             }
 
 
-            .hero-search-wrapper .hotel-search-form {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                width: 80%;
-                max-width: 900px;
-                margin: 0 auto;
-            }
-
-
-            .hero-search-wrapper .hotel-search-form .search-field {
-                flex: 1 1 150px;      /* flex-grow:1, flex-shrink:1, flex-basis:150px */
-                margin: 0 5px;
-                display: flex;
-                align-items: center;
-            }
-
-
-            .hero-search-wrapper .hotel-search-form .search-submit-btn {
-                flex: 0 0 auto;
-                margin-left: 5px;
-            }
-            @media (max-width: 767px) {
-                .hero-search-wrapper {
-                    top: 420px;
-                }
-            }
-
             #rev_slider_486_1_wrapper,
             #rev_slider_486_1 {
                 overflow: visible !important;
@@ -193,73 +165,9 @@
                                      style="z-index: 7; text-transform:capitalize; white-space: unset; color:#fff; font-family:rubik; font-size:18px; line-height:28px; font-weight:400;">
                                     A place that offers a classy accommodation experience with perfect service and sophisticated space.
                                 </div>
-
-
-                                <!--                             Buttons 
-                                                            <div class="tp-caption Newspaper-Button rev-btn" 
-                                                                 id="slide-100-layer-5" 
-                                                                 data-x="['center','center','center','center']" 
-                                                                 data-hoffset="['90','80','75','90']" 
-                                                                 data-y="['top','top','top','top']" 
-                                                                 data-voffset="['400','400','400','420']" 
-                                                                 data-width="none"
-                                                                 data-height="none"
-                                                                 data-whitespace="nowrap"
-                                                                 data-type="button" 
-                                                                 data-responsive_offset="on" 
-                                                                 data-responsive="off"
-                                                                 data-actions='[{"event":"click","action":"simplelink","url":"jsp/About.jsp","target":"_self"}]'
-                                                                 data-frames='[{"from":"y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;","mask":"x:0px;y:0px;","speed":1500,"to":"o:1;","delay":1000,"ease":"Power3.easeInOut"},{"delay":"wait","speed":1000,"to":"auto:auto;","mask":"x:0;y:0;","ease":"Power3.easeInOut"},{"frame":"hover","speed":"300","ease":"Power1.easeInOut","to":"o:1;rX:0;rY:0;rZ:0;z:0;","style":"c:rgba(0, 0, 0, 1.00);bg:rgba(255, 255, 255, 1.00);bc:rgba(255, 255, 255, 1.00);bw:1px 1px 1px 1px;"}]'
-                                                                 data-textAlign="['center','center','center','center']"
-                                                                 data-paddingtop="[12,12,12,12]"
-                                                                 data-paddingright="[30,35,35,15]"
-                                                                 data-paddingbottom="[    Buttons 
-                                                            <div class="tp-caption Newspaper-Button rev-btn" 
-                                                                 id="slide-100-layer-5" 
-                                                                 data-x="['center','center','center','center']" 
-                                                                 data-hoffset="['90','80','75','90']" 
-                                                                 data-y="['top','top','top','top']" 
-                                                                 data-voffset="['400','400','400','420']" 
-                                                                 data-width="none"
-                                                                 data-height="none"
-                                                                 data-whitespace="nowrap"
-                                                                 data-type="button" 
-                                                                 data-responsive_offset="on" 
-                                                                 data-responsive="off"
-                                                                 data-actions='[{"event":"click","action":"simplelink","url":"jsp/About.jsp","target":"_self"}]'
-                                                                 data-frames='[{"from":"y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;","mask":"x:0px;y:0px;","speed":1500,"to":"o:1;","delay":1000,"ease":"Power3.easeInOut"},{"delay":"wait","speed":1000,"to":"auto:auto;","mask":"x:0;y:0;","ease":"Power3.easeInOut"},{"frame":"hover","speed":"300","ease":"Power1.easeInOut","to":"o:1;rX:0;rY:0;rZ:0;z:0;","style":"c:rgba(0, 0, 0, 1.00);bg:rgba(255, 255, 255, 1.00);bc:rgba(255, 255, 255, 1.00);bw:1px 1px 1px 1px;"}]'
-                                                                 data-textAlign="['center','center','center','center']"
-                                                                 data-paddingtop="[1212,12,12,12]"
-                                                                 data-paddingleft="[30,35,35,15]"
-                                                                 style="z-index: 8; white-space: nowrap; outline:none;box-shadow:none;box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;cursor:pointer; background-color:var(--primary) !important; border:0; border-radius:30px; margin-right:5px;">
-                                                                READ MORE 
-                                                            </div>
-                                                            
-                                                            <div class="tp-caption Newspaper-Button rev-btn" 
-                                                                 id="slide-100-layer-6" 
-                                                                 data-x="['center','center','center','center']" 
-                                                                 data-hoffset="['-90','-80','-75','-90']" 
-                                                                 data-y="['top','top','top','top']" 
-                                                                 data-voffset="['400','400','400','420']" 
-                                                                 data-width="none"
-                                                                 data-height="none"
-                                                                 data-whitespace="nowrap"
-                                                                 data-type="button" 
-                                                                 data-responsive_offset="on" 
-                                                                 data-responsive="off"
-                                                                 data-actions='[{"event":"click","action":"simplelink","url":"SearchAvailableRoomsServlet","target":"_self"}]'
-                                                                 data-frames='[{"from":"y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;","mask":"x:0px;y:0px;","speed":1500,"to":"o:1;","delay":1000,"ease":"Power3.easeInOut"},{"delay":"wait","speed":1000,"to":"auto:auto;","mask":"x:0;y:0;","ease":"Power3.easeInOut"},{"frame":"hover","speed":"300","ease":"Power1.easeInOut","to":"o:1;rX:0;rY:0;rZ:0;z:0;","style":"c:rgba(0, 0, 0, 1.00);bg:rgba(255, 255, 255, 1.00);bc:rgba(255, 255, 255, 1.00);bw:1px 1px 1px 1px;"}]'
-                                                                 data-textAlign="['center','center','center','center']"
-                                                                 data-paddingtop="[12,12,12,12]"
-                                                                 data-paddingright="[30,35,35,15]"
-                                                                 data-paddingbottom="[12,12,12,12]"
-                                                                 data-paddingleft="[30,35,35,15]"
-                                                                 style="z-index: 8; white-space: nowrap; outline:none;box-shadow:none;box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;cursor:pointer; border-radius:30px;">
-                                                                BOOKING
-                                                            </div>-->
                             </li>
 
-                            SLIDE 2 (similar structure) 
+                          
                             <li data-index="rs-200" 
                                 data-transition="parallaxvertical" 
                                 data-slotamount="default" 
@@ -343,65 +251,11 @@
                         </ul>
 
                     </div>
+                  
                 </div>
-                <div class="hero-search-wrapper">
-                    <form action="${pageContext.request.contextPath}/SearchAvailableRoomsServlet" method="GET" class="hotel-search-form" id="headerSearchForm">
-                        <!-- Room Type -->
-                        <div class="search-field roomtype-field">
-                            <i class="fa fa-bed"></i>
-                            <select name="roomTypeId" id="roomTypeId">
-                                <option value="">All Room Types</option>
-                                <c:forEach var="roomType" items="${searchRoomTypes}">
-                                    <option value="${roomType.id}" <c:if test="${searchRoomTypeId eq roomType.id}">selected</c:if>>
-                                        ${roomType.name}
-                                    </option>
-                                </c:forEach>
-                            </select>
-                        </div>
-
-                        <!-- Check-in -->
-                        <div class="search-field date-field" id="checkinField">
-                            <div class="date-picker-wrapper">
-                                <span class="date-label">Check in</span>
-                                <i class="fa fa-calendar"></i>
-                                <input type="date" id="checkIn" name="checkIn"
-                                       value="${searchCheckIn}"
-                                       title="Select check-in date (today or future)"
-                                       min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>"
-                                       required>
-                            </div>
-                        </div>
-
-                        <!-- Check-out -->
-                        <div class="search-field date-field" id="checkoutField">
-                            <div class="date-picker-wrapper">
-                                <span class="date-label">Check out</span>
-                                <i class="fa fa-calendar"></i>
-                                <input type="date" id="checkOut" name="checkOut"
-                                       value="${searchCheckOut}"
-                                       title="Select check-out date (must be after check-in)"
-                                       min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 24*60*60*1000)) %>"
-                                       required>
-                            </div>
-                        </div>
-
-                        <!-- Occupancy -->
-                        <div class="search-field occupancy-field">
-                            <i class="fa fa-user"></i>
-                            <select name="capacity" id="capacity">
-                                <option value="1" <c:if test="${searchCapacity eq '1' or empty searchCapacity}">selected</c:if>>1 guest</option>
-                                <option value="2" <c:if test="${searchCapacity eq '2' }">selected</c:if>>2 guests</option>
-                                <option value="3" <c:if test="${searchCapacity eq '3'}">selected</c:if>>3 guests</option>
-                                <option value="4" <c:if test="${searchCapacity eq '4'}">selected</c:if>>4+ guests</option>
-                                </select>
-                            </div>
-
-                            <!-- Search Button -->
-                            <button type="submit" class="search-submit-btn">Search</button>
-
-                        </form>
-                    </div>
-                </div>
+                  <%@ include file="/jsp/searchRoom.jsp" %>
+        
+    
                 <!-- Our Services -->
                 <section class="our-services section-sp2">
                     <div class="content-block">
@@ -719,6 +573,7 @@
 
 
         <%@ include file="/jsp/footer.jsp" %>
+  <button class="back-to-top fa fa-chevron-up" ></button>
 
         <!-- JS Files -->
         <script src="assets/js/jquery.min.js"></script>

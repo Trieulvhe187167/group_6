@@ -557,7 +557,7 @@ function setViewMode(mode) {
 
 function exportActivityLog() {
     const params = new URLSearchParams(window.location.search);
-    params.append('action', 'export');
+     params.append('action', 'exportActivities');
     params.append('format', 'excel');
     
     window.location.href = '${pageContext.request.contextPath}/receptionist/activity-log?' + params.toString();
