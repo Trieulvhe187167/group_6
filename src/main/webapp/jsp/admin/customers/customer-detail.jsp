@@ -355,9 +355,7 @@
                                     <button class="btn btn-sm btn-outline-info" onclick="sendReminder(${change.id})">
                                         <i class="fas fa-bell"></i> Send Reminder
                                     </button>
-                                    <button class="btn btn-sm btn-outline-secondary ml-1" onclick="viewChangeDetails('${change.verificationToken}')">
-                                        <i class="fas fa-eye"></i> View Link
-                                    </button>
+                                    
                                 </div>
                             </c:if>
                         </div>

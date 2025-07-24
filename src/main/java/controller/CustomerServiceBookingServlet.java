@@ -107,7 +107,7 @@ public class CustomerServiceBookingServlet extends HttpServlet {
                         } else {
                             ReservationService rs = new ReservationService(reservationId, sId, qty);
                             rs.setCreatedBy(user.getId());
-                            rs.setStatus("PENDING");
+                            rs.setStatus("CONFIRMED");
                             serviceDAO.addServiceToReservation(rs);
                         }
 

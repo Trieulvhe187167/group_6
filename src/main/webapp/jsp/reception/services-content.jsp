@@ -10,9 +10,7 @@
             <p class="text-muted">Add and manage additional services for customers</p>
         </div>
         <div class="col-md-6 text-right">
-             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addServiceModal">
-                <i class="fas fa-plus"></i> Add Service
-            </button>
+            
             <button class="btn btn-info" onclick="refreshServiceList()">
                 <i class="fas fa-sync"></i> Refresh
             </button>
@@ -205,7 +203,7 @@
                         <th>Amount</th>
                         <th>Time</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -239,18 +237,7 @@
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
-                                    <td>
-                                        <c:if test="${order.status eq 'PENDING'}">
-                                         <button class="btn btn-sm btn-success" onclick="confirmService(${order.id})" title="Confirm">                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" onclick="cancelService(${order.id})" title="Cancel">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </c:if>
-                                        <button class="btn btn-sm btn-info" onclick="viewServiceDetails(${order.id})" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </td>
+                      
                                 </tr>
                             </c:forEach>
                         </c:when>
