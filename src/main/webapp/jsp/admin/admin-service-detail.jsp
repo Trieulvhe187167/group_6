@@ -21,7 +21,7 @@
     <div class="card">
         <div class="card-body">
             <p><strong>Description:</strong> ${service.description}</p>
-            <p><strong>Price:</strong> <fmt:formatNumber value="${service.price}" type="currency" /></p>
+            <p><strong>Price:</strong> <fmt:formatNumber value="${service.price}" />đ</p>
             <p><strong>Status:</strong> <span class="badge ${service.status == 'ACTIVE' ? 'badge-success' : 'badge-secondary'}">${service.status}</span></p>
             <p><strong>Created At:</strong> <fmt:formatDate value="${service.createdAt}" pattern="dd/MM/yyyy HH:mm"/></p>
         </div>
