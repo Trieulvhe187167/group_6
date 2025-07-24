@@ -92,7 +92,17 @@
                     </small>
 
                 </div>
-
+<style>
+    table {
+    table-layout: fixed;
+    width: 100%;
+}
+.description-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
                 <!-- Amenities Table -->
                 <table class="table table-bordered table-hover">
                     <thead class="table-light">
@@ -110,8 +120,8 @@
                         <c:forEach var="a" items="${amenities}">
                             <tr>
                                 <td>${a.roomNumber}</td>
-                                <td>${a.name}</td>
-                                <td>${a.description}</td>
+                                <td class="description-cell">${a.name}</td>
+                                <td class="description-cell">${a.description}</td>
                                 <td>
                                     <c:choose>
                                         <c:when test="${a.isChargeable}">Yes</c:when>

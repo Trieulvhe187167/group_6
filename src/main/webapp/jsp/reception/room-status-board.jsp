@@ -117,16 +117,16 @@
                                                 data-target="#roomDetailModal"
                                                 title="Room Detail"
                                                 onclick="showRoomDetail(
-                                                                '${room.roomNumber}',
-                                                                '${room.roomTypeName}',
+                                                                '${fn:escapeXml(room.roomNumber)}',
+                                                                '${fn:escapeXml(room.roomTypeName)}',
                                                                 '${room.capacity}',
                                                                 '${room.basePrice}',
-                                                                '${room.status}',
-                                                                '${room.guestName != null ? room.guestName : '-'}',
-                                                                '${room.checkIn != null ? room.checkIn : '-'}',
-                                                                '${room.checkOut != null ? room.checkOut : '-'}',
-                                                                '${room.roomTypeDescription != null ? room.roomTypeDescription : '-'}',
-                                                                '${room.imageUrl != null ? room.imageUrl : ''}'
+                                                                '${fn:escapeXml(room.status)}',
+                                                                '${fn:escapeXml(room.guestName != null ? room.guestName : "-")}',
+                                                                '${fn:escapeXml(room.checkIn != null ? room.checkIn : "-")}',
+                                                                '${fn:escapeXml(room.checkOut != null ? room.checkOut : "-")}',
+                                                                '${fn:escapeXml(room.roomTypeDescription != null ? room.roomTypeDescription : "-")}',
+                                                                '${fn:escapeXml(room.imageUrl != null ? room.imageUrl : "")}'
                                                                 )">
                                             <i class="fas fa-info-circle"></i>
                                         </button>
@@ -225,6 +225,8 @@
 </script>
 
 <script>
+    const contextPath = '<%= request.getContextPath() %>';
+
     function showRoomDetail(roomNumber, type, capacity, price, status, guest, checkIn, checkOut, description, imageUrl) {
         document.getElementById("modalRoomNumber").textContent = roomNumber;
         document.getElementById("modalRoomType").textContent = type;
@@ -238,7 +240,7 @@
 
         const img = document.getElementById("roomImage");
         if (imageUrl && imageUrl !== "null") {
-            img.src = imageUrl;
+            img.src = contextPath + "/assets/images/uploads/" + imageUrl;
         } else {
             img.src = "https://via.placeholder.com/400x300?text=No+Image";
         }
