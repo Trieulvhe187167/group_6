@@ -324,9 +324,7 @@
                                                class="btn btn-primary">
                                                 <i class="fa fa-calendar-plus"></i> New Booking
                                             </a>
-                                            <button class="btn btn-warning" data-toggle="modal" data-target="#editCustomerModal">
-                                                <i class="fa fa-edit"></i> Edit Customer
-                                            </button>
+                                          
                                             <a href="${pageContext.request.contextPath}/receptionist/customers" 
                                                class="btn btn-secondary">
                                                 <i class="fa fa-arrow-left"></i> Back to List

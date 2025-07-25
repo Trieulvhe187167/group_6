@@ -134,15 +134,15 @@
                             <h4>Customer Information</h4>
                             <div class="form-group">
                                 <label>Full Name</label>
-                                <input type="text" name="fullName" class="form-control" required />
+                                  <input type="text" name="fullName" class="form-control" maxlength="100" required />
                             </div>
                             <div class="form-group">
                                 <label>Email</label>
-                                <input type="email" name="email" class="form-control" required />
+                                <input type="email" name="email" class="form-control" maxlength="100" required />
                             </div>
                             <div class="form-group">
                                 <label>Phone</label>
-                                <input type="text" name="phone" class="form-control" required />
+                                <input type="text" name="phone" class="form-control" pattern="0[0-9]{9}" maxlength="10" required />
                             </div>
                         </c:otherwise>
                     </c:choose>
@@ -228,15 +228,15 @@
                             <h4>Customer Information</h4>
                             <div class="form-group">
                                 <label>Full Name</label>
-                                <input type="text" name="fullName" class="form-control" required />
+                                <input type="text" name="fullName" class="form-control" maxlength="100" required />
                             </div>
                             <div class="form-group">
                                 <label>Email</label>
-                                <input type="email" name="email" class="form-control" required />
+                                <input type="email" name="email" class="form-control" maxlength="100" required />
                             </div>
                             <div class="form-group">
                                 <label>Phone</label>
-                                <input type="text" name="phone" class="form-control" required />
+                                <input type="text" name="phone" class="form-control" pattern="0[0-9]{9}" maxlength="10" required />
                             </div>
                         </c:otherwise>
                     </c:choose>

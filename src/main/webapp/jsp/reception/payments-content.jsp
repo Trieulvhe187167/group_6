@@ -581,11 +581,17 @@ function processNewPayment() {
         },
         success: function(response) {
             if (response.success) {
-                Swal.fire('Success', 'Payment recorded successfully!', 'success');
+                 Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Payment recorded successfully!',
+                    timer: 800,
+                    showConfirmButton: false
+                }).then(() => location.reload());
                 $('#newPaymentModal').modal('hide');
                 $('#newPaymentForm')[0].reset();
                 $('#reservationInfo').hide();
-                setTimeout(() => location.reload(), 1500);
+             
             } else {
                 Swal.fire('Error', response.message || 'Failed to record payment', 'error');
             }
@@ -772,8 +778,13 @@ function updatePaymentStatus(paymentId, status) {
         },
         success: function(response) {
             if (response.success) {
-                Swal.fire('Success', 'Payment status updated successfully!', 'success');
-                setTimeout(() => location.reload(), 1500);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Payment status updated successfully!',
+                    timer: 800,
+                    showConfirmButton: false
+                }).then(() => location.reload());
             } else {
                 Swal.fire('Error', response.message || 'Failed to update payment status', 'error');
             }
