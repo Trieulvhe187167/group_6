@@ -10,9 +10,17 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin-dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item active">Room Amenities Management</li>
+        </ol>
+    </nav>
 
-<div class="container mt-4">
-    <h3 class="mb-4">Room Amenities Management</h3>
+    <div class="container mt-4"></div>
+
 
     <c:if test="${not empty success}">
         <div class="alert alert-success">${success}</div>
@@ -21,17 +29,19 @@
         <div class="alert alert-danger">${error}</div>
     </c:if>
 
+    <h3 class="mb-4">Room Amenities Management</h3>
 
     <!-- FILTER FORM -->
-    <div class="card shadow-sm mb-4">
+    <div class="card mb-3">
         <div class="card-body">
-            <form class="row g-2 align-items-end" method="get" action="${pageContext.request.contextPath}/admin/amenities">
+            <form class="form-inline" method="get" action="${pageContext.request.contextPath}/admin/amenities">
                 <input type="hidden" name="action" value="list" />
 
+                <!--                    <div class="col-lg-3 col-md-6"></div>-->
                 <!-- Room Number -->
-                <div class="col-lg-3 col-md-6">
-                    <label for="roomNumber" class="form-label fw-semibold mb-1">Room</label>
-                    <select class="form-select form-select-sm" id="roomNumber" name="roomNumber">
+                <div class="form-group mr-2 mb-0">
+                    <label for="roomNumber" class="mr-1">Room:</label>
+                    <select class="form-control mr-2" id="roomNumber" name="roomNumber">
                         <option value="">All Rooms</option>
                         <c:forEach var="room" items="${roomList}">
                             <option value="${room.roomNumber}" <c:if test="${param.roomNumber == room.roomNumber}">selected</c:if>>
@@ -42,9 +52,9 @@
                 </div>
 
                 <!-- Amenity Name -->
-                <div class="col-lg-3 col-md-6">
-                    <label for="amenityName" class="form-label fw-semibold mb-1">Amenity</label>
-                    <select class="form-select form-select-sm" id="amenityName" name="amenityName">
+                <div class="form-group mr-2 mb-0">
+                    <label for="amenityName" class="mr-1">Amenity:</label>
+                    <select class="form-control mr-2" style="width: 180px" id="amenityName" name="amenityName">
                         <option value="">All Amenities</option>
                         <c:forEach var="amenityName" items="${amenityNameList}">
                             <option value="${amenityName}" <c:if test="${param.amenityName == amenityName}">selected</c:if>>
@@ -55,24 +65,24 @@
                 </div>
 
                 <!-- Keyword -->
-                <div class="col-lg-4 col-md-8">
-                    <label for="keyword" class="form-label fw-semibold mb-1">Search</label>
-                    <input type="text" class="form-control form-control-sm" id="keyword" name="keyword"
+                <div class="form-group mr-2 mb-0">
+                    <label for="keyword" class="mr-1">Search:</label>
+                    <input type="text" class="form-control mr-2" id="keyword" name="keyword"
                            value="${param.keyword}" placeholder="e.g. minibar, kettle...">
                 </div>
 
                 <!-- Filter Button -->
-                <div class="col-lg-2 col-md-4 text-end">
-                    <label class="form-label fw-semibold mb-1 d-none d-md-block">&nbsp;</label>
-                    <button type="submit" class="btn btn-sm btn-outline-primary w-100">
-                        <i class="fas fa-search me-1"></i> Search
-                    </button>
-                </div>
+                <!--                    <div class="col-lg-2 col-md-4 text-end"></div>-->
+                <label class="form-label fw-semibold mb-1 d-none d-md-block">&nbsp;</label>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i> Search
+                </button>
+                <a href="${pageContext.request.contextPath}/admin/amenities?action=add" class="btn btn-success ml-auto">
+                    <i class="fas fa-plus"></i> Add Amenity
+                </a>
             </form>
 
-            <a href="${pageContext.request.contextPath}/admin/amenities?action=add" class="btn btn-success ml-auto">
-                <i class="fas fa-plus"></i> Add Amenity
-            </a>
+
 
         </div>
     </div>
@@ -92,17 +102,17 @@
                     </small>
 
                 </div>
-<style>
-    table {
-    table-layout: fixed;
-    width: 100%;
-}
-.description-cell {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-</style>
+                <style>
+                    table {
+                        table-layout: fixed;
+                        width: 100%;
+                    }
+                    .description-cell {
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                </style>
                 <!-- Amenities Table -->
                 <table class="table table-bordered table-hover">
                     <thead class="table-light">
@@ -246,6 +256,7 @@
             </ul>
         </nav>
     </c:if>
+
 
 
 </div>

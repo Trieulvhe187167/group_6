@@ -28,7 +28,7 @@
         <div class="alert alert-success">${success}</div>
     </c:if>
 
-        <h3 class="mb-4">Room Manage</h3>
+        <h3 class="mb-4">Room Management</h3>
 
     <!-- Filter Form -->
     <div class="card mb-3">

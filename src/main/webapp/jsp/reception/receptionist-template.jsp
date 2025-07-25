@@ -308,10 +308,10 @@
                    class="nav-item ${activePage == 'services' ? 'active' : ''}">
                     <i class="fas fa-concierge-bell"></i> Services
                 </a>
-                <a href="${pageContext.request.contextPath}/receptionist/amenities" 
+<!--                <a href="${pageContext.request.contextPath}/receptionist/amenities" 
                    class="nav-item ${activePage == 'amenities' ? 'active' : ''}">
                     <i class="fas fa-bath"></i> Room Amenities
-                </a>
+                </a>-->
                 <a href="${pageContext.request.contextPath}/receptionist/room-status"
                    class="nav-item ${activePage == 'roomstatus' ? 'active' : ''}">
                     <i class="fas fa-bed"></i> Room Status
