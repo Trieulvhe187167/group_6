@@ -592,6 +592,7 @@ public class RoomAmenityDAO {
             int index = 1;
             if (keyword != null && !keyword.trim().isEmpty()) {
                 ps.setString(index++, "%" + keyword.trim() + "%");
+                ps.setString(index++, "%" + keyword.trim() + "%");
             }
 
             if (roomNumber != null && !roomNumber.trim().isEmpty()) {
@@ -648,6 +649,7 @@ public class RoomAmenityDAO {
 
             int index = 1;
             if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(index++, "%" + keyword + "%");
                 ps.setString(index++, "%" + keyword + "%");
             }
             if (roomNumber != null && !roomNumber.trim().isEmpty()) {

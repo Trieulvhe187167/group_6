@@ -52,10 +52,11 @@
                     <label for="status">Status <span class="text-danger">*</span></label>
 
                     <c:choose>
-                        <c:when test="${room.status eq 'OCCUPIED' || room.status eq 'DIRTY'}">
+                        <c:when test="${room.status eq 'OCCUPIED' || room.status eq 'DIRTY' || room.status eq 'HELD'}">
                             <select class="form-control" name="status" id="status" disabled>
                                 <option value="AVAILABLE" ${room.status eq 'AVAILABLE' ? 'selected' : ''}>Available</option>
                                 <option value="OCCUPIED" ${room.status eq 'OCCUPIED' ? 'selected' : ''}>Occupied</option>
+                                <option value="DIRTY" ${room.status eq 'HELD' ? 'selected' : ''}>Held</option>
                                 <option value="MAINTENANCE" ${room.status eq 'MAINTENANCE' ? 'selected' : ''}>Maintenance</option>
                                 <option value="DIRTY" ${room.status eq 'DIRTY' ? 'selected' : ''}>Dirty</option>
                             </select>
