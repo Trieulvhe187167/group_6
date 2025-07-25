@@ -43,9 +43,9 @@
                         <div class="form-group">
                             <label for="title">Title <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="title" name="title" 
-                                   value="${blog.title}" required maxlength="200"
+                                       value="${blog.title}" required maxlength="100"
                                    onkeyup="generateSlug()">
-                            <small class="form-text text-muted">Maximum 200 characters</small>
+                           <small class="form-text text-muted">Maximum 100 characters</small>
                         </div>
                         
                         <!-- Slug -->
@@ -55,12 +55,12 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">/blog/</span>
                                 </div>
-                                <input type="text" class="form-control" id="slug" name="slug" 
-                                       value="${blog.slug}" required maxlength="200"
+                                 <input type="text" class="form-control" id="slug" name="slug"
+                                       value="${blog.slug}" required maxlength="100"
                                        pattern="[a-z0-9\-]+">
                             </div>
                             <small class="form-text text-muted">
-                                URL-friendly version of title (lowercase, no spaces, use hyphens)
+                               URL-friendly version of title (lowercase, no spaces, use hyphens). Maximum 100 characters.
                             </small>
                         </div>
                         
@@ -166,9 +166,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> ${isEdit ? 'Update' : 'Create'} Blog
                     </button>
-                    <button type="submit" name="saveAndContinue" value="true" class="btn btn-success">
-                        <i class="fas fa-save"></i> Save & Continue Editing
-                    </button>
+
                     <a href="${pageContext.request.contextPath}/admin/blogs" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Cancel
                     </a>

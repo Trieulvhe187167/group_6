@@ -265,7 +265,12 @@ public class AdminBlogServlet extends HttpServlet {
             showAddForm(request, response);
             return;
         }
-        
+          // Validate length constraints
+        if (title.trim().length() > 100 || slug.trim().length() > 100) {
+            request.setAttribute("error", "Title and slug must not exceed 100 characters");
+            showAddForm(request, response);
+            return;
+        }
         // Check if slug already exists
         if (blogDAO.isSlugExists(slug, null)) {
             request.setAttribute("error", "Slug already exists. Please choose a different one.");
@@ -335,7 +340,12 @@ public class AdminBlogServlet extends HttpServlet {
             showEditForm(request, response);
             return;
         }
-        
+                // Validate length constraints
+        if (title.trim().length() > 100 || slug.trim().length() > 100) {
+            request.setAttribute("error", "Title and slug must not exceed 100 characters");
+            showEditForm(request, response);
+            return;
+        }
         // Check if slug already exists (excluding current blog)
         if (blogDAO.isSlugExists(slug, Integer.parseInt(idStr))) {
             request.setAttribute("error", "Slug already exists. Please choose a different one.");

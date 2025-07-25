@@ -177,17 +177,47 @@ public class ReceptionistBookingServlet extends HttpServlet {
             String newCustomerName = request.getParameter("newCustomerName");
             String newCustomerEmail = request.getParameter("newCustomerEmail");
             String newCustomerPhone = request.getParameter("newCustomerPhone");
-            String roomIdStr = request.getParameter("roomId");
+          String[] roomIdStrs = request.getParameterValues("roomIds");
             String checkInStr = request.getParameter("checkIn");
             String checkOutStr = request.getParameter("checkOut");
             String notes = request.getParameter("notes");
             
             // Get selected services
-            String[] serviceIds = request.getParameterValues("services");
-            
+            // Parse service quantities per room
+          Map<Integer, Map<Integer, Integer>> servicesByRoom = new HashMap<>();
+Enumeration<String> params = request.getParameterNames();
+while (params.hasMoreElements()) {
+    String param = params.nextElement();
+    if (param.startsWith("service_") && !param.startsWith("serviceRooms_")) {
+        try {
+            int serviceId = Integer.parseInt(param.substring(8));
+            int qty = Integer.parseInt(request.getParameter(param));
+            if (qty > 0) {
+                String[] roomsForService = request.getParameterValues("serviceRooms_" + serviceId);
+                if (roomsForService == null || roomsForService.length == 0) {
+                    roomsForService = roomIdStrs; // default to all selected rooms
+                }
+                boolean all = Arrays.asList(roomsForService).contains("ALL");
+                if (all) {
+                    for (String roomStr : roomIdStrs) {
+                        int rId = Integer.parseInt(roomStr);
+                        servicesByRoom.computeIfAbsent(rId, k -> new HashMap<>())
+                                      .put(serviceId, qty);
+                    }
+                } else {
+                    for (String rStr : roomsForService) {
+                        int rId = Integer.parseInt(rStr);
+                        servicesByRoom.computeIfAbsent(rId, k -> new HashMap<>())
+                                      .put(serviceId, qty);
+                    }
+                }
+            }
+        } catch (NumberFormatException ignored) {}
+                }
+            }
             // Validate required parameters
-            if (roomIdStr == null || roomIdStr.isEmpty()) {
-                throw new Exception("Please select a room");
+            if (roomIdStrs == null || roomIdStrs.length == 0) {
+                throw new Exception("Please select at least one room");
             }
             
             if (checkInStr == null || checkOutStr == null) {
@@ -252,56 +282,52 @@ public class ReceptionistBookingServlet extends HttpServlet {
             }
             
             // Validate room selection and availability
-            int roomId = Integer.parseInt(roomIdStr);
-            Room room = roomDAO.getRoomById(roomId);
-            if (room == null) {
-                throw new Exception("Selected room not found");
-            }
             
-            // Double-check room availability
-            if (!roomDAO.isRoomAvailableForDateRange(roomId, checkIn, checkOut)) {
-                throw new Exception("Selected room is no longer available for these dates");
-            }
-            
-            // Create reservation
-            Reservation reservation = new Reservation();
-            reservation.setUserId(customerId);
-            reservation.setRoomId(roomId);
-            reservation.setCheckIn(checkIn);
-            reservation.setCheckOut(checkOut);
-            reservation.setStatus("CONFIRMED");
-            reservation.setCreatedBy(receptionist.getId());
-            reservation.setNotes(notes != null ? notes.trim() : null);
-            
-            // Calculate room total
             long days = (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24);
             if (days <= 0) {
                 throw new Exception("Invalid date range");
             }
             
-            double roomTotal = room.getBasePrice() * days;
-            
-            // Calculate services total
-            double servicesTotal = calculateServicesTotal(serviceIds);
-            
-            // Set total amount (room + services)
-            reservation.setTotalAmount(roomTotal + servicesTotal);
-            
-            // Create the reservation
-            int reservationId = reservationDAO.createReservationAndGetId(reservation);
-            
-            if (reservationId > 0) {
-                reservation.setId(reservationId);
-                
-                // Add selected services to reservation
-                if (serviceIds != null && serviceIds.length > 0) {
-                    addServicesToReservation(reservationId, serviceIds, receptionist.getId());
+           
+          List<Integer> createdIds = new ArrayList<>();
+
+            for (String idStr : roomIdStrs) {
+                int roomId = Integer.parseInt(idStr);
+                Room room = roomDAO.getRoomById(roomId);
+                if (room == null) {
+                    throw new Exception("Selected room not found");
                 }
-                
-                request.getSession().setAttribute("success", 
-                    String.format("Booking created successfully! Reservation ID: #%d (Total: %,.0f₫)", 
-                    reservationId, reservation.getTotalAmount()));
-                
+                  if (!roomDAO.isRoomAvailableForDateRange(roomId, checkIn, checkOut)) {
+                    throw new Exception("Room " + room.getRoomNumber() + " is no longer available");
+                }
+
+                Reservation reservation = new Reservation();
+                reservation.setUserId(customerId);
+                reservation.setRoomId(roomId);
+                reservation.setCheckIn(checkIn);
+                reservation.setCheckOut(checkOut);
+                reservation.setStatus("CONFIRMED");
+                reservation.setCreatedBy(receptionist.getId());
+                reservation.setNotes(notes != null ? notes.trim() : null);
+
+                Map<Integer, Integer> serviceQuantities = servicesByRoom.get(roomId);
+
+                double roomTotal = room.getBasePrice() * days;
+                double servicesTotal = calculateServicesTotal(serviceQuantities);
+                reservation.setTotalAmount(roomTotal + servicesTotal);
+
+                int reservationId = reservationDAO.createReservationAndGetId(reservation);
+                if (reservationId > 0) {
+                    createdIds.add(reservationId);
+                    if (serviceQuantities != null && !serviceQuantities.isEmpty()) {
+                        addServicesToReservation(reservationId, serviceQuantities, receptionist.getId());
+                    }
+                }
+            }
+
+            if (!createdIds.isEmpty()) {
+                request.getSession().setAttribute("success",
+                    "Created " + createdIds.size() + " booking(s) successfully");
                 response.sendRedirect(request.getContextPath() + "/receptionist/check-in");
                 
             } else {
@@ -322,18 +348,13 @@ public class ReceptionistBookingServlet extends HttpServlet {
     }
     
     // Helper method to calculate total for selected services
-    private double calculateServicesTotal(String[] serviceIds) {
+    private double calculateServicesTotal(Map<Integer, Integer> serviceQuantities) {
         double total = 0;
-        if (serviceIds != null) {
-            for (String serviceId : serviceIds) {
-                try {
-                    Service service = serviceDAO.getServiceById(Integer.parseInt(serviceId));
-                    if (service != null && service.isActive()) {
-                        total += service.getPrice();
-                    }
-                } catch (NumberFormatException e) {
-                    // Skip invalid service ID
-                    System.err.println("Invalid service ID: " + serviceId);
+          if (serviceQuantities != null) {
+            for (Map.Entry<Integer, Integer> entry : serviceQuantities.entrySet()) {
+                Service service = serviceDAO.getServiceById(entry.getKey());
+                if (service != null && service.isActive()) {
+                    total += service.getPrice() * entry.getValue();
                 }
             }
         }
@@ -341,36 +362,33 @@ public class ReceptionistBookingServlet extends HttpServlet {
     }
     
     // Helper method to add services to reservation
-    private void addServicesToReservation(int reservationId, String[] serviceIds, int createdBy) {
-        if (serviceIds != null) {
-            for (String serviceId : serviceIds) {
-                try {
-                    Service service = serviceDAO.getServiceById(Integer.parseInt(serviceId));
-                    if (service != null && service.isActive()) {
-                        ReservationService rs = new ReservationService();
-                        rs.setReservationId(reservationId);
-                        rs.setServiceId(service.getId());
-                        rs.setQuantity(1);
-                        rs.setUnitPrice(service.getPrice()); // Store price at time of booking
-                        rs.setCreatedBy(createdBy);
-                        
-                        boolean success = serviceDAO.addServiceToReservation(rs);
-                        if (success) {
-                            System.out.println("Added service " + service.getName() + 
-                                             " to reservation " + reservationId);
-                        } else {
-                            System.err.println("Failed to add service " + service.getName() + 
-                                              " to reservation " + reservationId);
-                        }
+private void addServicesToReservation(int reservationId, Map<Integer, Integer> serviceQuantities, int createdBy) {
+    if (serviceQuantities != null) {
+        for (Map.Entry<Integer, Integer> entry : serviceQuantities.entrySet()) {
+            try {
+                Service service = serviceDAO.getServiceById(entry.getKey());
+                if (service != null && service.isActive()) {
+                    ReservationService rs = new ReservationService();
+                    rs.setReservationId(reservationId);
+                    rs.setServiceId(service.getId());
+                    rs.setQuantity(entry.getValue());
+                    rs.setUnitPrice(service.getPrice());
+                    rs.setCreatedBy(createdBy);
+                    rs.setStatus("CONFIRMED");
+
+                    boolean inserted = serviceDAO.addServiceToReservation(rs);
+                    if (!inserted) {
+                        System.err.println("Failed to add service " + service.getName()
+                                + " to reservation " + reservationId);
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.err.println("Error adding service ID " + serviceId + 
-                                      " to reservation: " + e.getMessage());
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
+}
+    
     
     // Helper method to generate unique username
     private String generateUsername(String email) {

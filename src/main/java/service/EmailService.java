@@ -12,7 +12,7 @@ import java.net.URLEncoder;
 
 public class EmailService {
     
-    private final String BASE_URL = "http://localhost:8080"; // Configure as needed
+    private final String BASE_URL = "http://localhost:9999"; // Configure as needed
     private VerificationDAO verificationDAO = new VerificationDAO();
     
 public boolean sendChangeRequestEmail(PendingChange change, User user) {

@@ -229,7 +229,7 @@
         <div class="card-header">
             <h5 class="mb-0">
                 <i class="fas fa-list fa-fw"></i> Today's Check-ins
-                <span class="badge badge-info ml-2">${todayCheckIns.size()}</span>
+                <span class="badge badge-info ml-2" style="color: #007bff">${todayCheckIns.size()}</span>
             </h5>
         </div>
         <div class="card-body">
