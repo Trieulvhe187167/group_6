@@ -228,7 +228,7 @@
             
             <div class="action-buttons">
                 <button type="submit" form="cashForm" class="btn btn-primary">
-                    <i class="fa fa-check"></i> Confirm Booking
+                    <i class="fa fa-check"></i> Confirm Payment
                 </button>
             </div>
             

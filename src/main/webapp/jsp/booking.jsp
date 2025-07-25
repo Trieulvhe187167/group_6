@@ -64,7 +64,7 @@
                 <div class="container">
                     <div class="page-banner-entry">
                         <h1 class="text-white">Booking Room</h1>
-                    </div>
+                    </div>            
                 </div>
             </div>
             <div class="breadcrumb-row">
@@ -105,7 +105,7 @@
                                 <th>Room Type</th>
                                 <th>Check-in</th>
                                 <th>Check-out</th>
-                                <th>Guests (Adult/Children)</th>
+                                <th>Guests (Adult/Children)</th>      
                             </tr>
                         </thead>
                         <tbody>
@@ -116,13 +116,13 @@
                                 <td>
                                     <input type="number" class="form-control d-inline-block" style="width:70px;" name="adults" id="adults" value="1" min="1" max="<%= capacity %>" onchange="updateChildLimit('', <%= capacity %>)">
                                     <input type="number" class="form-control d-inline-block ms-1" style="width:70px;" name="children" id="children" value="0" min="0" max="<%= capacity %>" onchange="updateChildLimit('', <%= capacity %>)">
-                                </td>
+                                </td>                              
                             </tr>
                         </tbody>
                     </table>
-                                <p class="text-end" style="color: red"><strong>Subtotal: <span id="singleSubtotal">0₫</span></strong></p>
+                    <p class="text-end" style="color: red"><strong>Total: <span id="singleSubtotal">0₫</span></strong></p>
 
-                    
+
                     <c:choose>
                         <c:when test="${not empty sessionScope.user}">
                             <h4>Booking By: ${sessionScope.user.fullName} </h4>
@@ -162,22 +162,15 @@
                                 <div>Bank Transfer</div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="payment-method-btn" onclick="selectPaymentMethod('CREDIT_CARD')">
-                                <input type="radio" name="paymentMethod" value="CREDIT_CARD" hidden>
-                                <i class="fas fa-credit-card fa-2x mb-2"></i>
-                                <div>Credit Card</div>
-                            </div>
-                        </div>
                     </div>
-                   <div class="d-flex justify-content-between my-5 px-5">
+                    <div class="d-flex justify-content-between my-5 px-5">
 
-  <a href="javascript:history.back()" class="btn btn-outline-secondary px-4">
-    <i class="fas fa-arrow-left"></i> Back
-  </a>
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary px-4">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
 
-  <button type="submit" class="btn btn-primary px-4">Confirm Booking</button>
-</div>
+                        <button type="submit" class="btn btn-primary px-4">Confirm Booking</button>
+                    </div>
                 </form>
                 <%
                     } else if(cart != null && !cart.isEmpty()) {
@@ -232,7 +225,7 @@
                             <input type="hidden" name="phone" value="${sessionScope.user.phone}">
                         </c:when>
                         <c:otherwise>
-                             <h4>Customer Information</h4>
+                            <h4>Customer Information</h4>
                             <div class="form-group">
                                 <label>Full Name</label>
                                 <input type="text" name="fullName" class="form-control" required />
@@ -264,13 +257,13 @@
                                 <div>Bank Transfer</div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+<!--                        <div class="col-md-3">
                             <div class="payment-method-btn" onclick="selectPaymentMethod('CREDIT_CARD')">
                                 <input type="radio" name="paymentMethod" value="CREDIT_CARD" hidden>
                                 <i class="fas fa-credit-card fa-2x mb-2"></i>
                                 <div>Credit Card</div>
                             </div>
-                        </div>
+                        </div>-->
                         <!--                <div class="col-md-3">
                                             <div class="payment-method-btn" onclick="selectPaymentMethod('VNPay')">
                                                 <input type="radio" name="paymentMethod" value="VNPay" hidden>
@@ -287,19 +280,19 @@
                                         </div>-->
                     </div>
 
-          <div class="d-flex justify-content-between my-5 px-5">
+                    <div class="d-flex justify-content-between my-5 px-5">
 
- <a href="${pageContext.request.contextPath}/CartServlet"
-     class="btn btn-secondary px-4">
-    Back to Cart
-  </a>
+                        <a href="${pageContext.request.contextPath}/CartServlet"
+                           class="btn btn-secondary px-4">
+                            Back to Cart
+                        </a>
 
-  <a href="javascript:history.back()" class="btn btn-outline-secondary px-4">
-    <i class="fas fa-arrow-left"></i> Back
-  </a>
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary px-4">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
 
-  <button type="submit" class="btn btn-primary px-4">Confirm Booking</button>
-</div>
+                        <button type="submit" class="btn btn-primary px-4">Confirm Booking</button>
+                    </div>
                 </form>
                 <%
                     } else {
@@ -339,161 +332,163 @@
             <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/popper.min.js"></script>
             <script src="${pageContext.request.contextPath}/assets/vendors/bootstrap/js/bootstrap.min.js"></script>
             <script>
-                                    var pendingData = null;
+                                var pendingData = null;
 
-                                    $('#bookingForm').on('submit', function (e) {
-                                        e.preventDefault();
-                                        pendingData = $(this).serialize();
-                                        $.post($(this).attr('action'), pendingData, function (res) {
-                                            if (res.requireOTP) {
-                                                $('#maskedEmail').text(res.email);
-                                                $('#otpMessage').text('');
-                                                $('#otpModal').modal('show');
-                                            } else if (res.success) {
-                                                var method = $('input[name="paymentMethod"]:checked').val() || 'CASH';
-                                                var resIds = res.reservationIds ? res.reservationIds : res.reservationId;
-                                                var payIds = res.paymentIds ? res.paymentIds : res.paymentId;
-                                                window.location.href = '${pageContext.request.contextPath}/PaymentGateway?reservationIds=' + resIds + '&paymentIds=' + payIds + '&method=' + method;                                            } else if (res.error) {
-                                                alert(res.error);
-                                            }
-                                        }, 'json').fail(function () {
-                                            alert('Error processing booking');
-                                        });
-                                    });
-
-                                    $('#submitOTP').on('click', function () {
-                                        var otp = $('#otpInput').val().trim();
-                                        if (!otp) {
-                                            $('#otpMessage').text('Please enter OTP');
-                                            return;
+                                $('#bookingForm').on('submit', function (e) {
+                                    e.preventDefault();
+                                    pendingData = $(this).serialize();
+                                    $.post($(this).attr('action'), pendingData, function (res) {
+                                        if (res.requireOTP) {
+                                            $('#maskedEmail').text(res.email);
+                                            $('#otpMessage').text('');
+                                            $('#otpModal').modal('show');
+                                        } else if (res.success) {
+                                            var method = $('input[name="paymentMethod"]:checked').val() || 'CASH';
+                                            var resIds = res.reservationIds ? res.reservationIds : res.reservationId;
+                                            var payIds = res.paymentIds ? res.paymentIds : res.paymentId;
+                                            window.location.href = '${pageContext.request.contextPath}/PaymentGateway?reservationIds=' + resIds + '&paymentIds=' + payIds + '&method=' + method;
+                                        } else if (res.error) {
+                                            alert(res.error);
                                         }
-                                        $.post('${pageContext.request.contextPath}/ValidateOTP', {otp: otp}, function (res) {
-                                            if (res.success) {
-                                                $('#otpModal').modal('hide');
-                                                $.post('${pageContext.request.contextPath}/BookingServlet', pendingData, function (r) {
-                                                    if (r.success) {
-                                                        var method = $('input[name="paymentMethod"]:checked').val() || 'CASH';
-                                                        var resIds = r.reservationIds ? r.reservationIds : r.reservationId;
-                                                        var payIds = r.paymentIds ? r.paymentIds : r.paymentId;
-                                                        window.location.href = '${pageContext.request.contextPath}/PaymentGateway?reservationIds=' + resIds + '&paymentIds=' + payIds + '&method=' + method;                                                    } else if (r.error) {
-                                                        alert(r.error);
-                                                    }
-                                                }, 'json');
-                                            } else {
-                                                $('#otpMessage').text(res.message || 'Invalid OTP');
-                                            }
-                                        }, 'json').fail(function () {
-                                            $('#otpMessage').text('Error validating OTP');
-                                        });
+                                    }, 'json').fail(function () {
+                                        alert('Error processing booking');
                                     });
+                                });
 
-                                    $('#resendOTP').on('click', function () {
-                                        $.post('${pageContext.request.contextPath}/ResendOTP', function (res) {
-                                            if (res.success) {
-                                                $('#otpMessage').text('OTP resent');
-                                            } else {
-                                                $('#otpMessage').text(res.message || 'Failed to resend OTP');
-                                            }
-                                        }, 'json');
+                                $('#submitOTP').on('click', function () {
+                                    var otp = $('#otpInput').val().trim();
+                                    if (!otp) {
+                                        $('#otpMessage').text('Please enter OTP');
+                                        return;
+                                    }
+                                    $.post('${pageContext.request.contextPath}/ValidateOTP', {otp: otp}, function (res) {
+                                        if (res.success) {
+                                            $('#otpModal').modal('hide');
+                                            $.post('${pageContext.request.contextPath}/BookingServlet', pendingData, function (r) {
+                                                if (r.success) {
+                                                    var method = $('input[name="paymentMethod"]:checked').val() || 'CASH';
+                                                    var resIds = r.reservationIds ? r.reservationIds : r.reservationId;
+                                                    var payIds = r.paymentIds ? r.paymentIds : r.paymentId;
+                                                    window.location.href = '${pageContext.request.contextPath}/PaymentGateway?reservationIds=' + resIds + '&paymentIds=' + payIds + '&method=' + method;
+                                                } else if (r.error) {
+                                                    alert(r.error);
+                                                }
+                                            }, 'json');
+                                        } else {
+                                            $('#otpMessage').text(res.message || 'Invalid OTP');
+                                        }
+                                    }, 'json').fail(function () {
+                                        $('#otpMessage').text('Error validating OTP');
                                     });
+                                });
 
-                                    function selectPaymentMethod(method) {
-                                        $('.payment-method-btn').removeClass('selected');
-                                        $('input[name="paymentMethod"][value="' + method + '"]').prop('checked', true)
-                                                .parent('.payment-method-btn').addClass('selected');
-                                    }
-
-                                    function updateChildLimit(idx, capacity) {
-                                        var adultsInput = document.getElementById('adults' + idx);
-                                        var childrenInput = document.getElementById('children' + idx);
-                                        if (!adultsInput || !childrenInput)
-                                            return;
-                                        var adults = parseInt(adultsInput.value) || 1;
-                                        if (adults < 1)
-                                            adults = 1;
-                                        if (adults > capacity)
-                                            adults = capacity;
-                                        adultsInput.value = adults;
-                                        var childLimit = (adults >= capacity) ? 1 : (capacity - adults) * 2;
-                                        childrenInput.max = childLimit;
-                                        var children = parseInt(childrenInput.value) || 0;
-                                        if (children < 0)
-                                            children = 0;
-                                        if (children > childLimit)
-                                            children = childLimit;
-                                        childrenInput.value = children;
-                                    }
-
-                                    function setMinDates() {
-                                        var inEl = document.getElementById('singleCheckIn');
-                                        var outEl = document.getElementById('singleCheckOut');
-                                        if (!inEl || !outEl)
-                                            return;
-                                        var today = new Date();
-                                        var todayStr = today.toISOString().split('T')[0];
-                                        if (!inEl.value || inEl.value < todayStr) {
-                                            inEl.value = todayStr;
+                                $('#resendOTP').on('click', function () {
+                                    $.post('${pageContext.request.contextPath}/ResendOTP', function (res) {
+                                        if (res.success) {
+                                            $('#otpMessage').text('OTP resent');
+                                        } else {
+                                            $('#otpMessage').text(res.message || 'Failed to resend OTP');
                                         }
-                                        inEl.min = todayStr;
-                                        updateCheckoutMinSingle();
-                                    }
+                                    }, 'json');
+                                });
 
-                                    function updateCheckoutMinSingle() {
-                                        var inEl = document.getElementById('singleCheckIn');
-                                        var outEl = document.getElementById('singleCheckOut');
-                                        if (!inEl || !outEl)
-                                            return;
-                                        var d = new Date(inEl.value);
-                                        d.setDate(d.getDate() + 1);
-                                        var minStr = d.toISOString().split('T')[0];
-                                        outEl.min = minStr;
-                                        if (!outEl.value || outEl.value < minStr) {
-                                            outEl.value = minStr;
-                                        }
-                                        updateSingleSubtotal();
-                                    }
+                                function selectPaymentMethod(method) {
+                                    $('.payment-method-btn').removeClass('selected');
+                                    $('input[name="paymentMethod"][value="' + method + '"]').prop('checked', true)
+                                            .parent('.payment-method-btn').addClass('selected');
+                                }
 
-                                    function updateSingleSubtotal() {
-                                        var inEl = document.getElementById('singleCheckIn');
-                                        var outEl = document.getElementById('singleCheckOut');
-                                        var priceInput = document.querySelector('input[name="basePrice"]');
-                                        if (!inEl || !outEl || !priceInput)
-                                            return;
-                                        var price = parseFloat(priceInput.value) || 0;
-                                        var inDate = new Date(inEl.value);
-                                        var outDate = new Date(outEl.value);
-                                        var nights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24));
-                                        if (nights < 1)
-                                            nights = 1;
-                                        var subtotal = price * nights;
-                                        document.getElementById('singleSubtotal').textContent =
-                                                new Intl.NumberFormat('vi-VN').format(subtotal) + '₫';
-                                    }
+                                function updateChildLimit(idx, capacity) {
+                                    var adultsInput = document.getElementById('adults' + idx);
+                                    var childrenInput = document.getElementById('children' + idx);
+                                    if (!adultsInput || !childrenInput)
+                                        return;
+                                    var adults = parseInt(adultsInput.value) || 1;
+                                    if (adults < 1)
+                                        adults = 1;
+                                    if (adults > capacity)
+                                        adults = capacity;
+                                    adultsInput.value = adults;
+                                    var childLimit = (adults >= capacity) ? 1 : (capacity - adults) * 2;
+                                    childrenInput.max = childLimit;
+                                    var children = parseInt(childrenInput.value) || 0;
+                                    if (children < 0)
+                                        children = 0;
+                                    if (children > childLimit)
+                                        children = childLimit;
+                                    childrenInput.value = children;
+                                }
 
-                                    document.addEventListener('DOMContentLoaded', function () {
-                                        setMinDates();
-                                        var inEl = document.getElementById('singleCheckIn');
-                                        var outEl = document.getElementById('singleCheckOut');
-                                        if (inEl)
-                                            inEl.addEventListener('change', updateCheckoutMinSingle);
-                                        if (outEl)
-                                            outEl.addEventListener('change', updateSingleSubtotal);
+                                function setMinDates() {
+                                    var inEl = document.getElementById('singleCheckIn');
+                                    var outEl = document.getElementById('singleCheckOut');
+                                    if (!inEl || !outEl)
+                                        return;
+                                    var today = new Date();
+                                    var todayStr = today.toISOString().split('T')[0];
+                                    if (!inEl.value || inEl.value < todayStr) {
+                                        inEl.value = todayStr;
+                                    }
+                                    inEl.min = todayStr;
+                                    updateCheckoutMinSingle();
+                                }
+
+                                function updateCheckoutMinSingle() {
+                                    var inEl = document.getElementById('singleCheckIn');
+                                    var outEl = document.getElementById('singleCheckOut');
+                                    if (!inEl || !outEl)
+                                        return;
+                                    var d = new Date(inEl.value);
+                                    d.setDate(d.getDate() + 1);
+                                    var minStr = d.toISOString().split('T')[0];
+                                    outEl.min = minStr;
+                                    if (!outEl.value || outEl.value < minStr) {
+                                        outEl.value = minStr;
+                                    }
+                                    updateSingleSubtotal();
+                                }
+
+                                function updateSingleSubtotal() {
+                                    var inEl = document.getElementById('singleCheckIn');
+                                    var outEl = document.getElementById('singleCheckOut');
+                                    var priceInput = document.querySelector('input[name="basePrice"]');
+                                    if (!inEl || !outEl || !priceInput)
+                                        return;
+                                    var price = parseFloat(priceInput.value) || 0;
+                                    var inDate = new Date(inEl.value);
+                                    var outDate = new Date(outEl.value);
+                                    var nights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24));
+                                    if (nights < 1)
+                                        nights = 1;
+                                    var subtotal = price * nights;
+                                    document.getElementById('singleSubtotal').textContent =
+                                            new Intl.NumberFormat('vi-VN').format(subtotal) + '₫';
+                                }
+
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    setMinDates();
+                                    var inEl = document.getElementById('singleCheckIn');
+                                    var outEl = document.getElementById('singleCheckOut');
+                                    if (inEl)
+                                        inEl.addEventListener('change', updateCheckoutMinSingle);
+                                    if (outEl)
+                                        outEl.addEventListener('change', updateSingleSubtotal);
                 <% if(single){ %>
-                                        var cap = <%= capacity %>;
-                                        updateChildLimit('', cap);
-                                        var adultsInput = document.getElementById('adults');
-                                        var childrenInput = document.getElementById('children');
-                                        if (adultsInput)
-                                            adultsInput.addEventListener('change', function () {
-                                                updateChildLimit('', cap);
-                                            });
-                                        if (childrenInput)
-                                            childrenInput.addEventListener('change', function () {
-                                                updateChildLimit('', cap);
-                                            });
+                                    var cap = <%= capacity %>;
+                                    updateChildLimit('', cap);
+                                    var adultsInput = document.getElementById('adults');
+                                    var childrenInput = document.getElementById('children');
+                                    if (adultsInput)
+                                        adultsInput.addEventListener('change', function () {
+                                            updateChildLimit('', cap);
+                                        });
+                                    if (childrenInput)
+                                        childrenInput.addEventListener('change', function () {
+                                            updateChildLimit('', cap);
+                                        });
                 <% } %>
-                                        updateSingleSubtotal();
-                                    });
+                                    updateSingleSubtotal();
+                                });
             </script>
 
             <script>

@@ -312,7 +312,7 @@ function updateCommentStatus(commentId, status) {
         // Create a form and submit
         var form = document.createElement('form');
         form.method = 'POST';
-        form.action = '${pageContext.request.contextPath}/admin/comments';
+          form.action = '${pageContext.request.contextPath}/CommentServlet';
         
         var actionInput = document.createElement('input');
         actionInput.type = 'hidden';
