@@ -28,7 +28,7 @@
         <div class="alert alert-success">${success}</div>
     </c:if>
 
-        <h3 class="mb-4">Room Management</h3>
+    <h3 class="mb-4">Room Management</h3>
 
     <!-- Filter Form -->
     <div class="card mb-3">
@@ -119,6 +119,9 @@
                                         </c:when>
                                         <c:when test="${fn:toLowerCase(room.status) == 'dirty'}">
                                             <span class="badge bg-danger text-white">Dirty</span>
+                                        </c:when>
+                                        <c:when test="${fn:toLowerCase(room.status) == 'held'}">
+                                            <span class="badge bg-secondary text-white">Held</span>
                                         </c:when>
                                         <c:otherwise>
                                             <span class="badge bg-dark text-white">Unknown</span>
@@ -212,11 +215,11 @@
     </div>
 </div>
 
-    <script>
-        function confirmStatusChange(roomId, currentStatus, roomNumber) {
-            document.getElementById('roomIdToDelete').value = roomId;
-            document.getElementById('roomName').textContent = roomNumber;
-            $('#statusModal').modal('show');
-        }
-    </script>
+<script>
+    function confirmStatusChange(roomId, currentStatus, roomNumber) {
+        document.getElementById('roomIdToDelete').value = roomId;
+        document.getElementById('roomName').textContent = roomNumber;
+        $('#statusModal').modal('show');
+    }
+</script>
 
