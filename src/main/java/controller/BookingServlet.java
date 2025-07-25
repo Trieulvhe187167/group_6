@@ -750,7 +750,7 @@ public class BookingServlet extends HttpServlet {
                 "- Priority check-in/check-out\n" +
                 "- Special birthday offers\n\n" +
                 "Click here to set your password and complete registration:\n" +
-                "http://localhost:8080/hotel/complete-registration?token=%s\n\n" +
+                "http://localhost:9999/hotel/complete-registration?token=%s\n\n" +
                 "Best regards,\n" +
                 "Luxury Hotel Team",
                 formData.fullName,
@@ -1016,6 +1016,16 @@ public class BookingServlet extends HttpServlet {
     data.email = data.email.trim();
     data.phone = data.phone.trim();
     
+    if (data.fullName.length() > 100) {
+        throw new Exception("Full name cannot exceed 100 characters");
+    }
+    if (data.email.length() > 100) {
+        throw new Exception("Email cannot exceed 100 characters");
+    }
+    if (!data.phone.matches("0[0-9]{9}")) {
+        throw new Exception("Phone number must start with 0 and contain 10 digits");
+    }
+    
     // Validate email format
     if (!data.email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
         throw new Exception("Invalid email format: " + data.email);
@@ -1059,7 +1069,16 @@ public class BookingServlet extends HttpServlet {
         data.fullName = data.fullName.trim();
         data.email = data.email.trim();
         data.phone = data.phone.trim();
-
+        
+        if (data.fullName.length() > 100) {
+            throw new Exception("Full name cannot exceed 100 characters");
+        }
+        if (data.email.length() > 100) {
+            throw new Exception("Email cannot exceed 100 characters");
+        }
+        if (!data.phone.matches("0[0-9]{9}")) {
+            throw new Exception("Phone number must start with 0 and contain 10 digits");
+        }
         if (!data.email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
             throw new Exception("Invalid email format: " + data.email);
         }

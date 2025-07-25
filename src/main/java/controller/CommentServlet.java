@@ -53,13 +53,22 @@ public class CommentServlet extends HttpServlet {
         
         // Validate input
         if (blogIdStr == null || content == null || content.trim().isEmpty() ||
-            (loggedInUser == null && (authorName == null || authorName.trim().isEmpty() || 
+                 (loggedInUser == null && (authorName == null || authorName.trim().isEmpty() ||
              email == null || email.trim().isEmpty()))) {
             
             response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogIdStr + "&error=1#respond");
             return;
         }
-        
+           // Validate author name length
+        if (authorName != null && authorName.trim().length() > 50) {
+            response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogIdStr + "&error=name#respond");
+            return;
+        }
+         // Validate email length
+        if (email != null && email.trim().length() > 50) {
+            response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogIdStr + "&error=emailLen#respond");
+            return;
+        }
         // Validate email format for non-logged in users
         if (loggedInUser == null && !isValidEmail(email)) {
             response.sendRedirect(request.getContextPath() + "/BlogDetailServlet?id=" + blogIdStr + "&error=email#respond");

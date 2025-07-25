@@ -9,8 +9,9 @@ public class DBContext {
 
 
 
-    private static final String DEFAULT_URL = "jdbc:sqlserver://LAPTOP-SVEKADBK\\HIEUHE187201:1433;"
-            + "databaseName=HotelManagement_4;encrypt=false;";
+    private static final String DEFAULT_URL = "jdbc:sqlserver://LAPTOP-Q4D6UCM6\\MSSQLSERVER01:1433;"
+            + "databaseName=HotelManagement_3;encrypt=false;";
+
 
 
     private static final String DEFAULT_USER = "sa";

@@ -507,9 +507,12 @@ public List<Service> getAllServices(String search, String status) {
         
         // Set default status if column doesn't exist
         try {
-            service.setStatus(rs.getString("Status"));
+            String status = rs.getString("Status");
+            service.setStatus(status);
+            service.setActive("ACTIVE".equalsIgnoreCase(status));
         } catch (SQLException e) {
-            service.setStatus("active");
+            service.setStatus("ACTIVE");
+            service.setActive(true);
         }
         
         // Auto-categorize based on name
