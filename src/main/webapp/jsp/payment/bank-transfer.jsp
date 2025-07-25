@@ -356,53 +356,7 @@
                             <span><fmt:formatNumber value="${fullAmount - depositAmount}" pattern="#,###"/> VND</span>
                         </div>
                     </div>
-
-                    <!-- Bank Details -->
-                    <div class="section">
-                        <h5 class="mb-3"><i class="fas fa-building-columns me-2"></i>Bank Account Details</h5>
-
-                        <div class="bank-detail">
-                            <span class="bank-label">Bank Name:</span>
-                            <span class="bank-value">
-                                <strong><%= bankName %> (VCB)</strong>
-                                <span class="copy-btn" onclick="copyText('<%= bankName %>')">
-                                    <i class="fas fa-copy"></i> Copy
-                                </span>
-                            </span>
-                        </div>
-
-                        <div class="bank-detail">
-                            <span class="bank-label">Account Number:</span>
-                            <span class="bank-value">
-                                <strong><%= accountNumber %></strong>
-                                <span class="copy-btn" onclick="copyText('<%= accountNumber %>')">
-                                    <i class="fas fa-copy"></i> Copy
-                                </span>
-                            </span>
-                        </div>
-
-                        <div class="bank-detail">
-                            <span class="bank-label">Account Holder:</span>
-                            <span class="bank-value">
-                                <strong><%= accountHolder %></strong>
-                                <span class="copy-btn" onclick="copyText('<%= accountHolder %>')">
-                                    <i class="fas fa-copy"></i> Copy
-                                </span>
-                            </span>
-                        </div>
-
-                        <div class="bank-detail">
-                            <span class="bank-label">Transfer Content:</span>
-                            <span class="bank-value">
-                                <strong><%= transferContent %></strong>
-                                <span class="copy-btn" onclick="copyText('<%= transferContent %>')">
-                                    <i class="fas fa-copy"></i> Copy
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- QR Code Section -->
+<!-- QR Code Section -->
                     <div class="section">
                         <h5 class="mb-3"><i class="fas fa-qrcode me-2"></i>Quick Transfer via QR Code</h5>
 
@@ -449,6 +403,52 @@
                         </div>
                     </div>
 
+                    <!-- Bank Details -->
+                    <div class="section">
+                        <h5 class="mb-3"><i class="fas fa-building-columns me-2"></i>Bank Account Details</h5>
+
+                        <div class="bank-detail">
+                            <span class="bank-label">Bank Name:</span>
+                            <span class="bank-value">
+                                <strong><%= bankName %> (VCB)</strong>
+                                <span class="copy-btn" onclick="copyText('<%= bankName %>')">
+                                    <i class="fas fa-copy"></i> Copy
+                                </span>
+                            </span>
+                        </div>
+
+                        <div class="bank-detail">
+                            <span class="bank-label">Account Number:</span>
+                            <span class="bank-value">
+                                <strong><%= accountNumber %></strong>
+                                <span class="copy-btn" onclick="copyText('<%= accountNumber %>')">
+                                    <i class="fas fa-copy"></i> Copy
+                                </span>
+                            </span>
+                        </div>
+
+                        <div class="bank-detail">
+                            <span class="bank-label">Account Holder:</span>
+                            <span class="bank-value">
+                                <strong><%= accountHolder %></strong>
+                                <span class="copy-btn" onclick="copyText('<%= accountHolder %>')">
+                                    <i class="fas fa-copy"></i> Copy
+                                </span>
+                            </span>
+                        </div>
+
+                        <div class="bank-detail">
+                            <span class="bank-label">Transfer Content:</span>
+                            <span class="bank-value">
+                                <strong><%= transferContent %></strong>
+                                <span class="copy-btn" onclick="copyText('<%= transferContent %>')">
+                                    <i class="fas fa-copy"></i> Copy
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    
                     <!-- Instructions -->
                     <div class="instruction-card">
                         <h5><i class="fas fa-list-check me-2"></i>Transfer Instructions</h5>

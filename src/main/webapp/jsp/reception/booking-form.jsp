@@ -158,7 +158,7 @@
         <div class="alert alert-danger alert-dismissible fade show">
             <i class="fas fa-exclamation-triangle mr-2"></i>
             ${error}
-            <button type="button" class="close" data-dismiss="alert">
+           <button type="button" class="close" data-bs-dismiss="modal" data-dismiss="modal">
                 <span>&times;</span>
             </button>
         </div>
@@ -168,7 +168,7 @@
         <div class="alert alert-success alert-dismissible fade show">
             <i class="fas fa-check-circle mr-2"></i>
             ${success}
-            <button type="button" class="close" data-dismiss="alert">
+            <button type="button" class="close" data-bs-dismiss="modal" data-dismiss="modal">
                 <span>&times;</span>
             </button>
         </div>
@@ -297,7 +297,7 @@
                             <p class="text-muted">Please select dates and check availability to see available rooms</p>
                         </div>
                     </div>
-                    <input type="hidden" name="roomId" id="selectedRoom" required>
+                    <!-- Multiple room selection -->
                 </div>
                 
               <!-- Additional Services Section -->
@@ -343,45 +343,45 @@
     <div id="servicesContainer" class="services-grid">
         <c:forEach var="service" items="${services}">
             <div class="service-item" data-category="${service.category}">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" 
-                           id="service_${service.id}" 
-                           name="services" 
-                           value="${service.id}"
-                           data-price="${service.price}"
-                           onchange="updateServicesSummary()">
-                    <label class="custom-control-label" for="service_${service.id}">
-                        <div class="service-header">
-                            <div class="service-title-section">
-                                <c:choose>
-                                    <c:when test="${service.category == 'TRANSPORT'}">
-                                        <i class="fas fa-car service-icon"></i>
-                                    </c:when>
-                                    <c:when test="${service.category == 'DINING'}">
-                                        <i class="fas fa-utensils service-icon"></i>
-                                    </c:when>
-                                    <c:when test="${service.category == 'SPA'}">
-                                        <i class="fas fa-spa service-icon"></i>
-                                    </c:when>
-                                    <c:when test="${service.category == 'SPECIAL'}">
-                                        <i class="fas fa-star service-icon"></i>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <i class="fas fa-concierge-bell service-icon"></i>
-                                    </c:otherwise>
-                                </c:choose>
-                                <div>
-                                    <strong>${service.name}</strong>
-                                    <span class="service-category-badge">${service.category}</span>
-                                </div>
-                            </div>
-                            <span class="service-price">
-                                <fmt:formatNumber value="${service.price}" pattern="#,###"/>₫
-                            </span>
+           <div class="service-header">
+                    <div class="service-title-section">
+                        <c:choose>
+                            <c:when test="${service.category == 'TRANSPORT'}">
+                                <i class="fas fa-car service-icon"></i>
+                            </c:when>
+                            <c:when test="${service.category == 'DINING'}">
+                                <i class="fas fa-utensils service-icon"></i>
+                            </c:when>
+                            <c:when test="${service.category == 'SPA'}">
+                                <i class="fas fa-spa service-icon"></i>
+                            </c:when>
+                            <c:when test="${service.category == 'SPECIAL'}">
+                                <i class="fas fa-star service-icon"></i>
+                            </c:when>
+                            <c:otherwise>
+                                <i class="fas fa-concierge-bell service-icon"></i>
+                            </c:otherwise>
+                        </c:choose>
+                        <div>
+                            <strong>${service.name}</strong>
+                            <span class="service-category-badge">${service.category}</span>
                         </div>
-                        <small class="text-muted service-description">${service.description}</small>
-                    </label>
+                       
+                    </div>
+                    <span class="service-price">
+                        <fmt:formatNumber value="${service.price}" pattern="#,###"/>₫
+                    </span>
                 </div>
+                <small class="text-muted service-description">${service.description}</small>
+                <div class="mt-2 d-flex align-items-center">
+                    <input type="number" class="form-control service-qty-input" style="width:70px;" min="0" value="0"
+                           name="service_${service.id}" data-price="${service.price}" data-name="${service.name}"
+                           onchange="updateServicesSummary()" />
+                    <div class="ml-2 service-room-options" data-service-id="${service.id}">
+                        <!-- room checkboxes inserted via JS -->
+                    </div>
+                    </select>
+                </div>  
             </div>
         </c:forEach>
         
@@ -412,7 +412,7 @@
             
             <div class="col-lg-4">
                 <!-- Booking Summary -->
-                <div class="table-container sticky-top" style="top: 20px;">
+                <div class="table-container sticky-top" style="top: 100px;">
                     <h5><i class="fas fa-receipt"></i> Booking Summary</h5>
                     
                     <div id="bookingSummary">
@@ -488,6 +488,7 @@ $(document).ready(function() {
     
     // Initialize services counter on page load
     updateServicesSummary();
+      updateServiceRoomOptions();
 });
 
 function setGuestType(type) {
@@ -562,10 +563,15 @@ function displayAvailableRooms(rooms) {
                '</div>';
     } else {
         rooms.forEach(function(room) {
-            html += '<div class="room-selection-card" onclick="selectRoom(' + room.id + ', \'' + 
-                    room.roomNumber + '\', ' + room.price + ', \'' + room.roomType + '\')">';
+            html += '<div class="room-selection-card">';
+            html += '<label class="w-100">';
             html += '<div class="row align-items-center">';
-            html += '<div class="col-md-8">';
+            html += '<div class="col-md-1 text-center">';
+            html += '<input type="checkbox" class="room-checkbox" name="roomIds" value="' + room.id + '" ' +
+                    'data-number="' + room.roomNumber + '" data-price="' + room.price + '" data-type="' + room.roomType + '" ' +
+                    'onchange="handleRoomSelectionChange()">';
+            html += '</div>';
+            html += '<div class="col-md-7">';
             html += '<h6 class="mb-1">Room ' + room.roomNumber + '</h6>';
             html += '<p class="mb-1 text-muted">Type: ' + room.roomType + '</p>';
             html += '<small class="text-muted">Perfect for your stay</small>';
@@ -575,51 +581,68 @@ function displayAvailableRooms(rooms) {
             html += '<small class="text-muted">per night</small>';
             html += '</div>';
             html += '</div>';
+            html += '</label>';
             html += '</div>';
         });
     }
-    
-    $('#availableRooms').html(html);
-}
 
-function selectRoom(roomId, roomNumber, price, roomType) {
-    // Remove previous selection
-    $('.room-selection-card').removeClass('selected');
-    
-    // Add selection to clicked room
-    event.currentTarget.classList.add('selected');
-    
-    // Set hidden field
-    $('#selectedRoom').val(roomId);
-    
-    // Calculate and show summary
-    updateBookingSummary(roomNumber, roomType, price);
-    
-    // Enable submit button
-    $('#submitBtn').prop('disabled', false);
+    $('#availableRooms').html(html);
+    handleRoomSelectionChange();
 }
 
 // Update booking summary with room and services
-function updateBookingSummary(roomNumber, roomType, pricePerNight) {
+function updateRoomSummary() {
     var checkIn = new Date($('#checkIn').val());
     var checkOut = new Date($('#checkOut').val());
     var nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-    var roomSubtotal = nights * pricePerNight;
-    
-    // Calculate services total
-    var servicesTotal = 0;
-    var selectedServices = [];
-    
-    document.querySelectorAll('input[name="services"]:checked').forEach(function(checkbox) {
-        var price = parseFloat(checkbox.getAttribute('data-price'));
-        servicesTotal += price;
-        
-        var serviceLabel = checkbox.parentElement.querySelector('strong').textContent;
-        selectedServices.push({
-            name: serviceLabel,
-            price: price
-        });
+      var roomSubtotal = 0;
+    var selectedRooms = [];
+    $('input[name="roomIds"]').each(function(){
+        if(this.checked){
+            var price = parseFloat($(this).data('price'));
+            roomSubtotal += price * nights;
+            selectedRooms.push({
+                id: $(this).val(),
+                number: $(this).data('number'),
+                type: $(this).data('type'),
+                price: price
+            });
+            $(this).closest('.room-selection-card').addClass('selected');
+        } else {
+            $(this).closest('.room-selection-card').removeClass('selected');
+        }
     });
+
+var servicesTotal = 0;
+var selectedServices = [];
+ var servicesByRoom = {};
+    document.querySelectorAll('.service-qty-input').forEach(function(input){
+        var qty = parseInt(input.value) || 0;
+        if(qty > 0){
+            var price = parseFloat(input.getAttribute('data-price'));
+            var name = input.getAttribute('data-name');
+            var container = input.parentElement.querySelector('.service-room-options');
+            var rooms = [];
+            if(container){
+                container.querySelectorAll('input.service-room-checkbox:checked').forEach(function(cb){
+                    rooms.push(cb.value);
+                });
+            }
+            if(rooms.length === 0 || rooms.includes('ALL')){
+                rooms = selectedRooms.map(function(r){ return r.id; });
+            }
+            var roomCount = rooms.length;
+            servicesTotal += price * qty * roomCount;
+            selectedServices.push({name: name, qty: qty * roomCount, price: price * qty * roomCount});
+            rooms.forEach(function(rid){
+                if(!servicesByRoom[rid]) servicesByRoom[rid] = [];
+                servicesByRoom[rid].push({name: name, qty: qty, price: price * qty});
+            });
+            input.closest('.service-item').classList.add('selected');
+        } else {
+            input.closest('.service-item').classList.remove('selected');
+        }
+});
     
     var subtotal = roomSubtotal + servicesTotal;
     var tax = subtotal * 0.1; // 10% tax
@@ -630,18 +653,25 @@ function updateBookingSummary(roomNumber, roomType, pricePerNight) {
     
     // Room details
     html += '<div class="row mb-2">';
-    html += '<div class="col-8"><strong>Room ' + roomNumber + '</strong></div>';
-    html += '<div class="col-4 text-right">' + formatCurrency(pricePerNight) + '₫</div>';
-    html += '</div>';
-    html += '<div class="row mb-2">';
-    html += '<div class="col-8 text-muted">' + roomType + '</div>';
-    html += '<div class="col-4 text-right text-muted">× ' + nights + ' nights</div>';
-    html += '</div>';
-    html += '<div class="row mb-3">';
-    html += '<div class="col-8">Room Total</div>';
+    html += '<div class="col-8"><strong>' + selectedRooms.length + ' room(s)</strong></div>';
     html += '<div class="col-4 text-right">' + formatCurrency(roomSubtotal) + '₫</div>';
     html += '</div>';
-    
+    html += '<div class="row mb-2">';
+     html += '<div class="col-12 text-muted">× ' + nights + ' nights</div>';
+    html += '</div>';
+        selectedRooms.forEach(function(room){
+        html += '<div class="row mb-1">';
+        html += '<div class="col-8 text-muted"><small>Room ' + room.number + ' (' + room.type + ')</small></div>';
+        html += '<div class="col-4 text-right text-muted"><small>' + formatCurrency(room.price * nights) + '₫</small></div>';
+        html += '</div>';
+        var list = servicesByRoom[room.id] || [];
+        list.forEach(function(s){
+            html += '<div class="row mb-1 pl-3">';
+            html += '<div class="col-8 text-muted"><small>&mdash; ' + s.name + ' × ' + s.qty + '</small></div>';
+            html += '<div class="col-4 text-right text-muted"><small>' + formatCurrency(s.price) + '₫</small></div>';
+            html += '</div>';
+        });
+    });
     // Services details
     if (selectedServices.length > 0) {
         html += '<hr>';
@@ -688,45 +718,45 @@ function updateBookingSummary(roomNumber, roomType, pricePerNight) {
     totalHtml += '</div>';
     totalHtml += '</div>';
     
-    $('#bookingSummary').html(html + totalHtml);
-    
-    // Store current room price for service updates
-    $('#bookingSummary').data('roomPrice', pricePerNight);
-    $('#bookingSummary').data('nights', nights);
-    $('#bookingSummary').data('roomNumber', roomNumber);
-    $('#bookingSummary').data('roomType', roomType);
-}
+      $('#bookingSummary').html(html + totalHtml);
 
+    // Enable submit button if at least one room is selected
+    if (selectedRooms.length > 0) {
+        $('#submitBtn').prop('disabled', false);
+    } else {
+        $('#submitBtn').prop('disabled', true);
+    }
+
+    // Keep service checkboxes up to date
+    updateServiceRoomOptions();
+}
+// Handle room checkbox changes
+function handleRoomSelectionChange() {
+    updateRoomSummary();
+    updateServiceRoomOptions();
+}
 // Update services summary when services are selected/deselected
 function updateServicesSummary() {
-    let servicesTotal = 0;
     let selectedCount = 0;
-    
-    document.querySelectorAll('input[name="services"]:checked').forEach(checkbox => {
-        const price = parseFloat(checkbox.getAttribute('data-price'));
-        servicesTotal += price;
-        selectedCount++;
-        
-        // Highlight selected service
-        checkbox.closest('.service-item').classList.add('selected');
+    const totalRooms = $('input[name="roomIds"]:checked').length;
+    document.querySelectorAll('.service-qty-input').forEach(input => {
+        const qty = parseInt(input.value) || 0;
+        if (qty > 0) {
+            const select = input.parentElement.querySelector('.service-room-select');
+            const rooms = $(select).val() || [];
+            let roomCount = rooms.includes('ALL') ? totalRooms : rooms.length;
+            if (roomCount === 0) {
+                roomCount = totalRooms;
+            }
+            selectedCount += qty * roomCount;
+            input.closest('.service-item').classList.add('selected');
+        } else {
+            input.closest('.service-item').classList.remove('selected');
+        }
     });
-    
-    // Remove highlight from unselected services
-    document.querySelectorAll('input[name="services"]:not(:checked)').forEach(checkbox => {
-        checkbox.closest('.service-item').classList.remove('selected');
-    });
-    
-    // Update selected count in header
+
     updateSelectedCount(selectedCount);
-    
-    // If room is already selected, update the booking summary
-    var roomPrice = $('#bookingSummary').data('roomPrice');
-    var roomNumber = $('#bookingSummary').data('roomNumber');
-    var roomType = $('#bookingSummary').data('roomType');
-    
-    if (roomPrice && roomNumber && roomType) {
-        updateBookingSummary(roomNumber, roomType, roomPrice);
-    }
+    updateRoomSummary();
 }
 
 // Update selected services counter
@@ -744,15 +774,82 @@ function updateSelectedCount(count) {
         servicesHeader.appendChild(counter);
     }
 }
+// Populate room options for each service based on selected rooms
+function updateServiceRoomOptions() {
+    var selectedRooms = [];
+    $('input[name="roomIds"]:checked').each(function(){
+        selectedRooms.push({id: this.value, number: $(this).data('number')});
+    });
 
+    document.querySelectorAll('.service-room-options').forEach(function(container){
+        var serviceId = container.getAttribute('data-service-id');
+        var existing = Array.from(container.querySelectorAll('input.service-room-checkbox:checked')).map(c => c.value);
+        container.innerHTML = '';
+
+        if (selectedRooms.length > 1) {
+            var labelAll = document.createElement('label');
+            labelAll.className = 'mr-2';
+            var cbAll = document.createElement('input');
+            cbAll.type = 'checkbox';
+            cbAll.className = 'service-room-checkbox';
+            cbAll.name = 'serviceRooms_' + serviceId;
+            cbAll.value = 'ALL';
+            if (existing.includes('ALL')) cbAll.checked = true;
+            labelAll.appendChild(cbAll);
+            labelAll.appendChild(document.createTextNode('All Rooms'));
+            container.appendChild(labelAll);
+        }
+
+        selectedRooms.forEach(function(room){
+            var label = document.createElement('label');
+            label.className = 'mr-2';
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.className = 'service-room-checkbox';
+            cb.name = 'serviceRooms_' + serviceId;
+            cb.value = room.id;
+            if (existing.includes(String(room.id))) cb.checked = true;
+            label.appendChild(cb);
+            label.appendChild(document.createTextNode('Room ' + room.number));
+            container.appendChild(label);
+        });
+
+        if (selectedRooms.length === 1 && existing.length === 0) {
+            var single = container.querySelector('input[value="' + selectedRooms[0].id + '"]');
+                 if (single) single.checked = true;
+        }
+
+        var allCb = container.querySelector('input[value="ALL"]');
+        var roomCbs = container.querySelectorAll('input:not([value="ALL"])');
+        if (allCb && Array.from(roomCbs).every(cb => cb.checked)) {
+            allCb.checked = true;
+        }
+    });
+
+    updateServicesSummary();
+}
+
+$(document).on('change', '.service-room-checkbox', function(){
+    var container = $(this).closest('.service-room-options');
+    if (this.value === 'ALL') {
+        container.find('input.service-room-checkbox').prop('checked', this.checked);
+    } else {
+        var allCb = container.find('input.service-room-checkbox[value="ALL"]');
+        if (!this.checked) {
+            allCb.prop('checked', false);
+        } else if (container.find('input.service-room-checkbox:not([value="ALL"])').length ===
+                   container.find('input.service-room-checkbox:not([value="ALL"]):checked').length) {
+            allCb.prop('checked', true);
+        }
+    }
+    updateServicesSummary();
+});
 function clearRoomSelection() {
-    $('#selectedRoom').val('');
+    $('input[name="roomIds"]').prop('checked', false);
     $('#submitBtn').prop('disabled', true);
     $('#availableRooms').html('<div class="text-center py-4"><i class="fas fa-calendar-day fa-3x text-muted mb-3"></i><p class="text-muted">Please check availability to see available rooms</p></div>');
     $('#bookingSummary').html('<div class="text-center py-4"><i class="fas fa-hand-point-left fa-2x text-muted mb-3"></i><p class="text-muted">Select a room to see booking summary</p></div>');
-    
-    // Clear stored data
-    $('#bookingSummary').removeData(['roomPrice', 'nights', 'roomNumber', 'roomType']);
+    updateServiceRoomOptions();
 }
 
 function validateForm() {
@@ -813,8 +910,8 @@ function validateForm() {
     }
     
     // Validate room selection
-    if (!$('#selectedRoom').val()) {
-        alert('Please select a room');
+ if ($('input[name="roomIds"]:checked').length === 0) {
+        alert('Please select at least one room');
         return false;
     }
     
@@ -884,83 +981,7 @@ function updateServicesContainerHeight() {
     }
 }
 
-// Enhanced updateServicesSummary function
-function updateServicesSummary() {
-    let servicesTotal = 0;
-    let selectedCount = 0;
-    let selectedByCategory = {};
-    
-    document.querySelectorAll('input[name="services"]:checked').forEach(checkbox => {
-        const price = parseFloat(checkbox.getAttribute('data-price'));
-        servicesTotal += price;
-        selectedCount++;
-        
-        // Count by category
-        const category = checkbox.closest('.service-item').getAttribute('data-category');
-        selectedByCategory[category] = (selectedByCategory[category] || 0) + 1;
-        
-        // Highlight selected service
-        checkbox.closest('.service-item').classList.add('selected');
-    });
-    
-    // Remove highlight from unselected services
-    document.querySelectorAll('input[name="services"]:not(:checked)').forEach(checkbox => {
-        checkbox.closest('.service-item').classList.remove('selected');
-    });
-    
-    // Update selected count in header
-    updateSelectedCount(selectedCount, selectedByCategory);
-    
-    // If room is already selected, update the booking summary
-    var roomPrice = $('#bookingSummary').data('roomPrice');
-    var roomNumber = $('#bookingSummary').data('roomNumber');
-    var roomType = $('#bookingSummary').data('roomType');
-    
-    if (roomPrice && roomNumber && roomType) {
-        updateBookingSummary(roomNumber, roomType, roomPrice);
-    }
-}
 
-// Update selected services counter with category breakdown
-function updateSelectedCount(count, byCategory) {
-    const existingCounter = document.querySelector('.services-selected-count');
-    if (existingCounter) {
-        existingCounter.remove();
-    }
-    
-    if (count > 0) {
-        const servicesHeader = document.querySelector('.booking-section h5 i.fa-concierge-bell').parentElement;
-        const counter = document.createElement('span');
-        counter.className = 'services-selected-count';
-        
-        // Create detailed text
-        let text = count + ' selected';
-        
-        // Add breakdown if multiple categories
-        const categories = Object.keys(byCategory);
-        if (categories.length > 1) {
-            const breakdown = categories.map(cat => {
-                const catName = getCategoryShortName(cat);
-                return byCategory[cat] + ' ' + catName;
-            }).join(', ');
-            counter.setAttribute('title', breakdown);
-        }
-        
-        counter.textContent = text;
-        servicesHeader.appendChild(counter);
-    }
-}
-
-// Get short name for category
-function getCategoryShortName(category) {
-    const names = {
-        'TRANSPORT': 'Transport',
-        'DINING': 'Dining',
-        'SPA': 'Spa',
-        'SPECIAL': 'Special'
-    };
-    return names[category] || category;
-}
 
 // Initialize on page load
 $(document).ready(function() {
@@ -968,7 +989,7 @@ $(document).ready(function() {
     
     // Initialize service counts
     updateServicesSummary();
-    
+     updateServiceRoomOptions();
     // Add search functionality for services
     $('#serviceSearch').on('input', function() {
         const searchTerm = this.value.toLowerCase();

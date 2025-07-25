@@ -104,6 +104,11 @@
         .widget-post.current-blog .post-title a {
             color: #007bff;
             font-weight: 600;
+              }
+        .post-content {
+
+            white-space: pre-wrap;
+            word-break: break-word;
         }
          .page-banner {
                 position: relative;
