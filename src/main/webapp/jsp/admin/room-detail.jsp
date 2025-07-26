@@ -390,13 +390,13 @@
 
                     <hr>
 
-                    <button class="btn btn-info btn-block mb-2">
+<!--                    <button class="btn btn-info btn-block mb-2">
                         <i class="fas fa-eye"></i> View All Rooms
                     </button>
 
                     <button class="btn btn-secondary btn-block">
                         <i class="fas fa-chart-line"></i> View Reports
-                    </button>
+                    </button>-->
                 </div>
             </div>
 
