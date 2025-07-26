@@ -15,7 +15,7 @@ public class DBContext {
 
 
     private static final String DEFAULT_USER = "sa";
-    private static final String DEFAULT_PASSWORD = "qq123123";
+    private static final String DEFAULT_PASSWORD = "123";
     private static final String DEFAULT_DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     
     public static Connection getConnection() throws SQLException {

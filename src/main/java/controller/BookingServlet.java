@@ -32,7 +32,7 @@ public class BookingServlet extends HttpServlet {
     private final CustomerDAO customerDAO = new CustomerDAO();
     private EmailNotificationService emailService = new EmailNotificationService();
    
-        private void releaseExpiredHolds(HttpSession session) {
+    private void releaseExpiredHolds(HttpSession session) {
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         if (cart == null) return;
         long now = System.currentTimeMillis();
@@ -136,7 +136,7 @@ public class BookingServlet extends HttpServlet {
             
            // Extract customer info only. Cart details will be read from the session
             BookingFormData formData;
-             List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
+            List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
             String paramRoomTypeId = request.getParameter("roomTypeId");
             boolean single = paramRoomTypeId != null && !paramRoomTypeId.isEmpty();
 
@@ -210,6 +210,7 @@ public class BookingServlet extends HttpServlet {
 
                 if (currentUser != null) {
                     userId = currentUser.getId();
+                        // Nếu khách nhập tên/email/phone khác profile -> update lại profile cho đồng bộ
                     if (!formData.fullName.equals(currentUser.getFullName()) ||
                         !formData.email.equals(currentUser.getEmail()) ||
                         !formData.phone.equals(currentUser.getPhone())) {
@@ -219,6 +220,7 @@ public class BookingServlet extends HttpServlet {
                         userDAO.updateUser(currentUser);
                     }
                 } else {
+                      // Nếu là guest (chưa đăng nhập)
                     String otpValidated = (String) session.getAttribute("otpValidated");
                     if (!"true".equals(otpValidated)) {
                         String otp = OTPUtil.generateOTP();
@@ -236,7 +238,7 @@ public class BookingServlet extends HttpServlet {
                         response.getWriter().write("{\"requireOTP\": true, \"email\": \"" + maskEmail(formData.email) + "\"}");
                         return;
                     }
-
+                    // Nếu đã xác thực OTP, tạo tài khoản guest, lấy userId
                     isGuest = true;
                     try {
                         userId = createGuestAccount(formData);
@@ -249,6 +251,7 @@ public class BookingServlet extends HttpServlet {
                         response.getWriter().write("{\"error\": \"Failed to create guest account: " + e.getMessage() + "\"}");
                         return;
                     }
+                        // Xóa thông tin OTP khỏi session
                     session.removeAttribute("otpValidated");
                     session.removeAttribute("pendingOTP");
                     session.removeAttribute("pendingBookingData");
@@ -259,7 +262,7 @@ public class BookingServlet extends HttpServlet {
 
                 Reservation reservation = createReservation(formData, userId, currentUser);
                 int reservationId = reservationDAO.createReservationAndGetId(reservation);
-
+     // Thêm dịch vụ, tạo payment, log activity, gửi email xác nhận
                 if (reservationId > 0) {
                     reservation.setId(reservationId);
                     if (formData.serviceIds != null && formData.serviceIds.length > 0) {

@@ -47,7 +47,7 @@ public class CheckOutServlet extends HttpServlet {
             // Get today's check-outs
             Date today = Date.valueOf(LocalDate.now());
             List<ReservationSummary> todayCheckOuts = checkInOutDAO.getUpcomingCheckOuts(24);
-            
+             int completedCheckOuts = checkInOutDAO.getCompletedCheckOuts(today);
               LocalDateTime now = LocalDateTime.now();
               
             int lateCheckouts = 0;
@@ -87,7 +87,8 @@ public class CheckOutServlet extends HttpServlet {
             
             // Set attributes
             request.setAttribute("todayCheckOuts", todayCheckOuts);
-              request.setAttribute("lateCheckouts", lateCheckouts);
+                request.setAttribute("completedCheckOuts", completedCheckOuts);
+            request.setAttribute("lateCheckouts", lateCheckouts);
             request.setAttribute("pendingInspections", pendingInspections);
             request.setAttribute("currentUser", currentUser);
             
