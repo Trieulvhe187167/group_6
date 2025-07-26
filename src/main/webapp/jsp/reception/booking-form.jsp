@@ -158,9 +158,7 @@
         <div class="alert alert-danger alert-dismissible fade show">
             <i class="fas fa-exclamation-triangle mr-2"></i>
             ${error}
-           <button type="button" class="close" data-bs-dismiss="modal" data-dismiss="modal">
-                <span>&times;</span>
-            </button>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
     
@@ -168,9 +166,7 @@
         <div class="alert alert-success alert-dismissible fade show">
             <i class="fas fa-check-circle mr-2"></i>
             ${success}
-            <button type="button" class="close" data-bs-dismiss="modal" data-dismiss="modal">
-                <span>&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
     
@@ -486,6 +482,12 @@ $(document).ready(function() {
         }
     });
     
+       // Prevent submitting form with Enter key
+    $('#bookingForm').on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    });
     // Initialize services counter on page load
     updateServicesSummary();
       updateServiceRoomOptions();

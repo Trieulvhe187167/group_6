@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-// 🔥 IMPORTANT: Make sure this annotation is present
+// IMPORTANT: Make sure this annotation is present
 @WebServlet(name = "VerificationServlet", urlPatterns = {"/verify-change"})
 public class VerificationServlet extends HttpServlet {
     
@@ -27,8 +27,8 @@ public class VerificationServlet extends HttpServlet {
         String token = request.getParameter("token");
         String action = request.getParameter("action");
         
-        System.out.println("🔍 VerificationServlet - Token received: " + token);
-        System.out.println("🔍 VerificationServlet - Action: " + action);
+        System.out.println("VerificationServlet - Token received: " + token);
+        System.out.println("VerificationServlet - Action: " + action);
         
         if (token == null || token.isEmpty()) {
             System.err.println("No token provided");
@@ -64,7 +64,7 @@ public class VerificationServlet extends HttpServlet {
                 return;
             }
             
-            System.out.println("✅ User found: " + user.getFullName() + " (" + user.getEmail() + ")");
+            System.out.println("User found: " + user.getFullName() + " (" + user.getEmail() + ")");
             
             if ("reject".equals(action)) {
                 showRejectForm(request, response, change, user);
@@ -88,7 +88,7 @@ public class VerificationServlet extends HttpServlet {
         String action = request.getParameter("action");
         String token = request.getParameter("token");
         
-        System.out.println("🔍 VerificationServlet POST - Action: " + action + ", Token: " + token);
+        System.out.println("VerificationServlet POST - Action: " + action + ", Token: " + token);
         
         if (token == null || token.isEmpty()) {
             request.setAttribute("error", "Invalid verification token!");
@@ -110,7 +110,7 @@ public class VerificationServlet extends HttpServlet {
                     break;
             }
         } catch (Exception e) {
-            System.err.println("❌ Error processing verification: " + e.getMessage());
+            System.err.println("Error processing verification: " + e.getMessage());
             e.printStackTrace();
             request.setAttribute("error", "An error occurred while processing your request: " + e.getMessage());
             request.getRequestDispatcher("/jsp/public/verification-result.jsp").forward(request, response);

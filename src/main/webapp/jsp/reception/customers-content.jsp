@@ -10,9 +10,6 @@
             <p class="text-muted">Manage customer information and history</p>
         </div>
         <div class="col-md-6 text-right">
-            <button class="btn btn-primary" data-toggle="modal" data-target="#newCustomerModal">
-                <i class="fas fa-user-plus"></i> Add New Customer
-            </button>
             <button class="btn btn-success" onclick="exportCustomers()">
                 <i class="fas fa-file-excel"></i> Export
             </button>

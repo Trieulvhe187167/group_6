@@ -23,10 +23,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Room Type Details</h1>
         <div>
-            <a href="${pageContext.request.contextPath}/admin/rooms?action=form&id=${roomType.id}" 
-               class="btn btn-warning">
-                <i class="fas fa-edit"></i> Edit
-            </a>
             <a href="${pageContext.request.contextPath}/admin/rooms" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
@@ -321,11 +317,9 @@
                                                 </td>
                                                 <td>
                                                     <div class="btn-group" role="group">
-                                                        <button class="btn btn-sm btn-outline-primary" 
-                                                                onclick="viewRoomDetails(${room.id}, '${room.roomNumber}')"
-                                                                title="View Details">
-                                                            <i class="fas fa-eye"></i>
-                                                        </button>
+                                                      <a href="${pageContext.request.contextPath}/admin/rooms2?action=view&id=${room.id}" class="btn btn-sm btn-info text-white">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                                         <c:if test="${room.status == 'DIRTY'}">
                                                             <button class="btn btn-sm btn-outline-warning" 
                                                                     onclick="scheduleClean(${room.id}, '${room.roomNumber}')"
@@ -387,16 +381,6 @@
                        class="btn btn-success btn-block mb-2">
                         <i class="fas fa-plus"></i> Create New Type
                     </a>
-
-                    <hr>
-
-<!--                    <button class="btn btn-info btn-block mb-2">
-                        <i class="fas fa-eye"></i> View All Rooms
-                    </button>
-
-                    <button class="btn btn-secondary btn-block">
-                        <i class="fas fa-chart-line"></i> View Reports
-                    </button>-->
                 </div>
             </div>
 

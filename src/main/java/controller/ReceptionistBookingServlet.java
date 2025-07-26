@@ -89,6 +89,13 @@ public class ReceptionistBookingServlet extends HttpServlet {
             request.setAttribute("roomTypes", roomTypes);
             request.setAttribute("customers", customers);
             request.setAttribute("services", services);
+            
+            String successMsg = (String) request.getSession().getAttribute("success");
+            if (successMsg != null) {
+                request.setAttribute("success", successMsg);
+                request.getSession().removeAttribute("success");
+            }
+            
             request.setAttribute("pageTitle", "New Booking");
             request.setAttribute("activePage", "booking");
             

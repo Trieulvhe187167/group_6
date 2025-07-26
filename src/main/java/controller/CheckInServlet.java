@@ -40,12 +40,12 @@ public class CheckInServlet extends HttpServlet {
         }
         
         try {
-            // Get today's check-ins
-            Date today = Date.valueOf(LocalDate.now());
-            List<ReservationSummary> todayCheckIns = checkInOutDAO.getUpcomingCheckIns(24); // Next 24 hours
+   
+            // Get today's check-ins including already completed ones
+            List<Reservation> todayCheckIns = reservationDAO.getTodayCheckIns();
             
             // Add checked-in status
-            for (ReservationSummary res : todayCheckIns) {
+            for (Reservation res : todayCheckIns) {
                 res.setCheckedIn(checkInOutDAO.isCheckedIn(res.getId()));
             }
             

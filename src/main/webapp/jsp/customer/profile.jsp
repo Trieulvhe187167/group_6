@@ -711,6 +711,27 @@
                     </div>
                 </div>
             </main>
+  <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (window.location.hash) {
+                    const trigger = document.querySelector('button[data-bs-target="' + window.location.hash + '"]');
+                    if (trigger) {
+                        new bootstrap.Tab(trigger).show();
+                    }
+                }
 
+                const triggers = document.querySelectorAll('#profileTabs button[data-bs-toggle="tab"]');
+                triggers.forEach(function(el) {
+                    el.addEventListener('shown.bs.tab', function(event) {
+                        const target = event.target.getAttribute('data-bs-target');
+                        if (history.replaceState) {
+                            history.replaceState(null, null, target);
+                        } else {
+                            window.location.hash = target;
+                        }
+                    });
+                });
+            });
+        </script>
     </body>
 </html>

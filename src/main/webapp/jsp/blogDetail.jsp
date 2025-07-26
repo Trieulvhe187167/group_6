@@ -122,6 +122,10 @@
                 max-width: 1100px;
                 padding-bottom: 10px;
             }
+             .comment-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
     </style>
 </head>
     
@@ -274,6 +278,16 @@
                                             <i class="fa fa-exclamation-circle"></i> Please enter a valid email address.
                                         </div>
                                     </c:if>
+                                    <c:if test="${param.error eq 'emailLen'}">
+                                        <div class="alert alert-danger">
+                                            <i class="fa fa-exclamation-circle"></i> Email must not exceed 50 characters.
+                                        </div>
+                                    </c:if>
+                                    <c:if test="${param.error eq 'name'}">
+                                        <div class="alert alert-danger">
+                                            <i class="fa fa-exclamation-circle"></i> Full name must not exceed 50 characters.
+                                        </div>
+                                    </c:if>
                                     
                                     <!-- Show logged in user info -->
                                     <c:if test="${not empty sessionScope.user}">
@@ -292,15 +306,15 @@
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label for="authorName">Name <span class="required">*</span></label>
-                                                        <input type="text" name="authorName" id="authorName" 
-                                                               class="form-control" placeholder="Your Name" required />
+                                                        <input type="text" name="authorName" id="authorName"
+                                                               class="form-control" placeholder="Your Name" maxlength="50" required />
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label for="email">Email <span class="required">*</span></label>
-                                                        <input type="email" name="email" id="email" 
-                                                               class="form-control" placeholder="Your Email" required />
+                                                        <input type="email" name="email" id="email"
+                                                               class="form-control" placeholder="Your Email" maxlength="50" required />
                                                     </div>
                                                 </div>
                                             </div>

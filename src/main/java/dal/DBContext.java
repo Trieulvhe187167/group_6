@@ -9,12 +9,13 @@ public class DBContext {
 
 
 
-    private static final String DEFAULT_URL = "jdbc:sqlserver://LAPTOP-SVEKADBK\\HIEUHE187201:1433;"
-            + "databaseName=HotelManagement_4;encrypt=false;";
+    private static final String DEFAULT_URL = "jdbc:sqlserver://LAPTOP-Q4D6UCM6\\MSSQLSERVER01:1433;"
+            + "databaseName=HotelManagement_3;encrypt=false;";
+
 
 
     private static final String DEFAULT_USER = "sa";
-    private static final String DEFAULT_PASSWORD = "qq123123";
+    private static final String DEFAULT_PASSWORD = "123";
     private static final String DEFAULT_DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     
     public static Connection getConnection() throws SQLException {

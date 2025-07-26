@@ -5,9 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import model.Blog;
 
-/**
- * DAO cho bảng Blogs
- */
+
 public class BlogDAO {
     
     /**

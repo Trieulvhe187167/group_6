@@ -104,18 +104,19 @@
             <h5 class="mb-0">Change Password</h5>
         </div>
         <div class="card-body">
-            <form action="${pageContext.request.contextPath}/inspector/change-password" method="post" class="row g-3" novalidate>
+                     <form id="changePasswordForm" action="${pageContext.request.contextPath}/inspector/change-password" method="post" class="row g-3" novalidate>
+
                 <div class="col-md-4">
                     <label class="form-label">Current Password</label>
                     <input type="password" class="form-control" name="currentPassword" required />
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">New Password</label>
-                    <input type="password" class="form-control" name="newPassword" required />
+                    <input id="newPassword" type="password" class="form-control" name="newPassword" required />
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Confirm Password</label>
-                    <input type="password" class="form-control" name="confirmPassword" required />
+                    <input id="confirmPassword" type="password" class="form-control" name="confirmPassword" required />
                 </div>
                 <div class="col-12">
                     <button class="btn btn-primary" type="submit">Change Password</button>
@@ -124,3 +125,33 @@
         </div>
     </div>
 </div>
+                     <script>
+    $(function(){
+        $('#changePasswordForm').on('submit', function(e){
+            var newPass = $('#newPassword').val();
+            var confirmPass = $('#confirmPassword').val();
+            var error = '';
+
+            $('.form-control').removeClass('is-invalid');
+
+            var passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!]).{8,}$/;
+            if(!passwordPattern.test(newPass)) {
+                $('#newPassword').addClass('is-invalid');
+                error = 'Password must be at least 8 characters with uppercase, lowercase, number and special character';
+            }
+            if(newPass !== confirmPass) {
+                $('#confirmPassword').addClass('is-invalid');
+                if(!error) error = 'Passwords do not match';
+            }
+
+            if(error){
+                e.preventDefault();
+                alert(error);
+            }
+        });
+
+        $('.form-control').on('input', function(){
+            $(this).removeClass('is-invalid');
+        });
+    });
+</script>

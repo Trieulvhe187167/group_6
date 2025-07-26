@@ -212,15 +212,7 @@
             <div class="card border-success">
                 <div class="card-body text-center">
                     <i class="fas fa-check-double fa-2x text-success mb-2"></i>
-                    <h3 class="mb-1">
-                        <c:set var="completedCount" value="0" />
-                        <c:forEach var="res" items="${todayCheckOuts}">
-                            <c:if test="${res.checkedOut}">
-                                <c:set var="completedCount" value="${completedCount + 1}" />
-                            </c:if>
-                        </c:forEach>
-                        ${completedCount}
-                    </h3>
+                       <h3 class="mb-1">${completedCheckOuts}</h3>
                     <p class="text-muted mb-0">Completed</p>
                 </div>
             </div>

@@ -105,14 +105,8 @@
     <!-- Filter Section -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="get" action="${pageContext.request.contextPath}/admin/blogs" class="form-inline justify-content-between">
-                <div class="d-flex flex-wrap">
-                    <div class="form-group mr-3">
-                        <label class="mr-2">Search:</label>
-                        <input type="text" name="search" class="form-control" 
-                               placeholder="Title or content..." value="${search}">
-                    </div>
-                    
+                     <form id="blogFilterForm" method="get" action="${pageContext.request.contextPath}/admin/blogs" class="form-inline justify-content-between">                
+                    <div class="d-flex flex-wrap">
                     <div class="form-group mr-3">
                         <label class="mr-2">Status:</label>
                         <select name="status" class="form-control">
@@ -134,9 +128,13 @@
                             </c:forEach>
                         </select>
                     </div>
-                    
+                      <div class="form-group mr-3">
+                        <label class="mr-2">Search:</label>
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Title or content..." value="${search}">
+                    </div>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-filter"></i> Filter
+                        <i class="fas fa-search"></i> Search
                     </button>
                     
                     <c:if test="${not empty search || not empty status || not empty authorId}">
@@ -318,4 +316,18 @@ function confirmDelete(id, title) {
     document.getElementById('blogTitle').textContent = title;
     $('#deleteModal').modal('show');
 }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var form = document.getElementById('blogFilterForm');
+        if (!form) return;
+
+        form.querySelectorAll('select').forEach(function (select) {
+            select.addEventListener('change', function () {
+                form.submit();
+            });
+        });
+
+      
+    });
 </script>
