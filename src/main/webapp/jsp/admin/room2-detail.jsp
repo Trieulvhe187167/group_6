@@ -48,13 +48,7 @@
                     <label><strong>Base Price:</strong></label>
                     <p><fmt:formatNumber value="${room.basePrice}" pattern="#.##" />₫ / night</p>
 
-                    <label><strong>Image:</strong></label>
-                    <c:if test="${not empty room.imageUrl}">
-                        <img src="${room.imageUrl}" class="img-fluid rounded" style="max-width: 250px;">
-                    </c:if>
-                    <c:if test="${empty room.imageUrl}">
-                        <p class="text-muted">No image available</p>
-                    </c:if>
+                   
                 </div>
             </div>
 

@@ -317,11 +317,9 @@
                                                 </td>
                                                 <td>
                                                     <div class="btn-group" role="group">
-                                                        <button class="btn btn-sm btn-outline-primary" 
-                                                                onclick="viewRoomDetails(${room.id}, '${room.roomNumber}')"
-                                                                title="View Details">
-                                                            <i class="fas fa-eye"></i>
-                                                        </button>
+                                                      <a href="${pageContext.request.contextPath}/admin/rooms2?action=view&id=${room.id}" class="btn btn-sm btn-info text-white">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                                         <c:if test="${room.status == 'DIRTY'}">
                                                             <button class="btn btn-sm btn-outline-warning" 
                                                                     onclick="scheduleClean(${room.id}, '${room.roomNumber}')"

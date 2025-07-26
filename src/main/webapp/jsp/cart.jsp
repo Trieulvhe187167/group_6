@@ -81,6 +81,7 @@
                     <a href="<%= backUrlStr %>" class="btn btn-secondary mt-2">Back Rooms to add </a>
                 </c:if>
                 <c:if test="${not empty cart}">
+                    <p style="color: red">Will hold room for you for 10 minutes, please book and pay within this time!!</p>
                     <table class="table table-bordered">
                         <thead>
                             <tr>

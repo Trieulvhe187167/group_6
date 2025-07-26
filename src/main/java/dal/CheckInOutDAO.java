@@ -50,7 +50,24 @@ public class CheckInOutDAO {
         }
         return 0;
     }
-    
+    // Get number of check-outs completed today
+    public int getCompletedCheckOuts(Date today) {
+        String sql = "SELECT COUNT(*) FROM CheckOutDetails WHERE CAST(CheckOutTime AS DATE) = ?";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setDate(1, today);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
     // Get upcoming check-ins for next N hours
     public List<ReservationSummary> getUpcomingCheckIns(int hours) {
         List<ReservationSummary> checkIns = new ArrayList<>();
