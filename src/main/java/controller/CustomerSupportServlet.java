@@ -76,6 +76,8 @@ public class CustomerSupportServlet extends HttpServlet {
         try {
             if ("new".equals(action)) {
                 showSupportForm(request, response, user);
+            } else if ("detail".equals(action)){
+                showSupportDetail(request, response);
             } else {
                 showCustomerRequestList(request, response, user);
             }
@@ -146,14 +148,35 @@ public class CustomerSupportServlet extends HttpServlet {
 
         List<SupportRequest> requests = supportDAO.getSupportRequestsByUser(user.getId(), filter, sort);
 
+        List<String> statusList = Arrays.asList("all", "pending", "in progress", "resolved", "rejected");
+        request.setAttribute("statusList", statusList);
+
         request.setAttribute("requestList", requests);
-        request.setAttribute("selectedFilter", filter); // để giữ trạng thái filter trong form
-        request.setAttribute("selectedSort", sort);     // để giữ trạng thái sort trong form
+        request.setAttribute("selectedFilter", filter);
+        request.setAttribute("selectedSort", sort);
         request.setAttribute("pageTitle", "My Support Requests");
 
         request.getRequestDispatcher("/jsp/customer/support-list.jsp").forward(request, response);
     }
 
+    // Hiển thị chi tiết một yêu cầu và các phản hồi
+    private void showSupportDetail(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            int requestId = Integer.parseInt(request.getParameter("id"));
+            SupportRequest supportRequest = supportDAO.getSupportRequestById(requestId);
+            List<SupportReply> replies = supportDAO.getRepliesByRequestId(requestId);
+
+            request.setAttribute("supportRequest", supportRequest);
+            request.setAttribute("replies", replies);
+        } catch (Exception e) {
+            request.setAttribute("error", "Invalid support request ID.");
+        }
+
+        request.setAttribute("pageTitle", "Request Support");
+        request.getRequestDispatcher("/jsp/customer/support-detail.jsp").forward(request, response);
+    }
+    
     private void createSupportRequest(HttpServletRequest request, HttpServletResponse response, User user)
             throws ServletException, IOException, SQLException {
 

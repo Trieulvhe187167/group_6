@@ -308,6 +308,10 @@
                    class="nav-item ${activePage == 'services' ? 'active' : ''}">
                     <i class="fas fa-concierge-bell"></i> Services
                 </a>
+                <a href="${pageContext.request.contextPath}/receptionist/support" 
+                   class="nav-item ${activePage == 'support' ? 'active' : ''}">
+                    <i class="fas fa-concierge-bell"></i> Support
+                </a>
 <!--                <a href="${pageContext.request.contextPath}/receptionist/amenities" 
                    class="nav-item ${activePage == 'amenities' ? 'active' : ''}">
                     <i class="fas fa-bath"></i> Room Amenities
@@ -334,7 +338,7 @@
         <!-- Main Content -->
         <main class="main-content">
             <c:choose>
-                 <c:when test="${not empty contentPage}">
+                <c:when test="${not empty contentPage}">
                     <jsp:include page="${contentPage}" />
                 </c:when>
                 <c:when test="${activePage == 'checkin'}">
@@ -392,16 +396,16 @@
         <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-            // Ensure jQuery is available globally
-            window.$ = window.jQuery = jQuery;
-            console.log('jQuery loaded successfully:', jQuery.fn.jquery);
+                    // Ensure jQuery is available globally
+                    window.$ = window.jQuery = jQuery;
+                    console.log('jQuery loaded successfully:', jQuery.fn.jquery);
         </script>
         <script>
-                    // Common JavaScript functions for Receptionist template
-                    function toggleSidebar() {
-                        const sidebar = document.getElementById('sidebar');
-                        sidebar.classList.toggle('active');
-                    }
+            // Common JavaScript functions for Receptionist template
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('active');
+            }
         </script>
     </body>
 </html>

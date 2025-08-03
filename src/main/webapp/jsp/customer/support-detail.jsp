@@ -7,6 +7,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
 <!DOCTYPE html>
 <html>
@@ -453,125 +454,64 @@
                 </c:if>
 
                 <div class="content-header">
-                    <h2><i class="fas fa-comments"></i> My Support Requests</h2>
-                    <p>View and manage your support requests</p>
+                    <h2><i class="fas fa-comments"></i> Response to Me</h2>
+                    <p>Response from reception for me</p>
                 </div>
-
-
-                <a href="${pageContext.request.contextPath}/customer/support?action=new" class="btn btn-primary mb-3">
-                    <i class="fas fa-plus-circle"></i> New Support Request
-                </a>
-
-
-                <%-- Thiết lập biến mặc định nếu filter/sort chưa có --%>
-                <c:set var="selectedFilter" value="${empty param.filter ? 'all' : param.filter}" />
-                <c:set var="selectedSort" value="${empty param.sort ? 'date' : param.sort}" />
 
                 <div style="background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 30px;">
                     <div class="filter-section mb-4">
-                        <h4 class="mb-3 text-dark">Filter & Sort Options</h4>
+                        <h4 class="mb-3 text-dark">Detail</h4>
 
+                        <!--Detail-->
                         <div class="mb-4">
-                            <h5 class="text-secondary mb-2">Filter by Status:</h5>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <c:forEach var="status" items="${statusList}">
-                                    <%-- Thêm một nút cho trạng thái 'all' --%>
-                                    <c:if test="${not empty status}">
-                                        <%-- Viết hoa chữ cái đầu của status --%>
-                                        <c:set var="capitalizedStatus" value="${fn:toUpperCase(fn:substring(status, 0, 1))}${fn:substring(status, 1, fn:length(status))}" />
+                            <h5 class="text-secondary mb-2">My Request</h5>
+                            <div style="gap: 10px; flex-wrap: wrap;">
 
-                                        <c:url var="filterUrl" value="support">
-                                            <c:param name="filter" value="${status}" />
-                                            <c:param name="sort" value="${selectedSort}" />
-                                        </c:url>
-
-                                        <a href="${filterUrl}"
-                                           style="padding: 10px 20px;
-                                           background: ${selectedFilter == status ? '#667eea' : '#f8f9fa'};
-                                           color: ${selectedFilter == status ? 'white' : '#495057'};
-                                           text-decoration: none; border-radius: 8px;
-                                           border: 2px solid #e9ecef; font-weight: 500;">
-                                            <c:out value="${capitalizedStatus}" />
-                                        </a>
-                                    </c:if>
-                                </c:forEach>
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fas fa-comments"></i> ${supportRequest.title}</h5>
+                                        <p><strong>Room:</strong> ${supportRequest.roomNumber}</p>
+                                        <p><strong>Description:</strong> ${supportRequest.description}</p>
+                                        <p><strong>Status:</strong> ${supportRequest.status}</p>
+                                        <p><strong>Created At:</strong> 
+                                            <fmt:formatDate value="${supportRequest.createdAt}" pattern="yyyy-MM-dd HH:mm" />
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
+                        <!--Replies-->
                         <div class="mb-4">
-                            <h5 class="text-secondary mb-2">Sort by:</h5>
-                            <c:set var="sortOptions" value="${['date', 'title']}" />
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <c:forEach var="sortOption" items="${sortOptions}">
-                                    <c:url var="sortUrl" value="support">
-                                        <c:param name="sort" value="${sortOption}" />
-                                        <c:param name="filter" value="${selectedFilter}" />
-                                    </c:url>
-
-                                    <a href="${sortUrl}"
-                                       style="padding: 10px 20px;
-                                       background: ${selectedSort == sortOption ? '#667eea' : '#f8f9fa'};
-                                       color: ${selectedSort == sortOption ? 'white' : '#495057'};
-                                       text-decoration: none; border-radius: 8px;
-                                       border: 2px solid #e9ecef; font-weight: 500;">
-                                        <c:choose>
-                                            <c:when test="${sortOption == 'date'}">Date (Newest First)</c:when>
-                                            <c:when test="${sortOption == 'title'}">Title (A → Z)</c:when>
-                                        </c:choose>
-                                    </a>
-                                </c:forEach>
+                            <h5 class="text-secondary mb-2">Replies from Receptionist</h5>
+                            <div style="gap: 10px; flex-wrap: wrap;">
+                                <!-- Danh sách phản hồi -->
+                                <c:choose>
+                                    <c:when test="${not empty replies}">
+                                        <c:forEach var="reply" items="${replies}">
+                                            <div class="card mb-2">
+                                                <div class="card-body">
+                                                    <p>${reply.message}</p>
+                                                    <small class="text-muted">
+                                                        By: ${reply.staffName} |
+                                                        <fmt:formatDate value="${reply.createdAt}" pattern="yyyy-MM-dd HH:mm"/>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <p>No replies yet.</p>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </div>
+
+
                     </div>
                 </div>
 
-                <!-- Support Cards -->
-                <c:choose>
-                    <c:when test="${empty requestList}">
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> You have no support requests.
-                        </div>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="row">
-                            <c:forEach var="req" items="${requestList}">
-                                <div class="col-md-6 col-lg-4 mb-4">
-                                    <div class="card h-100 shadow-sm border-0">
-                                        <div class="card-body">
-                                            <h5 class="card-title">
-                                                <i class="fas fa-tools me-1 text-primary"></i> ${req.title}
-                                            </h5>
-                                            <p class="card-text mb-1">
-                                                <strong><i class="fas fa-door-open me-1"></i> Room:</strong> ${req.roomNumber}
-                                            </p>
-                                            <p class="card-text mb-2">
-                                                <strong><i class="fas fa-align-left me-1"></i> Description:</strong><br/>
-                                                ${req.description}
-                                            </p>
-                                            <p class="card-text">
-                                                <strong><i class="fas fa-circle-notch me-1"></i> Status:</strong>
-                                                <span class="badge
-                                                      <c:choose>
-                                                          <c:when test="${req.status eq 'Pending'}">bg-warning text-dark</c:when>
-                                                          <c:when test="${req.status eq 'In Progress'}">bg-info text-white</c:when>
-                                                          <c:when test="${req.status eq 'Resolved'}">bg-success</c:when>
-                                                          <c:when test="${req.status eq 'Rejected'}">bg-danger text-white</c:when>
-                                                          <c:otherwise>bg-secondary</c:otherwise>
-                                                      </c:choose>">
-                                                    ${req.status}
-                                                </span>
-                                            </p>
-                                            <a href="support?action=detail&id=${req.id}" class="btn btn-sm btn-info">View</a>
-                                        </div>
-                                        <div class="card-footer bg-light text-muted small">
-                                            <i class="fas fa-clock me-1"></i> Created at: ${req.createdAt}
-                                        </div>
-                                    </div>
-                                </div>
-                            </c:forEach>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
+
             </main>
         </div>
 
