@@ -817,6 +817,7 @@ public class RoomDAO {
 
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("Error when get floor: " + e.getMessage(), e);
         }
 
         return floors;

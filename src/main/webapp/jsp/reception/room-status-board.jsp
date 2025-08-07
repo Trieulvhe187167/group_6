@@ -17,6 +17,13 @@
 
 </style>
 
+<c:if test="${not empty error}">
+    <div class="alert alert-danger">
+        ${error}
+    </div>
+</c:if>
+
+
 <h2 class="mb-4">Room Status Board</h2>
 
 <!-- Floor selection -->

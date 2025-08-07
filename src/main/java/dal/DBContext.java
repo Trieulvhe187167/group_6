@@ -10,7 +10,7 @@ public class DBContext {
 
 
     private static final String DEFAULT_URL = "jdbc:sqlserver://LAPTOP-SVEKADBK\\HIEUHE187201:1433;"
-            + "databaseName=HotelManagement_3;encrypt=false;";
+            + "databaseName=HotelManagement_5;encrypt=false;";
 
 
 

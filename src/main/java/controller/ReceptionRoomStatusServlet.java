@@ -109,7 +109,8 @@ public class ReceptionRoomStatusServlet extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Unable to load room status board. Please try again.");
+//            request.setAttribute("error", "Unable to load room status board. Please try again.");
+            request.setAttribute("error", "Unable to load room status board. Please try again. " + e.getMessage());
         }
 
         request.getRequestDispatcher("/jsp/reception/receptionist-template.jsp").forward(request, response);

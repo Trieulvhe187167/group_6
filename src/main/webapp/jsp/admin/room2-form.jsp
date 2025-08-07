@@ -34,7 +34,9 @@
                 <div class="form-group">
                     <label for="roomNumber">Room Number <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="roomNumber" id="roomNumber"
-                           value="${room != null ? room.roomNumber : ''}" required />
+                           pattern="^[0-9]+$"
+                           title="Room number must contain digits only"
+                           value="${room != null ? room.roomNumber : ''}" maxlength="5" required />
                 </div>
 
                 <!-- Room Type -->

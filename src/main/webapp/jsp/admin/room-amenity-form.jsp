@@ -56,7 +56,8 @@
         <div class="mb-3">
             <label class="form-label">Amenity Name</label>
             <input type="text" name="name" class="form-control"
-                   value="${amenity.name}" required />
+                   value="${amenity.name}" 
+                   maxlength="30" required />
         </div>
 
         <div class="mb-3">
